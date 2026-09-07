@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Back arrow. We draw our own header, so there is no ActionBar arrow (see view_header.xml). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?android:attr/textColorPrimary"
+    android:autoMirrored="true">
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M11.7,4.3 a1,1 0 0 1 0,1.4 L6.4,11 L20,11 a1,1 0 0 1 0,2 L6.4,13 l5.3,5.3 a1,1 0 0 1 -1.4,1.4 l-7,-7 a1,1 0 0 1 0,-1.4 l7,-7 a1,1 0 0 1 1.4,0 Z" />
+</vector>

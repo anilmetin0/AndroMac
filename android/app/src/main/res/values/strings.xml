@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Base language. To add a language: copy this file to res/values-<code>/strings.xml,
+    translate, and add the code to res/xml/locales_config.xml.
+
+    Every translation must keep the same keys and the same placeholders, or the
+    format calls break at runtime.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">AndroMac</string>
+
+    <!-- status -->
+    <string name="pair">Pair</string>
+    <string name="unpair">Forget this Mac</string>
+    <string name="unpair_confirm">The saved Mac key will be deleted. You will have to pair again.</string>
+    <string name="state_connected">Connected</string>
+    <string name="state_searching">Looking for your Mac…</string>
+    <string name="state_unpaired">Not paired</string>
+    <string name="state_offline">Offline</string>
+    <string name="state_key_changed">Mac key changed</string>
+    <string name="state_waiting_approval">Waiting for approval</string>
+    <string name="state_waiting_mac">Waiting for Mac</string>
+    <string name="state_auto_off">Auto-connect off</string>
+
+    <!-- onboarding -->
+    <string name="onboarding_title">TO CONNECT</string>
+    <string name="onboarding_step1">Open AndroMac on your Mac</string>
+    <string name="onboarding_step1_found">Mac seen on the network</string>
+    <string name="onboarding_step1_missing">Mac not found on the network</string>
+    <string name="onboarding_step2">Be on the same Wi-Fi network</string>
+    <string name="onboarding_step2_ok">Phone: %1$s</string>
+    <string name="onboarding_step2_none">No Wi-Fi connection</string>
+    <string name="onboarding_step3">Tap Pair, then compare the code</string>
+    <string name="onboarding_step3_ready">Ready</string>
+    <string name="onboarding_step3_waiting">Finish the steps above</string>
+    <string name="onboarding_help">I can\'t connect</string>
+
+    <!-- help screen -->
+    <string name="help_title">Connection help</string>
+    <string name="help_section_state">CURRENT STATE</string>
+    <string name="help_section_common">COMMON PROBLEMS</string>
+    <string name="help_section_how">HOW IT WORKS</string>
+    <string name="help_troubleshooting">If the Mac is not found on the network:\n• Is AndroMac running in the menu bar on your Mac?\n• Are both devices on the same Wi-Fi network? The phone may have fallen back to mobile data.\n• A guest network or client isolation may be on; devices cannot see each other on those.\n• macOS 15+ asks for \"Local Network\" permission on first launch. If it was denied: System Settings → Privacy and Security → Local Network.\n\nIf it connects but keeps dropping:\n• Exempt the app from battery optimization (Permissions card on the main screen).\n• \"AP isolation\" must be off on your router.\n\nIf notifications never arrive:\n• Has notification access been granted?\n• That app may be set to Off in the app filter.\n• Silent notifications are not sent by default.\n\nIf the notification access switch is greyed out:\nAndroid 13+ locks that switch for apps installed from a file (\"unavailable for your security\"). Try to turn it on once, then go to Settings → Apps → AndroMac → ⋮ (top right) → Allow restricted settings. The menu item only appears after you have tried. Then turn the switch on again.</string>
+    <string name="help_how_it_works">Your Mac announces itself on the local network; the phone finds it and connects directly. There is no server in between and no data leaves for the internet.\n\nPairing shows a six-digit code on both screens. If the codes match, nobody is in the middle. After you approve, the Mac\'s key is pinned on the phone; if that key ever changes the connection is refused and you are warned.\n\nTraffic is end-to-end encrypted (P-256 ECDH + AES-256-GCM). Fresh keys are derived for every session.</string>
+
+    <!-- header -->
+    <string name="back">Back</string>
+    <string name="more">More</string>
+
+    <!-- main screen sections -->
+    <string name="section_permissions">PERMISSIONS</string>
+    <string name="section_sync">SYNC</string>
+    <string name="section_settings">SETTINGS</string>
+
+    <!-- permission banner -->
+    <string name="permission_banner_title">AndroMac needs a permission</string>
+    <string name="permission_banner_dismiss">Dismiss</string>
+    <string name="permission_banner_notif_access">Notification access is not granted — nothing is mirrored to your Mac.</string>
+    <string name="permission_banner_post">Notifications are not allowed — the status and clipboard notifications never appear.</string>
+
+    <!-- setup -->
+    <string name="setup_notif_title">Notification access</string>
+    <string name="setup_notif_note">Required to mirror notifications to your Mac. If you installed the APK from a file the switch may be greyed out; on the app info screen tap ⋮ → Allow restricted settings.</string>
+    <string name="setup_post_notif_title">Allow notifications</string>
+    <string name="setup_post_notif_note">Without it the status notification and the Mac clipboard notification never appear.</string>
+    <string name="setup_battery_title">Battery optimization</string>
+    <string name="setup_battery_note">Without an exemption the system may drop the connection.</string>
+    <string name="setup_dnd_title">Do Not Disturb access</string>
+    <string name="setup_dnd_note">Lets you silence this phone from the Mac.</string>
+    <string name="setup_overlay_title">Display over other apps</string>
+    <string name="setup_overlay_note">Lets the Mac read this phone\'s clipboard without you tapping a notification first.</string>
+    <string name="setup_notif_prompt">AndroMac mirrors your notifications to the Mac, which Android allows only with notification access. Open the settings screen and switch AndroMac on.</string>
+    <string name="setup_open_settings">Open settings</string>
+    <string name="setup_later">Later</string>
+
+    <!-- permissions -->
+    <string name="permissions_title">Permissions</string>
+    <string name="permissions_all_granted">All granted</string>
+    <plurals name="permissions_missing">
+        <item quantity="one">%d not granted</item>
+        <item quantity="other">%d not granted</item>
+    </plurals>
+    <string name="permission_granted">Granted</string>
+    <string name="permission_not_granted">Not granted</string>
+    <string name="permission_required">Required</string>
+    <string name="permission_recommended">Recommended</string>
+    <string name="permission_optional">Optional</string>
+
+    <!-- connection screen -->
+    <string name="settings_connection">Connection</string>
+    <string name="connection_title">Connection</string>
+    <string name="connection_section_status">STATUS</string>
+    <string name="connection_section_options">OPTIONS</string>
+    <string name="connection_state">State</string>
+    <string name="connection_mac">Mac</string>
+    <string name="connection_address">Last address</string>
+    <string name="connection_auto">Reconnect automatically</string>
+    <string name="connection_auto_note">Whenever the Mac is reachable on this Wi-Fi.</string>
+    <string name="connection_now">Connect now</string>
+    <string name="connection_summary_auto">%1$s · automatic</string>
+    <string name="connection_summary_manual">%1$s · manual</string>
+
+    <!-- sync switches -->
+    <string name="sync_battery">Battery</string>
+    <string name="sync_clipboard">Clipboard</string>
+    <string name="sync_notifications">Notifications</string>
+    <string name="sync_media">Media</string>
+
+    <!-- settings entries -->
+    <string name="settings_notifications">Notification settings</string>
+    <string name="settings_clipboard">Clipboard settings</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_updates">Updates</string>
+    <string name="updates_summary_off">Off</string>
+    <string name="update_card_title">Update available</string>
+    <string name="update_card_body">AndroMac %1$s · tap to install</string>
+
+    <!-- Updates screen -->
+    <string name="update_title">Updates</string>
+    <string name="update_section_check">CHECK</string>
+    <string name="update_check">Check for updates</string>
+    <string name="update_check_note">Asks api.github.com once a day for the newest release, sending the app version and nothing else. The download is checked against the checksum published with the release before it is installed.</string>
+    <string name="update_check_now">Check now</string>
+    <string name="update_status_never">Never checked</string>
+    <string name="update_status_checking">Checking…</string>
+    <string name="update_status_uptodate">Up to date · checked %1$s</string>
+    <string name="update_status_available">%1$s available · checked %2$s</string>
+    <string name="update_status_error">Could not reach GitHub · %1$s</string>
+    <string name="update_download">Download %1$s</string>
+    <string name="update_install">Install %1$s</string>
+    <string name="update_downloading">Downloading…</string>
+    <string name="update_verifying">Checking the download…</string>
+    <string name="update_installing">Waiting for the install to be confirmed…</string>
+    <string name="update_install_failed">Update failed · %1$s</string>
+    <string name="update_available_title">AndroMac %1$s is available</string>
+    <string name="update_available_body">AndroMac can download and install it now.</string>
+    <string name="update_available_page">The release page has the download.</string>
+    <string name="update_install_now">Install now</string>
+    <string name="update_open_page">Open the release page</string>
+    <string name="update_later">Later</string>
+    <string name="update_skip">Skip this version</string>
+    <string name="language_system">System</string>
+
+    <string name="settings_files">File transfer</string>
+    <string name="file_summary_off">Off</string>
+    <string name="file_summary_ask">Ask before saving</string>
+    <string name="file_summary_auto">Accept automatically</string>
+
+    <!-- File transfer screen and notifications -->
+    <string name="file_title">File transfer</string>
+    <string name="file_intro">Files go to Downloads. Auto-accept applies only to your paired Mac.</string>
+    <string name="file_section">RECEIVING</string>
+    <string name="file_enable">Receive files from the Mac</string>
+    <string name="file_enable_note">Also shows “Send to Mac” in the share sheet.</string>
+    <string name="file_auto_accept">Accept files automatically</string>
+    <string name="file_auto_accept_note">Save without asking. Off by default.</string>
+    <string name="share_target">Send to Mac</string>
+    <string name="file_channel">File transfers</string>
+    <string name="file_channel_desc">Incoming file offers, progress, and received files</string>
+    <string name="file_offer_title">%1$s wants to send a file</string>
+    <string name="file_accept">Accept</string>
+    <string name="file_decline">Decline</string>
+    <string name="file_cancel">Cancel</string>
+    <string name="file_receiving">Receiving %1$s</string>
+    <string name="file_sending">Sending %1$s</string>
+    <string name="file_received">File received</string>
+    <string name="file_received_tap">Tap to open</string>
+    <string name="file_sent">Sent to your Mac</string>
+    <string name="file_declined">Declined on the Mac</string>
+    <string name="file_failed_send">Could not send</string>
+    <string name="file_failed_receive">Could not receive</string>
+    <string name="file_not_connected">Not connected to %1$s</string>
+    <string name="file_disabled">File transfer is off in Settings</string>
+    <string name="file_none_queued">Nothing to send</string>
+    <plurals name="file_queued">
+        <item quantity="one">Sending %d file to your Mac</item>
+        <item quantity="other">Sending %d files to your Mac</item>
+    </plurals>
+    <string name="file_dropped">Up to 50 files at a time; %1$d skipped</string>
+
+
+    <!-- notification settings screen -->
+    <string name="notif_title">Notification settings</string>
+    <string name="notif_intro">Notifications are filtered on the phone. The radio never wakes for a notification that is not sent.</string>
+    <string name="notif_section_apps">APPS</string>
+    <string name="notif_section_which">WHICH NOTIFICATIONS</string>
+    <string name="notif_always_filtered">Group summaries, ongoing notifications and foreground services are always filtered out; on the Mac they would only produce duplicates or noise.</string>
+    <string name="sync_silent">Silent notifications</string>
+    <string name="silent_note">Low priority notifications that make no sound or banner on the phone either.</string>
+    <string name="only_when_locked">Only while the phone is locked</string>
+    <string name="only_when_locked_note">Notifications that arrive while you are using the phone are not sent to the Mac.</string>
+
+    <!-- clipboard settings screen -->
+    <string name="clip_title">Clipboard settings</string>
+    <string name="clip_section_incoming">MAC TO PHONE</string>
+    <string name="clip_section_outgoing">PHONE TO MAC</string>
+    <string name="clip_section_send">SEND NOW</string>
+    <string name="clip_auto_paste">Write to the clipboard</string>
+    <string name="clip_auto_paste_note">Text you copy on the Mac goes straight into the phone\'s clipboard.</string>
+    <string name="clip_notify">Show a notification</string>
+    <string name="clip_notify_note">Show incoming text in a notification; tapping it writes to the clipboard.</string>
+    <string name="clip_sensitive">Never send sensitive content</string>
+    <string name="clip_sensitive_note">Clipboards marked sensitive by password managers and OTP fields do not reach the Mac.</string>
+    <string name="clip_send_now">Send clipboard to Mac</string>
+    <string name="clip_send_ready">Tap to read and send the clipboard</string>
+    <string name="clip_send_offline">Mac not connected</string>
+    <string name="clip_limitation">Faster: add the "Send clipboard to Mac" tile to Quick Settings, or use Share → AndroMac.</string>
+
+    <!-- app filter -->
+    <string name="apps_button">App filter</string>
+    <string name="apps_title">App filter</string>
+    <string name="apps_forget">Reset the list</string>
+    <string name="apps_forget_confirm">The app list and all of your tier choices are deleted. Apps come back to the list as they send new notifications.</string>
+    <string name="apps_empty">No app has sent a notification yet.\n\nOnce notification access is granted, incoming notifications are listed here and you set their tiers from here.</string>
+    <string name="apps_summary_empty">No apps yet</string>
+    <string name="mode_off">Off</string>
+    <string name="mode_title_only">Title only</string>
+    <string name="mode_full">Full</string>
+
+    <plurals name="apps_hint">
+        <item quantity="one">%d app has sent a notification. Tap one to pick a tier: Full, Title only (content never leaves the phone) or Off.</item>
+        <item quantity="other">%d apps have sent notifications. Tap one to pick a tier: Full, Title only (content never leaves the phone) or Off.</item>
+    </plurals>
+
+    <plurals name="apps_summary">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d apps</item>
+    </plurals>
+    <string name="apps_summary_limited" tools:ignore="PluralsCandidate">%1$d apps · %2$d limited</string>
+
+    <!-- pairing -->
+    <string name="pairing_title">Pairing code</string>
+    <string name="pairing_question">Does it match the code on your Mac? If it differs, REJECT — someone may be in the middle.</string>
+    <string name="pairing_reject">Reject</string>
+    <string name="pairing_review">Compare the code</string>
+    <string name="key_changed_title">Key changed</string>
+    <string name="key_changed_body">%1$s is presenting a different key than the one we saved.\n\nThat is normal if you reinstalled the app on your Mac. Otherwise someone may be in the middle.</string>
+    <string name="key_changed_reset">Reset pairing</string>
+
+    <!-- find my phone -->
+    <string name="find_channel">Find my phone</string>
+    <string name="find_title">Locating your phone</string>
+    <string name="find_text">Requested from your Mac</string>
+    <string name="find_stop">Found it</string>
+
+    <!-- service -->
+    <string name="tile_clip">Send clipboard to Mac</string>
+    <string name="notif_listener_label">AndroMac notification mirror</string>
+    <string name="version_footer">AndroMac %1$s</string>
+
+    <!-- foreground service notification -->
+    <string name="channel_status">Connection status</string>
+    <string name="channel_test">Test notification</string>
+    <string name="fgs_starting">Starting…</string>
+    <string name="fgs_no_pair">No paired Mac</string>
+    <string name="fgs_key_changed">WARNING: the Mac key changed</string>
+    <string name="fgs_waiting">Waiting for approval: %1$s</string>
+    <string name="fgs_connected">%1$s connected</string>
+
+    <!-- clipboard bridge -->
+    <string name="clip_incoming_title">Mac clipboard</string>
+    <string name="clip_paste_action">Paste to clipboard</string>
+    <string name="clip_request_title">Your Mac asked for the clipboard</string>
+    <string name="clip_request_body">Android only lets AndroMac read the clipboard while it is on screen. Tap to send it.</string>
+    <string name="clip_request_action">Send clipboard</string>
+    <string name="test_notification_title">AndroMac test</string>
+    <string name="test_notification_body">If this reaches your Mac, notification mirroring works.</string>
+    <string name="clip_sent">Sent to your Mac</string>
+    <string name="clip_sent_from_clipboard">Clipboard sent to your Mac</string>
+    <string name="clip_pasted">Copied to the clipboard</string>
+    <string name="clip_offline">Mac not connected</string>
+    <string name="tile_sub_ready">Send to Mac</string>
+
+    <!-- main screen details -->
+    <string name="pair_code">Code: %1$s</string>
+    <string name="key_changed_tap">Tap to review</string>
+    <string name="key_changed_review">Review</string>
+    <string name="clip_summary_auto">auto paste</string>
+    <string name="clip_summary_notify_only">notification only</string>
+    <string name="clip_summary_sensitive">sensitive content protected</string>
+
+    <!-- help screen diagnostics -->
+    <string name="diag_ip">Phone IP</string>
+    <string name="diag_subnet">Subnet</string>
+    <string name="diag_mac_seen">Mac seen</string>
+    <string name="diag_pairing">Pairing</string>
+    <string name="diag_link">Link</string>
+    <string name="diag_version">Version</string>
+    <string name="diag_no_network">no local network</string>
+    <string name="diag_yes">yes</string>
+    <string name="diag_no">no</string>
+    <string name="diag_none">none</string>
+    <string name="diag_up">up</string>
+</resources>

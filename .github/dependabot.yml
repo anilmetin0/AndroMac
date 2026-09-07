@@ -1,0 +1,17 @@
+# Keeps the CI actions and the Gradle plugins current. The apps have no runtime dependencies,
+# so this is the whole supply chain: the workflow actions, AGP, the Kotlin plugin, and the
+# org.json copy the vectors module needs on a plain JVM.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"
+  - package-ecosystem: gradle
+    directory: /android
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "build(android)"

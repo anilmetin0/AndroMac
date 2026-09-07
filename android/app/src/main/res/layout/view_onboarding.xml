@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The connection guide. Visible only while unpaired.
+
+    Design decision: telling the user "cannot connect" does not help them. Every step shows
+    its LIVE state, so which step is stuck can be read at a glance.
+-->
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView style="@style/SectionLabel" android:text="@string/onboarding_title" />
+
+    <LinearLayout style="@style/Card" android:paddingTop="8dp" android:paddingBottom="8dp">
+
+        <LinearLayout style="@style/Row" android:background="@null" android:minHeight="52dp">
+            <ImageView
+                android:id="@+id/step1Icon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_marginEnd="14dp"
+                android:src="@drawable/ic_step_pending"
+                android:contentDescription="@null" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView style="@style/RowTitle" android:textSize="15sp" android:text="@string/onboarding_step1" />
+                <TextView android:id="@+id/step1Status" style="@style/RowSubtitle" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout style="@style/Row" android:background="@null" android:minHeight="52dp">
+            <ImageView
+                android:id="@+id/step2Icon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_marginEnd="14dp"
+                android:src="@drawable/ic_step_pending"
+                android:contentDescription="@null" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView style="@style/RowTitle" android:textSize="15sp" android:text="@string/onboarding_step2" />
+                <TextView android:id="@+id/step2Status" style="@style/RowSubtitle" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout style="@style/Row" android:background="@null" android:minHeight="52dp">
+            <ImageView
+                android:id="@+id/step3Icon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_marginEnd="14dp"
+                android:src="@drawable/ic_step_pending"
+                android:contentDescription="@null" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView style="@style/RowTitle" android:textSize="15sp" android:text="@string/onboarding_step3" />
+                <TextView android:id="@+id/step3Status" style="@style/RowSubtitle" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/rowHelp" style="@style/Row" android:minHeight="52dp">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_marginEnd="14dp"
+                android:src="@drawable/ic_help"
+                android:contentDescription="@null" />
+            <TextView
+                style="@style/RowTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:textSize="15sp"
+                android:text="@string/onboarding_help" />
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_chevron"
+                android:contentDescription="@null" />
+        </LinearLayout>
+    </LinearLayout>
+</merge>
