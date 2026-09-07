@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Local socket only. The app never connects to an internet address; discovery is link-local mDNS. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- mDNS multicast lock (Discovery.kt) -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- "Find phone": vibration alongside the alarm sound (FindPhone.kt) -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!--
+        In-app updates (feature/Updater.kt): the app downloads the release APK, checks it against
+        the checksum published with the release and opens the system's install dialog. The user
+        confirms it there, and the system still enforces the signature.
+    -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!--
+        API 30+ package visibility: by default we cannot read another app's label or icon (on
+        a LinkedIn notification the label fell back to the package name). Instead of
+        QUERY_ALL_PACKAGES we query only the apps visible in the launcher — almost every app
+        that posts notifications is in that set, and this permission does not trip the Play
+        Store restriction.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:localeConfig="@xml/locales_config"
+        tools:targetApi="33"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.HelpActivity"
+            android:exported="false"
+            android:label="@string/help_title" />
+
+        <activity
+            android:name=".ui.NotificationSettingsActivity"
+            android:exported="false"
+            android:label="@string/notif_title" />
+
+        <activity
+            android:name=".ui.ClipboardSettingsActivity"
+            android:exported="false"
+            android:label="@string/clip_title" />
+
+        <activity
+            android:name=".ui.UpdateSettingsActivity"
+            android:exported="false"
+            android:label="@string/update_title" />
+
+        <activity
+            android:name=".ui.AppsActivity"
+            android:exported="false"
+            android:label="@string/apps_title" />
+
+        <activity
+            android:name=".ui.FileSettingsActivity"
+            android:exported="false"
+            android:label="@string/file_title" />
+
+        <!--
+            The share-sheet target ("Send to Mac"). The only exported entry point: text goes
+            out as a clipboard message, streams are queued as file transfers. It reads only
+            what the intent carries; the clipboard read/write modes stay in ClipHelperActivity
+            (exported=false), otherwise any app could ship the clipboard to the Mac.
+        -->
+        <activity
+            android:name=".ui.ShareActivity"
+            android:exported="true"
+            android:label="@string/share_target"
+            android:theme="@style/TransparentTheme"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity="">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity>
+
+        <!-- Invisible helper: reading and writing the clipboard requires focus (see
+             ClipboardBridge). Only our own PendingIntents and our tile invoke it. -->
+        <activity
+            android:name=".ui.ClipHelperActivity"
+            android:exported="false"
+            android:theme="@style/TransparentTheme"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:launchMode="singleTask" />
+
+        <service
+            android:name=".net.LinkService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
+
+        <service
+            android:name=".feature.NotificationRelay"
+            android:exported="false"
+            android:label="@string/notif_listener_label"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+            <!--
+                No default_filter_types: declaring "conversations|alerting" made the system
+                withhold silent notifications from the listener entirely, so the in-app
+                "Silent notifications" switch could never do anything. The filtering happens
+                in NotificationRelay.send(), by channel importance, where the switch reaches it.
+            -->
+        </service>
+
+        <service
+            android:name=".feature.ClipTile"
+            android:exported="true"
+            android:icon="@drawable/ic_clipboard"
+            android:label="@string/tile_clip"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <!-- The "Found it" action and the notification swipe-away. Only our own PendingIntent. -->
+        <receiver
+            android:name=".feature.FindPhoneStopReceiver"
+            android:exported="false" />
+
+        <!-- Accept / Decline / Cancel on the file transfer notifications. Only our own PendingIntent. -->
+        <receiver
+            android:name=".feature.FileActionReceiver"
+            android:exported="false" />
+
+        <!-- Where the package installer reports the result of an in-app update. Ours alone. -->
+        <receiver
+            android:name=".feature.Updater$InstallReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="dev.andromac.INSTALLED" />
+            </intent-filter>
+        </receiver>
+
+        <!--
+            Restart the link after a reboot and after our own APK is replaced. Without
+            MY_PACKAGE_REPLACED an update leaves the phone disconnected until the user reopens
+            the app, and the Mac shows "Waiting for phone" forever. Both are protected broadcasts.
+        -->
+        <receiver
+            android:name=".net.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

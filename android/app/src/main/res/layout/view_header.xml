@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Our own header. Under the mandatory edge-to-edge of targetSdk 35+ the framework ActionBar
+    does not push itself below the status bar and ended up overlapping the content; drawing
+    the header ourselves lets the top inset be applied as padding on the root ScrollView
+    (ui/Insets.kt).
+
+    Alignment: the row starts 8dp in, so the 24dp icon of the 48dp back button lands exactly
+    on 20dp — the left edge of the cards. The title carries a 12dp margin; with the back
+    button hidden the title also sits at 20dp, in line with the cards.
+-->
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
+
+        <ImageButton
+            android:id="@+id/headerBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_back"
+            android:scaleType="center"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back" />
+
+        <TextView
+            android:id="@+id/headerTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="?android:attr/textColorPrimary"
+            android:ellipsize="end"
+            android:maxLines="1" />
+
+        <ImageButton
+            android:id="@+id/headerAction"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_more"
+            android:scaleType="center"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/more"
+            android:visibility="gone" />
+    </LinearLayout>
+</merge>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The permission banner's marker: a filled triangle, so it reads as a warning at a glance
+     without borrowing the alert colour twice. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp" android:height="22dp"
+    android:viewportWidth="24" android:viewportHeight="24"
+    android:tint="@color/am_state_alert">
+    <path android:fillColor="@android:color/white"
+        android:pathData="M12,2.6 a1.7,1.7 0 0 1 1.5,0.9 l8.2,15.1 a1.7,1.7 0 0 1 -1.5,2.5 L3.8,21.1 a1.7,1.7 0 0 1 -1.5,-2.5 L10.5,3.5 A1.7,1.7 0 0 1 12,2.6 Z
+                          M11,8.4 l0,5.6 a1,1 0 0 0 2,0 L13,8.4 a1,1 0 0 0 -2,0 Z
+                          M12,16.3 a1.2,1.2 0 1 0 0,2.4 a1.2,1.2 0 0 0 0,-2.4 Z"
+        android:fillType="evenOdd" />
+</vector>

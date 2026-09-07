@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Material You (Dynamic Color), light theme — Android 12+.
+
+    The system derives a palette from the wallpaper and publishes it as `@android:color/
+    system_*`. Using those directly makes the app match the device's own colour without
+    pulling in AndroidX; adopting the user's theme beats looking "branded".
+
+    The tone choices follow the Material 3 scheme: surface neutral-0 (white), background
+    neutral-10, text neutral-900, accent accent1-600.
+-->
+<resources>
+    <color name="am_background">@android:color/system_neutral1_10</color>
+    <color name="am_surface">@android:color/system_neutral1_0</color>
+    <color name="am_accent">@android:color/system_accent1_600</color>
+    <color name="am_on_accent">@android:color/system_accent1_0</color>
+    <color name="am_on_surface">@android:color/system_neutral1_900</color>
+    <color name="am_on_surface_variant">@android:color/system_neutral2_700</color>
+</resources>

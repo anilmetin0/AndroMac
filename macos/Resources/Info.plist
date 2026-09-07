@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>AndroMac</string>
+	<key>CFBundleExecutable</key>
+	<string>AndroMac</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIdentifier</key>
+	<string>dev.andromac</string>
+	<key>CFBundleName</key>
+	<string>AndroMac</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>AndroMacCommit</key>
+	<string>local</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_andromac._tcp</string>
+	</array>
+	<key>NSHumanReadableCopyright</key>
+	<string>MIT licence · github.com/anilmetin0/AndroMac</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>To find your Android phone on this network and connect to it.</string>
+</dict>
+</plist>

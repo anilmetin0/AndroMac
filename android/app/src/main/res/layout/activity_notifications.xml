@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbarStyle="outsideOverlay"
+    android:clipToPadding="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
+
+        <include layout="@layout/view_header" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="12dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="20dp"
+            android:textSize="13sp"
+            android:lineSpacingMultiplier="1.3"
+            android:textColor="?android:attr/textColorSecondary"
+            android:text="@string/notif_intro" />
+
+        <TextView style="@style/SectionLabel" android:text="@string/notif_section_apps" />
+
+        <LinearLayout style="@style/Card">
+
+            <LinearLayout android:id="@+id/rowAppFilter" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/apps_button" />
+                    <TextView android:id="@+id/appFilterSummary" style="@style/RowSubtitle" />
+                </LinearLayout>
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="12dp"
+                    android:src="@drawable/ic_chevron"
+                    android:contentDescription="@null" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView style="@style/SectionLabel" android:text="@string/notif_section_which" />
+
+        <LinearLayout style="@style/Card">
+
+            <LinearLayout android:id="@+id/rowSilent" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/sync_silent" />
+                    <TextView style="@style/RowSubtitle" android:text="@string/silent_note" />
+                </LinearLayout>
+                <Switch android:id="@+id/swSilent" style="@style/RowSwitch" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/rowOnlyLocked" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/only_when_locked" />
+                    <TextView style="@style/RowSubtitle" android:text="@string/only_when_locked_note" />
+                </LinearLayout>
+                <Switch android:id="@+id/swOnlyLocked" style="@style/RowSwitch" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:textSize="12sp"
+            android:lineSpacingMultiplier="1.3"
+            android:textColor="?android:attr/textColorSecondary"
+            android:text="@string/notif_always_filtered" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

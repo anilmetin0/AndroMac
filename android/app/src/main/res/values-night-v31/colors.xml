@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material You, dark theme — Android 12+. The surface is one tone lighter than the background. -->
+<resources>
+    <color name="am_background">@android:color/system_neutral1_900</color>
+    <color name="am_surface">@android:color/system_neutral1_800</color>
+    <color name="am_accent">@android:color/system_accent1_200</color>
+    <color name="am_on_accent">@android:color/system_accent1_900</color>
+    <color name="am_on_surface">@android:color/system_neutral1_50</color>
+    <color name="am_on_surface_variant">@android:color/system_neutral2_200</color>
+</resources>

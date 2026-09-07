@@ -1,0 +1,53 @@
+name: Feature request
+description: Suggest something AndroMac should do.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Deliberately out of scope: SMS, call control, more than one Mac, and access over the internet. Requests for those will be closed.
+
+        The energy contract in [docs/ENERGY.md](https://github.com/anilmetin0/AndroMac/blob/main/docs/ENERGY.md) also constrains what can be added: nothing may introduce a periodic timer, polling or a wakelock on the phone.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you are trying to do today, and why it does not work.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like AndroMac to do
+    validations:
+      required: true
+
+  - type: dropdown
+    id: direction
+    attributes:
+      label: Direction
+      options:
+        - Phone to Mac
+        - Mac to phone
+        - Both
+        - Neither / not a sync feature
+    validations:
+      required: true
+
+  - type: textarea
+    id: energy
+    attributes:
+      label: Energy cost
+      description: |
+        Would this need the phone to wake up on a schedule, poll, or hold a wakelock? If so, say why the cost is worth it, or how the Mac could carry the work instead.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+    validations:
+      required: false
