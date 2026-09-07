@@ -1,0 +1,4 @@
+/* Info.plist metinlerinin Türkçesi. macOS sistem izin diyaloglarında bunu gösterir. */
+
+"NSHumanReadableCopyright" = "Yerel ağ senkronizasyonu. Veri dışarı çıkmaz.";
+"NSLocalNetworkUsageDescription" = "Android telefonunu yerel ağda bulmak ve ona bağlanmak için. Veri bu ağdan dışarı çıkmaz.";

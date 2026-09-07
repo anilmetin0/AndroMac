@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Status bar icon: the launcher silhouette (phone + laptop) reduced to a 24dp canvas, white
+    alpha only; the system tints it. Bezels are 1.2dp so the shapes stay crisp at 1x.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#FFFFFF">
+    <!-- phone -->
+    <path
+        android:fillColor="@android:color/white"
+        android:fillType="evenOdd"
+        android:pathData="M4.2,5 h3.6 a1.2,1.2 0 0 1 1.2,1.2 v11.6 a1.2,1.2 0 0 1 -1.2,1.2 h-3.6 a1.2,1.2 0 0 1 -1.2,-1.2 v-11.6 a1.2,1.2 0 0 1 1.2,-1.2 Z
+                          M4.2,7 h3.6 v10 h-3.6 Z" />
+    <!-- laptop screen -->
+    <path
+        android:fillColor="@android:color/white"
+        android:fillType="evenOdd"
+        android:pathData="M12,6.5 h8 a1,1 0 0 1 1,1 v6 a1,1 0 0 1 -1,1 h-8 a1,1 0 0 1 -1,-1 v-6 a1,1 0 0 1 1,-1 Z
+                          M12.2,7.7 h7.6 v5.6 h-7.6 Z" />
+    <!-- laptop base -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M10.75,15.5 h10.5 a0.75,0.75 0 0 1 0,1.5 h-10.5 a0.75,0.75 0 0 1 0,-1.5 Z" />
+</vector>

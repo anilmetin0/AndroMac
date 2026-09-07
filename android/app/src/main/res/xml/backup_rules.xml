@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The Android 11 and below counterpart (see data_extraction_rules.xml). On those versions
+    allowBackup="false" already disables backup entirely; this file makes the intent explicit,
+    and if the flag is ever turned on, the prefs holding the identity key stay excluded.
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" path="." />
+</full-backup-content>
