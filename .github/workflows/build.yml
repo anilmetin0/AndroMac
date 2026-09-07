@@ -1,0 +1,256 @@
+# Every push and pull request: crypto + handshake verification, unit tests, localization check,
+# Homebrew cask lint, macOS .app and Android APK builds.
+#
+# Pushes to main additionally publish ONE rolling release for the version in the VERSION file:
+#   • the tag "v<VERSION>" is re-pointed at HEAD (release and tag deleted, then recreated), titled
+#     "AndroMac <VERSION> (<commit>)", with assets AndroMac-<VERSION>-<commit>-macOS.zip,
+#     AndroMac-<VERSION>-<commit>.apk and SHA256SUMS.txt;
+#   • the notes are the "## <VERSION>" sections of CHANGELOG.md and CHANGELOG.tr.md plus the
+#     commits since the previous build of that version;
+#   • the apps report version <VERSION>, build = run number (the Android versionCode), commit sha.
+# Raising VERSION leaves the old release where it is and starts a new rolling one.
+#
+# See docs/RELEASING.md for the whole picture.
+name: build
+
+on:
+  push:
+    branches: ["**"]
+    tags-ignore: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+# Read-only by default; only the release job may write (tags, releases).
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: "25"
+  ANDROID_PACKAGES: "platforms;android-37.0 build-tools;36.0.0"
+
+jobs:
+  version:
+    runs-on: ubuntu-26.04
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      build: ${{ steps.v.outputs.build }}
+      commit: ${{ steps.v.outputs.commit }}
+      previous: ${{ steps.v.outputs.previous }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      # "previous" is the commit the tag v<VERSION> pointed at before this run (empty on the
+      # first build of a version); the release notes list the commits since then.
+      - id: v
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::VERSION must be MAJOR.MINOR.PATCH, got '$version'"; exit 1; }
+          previous="$(git rev-parse -q --verify "refs/tags/v$version^{commit}" 2>/dev/null || true)"
+          {
+            echo "version=$version"
+            echo "build=$GITHUB_RUN_NUMBER"
+            echo "commit=${GITHUB_SHA::7}"
+            echo "previous=$previous"
+          } >> "$GITHUB_OUTPUT"
+          echo "Version $version (build $GITHUB_RUN_NUMBER, commit ${GITHUB_SHA::7}, previous build of v$version: ${previous:-none})"
+
+  macos:
+    name: macOS · verify + .app
+    needs: version
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Newest Xcode
+        run: |
+          latest="$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
+          sudo xcode-select -s "$latest"
+          swift --version
+
+      # The verification scripts run the Kotlin side through Gradle; AGP needs an
+      # Android SDK at configuration time even though the vectors module is plain JVM.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: ${{ env.ANDROID_PACKAGES }}
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Crypto vectors (CryptoKit vs JCE)
+        run: ./verify-crypto.sh
+
+      - name: Handshake (real Session code over loopback)
+        run: ./verify-handshake.sh
+
+      - name: Unit tests (Swift Testing)
+        working-directory: macos
+        run: swift test
+
+      # The cask must stay installable; brew style catches a broken stanza before a user does.
+      - name: Homebrew cask
+        run: brew style Casks/*.rb
+
+      # Every .lproj must be complete; a missing key means a translation PR is unfinished.
+      - name: Localization files complete
+        run: macos/scripts/update-strings.sh --check
+
+      - name: AndroMac.app
+        working-directory: macos
+        env:
+          ANDROMAC_VERSION: ${{ needs.version.outputs.version }}
+          ANDROMAC_BUILD: ${{ needs.version.outputs.build }}
+          ANDROMAC_COMMIT: ${{ needs.version.outputs.commit }}
+        run: ./build.sh
+
+      - name: Package
+        working-directory: macos/build
+        run: |
+          codesign --verify --verbose=2 AndroMac.app
+          ditto -c -k --keepParent AndroMac.app "AndroMac-${{ needs.version.outputs.version }}-${{ needs.version.outputs.commit }}-macOS.zip"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: macos
+          path: macos/build/AndroMac-*-macOS.zip
+          if-no-files-found: error
+
+  android:
+    name: Android · APK
+    needs: version
+    runs-on: ubuntu-26.04
+    outputs:
+      signing: ${{ steps.sign.outputs.signing }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: ${{ env.ANDROID_PACKAGES }}
+      - uses: gradle/actions/setup-gradle@v6
+
+      # Signed with the release keystore from the repository secrets when present, otherwise
+      # with the runner's debug key (installable, but not upgradable across builds —
+      # run scripts/setup-android-signing.sh once to fix that).
+      - name: Signing key
+        id: sign
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+            echo "signing=release" >> "$GITHUB_OUTPUT"
+          else
+            echo "signing=debug" >> "$GITHUB_OUTPUT"
+            echo "::warning::ANDROID_KEYSTORE_BASE64 is not set; the APK is signed with a debug key"
+          fi
+
+      # The app's Android-free logic on a plain JVM: version ordering, the release lookup.
+      - name: Unit tests (JVM)
+        working-directory: android
+        run: ./gradlew --no-daemon --console=plain :vectors:test
+
+      - name: APK
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          ./gradlew --no-daemon --console=plain :app:assembleRelease \
+            -PandromacVersion="${{ needs.version.outputs.version }}" \
+            -PandromacBuild="${{ needs.version.outputs.build }}" \
+            -PandromacCommit="${{ needs.version.outputs.commit }}"
+          cp app/build/outputs/apk/release/app-release.apk \
+             "app/build/outputs/apk/release/AndroMac-${{ needs.version.outputs.version }}-${{ needs.version.outputs.commit }}.apk"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: android
+          path: android/app/build/outputs/apk/release/AndroMac-*.apk
+          if-no-files-found: error
+
+  release:
+    name: GitHub Release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [version, macos, android]
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ needs.version.outputs.version }}
+      BUILD: ${{ needs.version.outputs.build }}
+      COMMIT: ${{ needs.version.outputs.commit }}
+      PREVIOUS: ${{ needs.version.outputs.previous }}
+      SIGNING: ${{ needs.android.outputs.signing }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Checksums
+        working-directory: dist
+        run: sha256sum * > SHA256SUMS.txt
+
+      # The "## <version>" section of CHANGELOG.md, the Turkish one folded below it, then the
+      # commits since the previous build of this version.
+      - name: Release notes
+        run: |
+          section() { awk -v v="$2" '/^## /{p = ($2 == v)} p && !/^## /' "$1" | sed -e '1{/^$/d;}'; }
+          en="$(section CHANGELOG.md "$VERSION")"
+          tr="$(section CHANGELOG.tr.md "$VERSION")"
+          [ -n "$en" ] || { echo "::error::CHANGELOG.md has no '## $VERSION' section"; exit 1; }
+          [ -n "$tr" ] || { echo "::error::CHANGELOG.tr.md has no '## $VERSION' section"; exit 1; }
+          {
+            echo "## What's new"
+            echo
+            echo "$en"
+            echo
+            echo "<details>"
+            echo "<summary><b>Türkçe</b></summary>"
+            echo
+            echo "## Yenilikler"
+            echo
+            echo "$tr"
+            echo
+            echo "</details>"
+            echo
+            echo "## Changes in this build"
+            echo
+            if [ -n "$PREVIOUS" ]; then
+              git log --no-merges --format='- %s (%h)' "${PREVIOUS}..HEAD" | head -50
+            else
+              echo "First build of ${VERSION}."
+            fi
+            echo
+            echo "**Install:** see the [README](https://github.com/${GITHUB_REPOSITORY}#install) · "
+            echo "**Kurulum:** [README.tr](https://github.com/${GITHUB_REPOSITORY}/blob/main/README.tr.md#kurulum)"
+            echo
+            echo "<sub>Build ${BUILD} · commit ${COMMIT} · APK signing: ${SIGNING} · checksums in SHA256SUMS.txt</sub>"
+          } > notes.md
+
+      # One rolling release per version: the tag moves to HEAD on every push to main.
+      - name: Publish release
+        run: |
+          gh release delete "v${VERSION}" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "v${VERSION}" \
+            --target "$GITHUB_SHA" \
+            --latest \
+            --title "AndroMac ${VERSION} (${COMMIT})" \
+            --notes-file notes.md \
+            dist/*

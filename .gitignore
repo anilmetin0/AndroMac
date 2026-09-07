@@ -1,0 +1,20 @@
+.DS_Store
+build/
+.build/
+.gradle/
+.kotlin/
+local.properties
+*.iml
+.idea/
+.claude/
+.swiftpm/
+
+# Signing material never enters the repository
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+
+# Local tool output, never part of the project
+graphify-out/
+.code-review-graph/

@@ -1,0 +1,94 @@
+name: Bug report
+description: Something does not work the way it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not report a security vulnerability here. Use private reporting instead: [Security Advisories](https://github.com/anilmetin0/AndroMac/security/advisories/new). See [SECURITY.md](https://github.com/anilmetin0/AndroMac/blob/main/SECURITY.md).
+
+  - type: input
+    id: version
+    attributes:
+      label: AndroMac version
+      description: Shown at the bottom of the phone's main screen and in Settings → Devices on the Mac. Paste the whole string, commit included.
+      placeholder: 1.0.0 (42 · abc1234)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: side
+    attributes:
+      label: Which side shows the problem
+      options:
+        - Android
+        - macOS
+        - Both
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version and Mac model
+      placeholder: macOS 15.6, MacBook Air M2
+    validations:
+      required: false
+
+  - type: input
+    id: android
+    attributes:
+      label: Android version and phone model
+      placeholder: Android 15, Pixel 9
+    validations:
+      required: false
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you expected, and what happened instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Pair both devices.
+        2. Copy text on the Mac.
+        3. The phone does not receive it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Connection diagnostics
+      description: |
+        For connection problems, paste the phone's **Can't connect** screen, or the Mac's Settings → Network panel. Redact anything you do not want public.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        `adb logcat -s AndroMac` on the phone, `log stream --predicate 'senderImagePath CONTAINS "AndroMac"'` on the Mac. The logs carry no message content.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: Both devices are on the same Wi-Fi network, with AP isolation off.
+          required: true
+        - label: I searched the existing issues.
+          required: true

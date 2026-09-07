@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Launcher icon foreground: two opposing arrows — out and back. That is the whole app in one
+    picture: two devices, both directions, nothing else. The same drawing is rendered by
+    macos/Resources/make-icon.swift for the Mac icon, from the same coordinates.
+
+    108dp canvas. The safe zone of an adaptive icon is the centred 66dp circle (radius 33); every
+    point of this drawing lies inside it, so no mask shape (circle, squircle, teardrop) clips the
+    arrows. The 10dp shafts are what keeps the pair readable at launcher size.
+
+    Each arrow is ONE closed outline — rounded tail, straight shaft, triangular head — rather than
+    a pill overlapping a triangle, which renders the cap's edge as a seam through the head.
+
+    The <monochrome> layer for Android 13+ themed icons uses the same drawable: the system tints
+    by alpha, so the shapes carry over and the colours drop out.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- out to the phone -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M34,37 L62,37 L62,29 L79,42 L62,55 L62,47 L34,47 a5,5 0 0 1 0,-10 Z" />
+
+    <!-- back to the Mac -->
+    <path
+        android:fillColor="#FF74E4CE"
+        android:pathData="M74,61 L46,61 L46,53 L29,66 L46,79 L46,71 L74,71 a5,5 0 0 0 0,-10 Z" />
+</vector>

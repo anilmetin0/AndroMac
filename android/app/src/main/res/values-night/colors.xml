@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dark theme, the static fallback. Not an inversion: the surface is LIGHTER than the
+     background, so card elevation is expressed through tone (Material's tonal elevation)
+     rather than through a shadow. -->
+<resources>
+    <color name="am_background">#FF101317</color>
+    <color name="am_surface">#FF1B1F26</color>
+    <color name="am_accent">#FF9EC6F5</color>
+    <color name="am_on_accent">#FF10151C</color>
+    <color name="am_on_surface">#FFE6E9EE</color>
+    <color name="am_on_surface_variant">#FFA3AAB6</color>
+
+    <color name="am_state_ok">#FF4ADE80</color>
+    <color name="am_state_pending">#FFFBBF4A</color>
+    <color name="am_state_alert">#FFFF6B61</color>
+    <color name="am_state_idle">#FF7C8590</color>
+</resources>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Light theme, the static fallback palette.
+
+    On Android 12+ devices values-v31 overrides this with the Material You system colours, so
+    the app picks up the user's wallpaper palette. AndroidX is not needed — the platform has
+    exposed the `@android:color/system_*` resources directly since API 31.
+-->
+<resources>
+    <color name="am_background">#FFF7F8FA</color>
+    <color name="am_surface">#FFFFFFFF</color>
+    <color name="am_accent">#FF2C5F9E</color>
+    <color name="am_on_accent">#FFFFFFFF</color>
+    <color name="am_on_surface">#FF14181F</color>
+    <color name="am_on_surface_variant">#FF515A66</color>
+
+    <!-- The status colours are semantic and do not change with the theme; only their brightness is adapted. -->
+    <color name="am_state_ok">#FF1E9E4A</color>
+    <color name="am_state_pending">#FFB8730A</color>
+    <color name="am_state_alert">#FFC4322B</color>
+    <color name="am_state_idle">#FF8A929E</color>
+</resources>

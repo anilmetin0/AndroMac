@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Pairing confirmation. The code is the largest thing in the dialog: the user's only job is
+    to compare it with what is on the Mac screen. Monospace plus letter spacing keeps digits
+    from being confused ("1/7", "0/O"); grouping as "123 456" makes it easier to read.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="22dp"
+    android:paddingBottom="8dp">
+
+    <TextView
+        android:id="@+id/pairTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="?android:attr/textColorPrimary" />
+
+    <TextView
+        android:id="@+id/pairPeer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textSize="16sp"
+        android:textColor="?android:attr/textColorSecondary" />
+
+    <TextView
+        android:id="@+id/pairCode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:background="@drawable/bg_card"
+        android:paddingTop="18dp"
+        android:paddingBottom="18dp"
+        android:gravity="center"
+        android:textSize="40sp"
+        android:fontFamily="monospace"
+        android:letterSpacing="0.15"
+        android:textColor="?android:attr/textColorPrimary" />
+
+    <TextView
+        android:id="@+id/pairNote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:textSize="14sp"
+        android:lineSpacingMultiplier="1.35"
+        android:textColor="?android:attr/textColorSecondary" />
+</LinearLayout>

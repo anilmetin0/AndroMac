@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbarStyle="outsideOverlay"
+    android:clipToPadding="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
+
+        <include layout="@layout/view_header" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="12dp">
+
+        <TextView style="@style/SectionLabel" android:text="@string/help_section_state" />
+
+        <LinearLayout style="@style/Card" android:paddingTop="14dp" android:paddingBottom="14dp">
+            <TextView
+                android:id="@+id/diagnostics"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:textSize="14sp"
+                android:lineSpacingMultiplier="1.5"
+                android:fontFamily="monospace"
+                android:textColor="?android:attr/textColorPrimary" />
+        </LinearLayout>
+
+        <TextView style="@style/SectionLabel" android:text="@string/help_section_common" />
+
+        <LinearLayout style="@style/Card" android:paddingTop="14dp" android:paddingBottom="14dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:textSize="14sp"
+                android:lineSpacingMultiplier="1.45"
+                android:textColor="?android:attr/textColorPrimary"
+                android:text="@string/help_troubleshooting" />
+        </LinearLayout>
+
+        <TextView style="@style/SectionLabel" android:text="@string/help_section_how" />
+
+        <LinearLayout style="@style/Card" android:paddingTop="14dp" android:paddingBottom="14dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:textSize="14sp"
+                android:lineSpacingMultiplier="1.45"
+                android:textColor="?android:attr/textColorPrimary"
+                android:text="@string/help_how_it_works" />
+        </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

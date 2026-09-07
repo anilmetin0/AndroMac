@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- In the dark theme the system bar icons must be light. -->
+    <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.DayNight">
+        <item name="android:colorAccent">@color/am_accent</item>
+        <item name="android:colorBackground">@color/am_background</item>
+        <item name="android:colorBackgroundFloating">@color/am_surface</item>
+        <item name="android:textColorPrimary">@color/am_on_surface</item>
+        <item name="android:textColorSecondary">@color/am_on_surface_variant</item>
+        <item name="android:textColorHint">@color/am_on_surface_variant</item>
+
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+
+        <!-- The framework ActionBar is disabled: under edge-to-edge it does not push itself
+             below the status bar and overlapped the content. view_header.xml draws the header. -->
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+</resources>
