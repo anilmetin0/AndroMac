@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import android.os.PowerManager
+import org.json.JSONObject
 import io.github.anilmetin0.andromac.core.Link
 import io.github.anilmetin0.andromac.core.Protocol
 import io.github.anilmetin0.andromac.core.Store
@@ -13,6 +15,12 @@ import io.github.anilmetin0.andromac.core.Store
  * Battery state. The ACTION_BATTERY_CHANGED broadcast fires often; per PROTOCOL §6.2 we
  * send only on a 1% level change OR a charging-state change, and at most once every 60 s.
  * There is no separate timer — we piggyback on the broadcast the system already emits.
+ *
+ * With the screen off a plain level change is not sent on its own: it is held and goes out
+ * with the next `pong` (the Mac's ping has already woken the radio) or when the screen comes
+ * on. A dropping battery then costs no radio wake-up of its own; the Mac sees it at most one
+ * ping interval (240 s) late. A charging change is still sent at once, since it is what the
+ * user just did.
  */
 class BatteryReporter(private val context: Context, private val store: Store) {
 
@@ -20,6 +28,8 @@ class BatteryReporter(private val context: Context, private val store: Store) {
     private var lastLevel = -1
     private var lastCharging: Boolean? = null
     private var lastSentAt = 0L
+    private var held: JSONObject? = null
+    private val power = context.getSystemService(PowerManager::class.java)
 
     fun start() {
         if (!store.syncBattery || receiver != null) return
@@ -32,13 +42,23 @@ class BatteryReporter(private val context: Context, private val store: Store) {
         sticky?.let(::report)
     }
 
+    @Synchronized
     fun stop() {
         receiver?.let { runCatching { context.unregisterReceiver(it) } }
         receiver = null
         lastLevel = -1
         lastCharging = null
+        held = null
     }
 
+    /** Send the held report, if any. Called on the link thread (ping) and the main thread (screen on). */
+    @Synchronized
+    fun flush() {
+        val msg = held ?: return
+        if (Link.send(msg)) held = null
+    }
+
+    @Synchronized
     private fun report(intent: Intent) {
         // The toggle is rechecked here, not only in start(): turning Battery sync off
         // mid-session used to leave the receiver registered and frames flowing until the next
@@ -65,8 +85,15 @@ class BatteryReporter(private val context: Context, private val store: Store) {
         val tempTenths = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, Int.MIN_VALUE)
         val temp = if (tempTenths == Int.MIN_VALUE) null else tempTenths / 10.0
 
-        val ok = Link.send(Protocol.battery(level, charging, statusName(statusCode), temp))
+        val msg = Protocol.battery(level, charging, statusName(statusCode), temp)
+        if (!chargeChanged && !power.isInteractive && Link.isConnected) {
+            held = msg                       // newest wins; see the class comment
+            lastLevel = level
+            return
+        }
+        val ok = Link.send(msg)
         if (ok) {
+            held = null
             lastLevel = level
             lastCharging = charging
             lastSentAt = now

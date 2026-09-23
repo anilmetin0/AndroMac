@@ -40,6 +40,10 @@ final class NotificationHistory: ObservableObject {
         load()
     }
 
+    func contains(id: String, title: String, text: String) -> Bool {
+        entries.contains { $0.id == id && $0.title == title && $0.text == text }
+    }
+
     func add(_ entry: Entry) {
         // When the same notification is updated (same key), the new one replaces the old.
         entries.removeAll { $0.id == entry.id }

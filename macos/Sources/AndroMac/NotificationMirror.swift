@@ -53,6 +53,11 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         // The TITLE_ONLY tier: the content never left the phone, and we do not invent it here either.
         let redacted = msg["redacted"] as? Bool ?? false
 
+        // Every reconnect (and so every wake of the Mac) replays the phone's current
+        // notifications, silently. One this Mac already shows, unchanged, is skipped before the
+        // icon copy, the Notification Center request and the history rewrite.
+        if silent, NotificationHistory.shared.contains(id: id, title: title, text: text) { return }
+
         let content = UNMutableNotificationContent()
         content.title = redacted ? app : title
         content.subtitle = redacted ? "" : app

@@ -109,16 +109,19 @@ class NotificationRelay : NotificationListenerService() {
             ?: extras.getCharSequence(Notification.EXTRA_TEXT))?.toString().orEmpty()
         if (title.isEmpty() && text.isEmpty()) return
 
-        // The same content was posted again: send it, but raise no sound or banner on macOS.
-        val signature = "$title\u0000$text"
-        val unchanged = lastSent.put(sbn.key, signature) == signature
-
         val actions = n.actions.orEmpty().map {
             Protocol.Action(
                 title = it.title?.toString().orEmpty(),
                 reply = it.remoteInputs?.isNotEmpty() == true,
             )
         }
+
+        // The same content posted again (apps re-post to bump a timestamp, a progress tick that
+        // did not change the text, a "seen" state): the Mac already shows exactly this, so the
+        // radio is not woken for it. Only the reconnect push sends it again, silently.
+        val signature = "$mode\u0000$title\u0000$text\u0000" + actions.joinToString("\u0000") { it.title }
+        val unchanged = lastSent.put(sbn.key, signature) == signature
+        if (unchanged && !forceSilent) return
 
         // TITLE_ONLY: the content NEVER LEAVES the phone. The redaction happens here, not on the Mac.
         val redacted = mode == Store.MODE_TITLE_ONLY
@@ -130,7 +133,7 @@ class NotificationRelay : NotificationListenerService() {
                 pkg = sbn.packageName,
                 title = if (redacted) "" else title,
                 text = if (redacted) "" else text,
-                silent = forceSilent || unchanged ||
+                silent = forceSilent ||
                     importanceOf(sbn) < NotificationManager.IMPORTANCE_DEFAULT,
                 redacted = redacted,
                 actions = if (redacted) emptyList() else actions,

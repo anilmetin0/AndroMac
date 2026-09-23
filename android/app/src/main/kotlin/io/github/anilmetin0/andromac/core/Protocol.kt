@@ -19,6 +19,8 @@ object Protocol {
     const val T_ICON_REQUEST = "icon_request"
     const val T_APP_ICON = "app_icon"
     const val T_PING = "ping"
+    /** The Mac is about to sleep (PROTOCOL §5). */
+    const val T_SLEEP = "sleep"
     const val T_PONG = "pong"
     const val T_FIND_PHONE = "find_phone"
     const val T_MEDIA = "media"

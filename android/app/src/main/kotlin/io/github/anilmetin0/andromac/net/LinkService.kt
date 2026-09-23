@@ -19,6 +19,7 @@ import android.os.SystemClock
 import android.util.Log
 import io.github.anilmetin0.andromac.R
 import io.github.anilmetin0.andromac.core.Link
+import io.github.anilmetin0.andromac.core.NetworkInfo
 import io.github.anilmetin0.andromac.core.Protocol
 import io.github.anilmetin0.andromac.core.Session
 import io.github.anilmetin0.andromac.core.Store
@@ -37,6 +38,7 @@ import org.json.JSONObject
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
@@ -112,6 +114,7 @@ class LinkService : Service() {
         worker?.interrupt()
         wake()
         battery.stop()
+        system.close()
         netCallback?.let { runCatching { getSystemService(ConnectivityManager::class.java).unregisterNetworkCallback(it) } }
         screenReceiver?.let { runCatching { unregisterReceiver(it) } }
         Link.detach()
@@ -133,8 +136,37 @@ class LinkService : Service() {
     @Volatile private var connectRequested = false
     private var screenReceiver: BroadcastReceiver? = null
 
+    /**
+     * The Wi-Fi and Ethernet networks that are up right now. With none, nothing is dialled: the
+     * Mac is only ever on a LAN, and a SYN to its private address over mobile data would wake the
+     * cellular radio (seconds of high-power tail) for a connection that cannot succeed. Sockets are
+     * also bound to one of these, so a Wi-Fi without internet access, where Android keeps mobile
+     * data as the default route, still reaches the Mac.
+     */
+    private val lanNetworks: MutableSet<Network> = ConcurrentHashMap.newKeySet()
+
+    /** False if the network callback could not be registered: then nothing is gated on it. */
+    @Volatile private var watchingNetworks = false
+
+    /**
+     * The Mac said it is going to sleep. Until the network changes, the screen comes on or a
+     * session comes up, the ladder stays at its ceiling and mDNS is not run: a sleeping Mac
+     * answers neither, and a night of 5-attempt bursts is exactly the waste this avoids.
+     */
+    @Volatile private var macAsleep = false
+
+    /** The LAN to bind to: the default network when it is one, otherwise any. */
+    private fun lanNetwork(): Network? {
+        val active = getSystemService(ConnectivityManager::class.java).activeNetwork
+        return active?.takeIf { it in lanNetworks } ?: lanNetworks.firstOrNull()
+    }
+
+    /** The last text on the ongoing notification: an unchanged one is not re-posted every cycle. */
+    private var lastNote: Pair<String, Boolean>? = null
+
     /** A user request or a network event counts as a fresh start: ladder at 1 s, browse next. */
     private fun restartLadder() {
+        macAsleep = false
         backoffIndex = 0
         attempt = 0
         wake()
@@ -155,6 +187,12 @@ class LinkService : Service() {
                 Link.setState(Link.State.Stopped)
                 note(getString(R.string.state_auto_off))
                 await(0)                     // indefinite: wakes on "Connect now" or the switch
+                continue
+            }
+            if (watchingNetworks && lanNetworks.isEmpty()) {
+                Link.setState(Link.State.Searching)
+                note(getString(R.string.onboarding_step2_none))
+                await(0)                     // indefinite: the network callback wakes it
                 continue
             }
             connectRequested = false         // one attempt per request
@@ -188,10 +226,14 @@ class LinkService : Service() {
                     pairingRequested = false
                     Link.macSeenOnNetwork = true
                     store.lastEndpoint = "${s.inetAddress.hostAddress}:${s.port}"
-                    backoffIndex = 0
-                    attempt = 0
+                    store.macNetwork = networkKey()
                     serve(session, peerName)
                 }
+                // The ladder is reset by the Mac's hello, not by the handshake: a Mac that
+                // completes the handshake and then hangs up (this phone is disconnected there,
+                // or not approved yet) must not be redialled in a tight loop (PROTOCOL §3).
+                if (macAsleep) backoffIndex = backoff.lastIndex
+                sleepBackoff()
             } catch (e: UntrustedPeerException) {
                 pairingRequested = false
                 Link.setState(
@@ -227,7 +269,9 @@ class LinkService : Service() {
     private fun dial(discovery: Discovery): Pair<Socket, String>? {
         dialedFromCache = false
         val cached = store.lastEndpoint
-        cached?.let { ep ->
+        // The cached address belongs to the Mac's own LAN; on another network it is somebody
+        // else's host, or nobody's.
+        cached?.takeIf { onMacNetwork() }?.let { ep ->
             runCatching {
                 val i = ep.lastIndexOf(':')
                 val port = ep.substring(i + 1).toInt()
@@ -243,7 +287,10 @@ class LinkService : Service() {
         // multicast-locked browse is not, so it runs only on the first attempt after a network
         // event or a pairing request, then on every BROWSE_EVERY-th attempt. With no cached
         // address it runs every cycle: there is nothing cheaper left that could make progress.
-        val browse = cached == null || attempt % BROWSE_EVERY == 0
+        // On a network where the Mac has never answered (the office, a café) the browse runs once
+        // per network event, not every 4th attempt: the Mac is very likely not there at all.
+        val browse = !macAsleep &&
+            (cached == null || attempt == 0 || (onMacNetwork() && attempt % BROWSE_EVERY == 0))
         attempt++
         if (!browse) return null
         val peer = discovery.findOne()
@@ -264,6 +311,7 @@ class LinkService : Service() {
     private fun connect(host: java.net.InetAddress, port: Int): Socket? {
         val socket = Socket()
         return try {
+            lanNetwork()?.bindSocket(socket)
             socket.tcpNoDelay = true
             socket.keepAlive = true
             socket.connect(InetSocketAddress(host, port), CONNECT_TIMEOUT_MS)
@@ -281,7 +329,10 @@ class LinkService : Service() {
         Link.attach(session)
         Link.setState(Link.State.Connected(peerName))
         note(getString(R.string.fgs_connected, peerName), connected = true)
-        session.send(Protocol.hello(store.deviceName))
+        // Through the send queue, like everything else: a direct write from this read thread would
+        // wait on the session lock while the queue is mid-chunk, and a Mac blocked writing to us
+        // at the same moment would never be read (both sides stuck on a full socket buffer).
+        Link.send(Protocol.hello(store.deviceName))
         battery.start()
         media.start()
         system.start()
@@ -318,7 +369,15 @@ class LinkService : Service() {
         val t = msg.optString("t")
         if (t.startsWith("file_")) { FileTransfer.handle(this, msg); return }
         when (t) {
-            Protocol.T_PING -> session.send(Protocol.pong())
+            Protocol.T_SLEEP -> {
+                macAsleep = true
+                session.close()              // the read below ends, and the loop parks at the ceiling
+            }
+            Protocol.T_PING -> {
+                // The ping already woke the Wi-Fi radio: a held-back battery report rides along.
+                battery.flush()
+                Link.send(Protocol.pong())
+            }
             Protocol.T_CLIPBOARD -> clipboard.receiveFromMac(msg.optString("text"))
             Protocol.T_NOTIFICATION_ACTION -> NotificationRelay.runAction(
                 msg.optString("id"), msg.optInt("action", -1), msg.optString("reply").ifEmpty { null },
@@ -333,6 +392,10 @@ class LinkService : Service() {
             Protocol.T_SYSTEM_CONTROL -> system.control(msg)
             Protocol.T_CLIPBOARD_REQUEST -> clipboard.macAskedForClipboard()
             Protocol.T_HELLO -> {
+                // The Mac let us in: this is a working link, so the next drop starts the ladder over.
+                macAsleep = false
+                backoffIndex = 0
+                attempt = 0
                 store.pairedName = msg.optString("name", store.pairedName).take(64)
                 Link.setState(Link.State.Connected(store.pairedName))
                 note(getString(R.string.fgs_connected, store.pairedName), connected = true)
@@ -352,7 +415,11 @@ class LinkService : Service() {
     private fun sleepBackoff() {
         var ms = backoff[backoffIndex.coerceAtMost(backoff.lastIndex)]
         if (backoffIndex < backoff.lastIndex) backoffIndex++
-        if (getSystemService(PowerManager::class.java).isInteractive) ms = ms.coerceAtMost(SCREEN_ON_CEILING_MS)
+        // The short ceiling is for "the Mac was just opened, the phone is in my hand". It only
+        // makes sense on the network the Mac was last reached on.
+        if (onMacNetwork() && getSystemService(PowerManager::class.java).isInteractive) {
+            ms = ms.coerceAtMost(SCREEN_ON_CEILING_MS)
+        }
         await(ms)
     }
 
@@ -380,16 +447,30 @@ class LinkService : Service() {
             .addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET)
             .build()
         val cb = object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) = onEvent()
+            override fun onAvailable(network: Network) {
+                val first = lanNetworks.isEmpty()
+                lanNetworks += network
+                // The loop may be parked waiting for any LAN; the flap guard must not swallow that.
+                if (first) wake()
+                onEvent()
+            }
+
+            override fun onLost(network: Network) {
+                lanNetworks -= network
+            }
         }
         netCallback = cb
-        runCatching { cm.registerNetworkCallback(req, cb) }
+        watchingNetworks = runCatching { cm.registerNetworkCallback(req, cb) }.isSuccess
 
         // Picking the phone up is the other event worth a dial: "Mac started later" is the
         // common case, and the user should not wait out a 300 s ceiling with the phone in hand.
         val screen = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                if (current == null && store.isPaired && store.autoConnect) onEvent()
+                // Connected: a battery report held back while the screen was off goes out now.
+                if (current != null) battery.flush()
+                // Only where the Mac was last seen: at the office every unlock would otherwise
+                // cost a SYN and an 8 s browse.
+                else if (store.isPaired && store.autoConnect && onMacNetwork()) onEvent()
             }
         }
         screenReceiver = screen
@@ -409,7 +490,7 @@ class LinkService : Service() {
         val now = SystemClock.elapsedRealtime()
         if (backoffIndex == 0 && now - lastLadderReset < FLAP_GUARD_MS) return
         lastLadderReset = now
-        restartLadder()
+        restartLadder()                  // also clears macAsleep: a new network or the phone in hand
     }
 
     // ---------------------------------------------------------------- notification
@@ -462,7 +543,29 @@ class LinkService : Service() {
         return builder.build()
     }
 
+    /**
+     * The current LAN, as "prefix/gateway" (`192.168.1.0/24/192.168.1.1`). Without the location
+     * permission the Wi-Fi name is unreadable; this is the next best way to tell home from office.
+     * Two networks that share both are treated as one, which is the old behaviour.
+     */
+    private fun networkKey(): String? {
+        val lp = lanNetwork()
+            ?.let { getSystemService(ConnectivityManager::class.java).getLinkProperties(it) } ?: return null
+        val v4 = lp.linkAddresses.firstOrNull { it.address is java.net.Inet4Address } ?: return null
+        val gateway = lp.routes.firstOrNull { it.isDefaultRoute && it.gateway is java.net.Inet4Address }
+            ?.gateway?.hostAddress.orEmpty()
+        return NetworkInfo.networkPrefix(v4.address.address, v4.prefixLength) + "/$gateway"
+    }
+
+    /** True while unknown too: before the first connection there is nothing to compare with. */
+    private fun onMacNetwork(): Boolean {
+        val known = store.macNetwork ?: return true
+        return networkKey().let { it == null || it == known }
+    }
+
     private fun note(text: String, connected: Boolean = false) {
+        if (lastNote == text to connected) return
+        lastNote = text to connected
         getSystemService(NotificationManager::class.java)
             .notify(FGS_ID, buildNotification(text, connected))
     }

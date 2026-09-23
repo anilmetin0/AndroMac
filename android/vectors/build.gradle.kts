@@ -23,6 +23,7 @@ kotlin {
         "io/github/anilmetin0/andromac/core/FileNames.kt",
         // Unit-tested here: version ordering and the release lookup, both Android-free.
         "io/github/anilmetin0/andromac/core/Version.kt",
+        "io/github/anilmetin0/andromac/core/NetworkInfo.kt",
         "io/github/anilmetin0/andromac/feature/UpdateCheck.kt",
     )
 }
