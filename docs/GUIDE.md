@@ -201,45 +201,54 @@ nothing, and nothing in the protocol can read its clipboard.
 
 ## Settings
 
-The phone's main screen stays plain: connection status, the **Permissions** card, four sync
-switches for **Battery**, **Clipboard**, **Notifications** and **Media**, two detail lines, and
-the version at the bottom. Both apps write the version the same way, as `1.0.0 (12 · abc1234)`:
-version, build number and the commit it was built from. Quote that whole string in a bug report.
-Everything else is one level down.
+The phone's main screen stays plain. The status card names the Mac: "Connected to …",
+"Connecting to …", or, while unpaired, the Macs it can see. Below it sit the four sync switches
+for **Battery**, **Clipboard**, **Notifications** and **Media**, and the clipboard history. The
+connection guide shows only until the phone is paired; after that the **ⓘ** button in the top
+bar opens it together with the live diagnostics. A permissions card appears only while a required
+permission is missing. Everything else is behind the **Settings** button in the top bar.
+
+Both apps write the version the same way, as `1.1.0 (12 · abc1234)`: version, build number and
+the commit it was built from. It is under Settings → About on the phone. Quote that whole string
+in a bug report.
 
 | Screen | What is on it |
 |---|---|
+| Settings | Connection, Notifications, Clipboard, File transfer, Permissions, Language, Updates and About, each with a one-line summary. |
+| Clipboard history | The last 20 texts sent to or received from the Mac, newest first. Tap to copy, the send button to send again. Kept in memory only and never written to storage; sensitive clips are not recorded. |
 | Permissions | All six permissions, each marked Granted or Not granted, with Required, Recommended or Optional noted. Tapping one opens the matching system screen. |
 | Connection | State, the Mac's name and last address, **Reconnect automatically**, **Connect now**, and **Forget this Mac**. |
 | Notification settings | **App filter** with a summary of what is set, **Silent notifications**, and **Only while the phone is locked**. It also lists what is always filtered out. |
 | App filter | The three-tier picker for every app the phone has seen, reached from Notification settings. |
 | Clipboard settings | Incoming: **Write to the clipboard**, **Show a notification**. Outgoing: **Never send sensitive content**. Plus **Send clipboard to Mac**. |
-| Connection help | Live diagnostics, common problems, and how the whole thing works. Reached through **I can't connect** in the pairing guide. |
+| Connection help | Live diagnostics, common problems, and how the whole thing works. Reached through the **ⓘ** button, or **I can't connect** in the pairing guide. |
 | Updates | The daily update check: switch, **Check now**, and an **Install** button that downloads, verifies and installs the newer build. |
 | Files | **Receive files** and **Accept files automatically**. Received files go to Downloads; sending is done from any app's share sheet. |
 | Language | Opens the Android per-app language picker, which offers English and Turkish. |
 
-On the Mac the menu bar panel is for glancing. It shows, in order, a device card, the last
-clipboard entry, and the four most recent notifications. The card carries the phone's track, its
-volume slider and ringer buttons, its clipboard switch, a ring button, a test-notification button
-and Disconnect, with battery underneath. With more than one phone paired, the card shows them as
-tabs across the top, like Finder tabs, and clicking a tab switches which phone's details,
-controls and battery are shown. With one phone there are no tabs. A progress row sits under the
-clipboard entry while a file is moving in either direction. A status line appears above all of
-it only when nothing is paired yet or the listener is down. While macOS notifications are turned
-off for AndroMac, the panel shows a one-line warning with a button that opens the matching
-System Settings pane. Dropping files onto the panel sends them. Right-clicking the menu bar icon opens a menu with Open AndroMac, Settings and Quit. What syncs is decided once, in
-Settings, and the detail lives in the window.
+On the Mac the menu bar panel is for glancing. With more than one phone paired, tabs across the
+top switch between them. The phone's card shows its name and state, one battery line, the track
+that is playing, and the ringer and volume on one row. Below that is one row of buttons: ring the
+phone, send a test notification, mirror the screen, and a **⋯** menu with **Send my clipboard
+here**, **Device settings…** and **Disconnect**. Clicking the phone's name opens its settings.
+Next comes the last clipboard entry, with buttons to ask the phone for its clipboard, send the
+Mac's, or send a file; hover it to read the whole text, and press ⌘C to copy it. The four most
+recent notifications close the panel. A progress line appears while a file is moving, a status
+line only when nothing is paired or the listener is down, and a one-line warning while macOS
+notifications are off for AndroMac. Dropping files onto the panel sends them. ⌘, opens
+Settings, and right-clicking the menu bar icon opens a menu with Open AndroMac, Settings and Quit.
 
-| Tab | What is on it |
+The window has one sidebar: **Notifications**, **Clipboard** and **Apps** at the top, then every
+settings section.
+
+| Page | What is on it |
 |---|---|
 | Notifications | The history, with search and a clear button. |
 | Clipboard | The history, with search, click to copy, right-click to send back or delete. |
 | Apps | The tier picker for every app on the phone. |
-| Settings | A sidebar with General, Sync, Clipboard, Notifications, Files, Screen mirroring, Devices, Permissions, Network, Updates, Metrics and Privacy. |
+| Settings | General, Sync, Clipboard, Notifications, Files, Screen mirroring, Devices, Permissions, Network, Updates, Metrics and Privacy. |
 
-Settings is a sidebar layout: the sections listed on the left, the chosen section's options on
-the right. General has **Open at login**, **Show battery percentage in the menu bar**, and a
+General has **Open at login**, **Show battery percentage in the menu bar**, and a
 **Language** picker offering System, English and Turkish. Changing the language shows a Restart
 button, because the language is read at launch. Sync holds the four switches for **Battery**,
 **Clipboard**, **Notifications** and **Media**, the low-battery alert switch, and a threshold
@@ -449,7 +458,7 @@ per hour for each connected phone when idle. Noticeably more means one of the ru
 <td align="center"><img src="images/android-home.png" alt="The Android main screen" width="230"></td>
 <td align="center"><img src="images/android-home-dark.png" alt="The Android main screen in dark mode" width="230"></td>
 <td align="center"><img src="images/android-permissions.png" alt="The Permissions screen on Android" width="230"></td>
-<td align="center"><img src="images/android-connection.png" alt="The Connection screen on Android" width="230"></td>
+<td align="center"><img src="images/android-settings.png" alt="Settings on Android" width="230"></td>
 </tr>
 <tr>
 <td colspan="2" align="center"><img src="images/android-pairing.png" alt="The pairing code on Android" width="230"></td>
@@ -459,13 +468,10 @@ per hour for each connected phone when idle. Noticeably more means one of the ru
 <td colspan="4" align="center"><img src="images/macos-window.png" alt="The AndroMac main window on macOS" width="640"></td>
 </tr>
 <tr>
-<td colspan="4" align="center"><img src="images/macos-settings.png" alt="Settings on macOS, General" width="640"></td>
+<td colspan="4" align="center"><img src="images/macos-settings.png" alt="Settings on macOS, Clipboard" width="640"></td>
 </tr>
 <tr>
 <td colspan="4" align="center"><img src="images/macos-settings-sync.png" alt="Settings on macOS, Sync" width="640"></td>
-</tr>
-<tr>
-<td colspan="4" align="center"><img src="images/macos-settings-permissions.png" alt="Settings on macOS, Permissions" width="640"></td>
 </tr>
 </table>
 

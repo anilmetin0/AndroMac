@@ -34,6 +34,15 @@ version gets a new section.
 
 ### Changed
 
+- **A cleaner Mac panel.** Each phone's battery shows once instead of three times, spacing is
+  tighter, and the controls sit in one row of buttons with a menu for the rest. On macOS 26 and
+  later the panel, buttons and window use Liquid Glass. The window has a single sidebar for the
+  histories and every settings page, and ⌘, opens Settings.
+- **A simpler phone app.** Settings has its own screen behind the button in the top bar. The
+  connection guide disappears once you are paired and stays one tap away under the info button.
+  The status names the Mac you are connected or connecting to, and pairing shows the Macs the
+  phone can see. A new clipboard history lists the last 20 texts sent or received, kept in memory
+  only.
 - **Easier on the battery.** The phone looks for the Mac only on Wi-Fi or Ethernet, and only on
   the network where it last found it. It goes quiet while the Mac sleeps, holds battery updates
   while the screen is off, skips repeated notifications, and ignores clipboard requests with the

@@ -200,41 +200,51 @@ başka bir yol da yok.
 
 ## Ayarlar
 
-Telefonun ana ekranı sade kalır: bağlantı durumu, **Pil durumu**, **Pano**, **Bildirimler** ve
-**Medya** için dört senkronizasyon anahtarı, **İzinler** kartı, iki ayrıntı satırı ve en altta
-sürüm. İki uygulama da sürümü aynı biçimde yazar: `1.0.0 (12 · abc1234)`, yani sürüm, derleme
-numarası ve derlendiği commit. Hata bildirirken bu satırın tamamını yaz. Gerisi bir alt seviyede.
+Telefonun ana ekranı sade kalır. Durum kartı Mac'in adını söyler: "… ile bağlı", "… ile bağlanılıyor"
+ya da eşleştirilmemişken ağda gördüğü Mac'ler. Altında **Pil durumu**, **Pano**, **Bildirimler**
+ve **Medya** için dört eşitleme anahtarı ve pano geçmişi durur. Bağlantı rehberi yalnızca telefon
+eşleşene kadar görünür; sonra üst çubuktaki **ⓘ** düğmesi onu canlı tanıyla birlikte açar. İzinler
+kartı yalnızca zorunlu bir izin eksikken çıkar. Geri kalan her şey üst çubuktaki **Ayarlar**
+düğmesinin arkasında.
+
+İki uygulama da sürümü aynı biçimde yazar: `1.1.0 (12 · abc1234)`, yani sürüm, derleme numarası ve
+derlendiği commit. Telefonda Ayarlar → Hakkında'da durur. Hata bildirirken bu satırın tamamını yaz.
 
 | Ekran | İçinde ne var |
 |---|---|
-| İzinler | Altı iznin tamamı, "Verildi" ya da "Verilmedi" durumu ve Zorunlu, Önerilir ya da İsteğe bağlı notuyla. Ana ekrandaki İzinler kartının başlığından açılır. |
+| Ayarlar | Bağlantı, Bildirimler, Pano, Dosya aktarımı, İzinler, Dil, Güncellemeler ve Hakkında; her biri tek satırlık bir özetle. |
+| Pano geçmişi | Mac'e giden ya da Mac'ten gelen son 20 metin, en yenisi üstte. Dokununca panoya alınır, gönder düğmesi yeniden gönderir. Yalnızca bellekte tutulur, depolamaya hiç yazılmaz; hassas kayıtlar tutulmaz. |
+| İzinler | Altı iznin tamamı, "Verildi" ya da "Verilmedi" durumu ve Zorunlu, Önerilir ya da İsteğe bağlı notuyla. Ayarlar'dan açılır. |
 | Bağlantı | Durum, Mac'in adı ve son adresi, **Otomatik yeniden bağlan**, **Şimdi bağlan** ve **Bu Mac'i unut**. |
 | Bildirim ayarları | Neyin ayarlı olduğunu özetleyen **Uygulama filtresi**, **Sessiz bildirimler** ve **Sadece telefon kilitliyken**. Her zaman elenenleri de listeler. |
 | Uygulama filtresi | Telefonun gördüğü her uygulama için üç kademeli seçici; Bildirim ayarları'ndan açılır. |
 | Pano ayarları | Gelen: **Panoya otomatik yaz**, **Bildirim göster**. Giden: **Hassas içeriği gönderme**. Bir de **Panoyu Mac'e gönder**. |
-| Bağlantı yardımı | Canlı tanı, sık karşılaşılan sorunlar ve işin nasıl yürüdüğü. Eşleştirme rehberindeki **Bağlanamıyorum**'dan açılır. |
+| Bağlantı yardımı | Canlı tanı, sık karşılaşılan sorunlar ve işin nasıl yürüdüğü. **ⓘ** düğmesinden ya da eşleştirme rehberindeki **Bağlanamıyorum**'dan açılır. |
 | Güncellemeler | Günlük güncelleme denetimi: anahtar, **Şimdi denetle** ve yeni paketi indirip doğrulayarak kuran **Kur** düğmesi. |
 | Dosyalar | **Dosya al** ve **Dosyaları otomatik kabul et**. Gelen dosyalar İndirilenler'e iner; gönderme herhangi bir uygulamanın paylaşım menüsünden yapılır. |
 | Dil | Android'in uygulama başına dil seçicisini açar; İngilizce ve Türkçe sunar. |
 
-Mac'te menü çubuğu paneli göz atmak içindir. En üstte cihaz kartı durur. Birden fazla telefon
-eşliyse kart onları Finder sekmeleri gibi üstte sekmeler hâlinde gösterir; bir sekmeye tıklamak
-hangi telefonun ayrıntılarının, denetimlerinin ve pilinin gösterildiğini değiştirir. Tek telefonda
-sekme yoktur. Kart, seçili telefonun çalan parçasını, ses düzeyi sürgüsünü ve zil modu
-düğmelerini, pano anahtarını, çaldırma düğmesini, test bildirimi düğmesini ve "Bağlantıyı kes"i
-taşır. Altında pil, sonra son pano kaydı, iki yönden birinde dosya giderken bir ilerleme satırı ve
-en son dört bildirim gelir. Durum satırı yalnızca hiç eşleştirme yokken ya da dinleyici kapalıyken
-en üstte çıkar. AndroMac için macOS bildirimleri kapalıysa panel tek satırlık bir uyarı ve ilgili
-Sistem Ayarları bölmesini açan bir düğme gösterir. Panelin üstüne bırakılan dosyalar gönderilir.
-Menü çubuğu simgesine sağ tıklamak AndroMac'i aç, Ayarlar ve Çık menüsünü açar.
-Neyin eşitleneceği bir kez Ayarlar'da kararlaştırılır; ayrıntı pencerede.
+Mac'te menü çubuğu paneli göz atmak içindir. Birden fazla telefon eşliyse üstteki sekmeler
+aralarında geçiş yapar. Telefonun kartı adını ve durumunu, tek bir pil satırını, çalan parçayı, zil
+modu ile ses düzeyini tek satırda gösterir. Altında tek sıra düğme var: telefonu çaldır, test
+bildirimi gönder, ekranı yansıt ve **Panomu buraya gönder**, **Cihaz ayarları…** ile **Bağlantıyı
+kes**'i taşıyan bir **⋯** menüsü. Telefonun adına tıklamak ayarlarını açar. Sonra son pano kaydı
+gelir; yanındaki düğmeler telefondan panoyu ister, Mac'inkini gönderir ya da dosya gönderir.
+Üzerine gelince metnin tamamı görünür, ⌘C kopyalar. Paneli en son dört bildirim kapatır. Dosya
+giderken bir ilerleme satırı, yalnızca hiç eşleştirme yokken ya da dinleyici kapalıyken bir durum
+satırı, AndroMac için macOS bildirimleri kapalıyken de tek satırlık bir uyarı çıkar. Panelin
+üstüne bırakılan dosyalar gönderilir. ⌘, Ayarlar'ı açar; menü çubuğu simgesine sağ tıklamak
+AndroMac'i aç, Ayarlar ve Çık menüsünü açar.
 
-| Sekme | İçinde ne var |
+Pencerenin tek bir kenar çubuğu var: üstte **Bildirimler**, **Pano** ve **Uygulamalar**, altında
+bütün ayar bölümleri.
+
+| Sayfa | İçinde ne var |
 |---|---|
 | Bildirimler | Geçmiş; arama ve temizleme düğmesi. |
 | Pano | Geçmiş; arama, tıklayınca panoya alma, sağ tıkla geri gönderme ya da silme. |
 | Uygulamalar | Telefondaki her uygulama için kademe seçici. |
-| Ayarlar | Kenar çubuğu düzeni: solda bölüm listesi, sağda seçili bölümün seçenekleri. Bölümler sırasıyla Genel, Eşitleme, Pano, Bildirimler, Dosyalar, Ekran yansıtma, Cihazlar, İzinler, Ağ, Güncellemeler, Ölçümler ve Gizlilik. |
+| Ayarlar | Genel, Eşitleme, Pano, Bildirimler, Dosyalar, Ekran yansıtma, Cihazlar, İzinler, Ağ, Güncellemeler, Ölçümler ve Gizlilik. |
 
 Ayarlar → Genel'de **Oturum açınca başlat**, **Menü çubuğunda pil yüzdesi** ve Sistem, İngilizce,
 Türkçe seçenekli bir **Dil** seçici var. Dil açılışta okunduğu için değiştirince bir "Yeniden
@@ -444,7 +454,7 @@ göstermeli. Belirgin biçimde fazlası, kurallardan birinin çiğnendiği anlam
 <td align="center"><img src="images/android-home.png" alt="Android ana ekranı" width="230"></td>
 <td align="center"><img src="images/android-home-dark.png" alt="Android ana ekranı, koyu tema" width="230"></td>
 <td align="center"><img src="images/android-permissions.png" alt="Android'de İzinler ekranı" width="230"></td>
-<td align="center"><img src="images/android-connection.png" alt="Android'de Bağlantı ekranı" width="230"></td>
+<td align="center"><img src="images/android-settings.png" alt="Android'de Ayarlar" width="230"></td>
 </tr>
 <tr>
 <td colspan="2" align="center"><img src="images/android-pairing.png" alt="Android'de eşleştirme kodu" width="230"></td>
@@ -454,13 +464,10 @@ göstermeli. Belirgin biçimde fazlası, kurallardan birinin çiğnendiği anlam
 <td colspan="4" align="center"><img src="images/macos-window.png" alt="macOS'ta AndroMac ana penceresi" width="640"></td>
 </tr>
 <tr>
-<td colspan="4" align="center"><img src="images/macos-settings.png" alt="macOS'ta Ayarlar, Genel" width="640"></td>
+<td colspan="4" align="center"><img src="images/macos-settings.png" alt="macOS'ta Ayarlar, Pano" width="640"></td>
 </tr>
 <tr>
 <td colspan="4" align="center"><img src="images/macos-settings-sync.png" alt="macOS'ta Ayarlar, Eşitleme" width="640"></td>
-</tr>
-<tr>
-<td colspan="4" align="center"><img src="images/macos-settings-permissions.png" alt="macOS'ta Ayarlar, İzinler" width="640"></td>
 </tr>
 </table>
 
