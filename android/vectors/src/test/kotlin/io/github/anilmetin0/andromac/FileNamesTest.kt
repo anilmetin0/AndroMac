@@ -23,6 +23,14 @@ class FileNamesTest {
     }
 
     @Test
+    fun dropsBidiOverridesAndZeroWidthCharacters() {
+        // Would read as "Invoicednammoc.pdf" with the override left in.
+        assertEquals("Invoicefdp.command", FileNames.sanitize("Invoice\u202Efdp.command"))
+        assertEquals("ab.txt", FileNames.sanitize("a\u200Bb\u2066.txt\u2069"))
+        assertEquals("résumé.pdf", FileNames.sanitize("résumé.pdf"))
+    }
+
+    @Test
     fun fallsBackToFile() {
         assertEquals("file", FileNames.sanitize(""))
         assertEquals("file", FileNames.sanitize("."))

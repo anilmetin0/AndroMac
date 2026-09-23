@@ -162,7 +162,7 @@ class Store(context: Context) {
 
     /**
      * Never send clipboard content flagged as sensitive. Password managers and OTP fields
-     * set `ClipDescription.EXTRA_IS_SENSITIVE` when copying (API 33+). Default ON: putting
+     * set `android.content.extra.IS_SENSITIVE` when copying, on every version. Default ON: putting
      * a password on the wire, even a local network, is not something the user asked for.
      */
     var clipboardSkipSensitive: Boolean

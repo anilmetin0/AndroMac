@@ -16,8 +16,10 @@ struct PairedDeviceTests {
 
         #expect(one.id == renamed.id)      // the name is decoration, the key is the identity
         #expect(one.id != other.id)
-        #expect(one.id.count == 8)
-        #expect(one.shortFingerprint == "\(one.id.prefix(4)) \(one.id.suffix(4))")
+        #expect(one.id.count == 64)        // the full hash: a 32-bit id could be ground
+        let short = PairedDevice.fingerprint(of: keyA)
+        #expect(short == String(one.id.prefix(8)))
+        #expect(one.shortFingerprint == "\(short.prefix(4)) \(short.suffix(4))")
     }
 
     @Test func survivesAJSONRoundTrip() throws {

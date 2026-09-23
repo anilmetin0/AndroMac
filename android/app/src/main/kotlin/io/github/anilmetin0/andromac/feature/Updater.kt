@@ -139,7 +139,9 @@ object Updater {
             val text = conn.inputStream.bufferedReader().use { it.readBounded(MAX_SUMS) }
             for (line in text.lineSequence()) {
                 val parts = line.trim().split(Regex("\\s+"))
-                if (parts.size >= 2 && parts.last().endsWith(name)) return parts[0]
+                // `sha256sum` marks binary mode with a leading `*`. The name must match exactly: a
+                // suffix match would let `evil-AndroMac-1.0.0-android.apk` stand in for ours.
+                if (parts.size >= 2 && parts.last().removePrefix("*") == name) return parts[0]
             }
             return null
         } finally {
@@ -154,6 +156,10 @@ object Updater {
     private fun commit(ctx: Context, file: File) {
         val installer = ctx.packageManager.packageInstaller
         val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+        // The session fails unless the APK is this very package. Without it, a release asset with
+        // another package name would install as a second app, behind an ordinary Install dialog.
+        // The platform then enforces that the signer is ours, as for any update.
+        params.setAppPackageName(ctx.packageName)
         val id = installer.createSession(params)
         installer.openSession(id).use { session ->
             session.openWrite("andromac", 0, file.length()).use { output ->
@@ -195,8 +201,13 @@ object Updater {
     /** Bounded read: a checksum file is a few hundred bytes, and this one is not ours. */
     private fun java.io.BufferedReader.readBounded(limit: Int): String {
         val buf = CharArray(limit)
-        val n = read(buf, 0, limit)
-        return if (n <= 0) "" else String(buf, 0, n)
+        var total = 0
+        while (total < limit) {
+            val n = read(buf, total, limit - total)
+            if (n < 0) break
+            total += n
+        }
+        return String(buf, 0, total)
     }
 
     /** The result of a commit: the system reports it here, including "ask the user first". */
@@ -211,9 +222,11 @@ object Updater {
                         @Suppress("DEPRECATION")
                         intent.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)
                     }
-                    runCatching {
-                        confirm?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)?.let(ctx::startActivity)
-                    }
+                    // Blocked when the app is in the background: say so, so Install can be tapped again.
+                    val shown = runCatching {
+                        ctx.startActivity(confirm!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    }.isSuccess
+                    if (!shown) state = State.Failed("confirm_blocked")
                 }
                 PackageInstaller.STATUS_SUCCESS -> state = State.Idle
                 else -> {

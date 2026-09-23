@@ -63,17 +63,21 @@ public struct PairedDevice: Codable, Identifiable, Sendable, Equatable {
         receivesClipboard = try c.decodeIfPresent(Bool.self, forKey: .receivesClipboard) ?? true
     }
 
-    /// Stable, short, and safe to show or log: the first 8 hex characters of SHA-256 over the key.
-    /// Used as the dictionary key for live sessions and per-device state.
-    public var id: String { Self.fingerprint(of: key) }
+    /// The full SHA-256 of the key, in hex. The dictionary key for live sessions and per-device
+    /// state. Never the short fingerprint: 32 bits can be ground in hours, and two keys sharing an
+    /// id would share a session slot and every per-device setting.
+    public var id: String { Self.id(of: key) }
 
-    public static func fingerprint(of key: Data) -> String {
-        SHA256.hash(data: key).prefix(4).map { String(format: "%02x", $0) }.joined()
+    public static func id(of key: Data) -> String {
+        SHA256.hash(data: key).map { String(format: "%02x", $0) }.joined()
     }
+
+    /// Short and safe to show or log: the first 8 hex characters of the id. Display only.
+    public static func fingerprint(of key: Data) -> String { String(id(of: key).prefix(8)) }
 
     /// Grouped in fours, the way a fingerprint is meant to be read aloud: `a1b2 c3d4`.
     public var shortFingerprint: String {
-        let id = self.id
+        let id = Self.fingerprint(of: key)
         return stride(from: 0, to: id.count, by: 4)
             .map { String(id.dropFirst($0).prefix(4)) }
             .joined(separator: " ")

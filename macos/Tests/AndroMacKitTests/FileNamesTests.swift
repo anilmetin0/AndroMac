@@ -13,6 +13,14 @@ struct FileNamesTests {
         #expect(FileNames.sanitize("a\u{00}b\nc\u{7F}.txt") == "abc.txt")
     }
 
+    @Test func dropsBidiOverridesAndZeroWidthCharacters() {
+        // Would read as "Invoicednammoc.pdf" with the override left in.
+        #expect(FileNames.sanitize("Invoice\u{202E}fdp.command") == "Invoicefdp.command")
+        #expect(FileNames.sanitize("a\u{200B}b\u{2066}.txt\u{2069}") == "ab.txt")
+        #expect(FileNames.sanitize("résumé.pdf") == "résumé.pdf")
+        #expect(FileNames.sanitize("👩‍👩‍👧.png") == "👩👩👧.png")      // ZWJ is Cf too; the emoji stay
+    }
+
     @Test func fallsBackWhenNothingIsLeft() {
         #expect(FileNames.sanitize("") == "file")
         #expect(FileNames.sanitize(".") == "file")

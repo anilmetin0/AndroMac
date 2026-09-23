@@ -1,9 +1,11 @@
+import AndroMacKit
 import Foundation
 import SwiftUI
 
 /// The local history of notifications received from the phone.
 ///
-/// Privacy: kept as plain JSON under Application Support, on this Mac only; it is sent nowhere.
+/// Privacy: kept under Application Support, on this Mac only, sealed with a key derived from the
+/// Keychain identity (`SealedFile`); it is sent nowhere.
 /// Capped at [limit]; the user can clear it with a single click.
 /// The history is deleted when the pairing is removed.
 @MainActor
@@ -51,10 +53,22 @@ final class NotificationHistory: ObservableObject {
         flush()
     }
 
+    /// Read off the main thread: the history key comes from the Keychain, and the first read of
+    /// it can wait on a system prompt. Entries added meanwhile stay on top.
     private func load() {
-        guard let data = try? Data(contentsOf: fileURL),
-              let decoded = try? JSONDecoder().decode([Entry].self, from: data) else { return }
-        entries = decoded
+        let url = fileURL
+        Task {
+            let decoded: [Entry]? = await Task.detached {
+                guard let key = Store.shared.historyKey,
+                      let raw = try? Data(contentsOf: url),
+                      let data = SealedFile.open(raw, key: key) else { return nil }
+                return try? JSONDecoder().decode([Entry].self, from: data)
+            }.value
+            guard let decoded else { return }
+            let fresh = self.entries
+            self.entries = fresh + decoded.filter { old in !fresh.contains { $0.id == old.id } }
+            if self.entries.count > self.limit { self.entries.removeLast(self.entries.count - self.limit) }
+        }
     }
 
     /// Delays the write by 1 s and coalesces: a flood of notifications used to re-encode the whole
@@ -75,8 +89,11 @@ final class NotificationHistory: ObservableObject {
         save()
     }
 
+    /// Sealed with `Store.historyKey`, so the file is useless to anything without the Keychain.
     private func save() {
-        guard let data = try? JSONEncoder().encode(entries) else { return }
+        guard let key = Store.shared.historyKey,
+              let plain = try? JSONEncoder().encode(entries),
+              let data = SealedFile.seal(plain, key: key) else { return }
         try? data.write(to: fileURL, options: [.atomic, .completeFileProtection])
     }
 }
