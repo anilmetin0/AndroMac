@@ -464,7 +464,7 @@ göstermeli. Belirgin biçimde fazlası, kurallardan birinin çiğnendiği anlam
 <td colspan="4" align="center"><img src="images/macos-window.png" alt="macOS'ta AndroMac ana penceresi" width="640"></td>
 </tr>
 <tr>
-<td colspan="4" align="center"><img src="images/macos-settings.png" alt="macOS'ta Ayarlar, Pano" width="640"></td>
+<td colspan="4" align="center"><img src="images/macos-settings.png" alt="macOS'ta Ayarlar, Cihazlar" width="640"></td>
 </tr>
 <tr>
 <td colspan="4" align="center"><img src="images/macos-settings-sync.png" alt="macOS'ta Ayarlar, Eşitleme" width="640"></td>

@@ -468,7 +468,7 @@ per hour for each connected phone when idle. Noticeably more means one of the ru
 <td colspan="4" align="center"><img src="images/macos-window.png" alt="The AndroMac main window on macOS" width="640"></td>
 </tr>
 <tr>
-<td colspan="4" align="center"><img src="images/macos-settings.png" alt="Settings on macOS, Clipboard" width="640"></td>
+<td colspan="4" align="center"><img src="images/macos-settings.png" alt="Settings on macOS, Devices" width="640"></td>
 </tr>
 <tr>
 <td colspan="4" align="center"><img src="images/macos-settings-sync.png" alt="Settings on macOS, Sync" width="640"></td>
