@@ -313,10 +313,20 @@ object FileTransfer {
         inc = null
         Link.send(Protocol.fileResult(i.id, true))
         Log.d(Link.TAG, "file received: ${i.name}")
+        // Opened by what the visible name says, not by the sender's MIME type: a file shown as
+        // IMG_2031.jpg must not open the package installer. An APK, or a name whose type is not
+        // known, only opens Downloads: "*/*" would match the installer as well, and this app
+        // holds the install permission for its own updater.
+        val ext = i.name.substringAfterLast('.', "").lowercase()
+        val type = android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
+        val open = if (type == null || type == APK_MIME) {
+            Intent(android.app.DownloadManager.ACTION_VIEW_DOWNLOADS)
+        } else {
+            Intent(Intent.ACTION_VIEW).setDataAndType(item, type).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
         val view = PendingIntent.getActivity(
             ctx, REQ_VIEW,
-            Intent(Intent.ACTION_VIEW).setDataAndType(item, i.mime ?: "*/*")
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK),
+            open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         ctx.getSystemService(NotificationManager::class.java).notify(
@@ -493,6 +503,7 @@ object FileTransfer {
     private const val NOTIF_OUT = 11
     private const val NOTIF_RECEIVED_BASE = 1000
     private const val REQ_VIEW = 6
+    private const val APK_MIME = "application/vnd.android.package-archive"
     private const val MAX_QUEUE = 50
     private const val UI_INTERVAL_MS = 1_000L
 }

@@ -10,12 +10,18 @@ object FileNames {
     private const val FALLBACK = "file"
 
     /**
-     * Last path component only, no control characters, no leading dots or whitespace, at
-     * most 255 bytes of UTF-8 (the stem is cut, the extension kept), `file` when nothing is left.
+     * Last path component only, no control or invisible format characters, no leading dots or
+     * whitespace, at most 255 bytes of UTF-8 (the stem is cut, the extension kept), `file` when
+     * nothing is left. Format characters (category Cf) are the bidi overrides and zero-width
+     * ones, which can make `x\u202Egnp.apk` read as `xkpa.png`.
      */
     fun sanitize(name: String): String {
         var s = name.substringAfterLast('/').substringAfterLast('\\')
-        s = s.filter { it >= ' ' && it != '\u007F' }
+        s = buildString {
+            s.codePoints().forEach { cp ->
+                if (cp >= 0x20 && cp != 0x7F && Character.getType(cp) != Character.FORMAT.toInt()) appendCodePoint(cp)
+            }
+        }
         s = s.trimStart { it == '.' || it.isWhitespace() }.trimEnd()
         if (s.isEmpty()) return FALLBACK
         if (s.toByteArray().size <= MAX_BYTES) return s

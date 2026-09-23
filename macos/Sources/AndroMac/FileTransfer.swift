@@ -235,7 +235,10 @@ final class FileTransfer: ObservableObject {
         let name = FileNames.sanitize(msg["name"] as? String ?? "")
         // `.<name>.part` must itself fit in a path component; the final name is the sanitized one.
         let stem = String(decoding: name.utf8.prefix(FileNames.maxBytes - 6), as: UTF8.self)
-        let inc = Incoming(id: id, peer: peer, name: name, size: size, part: downloads.appendingPathComponent(".\(stem).part"))
+        // A random suffix, and the file is created exclusively in `accept`: a sender-chosen name
+        // must not be able to truncate and then delete a `.part` file that belongs to something else.
+        let part = downloads.appendingPathComponent(".\(stem).\(Self.newID().prefix(8)).part")
+        let inc = Incoming(id: id, peer: peer, name: name, size: size, part: part)
         incoming = inc
 
         // Auto-accept applies only to the pinned phone — the only device that can reach this code.
@@ -260,14 +263,13 @@ final class FileTransfer: ObservableObject {
     }
 
     private func accept(_ inc: Incoming) async {
-        guard FileManager.default.createFile(atPath: inc.part.path, contents: nil),
-              let handle = try? FileHandle(forWritingTo: inc.part)
-        else {
+        let fd = open(inc.part.path, O_WRONLY | O_CREAT | O_EXCL, 0o600)
+        guard fd >= 0 else {
             incoming = nil
             await reject(inc.id, "write_error", to: inc.peer)
             return
         }
-        inc.handle = handle
+        inc.handle = FileHandle(fileDescriptor: fd, closeOnDealloc: true)
         refreshProgress()
         await Server.shared.send(["t": "file_accept", "id": inc.id], to: inc.peer)
     }

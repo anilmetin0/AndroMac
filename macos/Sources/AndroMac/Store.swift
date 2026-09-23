@@ -34,9 +34,18 @@ final class Store: @unchecked Sendable {
         return deniedFlag
     }
 
+    /// The Keychain was still locked on the last read, so `identity()` handed out a throwaway key.
+    /// The Server must not advertise with it either: every phone would see a changed key.
+    var keychainLocked: Bool {
+        keychainLock.lock(); defer { keychainLock.unlock() }
+        return lockedFlag
+    }
+    private var lockedFlag = false
+
     func identity() -> P256.KeyAgreement.PrivateKey {
         keychainLock.lock(); defer { keychainLock.unlock() }
         if let cachedKey { return cachedKey }
+        lockedFlag = false
 
         switch keychainRead() {
         case .found(let raw):
@@ -52,6 +61,7 @@ final class Store: @unchecked Sendable {
             // we do not call it "denied": the next call retries, and once the Keychain unlocks the
             // real key comes back. Caching it would make the phone say "key has changed".
             NSLog("AndroMac: Keychain locked — ephemeral key for this round, will retry later")
+            lockedFlag = true
             return Crypto.generateKeyPair()
 
         case .denied:
@@ -73,6 +83,15 @@ final class Store: @unchecked Sendable {
     }
 
     var publicKey: Data { Crypto.encodePublic(identity().publicKey) }
+
+    /// The key the histories are sealed with (`SealedFile`), or nil while the identity is a
+    /// throwaway one (Keychain locked or denied): sealing with that would make the file
+    /// unreadable once the real key is back, so nothing is read or written until then.
+    var historyKey: SymmetricKey? {
+        let id = identity()
+        guard !keychainDenied, !keychainLocked else { return nil }
+        return SealedFile.key(from: id.rawRepresentation)
+    }
 
     // MARK: writing
     //

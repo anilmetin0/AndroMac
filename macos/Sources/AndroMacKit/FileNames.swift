@@ -7,11 +7,20 @@ public enum FileNames {
     /// The file system limit on one path component.
     public static let maxBytes = 255
 
-    /// Last path component only, no control characters, no leading dots or whitespace, at most
-    /// 255 bytes of UTF-8 (the stem is cut, the extension is kept). `file` when nothing is left.
+    /// Last path component only, no control or invisible format characters, no leading dots or
+    /// whitespace, at most 255 bytes of UTF-8 (the stem is cut, the extension is kept). `file`
+    /// when nothing is left.
+    ///
+    /// Format characters (Unicode category Cf) are the bidi overrides and the zero-width ones: with
+    /// U+202E, `Invoice\u{202E}fdp.command` is displayed as `Invoicednammoc.pdf`, so the extension
+    /// the user reads is not the one Finder runs the file by.
     public static func sanitize(_ raw: String) -> String {
-        var name = raw.split(whereSeparator: { $0 == "/" || $0 == "\\" }).last.map(String.init) ?? ""
-        name.removeAll { c in c.unicodeScalars.contains { $0.value < 0x20 || $0.value == 0x7F } }
+        let last = raw.split(whereSeparator: { $0 == "/" || $0 == "\\" }).last.map(String.init) ?? ""
+        var scalars = String.UnicodeScalarView()
+        scalars.append(contentsOf: last.unicodeScalars.filter {
+            $0.value >= 0x20 && $0.value != 0x7F && $0.properties.generalCategory != .format
+        })
+        var name = String(scalars)
         name = String(name.drop { $0 == "." || $0.isWhitespace })
         if name.utf8.count > maxBytes {
             let (stem, ext) = splitExtension(name)

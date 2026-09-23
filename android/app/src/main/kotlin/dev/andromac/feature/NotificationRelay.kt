@@ -220,6 +220,9 @@ class NotificationRelay : NotificationListenerService() {
             val self = instance ?: return
             if (index < 0) return
             val sbn = self.find(key) ?: return
+            // Only a notification the Mac was shown in full carried its actions there. Anything
+            // else (an app on Off or Title only) the Mac never saw, so it cannot act on it either.
+            if (self.store.modeFor(sbn.packageName) != Store.MODE_FULL) return
             val action = sbn.notification.actions?.getOrNull(index) ?: return
             try {
                 val inputs = action.remoteInputs
@@ -238,7 +241,10 @@ class NotificationRelay : NotificationListenerService() {
 
         /** Dismissed on the Mac — dismiss it on the phone too. */
         fun dismiss(key: String) {
-            runCatching { instance?.cancelNotification(key) }
+            val self = instance ?: return
+            val sbn = self.find(key) ?: return
+            if (self.store.modeFor(sbn.packageName) == Store.MODE_OFF) return
+            runCatching { self.cancelNotification(key) }
         }
     }
 

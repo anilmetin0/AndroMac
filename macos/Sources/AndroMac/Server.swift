@@ -212,13 +212,16 @@ actor Server {
 
         do {
             let session = try await handshake(conn)
-            let deviceID = PairedDevice.fingerprint(of: session.peerStaticPub)
+            let deviceID = PairedDevice.id(of: session.peerStaticPub)
 
-            // A paused device stays paired but is not let in. Pausing has to bite HERE rather than
-            // by closing the socket later: the phone reconnects on its own ladder, so anything that
-            // merely drops the link just turns into a retry loop.
-            guard Store.shared.device(id: deviceID)?.paused != true else {
-                NSLog("AndroMac: a paused phone tried to connect, declining")
+            // The handshake checked the key against the list as it was when the connection came
+            // in, up to 10 s ago. Trust is decided again now, against the list as it is: a phone
+            // forgotten in the meantime has no record and is refused, and a paused one stays out.
+            // Pausing has to bite HERE rather than by closing the socket later: the phone
+            // reconnects on its own ladder, so anything that merely drops the link just turns
+            // into a retry loop.
+            guard Self.admits(session) else {
+                NSLog("AndroMac: a paused or forgotten phone tried to connect, declining")
                 await session.close()
                 return
             }
@@ -228,6 +231,11 @@ actor Server {
             if sessions[deviceID] != nil {
                 serveTasks[deviceID]?.cancel()
                 await closeSession(deviceID, updateUI: false)
+                // The close suspended: a Disconnect or Forget may have landed meanwhile.
+                guard Self.admits(session) else {
+                    await session.close()
+                    return
+                }
             }
 
             sessions[deviceID] = session
@@ -236,11 +244,17 @@ actor Server {
             serveTasks[deviceID] = Task { await self.serve(session, id: deviceID, address: address) }
         } catch let WireError.untrusted(key, name, sas, isFirstDevice) {
             // An untrusted peer does not touch the current session; the user is simply asked.
-            NSLog("AndroMac: pairing required, SAS %@", sas)
+            NSLog("AndroMac: pairing required")      // the code itself stays out of the log
             await promptPairing(key: key, name: name, sas: sas, isFirstDevice: isFirstDevice)
         } catch {
             NSLog("AndroMac: handshake failed — \(error.localizedDescription)")
         }
+    }
+
+    /// Paired right now and not paused, by the full key.
+    private static func admits(_ session: Session) -> Bool {
+        guard let device = Store.shared.device(forKey: session.peerStaticPub) else { return false }
+        return !device.paused
     }
 
     /// RFC 1918 / link-local / ULA / loopback. A peer that gives a name (DNS) is not assumed to be
@@ -289,7 +303,6 @@ actor Server {
         let store = Store.shared
         let queue = self.queue
         let staticKey = store.identity()
-        let peerName = store.pairedName.isEmpty ? "Android" : store.pairedName
         // Every trusted phone, not just the first. A paused device is deliberately still in the
         // list: pausing is "do not talk to me", not "forget me", so the handshake still succeeds
         // and `serve` is the one that declines — otherwise a paused phone would be shown to the
@@ -301,7 +314,9 @@ actor Server {
             group.addTask {
                 try await Session.accept(
                     connection: conn, queue: queue, staticKey: staticKey,
-                    peerName: peerName, pinnedKeys: pinnedKeys
+                    // An unknown phone has no name yet: it only says one inside the session, after
+                    // pairing. Labelling the prompt with a paired phone's name would vouch for it.
+                    peerName: "", pinnedKeys: pinnedKeys
                 )
             }
             group.addTask {
@@ -330,6 +345,14 @@ actor Server {
         // phone showed, so a prompt already on screen for the same key is kept.
         if await MainActor.run(body: { AppState.shared.pairing?.peerKey == key }) { return }
         if let muted = rejectedKeys[key], Date() < muted.until { return }
+        // The prompt shows the fingerprint so the user can recognise the device later. A new key
+        // that shows the same 8 digits as a paired phone would borrow that phone's face, and
+        // nothing legitimate produces one by chance (one in four billion), so it is never shown.
+        let shown = PairedDevice.fingerprint(of: key)
+        if Store.shared.pairedDevices.contains(where: { PairedDevice.fingerprint(of: $0.key) == shown }) {
+            NSLog("AndroMac: refused a pairing key whose fingerprint matches a paired phone")
+            return
+        }
         if let last = lastPairingPrompt, Date().timeIntervalSince(last) < 30 { return }
         lastPairingPrompt = Date()
         await MainActor.run {
@@ -449,7 +472,9 @@ actor Server {
             await checkLowBattery(b, from: deviceID)
 
         case "clipboard":
-            guard Store.shared.syncClipboard, let text = msg["text"] as? String, !text.isEmpty else { break }
+            // Capped like the phone caps what it sends (PROTOCOL §5): the history keeps 50 of these.
+            guard Store.shared.syncClipboard, let raw = msg["text"] as? String, !raw.isEmpty else { break }
+            let text = String(raw.prefix(ClipboardWatcher.maxText))
             await ClipboardWatcher.shared.applyFromPhone(text)
             let name = Store.shared.device(id: deviceID)?.name ?? ""
             await MainActor.run {

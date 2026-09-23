@@ -183,7 +183,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
             let next = self.queuedPairing
             self.queuedPairing = nil
-            if let next, next != request { self.presentPairing(next) }
+            // Queued while this one was open, so "first device" may no longer be true.
+            if let next, next != request {
+                self.presentPairing(.init(
+                    peerKey: next.peerKey, peerName: next.peerName, sas: next.sas,
+                    isFirstDevice: Store.shared.pairedDevices.isEmpty
+                ))
+            }
         }
     }
 }

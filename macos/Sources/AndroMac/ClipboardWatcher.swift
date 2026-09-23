@@ -65,6 +65,9 @@ actor ClipboardWatcher {
         await Server.shared.send(["t": "clipboard_request"])
     }
 
+    /// The same ceiling as the phone's `Protocol.MAX_CLIPBOARD`.
+    static let maxText = 64 * 1024
+
     private var lastRequest: Date?
 
     /// Send whatever is on the Mac clipboard right now, because the user asked for it.

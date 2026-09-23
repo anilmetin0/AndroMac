@@ -118,7 +118,9 @@ final class Updater: ObservableObject {
         }
         for line in text.split(separator: "\n") {
             let parts = line.split(separator: " ", omittingEmptySubsequences: true)
-            guard parts.count >= 2, parts.last.map(String.init)?.hasSuffix(name) == true else { continue }
+            // Exact name (`*` is sha256sum's binary-mode marker): a suffix match would accept the
+            // hash of `evil-AndroMac-….dmg` for ours.
+            guard parts.count >= 2, parts.last.map({ String($0.drop { $0 == "*" }) }) == name else { continue }
             return String(parts[0]).lowercased()
         }
         throw UpdateError.message(String(localized: "The release publishes no checksum for this download."))
@@ -162,7 +164,8 @@ final class Updater: ObservableObject {
         let app = directory.appendingPathComponent("AndroMac.app")
         guard FileManager.default.fileExists(atPath: app.path),
               let bundle = Bundle(url: app),
-              bundle.bundleIdentifier == "dev.andromac" else {
+              let expected = Bundle.main.bundleIdentifier,
+              bundle.bundleIdentifier == expected else {
             throw UpdateError.message(String(localized: "The download does not contain AndroMac."))
         }
         let short = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""

@@ -8,7 +8,6 @@ import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import dev.andromac.R
@@ -137,14 +136,14 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
     }
 
     /**
-     * Password managers and OTP fields set `EXTRA_IS_SENSITIVE` when copying (API 33+). Older
-     * versions carry no such marker; there we rely on the user's own choice. Both outbound
-     * paths run through here so the exported share-sheet target cannot bypass the toggle.
+     * Password managers and OTP fields set `android.content.extra.IS_SENSITIVE` when copying.
+     * The constant arrived in API 33, but the extra itself is a plain string key that apps set on
+     * older versions too (Android's guidance says to), so it is read on every version. Both
+     * outbound paths run through here so the exported share-sheet target cannot bypass the toggle.
      */
     private fun sensitiveBlocked(description: ClipDescription?): Boolean {
         if (!store.clipboardSkipSensitive) return false
-        val sensitive = Build.VERSION.SDK_INT >= 33 &&
-            description?.extras?.getBoolean(ClipDescription.EXTRA_IS_SENSITIVE) == true
+        val sensitive = description?.extras?.getBoolean(EXTRA_IS_SENSITIVE) == true
         if (sensitive) Log.i(Link.TAG, "sensitive clipboard content not sent")
         return sensitive
     }
@@ -182,6 +181,8 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
     }
 
     companion object {
+        /** `ClipDescription.EXTRA_IS_SENSITIVE`, spelled out so it can be read below API 33. */
+        private const val EXTRA_IS_SENSITIVE = "android.content.extra.IS_SENSITIVE"
         private const val CLIP_NOTIF_ID = 2
         private const val CLIP_REQUEST_ID = 6
         /** The Mac is waiting for an answer now; an hour later the button means nothing. */

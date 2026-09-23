@@ -79,23 +79,15 @@ struct PairingView: View {
 
             HStack(spacing: 8) {
                 Spacer(minLength: 0)
-                // The default button (Return) is always the safe one. On first contact the user went
-                // looking for this prompt, so Pair is safe to default. An unexpected request while
-                // phones are already paired is the suspicious case, so there Reject takes Return and
-                // pairing has to be chosen deliberately.
-                if request.isFirstDevice {
-                    Button("Reject") { decide(false) }
-                        .secondaryAction()
-                    Button("Pair") { decide(true) }
-                        .prominentAction()
-                        .keyboardShortcut(.defaultAction)
-                } else {
-                    Button("Pair") { decide(true) }
-                        .secondaryAction()
-                    Button("Reject") { decide(false) }
-                        .prominentAction()
-                        .keyboardShortcut(.defaultAction)
-                }
+                // Return always rejects. The window comes up on its own, from a network event, and
+                // anyone on the Wi-Fi can cause one with a fresh key every time, even before the
+                // first phone is paired. A Return typed into another app must never pin a stranger,
+                // so pairing is always a deliberate click.
+                Button("Pair") { decide(true) }
+                    .secondaryAction()
+                Button("Reject") { decide(false) }
+                    .prominentAction()
+                    .keyboardShortcut(.defaultAction)
             }
         }
         .padding(Theme.Space.section)
