@@ -76,7 +76,7 @@ struct DeviceList: View {
     private var switcher: some View {
         if paired.count > 3, let selected {
             Menu {
-                Picker("Phone", selection: Binding(get: { selected.id }, set: select)) {
+                Picker("Phone", selection: Binding(get: { selected.id }, set: { select($0) })) {
                     ForEach(paired) { device in
                         Text(DeviceCard.name(device, live(device))).tag(device.id)
                     }
