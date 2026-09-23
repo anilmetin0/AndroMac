@@ -6,8 +6,12 @@ cd "$(dirname "$0")"
 CONFIG="${1:-release}"
 APP="build/AndroMac.app"
 
-swift build -c "$CONFIG"
-BIN="$(swift build -c "$CONFIG" --show-bin-path)/AndroMac"
+# The native build system, because the newer default one links through clang with --sysroot, which
+# stamps the deployment target (14.0) as the binary's SDK version. AppKit then runs the app in its
+# pre-26 compatibility mode: no Liquid Glass window chrome, old sidebar, small panel corners.
+BUILD=(swift build -c "$CONFIG" --build-system native)
+"${BUILD[@]}"
+BIN="$("${BUILD[@]}" --show-bin-path)/AndroMac"
 
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
@@ -56,15 +60,23 @@ fi
 # UserNotifications and Keychain require a signed bundle.
 #
 # An ad-hoc signature (`-`) produces a DIFFERENT identity on every build; macOS then treats the
-# app as a new one and Keychain asks for the password every time. If you have a persistent
-# signing certificate, pass it via CODESIGN_IDENTITY and the prompt appears only once:
-#     CODESIGN_IDENTITY="Apple Development: name@example.com" ./build.sh
+# app as a new one and Keychain asks for the password every time. One persistent certificate
+# keeps the identity: `scripts/setup-macos-signing.sh --local` creates "AndroMac Self-Signed" and
+# this script uses it when CODESIGN_IDENTITY is unset. CI passes its own through
+# CODESIGN_IDENTITY and CODESIGN_KEYCHAIN.
+SELF_SIGNED="AndroMac Self-Signed"
+if [[ -z "${CODESIGN_IDENTITY:-}" ]] && security find-certificate -c "$SELF_SIGNED" >/dev/null 2>&1; then
+    CODESIGN_IDENTITY="$SELF_SIGNED"
+fi
 IDENTITY="${CODESIGN_IDENTITY:--}"
+SIGN=(codesign --force --sign "$IDENTITY" --timestamp=none)
+[[ -n "${CODESIGN_KEYCHAIN:-}" ]] && SIGN+=(--keychain "$CODESIGN_KEYCHAIN")
 # Nested executables first: the bundle's signature seals them as they are.
 for helper in "$APP/Contents/MacOS/scrcpy" "$APP/Contents/MacOS/adb"; do
-    [[ -f "$helper" ]] && codesign --force --sign "$IDENTITY" --timestamp=none "$helper"
+    [[ -f "$helper" ]] && "${SIGN[@]}" "$helper"
 done
-codesign --force --sign "$IDENTITY" --identifier io.github.anilmetin0.andromac --timestamp=none "$APP"
+"${SIGN[@]}" --identifier io.github.anilmetin0.andromac "$APP"
+echo "Signed with: $IDENTITY"
 [[ "$IDENTITY" == "-" ]] && echo "Note: ad-hoc signature. Answer Always Allow to the Keychain prompt."
 
 echo "Ready: $APP"
