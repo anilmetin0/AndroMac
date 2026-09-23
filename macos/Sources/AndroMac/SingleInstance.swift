@@ -9,12 +9,20 @@ enum SingleInstance {
     static let showRequest = Notification.Name("dev.andromac.show")
 
     /// False when another copy is running. Restart and the updater start the new copy only after
-    /// the old one has exited, so any other copy found here is really running.
+    /// the old one's PID is gone, but LaunchServices can list it for a moment longer, so a copy
+    /// found here is looked for once more half a second later before this one gives way.
     static func claim() -> Bool {
         guard let id = Bundle.main.bundleIdentifier else { return true }
         let me = ProcessInfo.processInfo.processIdentifier
-        let running = NSRunningApplication.runningApplications(withBundleIdentifier: id)
-            .contains { $0.processIdentifier != me && !$0.isTerminated }
+        let other = {
+            NSRunningApplication.runningApplications(withBundleIdentifier: id)
+                .contains { $0.processIdentifier != me && !$0.isTerminated }
+        }
+        var running = other()
+        if running {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.5))
+            running = other()
+        }
         if running {
             DistributedNotificationCenter.default()
                 .postNotificationName(showRequest, object: nil, deliverImmediately: true)

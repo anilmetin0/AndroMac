@@ -7,7 +7,7 @@ import SwiftUI
 /// A group of related rows on its own plate.
 ///
 /// Content, not control: a plain quiet fill, never glass. The controls inside it carry the glass.
-/// The radius is the panel's minus the panel inset, so the card sits concentric in the panel.
+/// The corner is concentric with the panel's (`panelCard`).
 struct PanelCard<Content: View>: View {
     private let content: Content
     init(@ViewBuilder content: () -> Content) { self.content = content() }
@@ -19,10 +19,7 @@ struct PanelCard<Content: View>: View {
         .padding(.horizontal, Theme.Space.medium)
         .padding(.vertical, Theme.Space.small + Theme.Space.hair)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.medium)
-                .fill(Color.primary.opacity(0.06))
-        )
+        .panelCard(Color.primary.opacity(0.06))
     }
 }
 

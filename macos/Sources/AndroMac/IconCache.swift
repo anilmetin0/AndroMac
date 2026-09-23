@@ -25,10 +25,12 @@ final class IconCache {
         let base = FileManager.default
             .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("AndroMac/icons", isDirectory: true)
+        directory = base
+        // Application Support ignores HOME: a demo run reads the real icons but writes nothing.
+        guard !DemoMode.isOn else { return }
         try? FileManager.default.createDirectory(
             at: base, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700]
         )
-        directory = base
     }
 
     private func url(for pkg: String) -> URL {
@@ -73,7 +75,7 @@ final class IconCache {
             NSLog("AndroMac: the icon received for %@ is not a PNG, skipped", pkg)
             return
         }
-        try? data.write(to: url(for: pkg), options: .atomic)
+        if !DemoMode.isOn { try? data.write(to: url(for: pkg), options: .atomic) }
         missing.remove(pkg)
         images[pkg] = NSImage(data: data)      // make the new icon appear immediately
     }
@@ -84,6 +86,7 @@ final class IconCache {
         images.removeAll()
         requested.removeAll()
         missing.removeAll()
+        guard !DemoMode.isOn else { return }
         let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
         for file in files where file.pathExtension == "png" { try? FileManager.default.removeItem(at: file) }
     }

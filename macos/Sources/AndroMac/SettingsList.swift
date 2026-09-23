@@ -29,6 +29,8 @@ struct SettingsList: View {
     @ObservedObject private var updates = UpdateCheck.shared
     @ObservedObject private var updater = Updater.shared
     @State private var updateCheck = Store.shared.updateCheck
+    @State private var updateAutoInstall = Store.shared.updateAutoInstall
+    @State private var updateBeta = Store.shared.updateBeta
     @State private var mirrorAudio = Store.shared.mirrorAudio
     @State private var mirrorScreenOff = Store.shared.mirrorScreenOff
     @State private var mirrorStayAwake = Store.shared.mirrorStayAwake
@@ -52,6 +54,8 @@ struct SettingsList: View {
             }
         }
         .formStyle(.grouped)
+        // The same soft edge under the toolbar as the lists, instead of a hard divider line.
+        .softScrollEdges()
     }
 
     // MARK: sections
@@ -91,6 +95,8 @@ struct SettingsList: View {
             }
             .onChange(of: language) { _, code in
                 // The language is read only at app launch; the change takes effect after a restart.
+                // A demo shares the real preferences domain, so it changes nothing there.
+                guard !DemoMode.isOn else { return }
                 if code.isEmpty {
                     UserDefaults.standard.removeObject(forKey: "AppleLanguages")
                 } else {
@@ -232,18 +238,36 @@ struct SettingsList: View {
                     Store.shared.updateCheck = v
                     if v { updates.checkIfDue() }
                 }
+            Toggle(isOn: $updateAutoInstall) {
+                Text("Install updates automatically")
+                // Homebrew only ever carries stable releases.
+                Text(Updater.homebrew != nil && !updateBeta ? "Updates through Homebrew" : "Updates itself")
+            }
+            .onChange(of: updateAutoInstall) { _, v in
+                Store.shared.updateAutoInstall = v
+                if !v { updater.cancelWaiting() }
+            }
+            Toggle("Beta updates", isOn: $updateBeta)
+                .onChange(of: updateBeta) { _, v in
+                    Store.shared.updateBeta = v
+                    // A beta prepared on the old channel is not installed on this one.
+                    updater.cancelWaiting()
+                    // Another channel, another answer. Only with the check on: a switch is not a click on Check now.
+                    if updateCheck { Task { await updates.checkNow() } }
+                }
             LabeledContent("Status", value: updateStatus)
             HStack {
                 Button("Check now") { Task { await updates.checkNow() } }
                     .disabled(updates.checking || updater.phase.busy)
                 if let release = updates.available {
-                    if release.macImage == nil {
+                    if !Updater.canInstall(release) {
                         Button(String(localized: "Open the release page")) {
                             NSWorkspace.shared.open(release.url)
                         }
                     } else {
+                        // The window shows the notes first; Install now is its default button.
                         Button(String(localized: "Install \(release.label)")) {
-                            Task { await updater.install(release) }
+                            UpdateWindow.show(release)
                         }
                         .keyboardShortcut(.defaultAction)
                         .disabled(updater.phase.busy)
@@ -342,7 +366,10 @@ struct SettingsList: View {
                 tone: Store.shared.keychainDenied ? .orange : .green
             ) {
                 if Store.shared.keychainDenied {
-                    Button("Retry") { Task { await Server.shared.stop(); await Server.shared.start() } }
+                    Button("Retry") {
+                        Store.shared.retryKeychain()
+                        Task { await Server.shared.stop(); await Server.shared.start() }
+                    }
                 }
             }
         } header: {

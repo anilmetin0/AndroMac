@@ -43,12 +43,22 @@ struct MenuPanel: View {
             if isPaired {
                 DeviceList()
 
-                PanelCard {
-                    clipboard
-                    if let progress = transfer.progress { files(progress) }
+                // Nothing to show is one quiet line on the panel, not a card around a sentence.
+                // The clipboard row keeps its card while it has buttons in it.
+                if clipboardIsEmpty && !canSendClipboard && !canSendFiles && transfer.progress == nil {
+                    clipboard.padding(.horizontal, Theme.Space.medium)
+                } else {
+                    PanelCard {
+                        clipboard
+                        if let progress = transfer.progress { files(progress) }
+                    }
                 }
 
-                PanelCard { notifications }
+                if history.entries.isEmpty {
+                    emptyNotifications.padding(.horizontal, Theme.Space.medium)
+                } else {
+                    PanelCard { notifications }
+                }
             } else {
                 PanelCard { onboarding }
             }
@@ -142,7 +152,8 @@ struct MenuPanel: View {
             if release.macImage == nil {
                 NSWorkspace.shared.open(release.url)
             } else {
-                Task { await updater.install(release) }
+                // The changelog first; the window's own button installs.
+                UpdateWindow.show(release)
             }
         } label: {
             HStack(spacing: 8) {
@@ -283,11 +294,11 @@ struct MenuPanel: View {
                         .font(Theme.Font.label)
                         .foregroundStyle(copiedLast ? Color.green : Color.secondary)
                         .frame(width: 14)
-                    Text(state.lastClipboard.isEmpty
-                         ? String(localized: "Text you copy on a phone appears here")
+                    Text(clipboardIsEmpty
+                         ? String(localized: "Nothing copied yet")
                          : state.lastClipboard.replacingOccurrences(of: "\n", with: " "))
                         .font(Theme.Font.label)
-                        .foregroundStyle(state.lastClipboard.isEmpty ? .tertiary : .primary)
+                        .foregroundStyle(clipboardIsEmpty ? .secondary : .primary)
                         .lineLimit(1)
                         .truncationMode(.tail)
                     Spacer(minLength: 0)
@@ -328,6 +339,8 @@ struct MenuPanel: View {
             .glassGroup(spacing: Theme.Space.tight)
         }
     }
+
+    private var clipboardIsEmpty: Bool { state.lastClipboard.isEmpty }
 
     /// Back onto the Mac clipboard WITHOUT sending it to the phone again (see `restore`).
     private func copyLast() {
@@ -389,35 +402,44 @@ struct MenuPanel: View {
                 Text("Notifications")
                     .font(Theme.Font.heading)
                 Spacer()
-                if !history.entries.isEmpty {
-                    QuietButton(String(localized: "Clear")) { history.clear() }
-                }
+                QuietButton(String(localized: "Clear")) { history.clear() }
             }
 
-            if history.entries.isEmpty {
-                // The empty state does not just say "nothing", it says when it will fill up, so the
-                // user can tell a broken app from one that is simply waiting.
-                Text(state.isConnected
-                     ? "Notifications from your phones appear here."
-                     : "Notifications appear here once a phone connects.")
-                    .font(Theme.Font.label)
-                    .foregroundStyle(.tertiary)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                // Fixed height: inside `.menuBarExtraStyle(.window)` a list with a flexible height
-                // collapses the second time the panel is opened.
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(recent) { NotificationRow(entry: $0) }
-                }
-                .frame(height: CGFloat(recent.count) * NotificationRow.height, alignment: .top)
+            // Fixed height: inside `.menuBarExtraStyle(.window)` a list with a flexible height
+            // collapses the second time the panel is opened.
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(recent) { NotificationRow(entry: $0) }
+            }
+            .frame(height: CGFloat(recent.count) * NotificationRow.height, alignment: .top)
 
-                if history.entries.count > recent.count {
-                    QuietButton(String(localized: "Show all (\(history.entries.count))")) {
-                        state.showMainWindow(.notifications)
-                    }
+            if history.entries.count > recent.count {
+                QuietButton(String(localized: "Show all (\(history.entries.count))")) {
+                    state.showMainWindow(.notifications)
                 }
             }
         }
+    }
+
+    /// One line in the clipboard row's shape, so the two empty states read as a pair. Clicking it
+    /// opens the history, which is where settings for what gets mirrored are one click away.
+    private var emptyNotifications: some View {
+        Button {
+            state.showMainWindow(.notifications)
+        } label: {
+            HStack(spacing: Theme.Space.small) {
+                Image(systemName: "bell")
+                    .font(Theme.Font.label)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 14)
+                Text("No notifications yet")
+                    .font(Theme.Font.label)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help("Open notification history")
     }
 
     // MARK: footer

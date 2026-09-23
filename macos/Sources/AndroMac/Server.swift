@@ -61,7 +61,8 @@ actor Server {
     // MARK: lifecycle
 
     func start() async {
-        guard listener == nil else { return }
+        // A demo never goes on the air, whichever button (Retry, Forget all) asked for a restart.
+        guard listener == nil, !DemoMode.isOn else { return }
         stopping = false
         installWakeObserver()
         let store = Store.shared
@@ -88,6 +89,11 @@ actor Server {
                 await self.start()
             }
             return
+        }
+        // The identity is in memory now, so the histories can be unsealed (a no-op once loaded).
+        await MainActor.run {
+            NotificationHistory.shared.load()
+            ClipboardHistory.shared.load()
         }
 
         var txt = NWTXTRecord()
@@ -134,15 +140,22 @@ actor Server {
         for task in pingTasks.values { task.cancel() }
         for task in serveTasks.values { task.cancel() }
         pingTasks.removeAll(); serveTasks.removeAll()
-        for session in sessions.values { await session.close() }
+        // Out of the table before the first `await`, so a read loop ending meanwhile finds no row
+        // of its own and does not run `closeSession` on top of this.
+        let closing = sessions
         sessions.removeAll()
+        for session in closing.values { await session.close() }
         listener?.stateUpdateHandler = nil
         listener?.newConnectionHandler = nil
         listener?.cancel(); listener = nil
-        // Both hops are skipped on quit: the main thread is blocked waiting for this call, so a
+        // Not on the main actor, so this runs on quit too: no poll outlives the sessions.
+        await ClipboardWatcher.shared.stopWatching()
+        // The hop is skipped on quit: the main thread is blocked waiting for this call, so a
         // hop to it never returns and every quit used to sit out the full 2 s timeout.
         if updateUI {
             await MainActor.run {
+                for id in closing.keys { FileTransfer.shared.sessionEnded(id) }
+                LinkStats.shared.sessionEnded()
                 AppState.shared.devices.removeAll()
                 AppState.shared.status = .stopped
             }
@@ -450,14 +463,16 @@ actor Server {
         await session?.close()
         lowBatteryAlerted.remove(deviceID)
 
-        if updateUI {
-            let stillConnected = !sessions.isEmpty
-            await MainActor.run {
-                AppState.shared.removeDevice(id: deviceID)
-                if !stillConnected { AppState.shared.status = .listening }
-                LinkStats.shared.sessionEnded()
-                FileTransfer.shared.sessionEnded(deviceID)
-            }
+        // The transfer and the counters always hear of it: a reconnect replaces the socket, and a
+        // transfer left bound to the old one would hold the queue forever. Only the rows and the
+        // status line are left alone on a reconnect, so the panel does not flicker.
+        let stillConnected = !sessions.isEmpty
+        await MainActor.run {
+            LinkStats.shared.sessionEnded()
+            FileTransfer.shared.sessionEnded(deviceID)
+            guard updateUI else { return }
+            AppState.shared.removeDevice(id: deviceID)
+            if !stillConnected { AppState.shared.status = .listening }
         }
         // The poller exists to feed phones; with none left it is just a timer burning cycles.
         if sessions.isEmpty { await ClipboardWatcher.shared.stopWatching() }

@@ -63,7 +63,8 @@ fi
 # app as a new one and Keychain asks for the password every time. One persistent certificate
 # keeps the identity: `scripts/setup-macos-signing.sh --local` creates "AndroMac Self-Signed" and
 # this script uses it when CODESIGN_IDENTITY is unset. CI passes its own through
-# CODESIGN_IDENTITY and CODESIGN_KEYCHAIN.
+# CODESIGN_IDENTITY and CODESIGN_KEYCHAIN. The first local build with it asks once to use the
+# key (login password, then Always Allow); CODESIGN_IDENTITY=- signs ad-hoc instead.
 SELF_SIGNED="AndroMac Self-Signed"
 if [[ -z "${CODESIGN_IDENTITY:-}" ]] && security find-certificate -c "$SELF_SIGNED" >/dev/null 2>&1; then
     CODESIGN_IDENTITY="$SELF_SIGNED"

@@ -18,13 +18,6 @@ struct ClipboardList: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ListToolbar(query: $query, prompt: "Search clipboard history") {
-                Button("Clear") { history.clear() }
-                    .disabled(history.entries.isEmpty)
-                    .secondaryAction()
-                    .controlSize(.small)
-            }
-
             if filtered.isEmpty {
                 EmptyState(
                     symbol: "doc.on.clipboard",
@@ -70,6 +63,11 @@ struct ClipboardList: View {
                 .font(Theme.Font.body)
                 .padding(.horizontal, Theme.inset)
                 .padding(.vertical, Theme.Space.small)
+        }
+        .searchable(text: $query, prompt: "Search clipboard history")
+        .toolbar {
+            Button("Clear") { history.clear() }
+                .disabled(history.entries.isEmpty)
         }
     }
 }

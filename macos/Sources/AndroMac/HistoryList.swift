@@ -19,17 +19,7 @@ struct HistoryList: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ListToolbar(query: $query, prompt: "Search app, title or text") {
-                Text("\(filtered.count) / \(history.entries.count)")
-                    .font(Theme.Font.label.monospacedDigit())
-                    .foregroundStyle(.secondary)
-                Button("Clear") { history.clear() }
-                    .disabled(history.entries.isEmpty)
-                    .secondaryAction()
-                    .controlSize(.small)
-            }
-
+        Group {
             if filtered.isEmpty {
                 EmptyState(
                     symbol: history.entries.isEmpty ? "bell.slash" : "magnifyingglass",
@@ -38,7 +28,7 @@ struct HistoryList: View {
                         : String(localized: "No notifications match your search.")
                 )
             } else {
-                // Edge to edge and scrolling under the bar above, rather than boxed in by a divider.
+                // Straight under the toolbar, so it scrolls beneath it like any Mac list.
                 List(filtered) { entry in
                     HistoryRow(entry: entry)
                         .listRowInsets(EdgeInsets(
@@ -50,6 +40,12 @@ struct HistoryList: View {
                 .scrollContentBackground(.hidden)
                 .softScrollEdges()
             }
+        }
+        .searchable(text: $query, prompt: "Search app, title or text")
+        .navigationSubtitle(Text("\(filtered.count) / \(history.entries.count)"))
+        .toolbar {
+            Button("Clear") { history.clear() }
+                .disabled(history.entries.isEmpty)
         }
     }
 }
