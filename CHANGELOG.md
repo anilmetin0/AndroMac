@@ -19,6 +19,12 @@ raised. Betas list their commits instead.
   the Mac app. The panel walks you through the one-time setup and can open the right setting on
   the phone for you. If adb is already installed on the Mac, AndroMac uses that one. Settings →
   Screen mirroring has sound, screen off, stay awake and a resolution cap.
+- **Updates you can read, and that install themselves.** Before an update installs, a window
+  shows what changed. With **Install updates automatically** on (the default), the Mac installs
+  once nothing is open or running, and the phone once you leave the app, on Wi-Fi only. A Mac
+  installed with Homebrew updates through `brew upgrade`. **Beta updates** follows the test
+  builds published between releases.
+- **Pick your Mac.** With several Macs running AndroMac on the same network, Pair asks which one.
 - **Ready for Android 17.** Android 17 asks before an app may talk to devices on your network.
   AndroMac now asks for that permission and lists it as required on the Permissions card.
 
@@ -33,6 +39,12 @@ raised. Betas list their commits instead.
   The status names the Mac you are connected or connecting to, and pairing shows the Macs the
   phone can see. A new clipboard history lists the last 20 texts sent or received, kept in memory
   only.
+- **No more password prompt after every update.** The Mac app is now signed with one
+  certificate on every build, so after one **Always Allow** the Keychain stops asking. It is
+  still not notarized, so the first-launch step stays.
+- **One AndroMac at a time.** Opening a second copy brings up the one already running.
+- **Releases.** A version is released once and stays put; the builds in between are published
+  as betas.
 - **Easier on the battery.** The phone looks for the Mac only on Wi-Fi or Ethernet, and only on
   the network where it last found it. It goes quiet while the Mac sleeps, holds battery updates
   while the screen is off, skips repeated notifications, and ignores clipboard requests with the
@@ -49,6 +61,12 @@ raised. Betas list their commits instead.
 - With several phones connected, files, notification replies, dismissals and media controls went
   to every phone instead of the right one. A second phone could also rename the first, and a
   stranger's pairing prompt could show a paired phone's name.
+- A phone that was paired with your Mac could treat someone else's Mac on the same Wi-Fi as
+  its own and warn that the key had changed. It now skips other Macs quietly.
+- The Mac showed the phone's model code, such as "SM S926B", instead of its name.
+- In the Mac window, clicking a page could shift the sidebar under the title bar, the ⋯ menu on
+  a phone's card did not open, and Quit took two seconds.
+- A phone that reconnected in the middle of a file transfer left the transfer stuck.
 - Forgetting one phone on the Mac disconnected all of them.
 - The phone could redial nonstop when the Mac hung up right after connecting.
 - Any change to any Android system setting was sent to the Mac. Now only the ringer, volume and
