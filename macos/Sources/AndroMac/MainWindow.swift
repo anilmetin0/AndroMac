@@ -1,19 +1,27 @@
 import AppKit
 import SwiftUI
 
-/// Search, long lists and app management were moved here so the menu bar panel stays glanceable.
+/// Search, long lists, app management and the settings, so the menu bar panel stays glanceable.
 /// Inside `.menuBarExtraStyle(.window)` text field focus is not reliable.
+///
+/// One system sidebar for everything: the three lists, then the settings sections. On macOS 26
+/// `NavigationSplitView` gives the sidebar its Liquid Glass look by itself; nothing here restyles it.
 struct MainWindow: View {
 
-    enum Tab: Hashable, CaseIterable {
-        case notifications, clipboard, apps, settings
+    enum Tab: Hashable {
+        case notifications, clipboard, apps
+        case setting(SettingsSection)
+
+        /// "Open Settings" from the panel, the status menu and ⌘,.
+        static let settings = Tab.setting(.general)
+        static let lists: [Tab] = [.notifications, .clipboard, .apps]
 
         var title: LocalizedStringKey {
             switch self {
             case .notifications: return "Notifications"
             case .clipboard: return "Clipboard"
             case .apps: return "Apps"
-            case .settings: return "Settings"
+            case .setting(let section): return section.title
             }
         }
 
@@ -22,7 +30,7 @@ struct MainWindow: View {
             case .notifications: return "bell"
             case .clipboard: return "doc.on.clipboard"
             case .apps: return "square.grid.2x2"
-            case .settings: return "gearshape"
+            case .setting(let section): return section.symbol
             }
         }
     }
@@ -31,37 +39,31 @@ struct MainWindow: View {
     @State private var tab: Tab = .notifications
 
     var body: some View {
-        // NO padding around this stack. The window used to inset the whole `TabView` by 12 pt,
-        // which left a band of bare window material above and below the content — the "transparent
-        // gap". Content now runs to the window edge and each screen owns its own insets, which is
-        // also what lets a list scroll under the tab bar instead of stopping short of it.
-        VStack(spacing: 0) {
-            picker
-            Divider()
+        NavigationSplitView {
+            List(selection: $tab) {
+                Section {
+                    ForEach(Tab.lists, id: \.self) { row($0) }
+                }
+                Section("Settings") {
+                    ForEach(SettingsSection.allCases) { row(.setting($0)) }
+                }
+            }
+            .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: 240)
+        } detail: {
             content
                 .id(tab)
                 .transition(.opacity)
         }
         .animation(.easeOut(duration: 0.15), value: tab)
-        .frame(minWidth: 640, idealWidth: 700, minHeight: 400, idealHeight: 620)
+        .frame(minWidth: 640, idealWidth: 720, minHeight: 400, idealHeight: 560)
         .onAppear { tab = state.requestedTab }
         .onChange(of: state.requestedTab) { _, requested in tab = requested }
+        // Written back so the next request for the same page still counts as a change.
+        .onChange(of: tab) { _, current in state.requestedTab = current }
     }
 
-    /// A segmented picker rather than `TabView`'s own tab strip: it puts the four screens on one
-    /// line, leaves the content area to the screen itself, and does not draw a second background
-    /// behind everything.
-    private var picker: some View {
-        Picker("", selection: $tab) {
-            ForEach(Tab.allCases, id: \.self) { tab in
-                Label(tab.title, systemImage: tab.symbol).tag(tab)
-            }
-        }
-        .pickerStyle(.segmented)
-        .labelStyle(.titleAndIcon)
-        .labelsHidden()
-        .padding(.horizontal, Theme.inset)
-        .padding(.vertical, Theme.Space.medium)
+    private func row(_ tab: Tab) -> some View {
+        Label(tab.title, systemImage: tab.symbol).tag(tab)
     }
 
     @ViewBuilder
@@ -70,7 +72,7 @@ struct MainWindow: View {
         case .notifications: HistoryList()
         case .clipboard: ClipboardList()
         case .apps: AppsList()
-        case .settings: SettingsList()
+        case .setting(let section): SettingsList(section: section)
         }
     }
 }
@@ -85,7 +87,7 @@ struct SearchField: View {
     let prompt: LocalizedStringKey
 
     var body: some View {
-        HStack(spacing: Theme.Space.snug) {
+        HStack(spacing: Theme.Space.tight) {
             Image(systemName: "magnifyingglass")
                 .font(Theme.Font.label)
                 .foregroundStyle(.secondary)
@@ -103,11 +105,8 @@ struct SearchField: View {
             }
         }
         .padding(.horizontal, Theme.Space.small)
-        .padding(.vertical, Theme.Space.snug)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.small)
-                .fill(Color.secondary.opacity(0.10))
-        )
+        .padding(.vertical, Theme.Space.tight + Theme.Space.hair)
+        .background(Capsule().fill(Color.secondary.opacity(0.10)))
     }
 }
 
@@ -124,6 +123,6 @@ struct ListToolbar<Trailing: View>: View {
             trailing
         }
         .padding(.horizontal, Theme.inset)
-        .padding(.bottom, Theme.Space.medium)
+        .padding(.vertical, Theme.Space.small)
     }
 }

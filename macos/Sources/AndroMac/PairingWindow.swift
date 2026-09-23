@@ -44,8 +44,8 @@ struct PairingView: View {
     let decide: @MainActor (Bool) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 7) {
+        VStack(alignment: .leading, spacing: Theme.Space.medium) {
+            HStack(spacing: Theme.Space.small) {
                 if !request.isFirstDevice {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(Theme.Font.heading)
@@ -71,26 +71,28 @@ struct PairingView: View {
                 .foregroundStyle(.tertiary)
 
             Text(request.isFirstDevice
-                 ? "If it matches the code on the phone screen, tap Pair. If it differs, Reject — someone may be in the middle."
-                 : "A phone you have not paired before is asking to connect. If you are adding a second phone, compare the code and pair it. If you are not expecting this, reject it — and note that a phone whose app was reinstalled arrives as a new device too.")
+                 ? "Pair only if this code matches the one on the phone."
+                 : "Pair only if you are adding a phone and the code matches. A reinstalled app arrives as a new phone.")
                 .font(Theme.Font.label)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Space.small) {
                 Spacer(minLength: 0)
-                // Return always rejects. The window comes up on its own, from a network event, and
-                // anyone on the Wi-Fi can cause one with a fresh key every time, even before the
-                // first phone is paired. A Return typed into another app must never pin a stranger,
-                // so pairing is always a deliberate click.
-                Button("Pair") { decide(true) }
-                    .secondaryAction()
+                // Return always rejects. The window comes up on its own, from a network
+                // event, and anyone on the Wi-Fi can cause one with a fresh key every time, even
+                // before the first phone is paired. A Return typed into another app must never pin
+                // a stranger, so pairing is always a deliberate click, even though Pair is the
+                // primary, glass-prominent action.
                 Button("Reject") { decide(false) }
-                    .prominentAction()
+                    .secondaryAction()
                     .keyboardShortcut(.defaultAction)
+                Button("Pair") { decide(true) }
+                    .prominentAction()
             }
+            .controlSize(.large)
         }
-        .padding(Theme.Space.section)
+        .padding(Theme.Space.large)
         .frame(width: 380)
     }
 
@@ -103,7 +105,7 @@ struct PairingView: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, Theme.Space.medium)
             .background(
-                RoundedRectangle(cornerRadius: Theme.Radius.large)
+                RoundedRectangle(cornerRadius: Theme.Radius.medium)
                     .fill(Color.secondary.opacity(0.10))
             )
             .textSelection(.enabled)

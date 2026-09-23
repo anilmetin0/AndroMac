@@ -13,9 +13,8 @@ struct SettingsList: View {
     @State private var lowBatteryAlert = Store.shared.lowBatteryAlert
     @State private var lowBatteryThreshold = Store.shared.lowBatteryThreshold
     @State private var notificationSound = Store.shared.notificationSound
-    /// `ANDROMAC_DEMO_SETTINGS=permissions` opens that section, so a screenshot is one launch.
-    @State private var section: SettingsSection =
-        DemoMode.isOn ? SettingsSection(rawValue: ProcessInfo.processInfo.environment["ANDROMAC_DEMO_SETTINGS"] ?? "") ?? .general : .general
+    /// Picked in the main window's sidebar.
+    let section: SettingsSection
     @State private var fileTransfer = Store.shared.fileTransfer
     @State private var fileAutoAccept = Store.shared.fileAutoAccept
     @State private var syncBattery = Store.shared.syncBattery
@@ -36,38 +35,23 @@ struct SettingsList: View {
     @State private var mirrorMaxSize = Store.shared.mirrorMaxSize
 
     var body: some View {
-        // A sidebar instead of one long scroll: eleven sections were past the point where a
-        // person could find "Files" without reading everything above it.
-        HStack(spacing: 0) {
-            List(selection: $section) {
-                ForEach(SettingsSection.allCases) { section in
-                    Label(section.title, systemImage: section.symbol).tag(section)
-                }
+        Form {
+            switch section {
+            case .general: general
+            case .sync: sync
+            case .clipboard: clipboard
+            case .notifications: notifications
+            case .files: files
+            case .mirroring: mirroring
+            case .devices: devices
+            case .permissions: permissions
+            case .network: network
+            case .updates: updatesSection
+            case .metrics: metrics
+            case .privacy: privacy
             }
-            .listStyle(.sidebar)
-            .frame(width: 168)
-            Divider()
-            Form {
-                switch section {
-                case .general: general
-                case .sync: sync
-                case .clipboard: clipboard
-                case .notifications: notifications
-                case .files: files
-                case .mirroring: mirroring
-                case .devices: devices
-                case .permissions: permissions
-                case .network: network
-                case .updates: updatesSection
-                case .metrics: metrics
-                case .privacy: privacy
-                }
-            }
-            .formStyle(.grouped)
-            .id(section)
-            .transition(.opacity)
-            .animation(.easeOut(duration: 0.15), value: section)
         }
+        .formStyle(.grouped)
     }
 
     // MARK: sections
@@ -124,7 +108,7 @@ struct SettingsList: View {
     // and then left alone, which is what a settings screen is for.
     @ViewBuilder
     private var sync: some View {
-        Section("What syncs") {
+        Section {
             Toggle("Battery", isOn: $syncBattery)
                 .onChange(of: syncBattery) { _, v in Store.shared.syncBattery = v }
             Toggle("Clipboard", isOn: $syncClipboard)
@@ -141,10 +125,10 @@ struct SettingsList: View {
                     // updates, and leaving the last track on screen would be stale information.
                     if !v { state.media = nil }
                 }
-            Text("Off here, the phone never sends it.")
-                .font(Theme.Font.label)
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
+        } header: {
+            Text("What syncs")
+        } footer: {
+            Text("Off here, the phone never sends it.").formNote()
         }
 
         Section("Battery") {
@@ -160,7 +144,7 @@ struct SettingsList: View {
     }
 
     private var clipboard: some View {
-        Section("Clipboard") {
+        Section {
             Picker("Send automatically", selection: $clipboardAutoSend) {
                 Text("Automatically, when I copy").tag(true)
                 Text("Only when I ask").tag(false)
@@ -178,13 +162,12 @@ struct SettingsList: View {
             Toggle("Ask the phone for its clipboard when the panel opens", isOn: $clipboardPull)
                 .disabled(!syncClipboard)
                 .onChange(of: clipboardPull) { _, v in Store.shared.clipboardPull = v }
-
+        } header: {
+            Text("Clipboard")
+        } footer: {
             // Being straight about the asymmetry is better than a symmetric-looking setting that
             // silently does nothing in one direction.
-            Text("The phone answers when asked. With \"Display over other apps\" granted on the phone the answer is instant; otherwise it shows a notification with one button.")
-                .font(Theme.Font.label)
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
+            Text("Instant with \"Display over other apps\" allowed on the phone, otherwise the phone asks first.").formNote()
         }
     }
 
@@ -198,21 +181,21 @@ struct SettingsList: View {
     }
 
     private var files: some View {
-        Section("Files") {
+        Section {
             Toggle("Receive files", isOn: $fileTransfer)
                 .onChange(of: fileTransfer) { _, v in Store.shared.fileTransfer = v }
             Toggle("Accept files automatically", isOn: $fileAutoAccept)
                 .disabled(!fileTransfer)
                 .onChange(of: fileAutoAccept) { _, v in Store.shared.fileAutoAccept = v }
-            Text("Files are saved to Downloads. Auto-accept applies to every paired phone.")
-                .font(Theme.Font.label)
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
+        } header: {
+            Text("Files")
+        } footer: {
+            Text("Files are saved to Downloads. Auto-accept applies to every paired phone.").formNote()
         }
     }
 
     private var mirroring: some View {
-        Section("Screen mirroring") {
+        Section {
             Toggle("Play the phone's sound on the Mac", isOn: $mirrorAudio)
                 .onChange(of: mirrorAudio) { _, v in Store.shared.mirrorAudio = v }
             Toggle("Turn off the phone's screen while mirroring", isOn: $mirrorScreenOff)
@@ -228,10 +211,10 @@ struct SettingsList: View {
             .pickerStyle(.segmented)
             .onChange(of: mirrorMaxSize) { _, v in Store.shared.mirrorMaxSize = v }
             LabeledContent("scrcpy", value: mirrorTools)
-            Text("Uses Wireless debugging or a USB cable. Turn Wireless debugging off on the phone when you no longer need it.")
-                .font(Theme.Font.label)
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
+        } header: {
+            Text("Screen mirroring")
+        } footer: {
+            Text("Uses Wireless debugging or a USB cable. Turn Wireless debugging off on the phone when you no longer need it.").formNote()
         }
     }
 
@@ -243,7 +226,7 @@ struct SettingsList: View {
     }()
 
     private var updatesSection: some View {
-        Section("Updates") {
+        Section {
             Toggle("Check for updates", isOn: $updateCheck)
                 .onChange(of: updateCheck) { _, v in
                     Store.shared.updateCheck = v
@@ -273,11 +256,6 @@ struct SettingsList: View {
                     .foregroundStyle(installFailed ? .red : .secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            Text("Asks api.github.com once a day, sending only the app version. Downloads are checked against the release checksum before anything is replaced.")
-                .font(Theme.Font.label)
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
-
             // The APK has to get onto the phone somehow, and typing a GitHub URL on a phone
             // keyboard is the worst part of setting this up. The code is drawn locally from a
             // constant; it fetches nothing and works with the update check switched off.
@@ -292,6 +270,10 @@ struct SettingsList: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
+        } header: {
+            Text("Updates")
+        } footer: {
+            Text("Asks api.github.com once a day, sending only the app version.").formNote()
         }
     }
 
@@ -318,7 +300,7 @@ struct SettingsList: View {
             }
 
             if Store.shared.pairedDevices.isEmpty {
-                Text("No phone is paired yet. Open AndroMac on the phone and follow the code.")
+                Text("Open AndroMac on the phone to pair it.")
                     .font(Theme.Font.label)
                     .foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -331,7 +313,7 @@ struct SettingsList: View {
     /// The three macOS grants the app depends on, each with what it is for and a way to fix it.
     /// Android's own grants are not repeated here: the phone is where they are changed.
     private var permissions: some View {
-        Section("Permissions") {
+        Section {
             PermissionRow(
                 title: String(localized: "Notifications"),
                 detail: String(localized: "Mirrored notifications appear in Notification Center."),
@@ -363,23 +345,23 @@ struct SettingsList: View {
                     Button("Retry") { Task { await Server.shared.stop(); await Server.shared.start() } }
                 }
             }
-            Text("Android permissions are listed on the phone, in AndroMac → Permissions.")
-                .font(Theme.Font.label)
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
+        } header: {
+            Text("Permissions")
+        } footer: {
+            Text("Android permissions are listed on the phone, in AndroMac → Permissions.").formNote()
         }
         .onAppear { NotificationMirror.shared.refreshAuthorization() }
     }
 
     private var network: some View {
-        Section("Network") {
+        Section {
             LabeledContent("This Mac's address", value: NetworkInfo.localIPv4() ?? String(localized: "no local network"))
             LabeledContent("Bonjour service", value: "_andromac._tcp")
-            Text("Both devices must be on the same subnet.")
-                .font(Theme.Font.label)
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
             Button("Open Local Network settings") { Self.open(Self.localNetworkSettings) }
+        } header: {
+            Text("Network")
+        } footer: {
+            Text("Both devices must be on the same subnet.").formNote()
         }
     }
 
@@ -517,6 +499,17 @@ struct SettingsList: View {
     }
 }
 
+private extension View {
+    /// A section footer: one quiet line, leading like System Settings (a grouped form centres or
+    /// trails it otherwise).
+    func formNote() -> some View {
+        self.font(Theme.Font.label)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 /// The sidebar entries, in display order.
 enum SettingsSection: String, CaseIterable, Identifiable {
     case general, sync, clipboard, notifications, files, mirroring, devices, permissions, network,
@@ -597,7 +590,7 @@ private struct MetricsSection: View {
     @ObservedObject private var stats = LinkStats.shared
 
     var body: some View {
-        Section("Metrics") {
+        Section {
             LabeledContent("Uptime", value: stats.formattedUptime())
             LabeledContent("Messages",
                            value: String(localized: "\(stats.sent) sent · \(stats.received) received"))
@@ -611,11 +604,11 @@ private struct MetricsSection: View {
                         .joined(separator: ", ")
                 )
             }
-            Text("Idle baseline is about 30 messages per hour for each connected phone.")
-                .font(Theme.Font.label)
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
             Button("Reset counters") { stats.reset() }
+        } header: {
+            Text("Metrics")
+        } footer: {
+            Text("Idle baseline is about 30 messages per hour for each connected phone.").formNote()
         }
     }
 }

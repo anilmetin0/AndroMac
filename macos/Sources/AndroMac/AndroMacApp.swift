@@ -21,9 +21,14 @@ struct AndroMacApp: App {
         Window("AndroMac", id: AndroMacApp.mainWindowID) {
             MainWindow().environmentObject(state)
         }
-        .defaultSize(width: 540, height: 580)
+        .defaultSize(width: 720, height: 560)
         .windowResizability(.contentMinSize)
         .commands {
+            // ⌘, goes to Settings inside the main window; this app has no separate Settings scene.
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") { state.showSettings() }
+                    .keyboardShortcut(",", modifiers: .command)
+            }
             CommandGroup(replacing: .help) {
                 Link("AndroMac Help", destination: URL(string: "https://github.com/anilmetin0/AndroMac#readme")!)
             }
@@ -137,22 +142,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @MainActor @objc private func openMain() { openMainWindow(tab: .notifications) }
-    @MainActor @objc private func openSettings() { openMainWindow(tab: .settings) }
+    @MainActor @objc private func openSettings() { AppState.shared.showSettings() }
 
-    /// The same dance as the panel's Settings button: policy, activate, then find the window.
     @MainActor
-    private func openMainWindow(tab: MainWindow.Tab) {
-        AppState.shared.requestedTab = tab
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
-        AppState.shared.openMainWindow?()
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(200))
-            NSApp.windows
-                .first { $0.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true }?
-                .makeKeyAndOrderFront(nil)
-        }
-    }
+    private func openMainWindow(tab: MainWindow.Tab) { AppState.shared.showMainWindow(tab) }
 
     func applicationWillTerminate(_ notification: Notification) {
         NotificationHistory.shared.flush()

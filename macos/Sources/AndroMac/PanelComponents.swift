@@ -6,10 +6,8 @@ import SwiftUI
 
 /// A group of related rows on its own plate.
 ///
-/// The panel used to be one long column of rows separated by hairlines, which gave every line the
-/// same weight and made it read as a list of settings rather than a status view. Grouping is what
-/// carries the hierarchy now: the device, what it is doing, and what you can switch off are three
-/// things, so they look like three things. Dividers are left for inside a group.
+/// Content, not control: a plain quiet fill, never glass. The controls inside it carry the glass.
+/// The radius is the panel's minus the panel inset, so the card sits concentric in the panel.
 struct PanelCard<Content: View>: View {
     private let content: Content
     init(@ViewBuilder content: () -> Content) { self.content = content() }
@@ -18,7 +16,8 @@ struct PanelCard<Content: View>: View {
         VStack(alignment: .leading, spacing: Theme.Space.small) {
             content
         }
-        .padding(Theme.Space.medium)
+        .padding(.horizontal, Theme.Space.medium)
+        .padding(.vertical, Theme.Space.small + Theme.Space.hair)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: Theme.Radius.medium)
@@ -27,15 +26,24 @@ struct PanelCard<Content: View>: View {
     }
 }
 
-struct SectionLabel: View {
-    private let text: String
-    init(_ text: String) { self.text = text }
+/// A round glass icon button with its tooltip and VoiceOver label, the one shape every panel
+/// action takes.
+struct IconButton: View {
+    let symbol: String
+    let label: String
+    var active = false
+    let action: () -> Void
 
     var body: some View {
-        Text(text)
-            .font(Theme.Font.section)
-            .tracking(0.6)
-            .foregroundStyle(.secondary)
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(Theme.Font.label)
+                .foregroundStyle(active ? Color.accentColor : Color.primary)
+                .frame(width: 16, height: 16)
+        }
+        .glassIcon()
+        .help(label)
+        .accessibilityLabel(label)
     }
 }
 
@@ -98,7 +106,7 @@ struct QuietButton: View {
 
 struct NotificationRow: View {
     /// The panel height is computed from this row (MenuPanel), so the constant is not duplicated in two places.
-    static let height: CGFloat = 40
+    static let height: CGFloat = 34
 
     let entry: NotificationHistory.Entry
 
@@ -124,7 +132,7 @@ struct NotificationRow: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 8) {
-            AppIcon(pkg: entry.pkg, fallback: entry.app, size: 22)
+            AppIcon(pkg: entry.pkg, fallback: entry.app, size: 20)
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 4) {
                     Text(entry.app)
@@ -132,7 +140,7 @@ struct NotificationRow: View {
                         .lineLimit(1)
                     Spacer(minLength: 4)
                     Text(NotificationRow.relative.localizedString(for: entry.date, relativeTo: Date()))
-                        .font(.system(size: 9))
+                        .font(Theme.Font.caption)
                         .foregroundStyle(.tertiary)
                         .lineLimit(1)
                         .fixedSize()
@@ -164,7 +172,7 @@ struct NotificationRow: View {
         } label: {
             HStack(spacing: 3) {
                 Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                    .font(.system(size: 9))
+                    .font(Theme.Font.caption)
                 Text(code)
                     .font(Theme.Font.caption.monospacedDigit())
             }
@@ -204,7 +212,7 @@ struct MediaRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            AppIcon(pkg: media.pkg, fallback: media.app, size: 22)
+            AppIcon(pkg: media.pkg, fallback: media.app, size: 24)
             VStack(alignment: .leading, spacing: 0) {
                 Text(media.title)
                     .font(Theme.Font.body)
@@ -224,7 +232,7 @@ struct MediaRow: View {
                     cmd: media.playing ? "pause" : "play")
             control("forward.fill", label: String(localized: "Next"), cmd: "next")
         }
-        .frame(height: 36)
+        .frame(height: 30)
     }
 
     private func control(_ symbol: String, label: String, cmd: String) -> some View {
@@ -233,47 +241,53 @@ struct MediaRow: View {
             Task { await Server.shared.send(["t": "media_control", "cmd": cmd], to: deviceID) }
         } label: {
             Image(systemName: symbol)
-                .font(Theme.Font.label)
-                .foregroundStyle(.secondary)
+                .font(Theme.Font.body)
+                .foregroundStyle(.primary)
+                .frame(width: 22, height: 22)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .help(label)
         .accessibilityLabel(label)
     }
 }
 
-/// One phone's battery: the bar, the percentage, and what it is doing.
-///
-/// It lives inside the device row rather than at the bottom of the card, because with two phones
-/// open a single bar could only ever describe one of them.
-struct BatteryBar: View {
+/// One phone's battery on one line: the level glyph, the percentage, a bolt while charging, and the
+/// state and temperature as quiet secondary text. The only place the panel prints this phone's
+/// percentage.
+struct BatteryLine: View {
 
     let battery: AppState.Battery
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            HStack(spacing: 8) {
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(Color.secondary.opacity(0.18))
-                        Capsule()
-                            .fill(tint)
-                            .frame(width: max(4, geo.size.width * CGFloat(battery.level) / 100))
-                            .animation(.easeOut(duration: 0.22), value: battery.level)
-                    }
-                }
-                .frame(height: 6)
-
-                Text("\(battery.level)%")
-                    .font(.system(size: 12, weight: .semibold).monospacedDigit())
-                if battery.charging {
-                    Image(systemName: "bolt.fill")
-                        .font(.system(size: 9))
-                        .foregroundStyle(.green)
-                }
+        HStack(spacing: Theme.Space.tight) {
+            Image(systemName: symbol)
+                .font(Theme.Font.body)
+                .foregroundStyle(tint)
+            Text("\(battery.level)%")
+                .font(Theme.Font.body.weight(.medium).monospacedDigit())
+            if battery.charging {
+                Image(systemName: "bolt.fill")
+                    .font(Theme.Font.caption)
+                    .foregroundStyle(.green)
             }
             Text(detail)
-                .font(.system(size: 10))
-                .foregroundStyle(.tertiary)
+                .font(Theme.Font.label)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            Spacer(minLength: 0)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(String(localized: "Battery \(battery.level)%, \(detail)"))
+    }
+
+    private var symbol: String {
+        switch battery.level {
+        case ..<13: return "battery.0percent"
+        case ..<38: return "battery.25percent"
+        case ..<63: return "battery.50percent"
+        case ..<88: return "battery.75percent"
+        default: return "battery.100percent"
         }
     }
 
@@ -282,7 +296,7 @@ struct BatteryBar: View {
         switch battery.level {
         case ..<15: return .red
         case ..<30: return .orange
-        default: return .primary.opacity(0.7)
+        default: return .secondary
         }
     }
 

@@ -75,8 +75,10 @@ enum DemoMode {
 
         // ANDROMAC_DEMO_TAB picks which tab the window opens on, so each screenshot is one launch
         // rather than a click nobody can script reliably.
+        // ANDROMAC_DEMO_SETTINGS=permissions picks the settings section the same way.
+        let section = SettingsSection(rawValue: ProcessInfo.processInfo.environment["ANDROMAC_DEMO_SETTINGS"] ?? "")
         switch ProcessInfo.processInfo.environment["ANDROMAC_DEMO_TAB"] {
-        case "settings": state.requestedTab = .settings
+        case "settings": state.requestedTab = .setting(section ?? .general)
         case "clipboard": state.requestedTab = .clipboard
         case "apps": state.requestedTab = .apps
         default: break
@@ -109,7 +111,7 @@ enum DemoMode {
         let state = AppState.shared
 
         let panel = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 340, height: 10),
+            contentRect: NSRect(x: 0, y: 0, width: Theme.panelWidth, height: 10),
             // Titled rather than borderless: a borderless window cannot become key, and every
             // switch in it would then be drawn in its inactive grey.
             styleMask: [.titled, .fullSizeContentView], backing: .buffered, defer: false
@@ -119,7 +121,8 @@ enum DemoMode {
         panel.standardWindowButton(.closeButton)?.isHidden = true
         panel.standardWindowButton(.miniaturizeButton)?.isHidden = true
         panel.standardWindowButton(.zoomButton)?.isHidden = true
-        panel.contentView = NSHostingView(rootView: MenuPanel().environmentObject(state))
+        // The titled container reserves a titlebar the real menu bar panel does not have.
+        panel.contentView = NSHostingView(rootView: MenuPanel().environmentObject(state).ignoresSafeArea())
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = true
@@ -131,22 +134,18 @@ enum DemoMode {
         panel.makeKeyAndOrderFront(nil)
         held.append(panel)
 
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 560, height: 600),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable],
-            backing: .buffered, defer: false
-        )
-        window.title = "AndroMac"
-        window.contentView = NSHostingView(rootView: MainWindow().environmentObject(state))
-        window.center()
+        // The main window is the real `Window` scene, so the sidebar and toolbar get the system's
+        // own chrome. Its `openWindow` is handed over by the menu bar label once that is on screen.
+        state.openMainWindow?()
         // The screen that was asked for is the one that gets focus: an inactive window draws its
         // switches and selection in grey, which is not what a screenshot of it should show.
         if ProcessInfo.processInfo.environment["ANDROMAC_DEMO_TAB"] != nil {
-            window.makeKeyAndOrderFront(nil)
-        } else {
-            window.orderFront(nil)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                NSApp.windows
+                    .first { $0.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true }?
+                    .makeKeyAndOrderFront(nil)
+            }
         }
-        held.append(window)
     }
 
     /// NSWindow does not retain itself when nothing else does.

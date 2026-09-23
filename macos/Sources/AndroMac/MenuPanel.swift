@@ -18,6 +18,8 @@ struct MenuPanel: View {
     @ObservedObject private var transfer = FileTransfer.shared
     /// Non-nil for a moment after the manual clipboard send, to say how it went.
     @State private var clipSend: ClipboardWatcher.ManualSendResult?
+    /// True for a moment after ⌘C copied the phone's last clipboard.
+    @State private var copiedLast = false
 
     private let recentCount = 4
 
@@ -39,14 +41,11 @@ struct MenuPanel: View {
             }
 
             if isPaired {
-                PanelCard { DeviceList() }
+                DeviceList()
 
                 PanelCard {
                     clipboard
-                    if canSendFiles {
-                        Divider().opacity(0.35)
-                        files
-                    }
+                    if let progress = transfer.progress { files(progress) }
                 }
 
                 PanelCard { notifications }
@@ -56,13 +55,12 @@ struct MenuPanel: View {
 
             footer.padding(.horizontal, Theme.Space.tight)
         }
-        // Horizontal and vertical padding are deliberately different numbers that are meant to LOOK
-        // like the same number. `.menuBarExtraStyle(.window)` wraps this view in a panel that adds
-        // its own inset above and below but not at the sides, so a uniform 16 reads as top-heavy —
-        // roughly 21 pt of air at the top against 16 at the sides.
-        .padding(.horizontal, Theme.inset)
-        .padding(.vertical, Theme.Space.medium)
-        .frame(width: 340)
+        // `.menuBarExtraStyle(.window)` adds its own inset above and below the content but not at
+        // the sides, so the vertical padding is the smaller number to look equal.
+        .padding(.horizontal, Theme.panelInset)
+        .padding(.top, Theme.panelInset)
+        .padding(.bottom, Theme.Space.tight)
+        .frame(width: Theme.panelWidth)
         // `.menuBarExtraStyle(.window)` gives the panel a chrome band above and below the content
         // that our view does not reach — verified by filling the content with a flat colour and
         // measuring where it stopped. The band renders the window's own translucency, so against a
@@ -103,43 +101,21 @@ struct MenuPanel: View {
     /// The button exists only while the phone advertises the capability (PROTOCOL §5).
     private var canSendFiles: Bool { state.isConnected && state.peerCaps.contains("file") }
 
-    @ViewBuilder
-    private var files: some View {
-        if let p = transfer.progress {
-            HStack(spacing: 8) {
-                Image(systemName: p.outgoing ? "arrow.up.doc" : "arrow.down.doc")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-                Text(p.name)
-                    .font(.system(size: 11))
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-                Spacer(minLength: 4)
-                Text("\(p.percent)%")
-                    .font(.system(size: 11).monospacedDigit())
-                    .foregroundStyle(.secondary)
-                QuietButton(String(localized: "Cancel")) { transfer.cancel() }
-            }
-        } else {
-            Button {
-                chooseFiles()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "arrow.up.doc")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                    Text("Send file…")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                    Spacer(minLength: 4)
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundStyle(.tertiary)
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .help("Send files to the phone — or drop them onto this panel")
+    /// A transfer in flight, under the clipboard row it was started from.
+    private func files(_ p: FileTransfer.Progress) -> some View {
+        HStack(spacing: Theme.Space.small) {
+            Image(systemName: p.outgoing ? "arrow.up.doc" : "arrow.down.doc")
+                .font(Theme.Font.label)
+                .foregroundStyle(.secondary)
+            Text(p.name)
+                .font(Theme.Font.label)
+                .lineLimit(1)
+                .truncationMode(.middle)
+            Spacer(minLength: Theme.Space.tight)
+            Text("\(p.percent)%")
+                .font(Theme.Font.label.monospacedDigit())
+                .foregroundStyle(.secondary)
+            QuietButton(String(localized: "Cancel")) { transfer.cancel() }
         }
     }
 
@@ -227,12 +203,11 @@ struct MenuPanel: View {
         .help("Open Notification settings")
     }
 
-    private var separator: some View { Divider().opacity(0.45) }
 
     // MARK: status
 
     private var status: some View {
-        HStack(spacing: 9) {
+        HStack(spacing: Theme.Space.small) {
             // A still dot. It used to pulse forever while looking for the phone, which put permanent
             // motion in the corner of the screen for a state that is usually not the user's problem
             // to solve — and the headline right next to it already says "Waiting for phone". Colour
@@ -260,8 +235,9 @@ struct MenuPanel: View {
     /// While unpaired the panel turns into a setup surface. Toggles and lists are meaningless at
     /// this stage; the user's only job is to connect.
     private var onboarding: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(String(localized: "TO CONNECT"))
+        VStack(alignment: .leading, spacing: Theme.Space.small) {
+            Text("Connect a phone")
+                .font(Theme.Font.heading)
 
             OnboardingStep(
                 number: 1,
@@ -295,52 +271,82 @@ struct MenuPanel: View {
 
     // MARK: clipboard
 
+    /// The phone's last clipboard, then what can be sent from here: the clipboard either way and
+    /// files. Hover shows the whole text, ⌘C puts it back on the Mac clipboard.
     private var clipboard: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Theme.Space.small) {
             Button {
-                openMainWindow(tab: .clipboard)
+                state.showMainWindow(.clipboard)
             } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "doc.on.clipboard")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
+                HStack(spacing: Theme.Space.small) {
+                    Image(systemName: copiedLast ? "checkmark" : "doc.on.clipboard")
+                        .font(Theme.Font.label)
+                        .foregroundStyle(copiedLast ? Color.green : Color.secondary)
+                        .frame(width: 14)
                     Text(state.lastClipboard.isEmpty
                          ? String(localized: "Text you copy on a phone appears here")
                          : state.lastClipboard.replacingOccurrences(of: "\n", with: " "))
-                        .font(.system(size: 11))
-                        .foregroundStyle(state.lastClipboard.isEmpty ? .tertiary : .secondary)
+                        .font(Theme.Font.label)
+                        .foregroundStyle(state.lastClipboard.isEmpty ? .tertiary : .primary)
                         .lineLimit(1)
                         .truncationMode(.tail)
-                    Spacer(minLength: 4)
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundStyle(.tertiary)
+                    Spacer(minLength: 0)
                 }
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .help("Open clipboard history")
-
-            if canSendClipboard {
-                pullClipboardButton
-                sendClipboardButton
+            .help(state.lastClipboard.isEmpty
+                  ? String(localized: "Open clipboard history")
+                  : String(state.lastClipboard.prefix(600)))
+            .contextMenu {
+                Button("Copy", action: copyLast)
+                    .keyboardShortcut("c")
+                    .disabled(state.lastClipboard.isEmpty)
+                Button("Open clipboard history") { state.showMainWindow(.clipboard) }
             }
+            .background {
+                // ⌘C while the panel is open copies the phone's last clipboard.
+                Button("Copy", action: copyLast)
+                    .keyboardShortcut("c")
+                    .disabled(state.lastClipboard.isEmpty)
+                    .opacity(0)
+                    .accessibilityHidden(true)
+            }
+
+            HStack(spacing: Theme.Space.tight) {
+                if canSendClipboard {
+                    pullClipboardButton
+                    sendClipboardButton
+                }
+                // The button exists only while the phone advertises the capability (PROTOCOL §5).
+                if canSendFiles, transfer.progress == nil {
+                    IconButton(symbol: "arrow.up.doc",
+                               label: String(localized: "Send files to the phone, or drop them onto this panel"),
+                               action: chooseFiles)
+                }
+            }
+            .glassGroup(spacing: Theme.Space.tight)
+        }
+    }
+
+    /// Back onto the Mac clipboard WITHOUT sending it to the phone again (see `restore`).
+    private func copyLast() {
+        let text = state.lastClipboard
+        guard !text.isEmpty else { return }
+        Task {
+            await ClipboardWatcher.shared.restore(text)
+            copiedLast = true
+            try? await Task.sleep(for: .milliseconds(1200))
+            copiedLast = false
         }
     }
 
     /// Ask the phone for what it has copied. The panel does this by itself when it opens; the
     /// button is for the second look, when something was copied while the panel was already open.
     private var pullClipboardButton: some View {
-        Button {
+        IconButton(symbol: "arrow.down.circle", label: String(localized: "Ask the phone for its clipboard")) {
             Task { await ClipboardWatcher.shared.requestFromPhones(force: true) }
-        } label: {
-            Image(systemName: "arrow.down.circle")
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary)
         }
-        .buttonStyle(.plain)
-        .help("Ask the phone for its clipboard")
-        .accessibilityLabel("Ask the phone for its clipboard")
     }
 
     /// The Mac's answer to the phone's "Send clipboard" tile. The phone has always had a manual
@@ -351,21 +357,15 @@ struct MenuPanel: View {
     }
 
     private var sendClipboardButton: some View {
-        Button {
+        IconButton(symbol: clipSendSymbol, label: String(localized: "Send the Mac clipboard"),
+                   active: clipSend == .sent) {
             Task {
                 let result = await ClipboardWatcher.shared.sendCurrent()
                 clipSend = result
                 try? await Task.sleep(for: .milliseconds(1400))
                 clipSend = nil
             }
-        } label: {
-            Image(systemName: clipSendSymbol)
-                .font(.system(size: 12))
-                .foregroundStyle(clipSend == .sent ? Color.green : Color.secondary)
         }
-        .buttonStyle(.plain)
-        .help("Send the Mac clipboard")
-        .accessibilityLabel("Send the Mac clipboard")
     }
 
     private var clipSendSymbol: String {
@@ -384,9 +384,10 @@ struct MenuPanel: View {
     }
 
     private var notifications: some View {
-        VStack(alignment: .leading, spacing: 7) {
+        VStack(alignment: .leading, spacing: Theme.Space.tight) {
             HStack {
-                SectionLabel(String(localized: "RECENT NOTIFICATIONS"))
+                Text("Notifications")
+                    .font(Theme.Font.heading)
                 Spacer()
                 if !history.entries.isEmpty {
                     QuietButton(String(localized: "Clear")) { history.clear() }
@@ -399,10 +400,9 @@ struct MenuPanel: View {
                 Text(state.isConnected
                      ? "Notifications from your phones appear here."
                      : "Notifications appear here once a phone connects.")
-                    .font(.system(size: 11))
+                    .font(Theme.Font.label)
                     .foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.vertical, 2)
             } else {
                 // Fixed height: inside `.menuBarExtraStyle(.window)` a list with a flexible height
                 // collapses the second time the panel is opened.
@@ -413,7 +413,7 @@ struct MenuPanel: View {
 
                 if history.entries.count > recent.count {
                     QuietButton(String(localized: "Show all (\(history.entries.count))")) {
-                        openMainWindow(tab: .notifications)
+                        state.showMainWindow(.notifications)
                     }
                 }
             }
@@ -423,65 +423,38 @@ struct MenuPanel: View {
     // MARK: footer
 
     private var footer: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.small) {
-            // Only the sentence that helps right now. The privacy line used to sit here on every
-            // launch forever; it says something true but it is not news after the first read, and
-            // it was costing two lines at the bottom of every glance. It lives in Settings, next to
-            // the one setting that can send anything off the machine.
-            if isPaired, !state.isConnected {
-                // Paired but not connected: almost every connection problem is one of these two things.
-                Text("AndroMac must be open on the phone, on the same Wi‑Fi network.")
+        HStack(spacing: Theme.Space.small) {
+            Button {
+                state.showSettings()
+            } label: {
+                Label("Settings", systemImage: "gearshape")
                     .font(Theme.Font.label)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .keyboardShortcut(",", modifiers: .command)
+            .help("Open Settings")
 
-            HStack(spacing: Theme.Space.tight) {
-                Button {
-                    openMainWindow(tab: .settings)
-                } label: {
-                    Label("Settings", systemImage: "gearshape")
-                        .font(Theme.Font.label)
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
+            Spacer(minLength: 0)
 
-                Spacer(minLength: 0)
+            Image(systemName: "lock.shield")
+                .font(Theme.Font.caption)
+                .foregroundStyle(.tertiary)
+                .help("Local network only")
+                .accessibilityLabel("Local network only")
 
-                Image(systemName: "lock.shield")
-                    .font(Theme.Font.caption)
-                    .foregroundStyle(.tertiary)
-                    .accessibilityLabel("Local network only")
-
-                Button {
-                    NSApplication.shared.terminate(nil)
-                } label: {
-                    Image(systemName: "power")
-                        .font(Theme.Font.label)
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                .help("Quit AndroMac")
-                .accessibilityLabel("Quit AndroMac")
+            Button {
+                NSApplication.shared.terminate(nil)
+            } label: {
+                Image(systemName: "power")
+                    .font(Theme.Font.label)
             }
-            .padding(.top, Theme.Space.hair)
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .keyboardShortcut("q", modifiers: .command)
+            .help("Quit AndroMac")
+            .accessibilityLabel("Quit AndroMac")
         }
-    }
-
-    /// In an LSUIElement (accessory) app, bringing a window to the front does not work in a single
-    /// call; the order matters: Dock policy first, then activation, then the window, then making it
-    /// key. When the window closes, AppDelegate returns the policy to .accessory.
-    private func openMainWindow(tab: MainWindow.Tab) {
-        Task { @MainActor in
-            state.requestedTab = tab
-            NSApp.setActivationPolicy(.regular)
-            try? await Task.sleep(for: .milliseconds(100))
-            NSApp.activate(ignoringOtherApps: true)
-            openWindow(id: AndroMacApp.mainWindowID)
-            try? await Task.sleep(for: .milliseconds(200))
-            NSApp.windows
-                .first { $0.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true }?
-                .makeKeyAndOrderFront(nil)
-        }
+        .frame(height: 24)
     }
 }

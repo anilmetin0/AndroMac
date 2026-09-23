@@ -31,19 +31,20 @@ struct AppsList: View {
                 EmptyState(
                     symbol: "square.grid.2x2",
                     message: modes.apps.isEmpty
-                        ? String(localized: "Apps are listed here once the phone connects and a notification arrives.")
+                        ? String(localized: "Apps appear here after their first notification.")
                         : String(localized: "No apps match your search.")
                 )
             } else {
                 List(filtered) { app in
                     AppRow(app: app)
-                        .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                        .listRowInsets(EdgeInsets(top: Theme.Space.tight, leading: Theme.Space.small,
+                                              bottom: Theme.Space.tight, trailing: Theme.Space.small))
                 }
                 .listStyle(.inset)
                 .scrollContentBackground(.hidden)
                 .softScrollEdges()
 
-                Text("Applied on the phone. Title only sends the title and leaves the content behind.")
+                Text("Title only leaves the content on the phone.")
                     .font(Theme.Font.caption)
                     .foregroundStyle(.tertiary)
                     .padding(.horizontal, Theme.inset)
@@ -58,8 +59,8 @@ private struct AppRow: View {
     let app: AppModes.App
 
     var body: some View {
-        HStack(spacing: 10) {
-            AppIcon(pkg: app.pkg, fallback: app.label, size: 24)
+        HStack(spacing: Theme.Space.small) {
+            AppIcon(pkg: app.pkg, fallback: app.label, size: 22)
             VStack(alignment: .leading, spacing: 0) {
                 Text(app.label).font(Theme.Font.heading)
                 Text(app.pkg)
@@ -68,7 +69,7 @@ private struct AppRow: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
-            Spacer(minLength: 8)
+            Spacer(minLength: Theme.Space.small)
             Picker("", selection: Binding(
                 get: { app.mode },
                 set: { AppModes.shared.set($0, for: app.pkg) }

@@ -29,7 +29,7 @@ struct ClipboardList: View {
                 EmptyState(
                     symbol: "doc.on.clipboard",
                     message: history.entries.isEmpty
-                        ? String(localized: "Text you copy collects here. Click a row to put it back on the Mac clipboard.")
+                        ? String(localized: "Text you copy on either device appears here.")
                         : String(localized: "No entries match your search.")
                 )
             } else {
@@ -42,7 +42,8 @@ struct ClipboardList: View {
                             if copied == entry.id { copied = nil }
                         }
                     }
-                    .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                    .listRowInsets(EdgeInsets(top: Theme.Space.tight, leading: Theme.Space.small,
+                                              bottom: Theme.Space.tight, trailing: Theme.Space.small))
                     .contextMenu {
                         Button("Copy to clipboard") {
                             Task { await ClipboardWatcher.shared.restore(entry.text) }
@@ -68,7 +69,7 @@ struct ClipboardList: View {
                 .controlSize(.small)
                 .font(Theme.Font.body)
                 .padding(.horizontal, Theme.inset)
-                .padding(.vertical, Theme.Space.medium)
+                .padding(.vertical, Theme.Space.small)
         }
     }
 }
@@ -80,15 +81,15 @@ private struct ClipboardRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .top, spacing: 10) {
+            HStack(alignment: .top, spacing: Theme.Space.small) {
                 Image(systemName: entry.direction.symbol)
-                    .font(Theme.Font.section)
+                    .font(Theme.Font.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .frame(width: 14, height: 14)
-                    .padding(.top, 2)
+                    .padding(.top, Theme.Space.hair)
                     .help(entry.direction.label)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Theme.Space.hair) {
                     Text(entry.preview)
                         .font(Theme.Font.body)
                         .lineLimit(2)
@@ -98,7 +99,7 @@ private struct ClipboardRow: View {
                         .foregroundStyle(.tertiary)
                 }
 
-                Spacer(minLength: 6)
+                Spacer(minLength: Theme.Space.small)
 
                 // The one moment of feedback: a brief confirmation on click, then it fades away.
                 Image(systemName: justCopied ? "checkmark.circle.fill" : "arrow.down.doc")
@@ -107,8 +108,8 @@ private struct ClipboardRow: View {
                     .animation(.easeOut(duration: 0.18), value: justCopied)
             }
             .contentShape(Rectangle())
-            .padding(.vertical, 2)
         }
         .buttonStyle(.plain)
+        .help("Copy to the Mac clipboard")
     }
 }
