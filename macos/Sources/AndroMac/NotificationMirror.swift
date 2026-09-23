@@ -1,3 +1,4 @@
+import AndroMacKit
 import AppKit
 import CryptoKit
 import Foundation
@@ -68,7 +69,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         if silent { content.interruptionLevel = .passive }
 
         // A category is ALWAYS registered: even with no actions we still offer "Mute".
-        content.categoryIdentifier = registerCategory(for: parseActions(msg["actions"]))
+        content.categoryIdentifier = registerCategory(for: NotificationAction.parse(msg["actions"]))
 
         // Attach the app icon as a badge; if it is missing, ask the phone for it (once).
         // The temporary copy is handed to UserNotifications and deleted after `add` completes (or
@@ -132,31 +133,24 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
 
     // MARK: categories
 
-    private struct Action { let title: String; let reply: Bool }
-
-    private func parseActions(_ raw: Any?) -> [Action] {
-        guard let list = raw as? [[String: Any]] else { return [] }
-        return list.compactMap {
-            guard let title = $0["title"] as? String, !title.isEmpty else { return nil }
-            return Action(title: title, reply: $0["reply"] as? Bool ?? false)
-        }
-    }
-
     /// A UNNotificationCategory has to be registered in advance. Since the action list differs per
     /// app, we use an identifier derived from its signature and register it on demand.
-    private func registerCategory(for actions: [Action]) -> String {
-        let signature = (actions.map { ($0.reply ? "r:" : "n:") + $0.title } + ["mute"])
+    private func registerCategory(for actions: [NotificationAction]) -> String {
+        let signature = (actions.map { ($0.reply ? "r\($0.index):" : "n\($0.index):") + $0.title } + ["mute"])
             .joined(separator: "|")
         let id = "am." + SHA256.hash(data: Data(signature.utf8))
             .prefix(8).map { String(format: "%02x", $0) }.joined()
         if categories[id] != nil { return id }
+        // One category per distinct action list, so the set is bounded: past 64 it starts over.
+        // A notification still on screen with a dropped category loses only its buttons.
+        if categories.count >= 64 { categories.removeAll() }
 
-        var unActions: [UNNotificationAction] = actions.enumerated().map { index, a in
+        var unActions: [UNNotificationAction] = actions.map { a in
             a.reply
                 ? UNTextInputNotificationAction(
-                    identifier: "a\(index)", title: a.title, options: [],
+                    identifier: "a\(a.index)", title: a.title, options: [],
                     textInputButtonTitle: String(localized: "Send"), textInputPlaceholder: "")
-                : UNNotificationAction(identifier: "a\(index)", title: a.title, options: [])
+                : UNNotificationAction(identifier: "a\(a.index)", title: a.title, options: [])
         }
         // Muting straight from the notification: the most used action, without leaving the keyboard.
         unActions.append(

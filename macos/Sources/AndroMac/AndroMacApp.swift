@@ -26,7 +26,7 @@ struct AndroMacApp: App {
         Window("AndroMac", id: AndroMacApp.mainWindowID) {
             MainWindow().environmentObject(state)
         }
-        .defaultSize(width: 720, height: 560)
+        .defaultSize(width: 720, height: 640)
         .windowResizability(.contentMinSize)
         .commands {
             // ⌘, goes to Settings inside the main window; this app has no separate Settings scene.
@@ -165,11 +165,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         NotificationHistory.shared.flush()
         ClipboardHistory.shared.flush()
-        // stop(updateUI:) does not hop to the MainActor: this thread is waiting on the semaphore,
-        // and hopping would deadlock for 2 s on every quit.
+        // Closing the sessions politely, but never at the cost of a slow quit. Detached: this
+        // method runs on the main actor, so a plain `Task` inherited it and could not even start
+        // while this thread sat on the semaphore. Every quit waited out the whole timeout.
+        // Cancelling a socket is quick; 200 ms is a ceiling, not a wait.
         let done = DispatchSemaphore(value: 0)
-        Task { await Server.shared.stop(updateUI: false); done.signal() }
-        _ = done.wait(timeout: .now() + 2)
+        Task.detached { await Server.shared.stop(updateUI: false); done.signal() }
+        _ = done.wait(timeout: .now() + .milliseconds(200))
     }
 
     /// Pairing is confirmed by the user; the code must match the one on the phone (PROTOCOL §3).

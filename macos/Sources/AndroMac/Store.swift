@@ -37,34 +37,49 @@ final class Store: @unchecked Sendable {
     /// reads `pairedDevices` on the main thread. Sharing one lock froze the menu bar for as long
     /// as the prompt was up.
     private let keychainLock = NSLock()
+    /// Guards the three fields below and is never held across a Keychain call, so the main
+    /// thread reads the flags and the cached key without waiting on a prompt.
+    private let flagLock = NSLock()
     private var cachedKey: P256.KeyAgreement.PrivateKey?
     private var deniedFlag = false
+    private var lockedFlag = false
+
+    private func flags<T>(_ body: () -> T) -> T {
+        flagLock.lock(); defer { flagLock.unlock() }
+        return body()
+    }
 
     /// Keychain access was denied by the user. In that case NO NEW KEY IS GENERATED: generating one
     /// would silently break the existing pairing and the phone would raise a "key has changed" warning.
-    var keychainDenied: Bool {
-        keychainLock.lock(); defer { keychainLock.unlock() }
-        return deniedFlag
-    }
+    /// Sticky for the session: the Keychain is not asked again until `retryKeychain()`.
+    var keychainDenied: Bool { flags { deniedFlag } }
 
     /// The Keychain was still locked on the last read, so `identity()` handed out a throwaway key.
     /// The Server must not advertise with it either: every phone would see a changed key.
-    var keychainLocked: Bool {
-        keychainLock.lock(); defer { keychainLock.unlock() }
-        return lockedFlag
-    }
-    private var lockedFlag = false
+    var keychainLocked: Bool { flags { lockedFlag } }
+
+    /// The Retry button: the next `identity()` asks the Keychain again.
+    func retryKeychain() { flags { deniedFlag = false } }
 
     func identity() -> P256.KeyAgreement.PrivateKey {
+        if let key = flags({ cachedKey }) { return key }
         keychainLock.lock(); defer { keychainLock.unlock() }
-        if let cachedKey { return cachedKey }
-        lockedFlag = false
+        if let key = flags({ cachedKey }) { return key }
+        // Denied once, denied until Retry: asking again would raise the prompt on every start().
+        if flags({ deniedFlag }) { return Crypto.generateKeyPair() }
+        // A demo instance runs against a throwaway HOME with no login keychain: asking the
+        // Keychain there raises a "Keychain Not Found" dialog and blocks this thread until it is
+        // answered. The demo never pairs, so a key that lives only in this process is enough.
+        if DemoMode.isOn {
+            let key = Crypto.generateKeyPair()
+            flags { cachedKey = key; lockedFlag = false }
+            return key
+        }
 
         switch keychainRead() {
         case .found(let raw):
             if let key = try? P256.KeyAgreement.PrivateKey(rawRepresentation: raw) {
-                deniedFlag = false
-                cachedKey = key
+                flags { cachedKey = key; deniedFlag = false; lockedFlag = false }
                 return key
             }
             NSLog("AndroMac: the key in the Keychain is corrupt, generating a new one")
@@ -74,14 +89,14 @@ final class Store: @unchecked Sendable {
             // we do not call it "denied": the next call retries, and once the Keychain unlocks the
             // real key comes back. Caching it would make the phone say "key has changed".
             NSLog("AndroMac: Keychain locked — ephemeral key for this round, will retry later")
-            lockedFlag = true
+            flags { lockedFlag = true }
             return Crypto.generateKeyPair()
 
         case .denied:
-            deniedFlag = true
+            flags { deniedFlag = true; lockedFlag = false }
             NSLog("AndroMac: Keychain access denied — the listener will not start")
-            // The ephemeral key IS NOT CACHED: the next start() retries and, if the user granted
-            // access, the real identity comes back. The Server does not go on the air this round.
+            // The ephemeral key IS NOT CACHED: after Retry the next start() asks again and, if the
+            // user granted access, the real identity comes back. The Server stays off the air.
             return Crypto.generateKeyPair()
 
         case .missing:
@@ -90,20 +105,18 @@ final class Store: @unchecked Sendable {
 
         let key = Crypto.generateKeyPair()
         keychainWrite(key.rawRepresentation)
-        deniedFlag = false
-        cachedKey = key
+        flags { cachedKey = key; deniedFlag = false; lockedFlag = false }
         return key
     }
 
     var publicKey: Data { Crypto.encodePublic(identity().publicKey) }
 
-    /// The key the histories are sealed with (`SealedFile`), or nil while the identity is a
-    /// throwaway one (Keychain locked or denied): sealing with that would make the file
-    /// unreadable once the real key is back, so nothing is read or written until then.
+    /// The key the histories are sealed with (`SealedFile`), or nil until `identity()` has loaded
+    /// the real key (Server.start does, off the main thread). It never reads the Keychain itself,
+    /// so the main thread can call it. Sealing with a throwaway key would make the file unreadable
+    /// once the real key is back, so nothing is read or written until then.
     var historyKey: SymmetricKey? {
-        let id = identity()
-        guard !keychainDenied, !keychainLocked else { return nil }
-        return SealedFile.key(from: id.rawRepresentation)
+        flags { cachedKey }.map { SealedFile.key(from: $0.rawRepresentation) }
     }
 
     // MARK: writing
@@ -324,6 +337,8 @@ final class Store: @unchecked Sendable {
     /// has to be surfaced to the user. Returns the error, `nil` = success.
     @discardableResult
     func setLaunchAtLogin(_ enabled: Bool) -> Error? {
+        // A demo build must not register itself as the user's login item.
+        guard !DemoMode.isOn else { return nil }
         do {
             if enabled { try SMAppService.mainApp.register() }
             else { try SMAppService.mainApp.unregister() }
@@ -397,6 +412,32 @@ final class Store: @unchecked Sendable {
     var updateLastCheck: Date? {
         get { defaults.object(forKey: "updateLastCheck") as? Date }
         set { write(newValue, "updateLastCheck") }
+    }
+
+    /// Default ON: a newer build is downloaded, verified and installed once nothing is running.
+    var updateAutoInstall: Bool {
+        get { flag("updateAutoInstall", default: true) }
+        set { write(newValue, "updateAutoInstall") }
+    }
+
+    /// Default OFF: follow every build pushed to main (the prereleases), not only stable ones.
+    var updateBeta: Bool {
+        get { flag("updateBeta", default: false) }
+        set { write(newValue, "updateBeta") }
+    }
+
+    /// The release an install last quit for, and the build that was running then
+    /// (`label` + "\n" + `CFBundleVersion`). If the next launch is still that build, the install
+    /// did not take, and the automatic install does not try the same release again.
+    var updateAttempt: String {
+        get { defaults.string(forKey: "updateAttempt") ?? "" }
+        set { write(newValue, "updateAttempt") }
+    }
+
+    /// The build that ran last, so the first launch after an update can say it happened.
+    var updateLastRun: String {
+        get { defaults.string(forKey: "updateLastRun") ?? "" }
+        set { write(newValue, "updateLastRun") }
     }
 
     /// The newest release the last check found, as (version, commit, page URL), or nil when up to date.

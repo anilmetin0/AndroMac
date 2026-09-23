@@ -21,12 +21,6 @@ struct AppsList: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ListToolbar(query: $query, prompt: "Search apps") {
-                Text("\(modes.apps.count) apps")
-                    .font(Theme.Font.label)
-                    .foregroundStyle(.secondary)
-            }
-
             if filtered.isEmpty {
                 EmptyState(
                     symbol: "square.grid.2x2",
@@ -52,6 +46,8 @@ struct AppsList: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .searchable(text: $query, prompt: "Search apps")
+        .navigationSubtitle(Text("\(modes.apps.count) apps"))
     }
 }
 

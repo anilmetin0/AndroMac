@@ -3,9 +3,13 @@ import SwiftUI
 
 /// Every paired phone, connected or not, one at a time.
 ///
-/// With one phone the card is that phone. With several, a row of tabs across the top names them,
-/// Finder style, and the card below is the selected one: the same layout whether there is one
-/// phone or five, so nothing has to collapse or expand.
+/// With one phone the card is that phone. With several, a switcher across the top names them and
+/// the card below is the selected one: the same layout whether there is one phone or five.
+///
+/// Switching never moves anything. The switcher has a fixed height, the card keeps the height of
+/// the tallest phone's, and nothing is animated: the opacity transition this used to run kept the
+/// old and the new card in the stack at the same time, the panel grew for the length of the
+/// animation, and the menu bar window resizing under it is what left a gap above the switcher.
 ///
 /// The list joins the two halves of the model: `Store.pairedDevices` is trust, written to disk and
 /// outliving any connection; `AppState.devices` is reachability, which exists only while a session
@@ -22,7 +26,7 @@ struct DeviceList: View {
         return Store.shared.pairedDevices
     }
 
-    /// The tab that is open. It follows the focused device, so selecting a tab also decides which
+    /// The phone that is open. It follows the focused device, so switching also decides which
     /// phone the clipboard and file buttons under the card talk to.
     private var selected: PairedDevice? {
         paired.first { $0.id == state.focusedDeviceID } ?? paired.first
@@ -30,72 +34,116 @@ struct DeviceList: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Space.small) {
-            // The tabs are navigation, so they sit on the panel above the card, not inside it.
-            if paired.count > 1 { tabs }
-            if let device = selected {
+            // Navigation, so it sits on the panel above the card, not inside it.
+            if paired.count > 1 { switcher.frame(height: Self.switcherHeight) }
+            // Every phone's card is laid out and only the open one is shown, so the card is always
+            // as tall as the tallest and the panel keeps its height when the phone changes.
+            if let selected {
                 PanelCard {
-                    DeviceCard(device: device, live: state.devices.first { $0.id == device.id })
+                    ZStack(alignment: .topLeading) {
+                        ForEach(paired) { device in
+                            let isOpen = device.id == selected.id
+                            DeviceCard(device: device, live: live(device))
+                                // Every card fills the tallest one's height, so the actions row
+                                // sits at the bottom edge on every phone.
+                                .frame(maxHeight: .infinity, alignment: .top)
+                                .opacity(isOpen ? 1 : 0)
+                                .allowsHitTesting(isOpen)
+                                .disabled(!isOpen)
+                                .accessibilityHidden(!isOpen)
+                        }
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
                 }
-                .id(device.id)
-                .transition(.opacity)
             }
         }
-        .animation(.easeOut(duration: 0.18), value: state.focusedDeviceID)
     }
 
-    private var tabs: some View {
-        HStack(spacing: Theme.Space.tight) {
-            ForEach(paired) { device in
-                DeviceTab(
-                    device: device,
-                    live: state.devices.first { $0.id == device.id },
-                    selected: device.id == selected?.id
-                ) {
-                    withAnimation(.easeOut(duration: 0.18)) {
-                        state.focusedDeviceID = device.id
-                        state.refocus()
+    static let switcherHeight: CGFloat = 28
+
+    private func select(_ id: String) {
+        state.focusedDeviceID = id
+        state.refocus()
+    }
+
+    private func live(_ device: PairedDevice) -> AppState.DeviceState? {
+        state.devices.first { $0.id == device.id }
+    }
+
+    /// Up to three phones: equal segments on one track, the open one on a raised pill. More than
+    /// that would not fit a readable name, so it becomes a menu with the open phone's name on it.
+    @ViewBuilder
+    private var switcher: some View {
+        if paired.count > 3, let selected {
+            Menu {
+                Picker("Phone", selection: Binding(get: { selected.id }, set: select)) {
+                    ForEach(paired) { device in
+                        Text(DeviceCard.name(device, live(device))).tag(device.id)
                     }
                 }
+                .pickerStyle(.inline)
+                .labelsHidden()
+            } label: {
+                DeviceSegment(device: selected, live: live(selected), selected: true)
             }
+            .menuStyle(.button)
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Capsule().fill(Color.primary.opacity(0.06)))
+            .help("Choose a phone")
+        } else {
+            HStack(spacing: 0) {
+                ForEach(paired) { device in
+                    let isOpen = device.id == selected?.id
+                    Button { select(device.id) } label: {
+                        DeviceSegment(device: device, live: live(device), selected: isOpen)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(isOpen ? .isSelected : [])
+                }
+            }
+            .padding(Theme.Space.hair)
+            .background(Capsule().fill(Color.primary.opacity(0.06)))
         }
-        .glassGroup(spacing: Theme.Space.tight)
     }
 }
 
-/// One tab: a status dot and the name. The battery shows on the tabs that are NOT open; the open
-/// phone prints its own in the card, so no percentage appears twice.
-private struct DeviceTab: View {
+/// One segment: a status dot and the name, middle-truncated so two phones of the same model stay
+/// apart. No battery here: the card below prints the open phone's, and only once.
+private struct DeviceSegment: View {
 
     let device: PairedDevice
     let live: AppState.DeviceState?
     let selected: Bool
-    let select: () -> Void
 
     var body: some View {
-        Button(action: select) {
-            HStack(spacing: Theme.Space.tight) {
-                Circle()
-                    .fill(DeviceCard.dotColor(device: device, connected: live != nil))
-                    .frame(width: 6, height: 6)
-                Text(DeviceCard.name(device, live))
-                    .font(selected ? Theme.Font.label.weight(.semibold) : Theme.Font.label)
-                    .lineLimit(1)
-                if !selected, let battery = live?.battery, Store.shared.syncBattery {
-                    Text("\(battery.level)%")
-                        .font(Theme.Font.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(.horizontal, Theme.Space.small)
-            .padding(.vertical, Theme.Space.tight)
-            .frame(maxWidth: .infinity)
-            .contentShape(Capsule())
-            .selectedCapsule(selected)
+        HStack(spacing: Theme.Space.tight) {
+            Circle()
+                .fill(DeviceCard.dotColor(device: device, connected: live != nil))
+                .frame(width: 6, height: 6)
+            Text(DeviceCard.name(device, live))
+                .font(Theme.Font.label.weight(selected ? .semibold : .regular))
+                .lineLimit(1)
+                .truncationMode(.middle)
         }
-        .buttonStyle(.plain)
         .foregroundStyle(selected ? .primary : .secondary)
-        .accessibilityLabel(device.name)
-        .accessibilityAddTraits(selected ? .isSelected : [])
+        .padding(.horizontal, Theme.Space.small)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background { if selected { pill } }
+        .contentShape(Capsule())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(DeviceCard.name(device, live))
+    }
+
+    /// Glass on 26+, a quiet raised fill before. Either way it only paints: the segment's size
+    /// does not depend on being selected.
+    @ViewBuilder
+    private var pill: some View {
+        if #available(macOS 26.0, *) {
+            Capsule().fill(.clear).glassEffect(.regular, in: Capsule())
+        } else {
+            Capsule().fill(Color.primary.opacity(0.12))
+        }
     }
 }
 
@@ -139,12 +187,15 @@ private struct DeviceCard: View {
                              canOpenOnPhone: live?.caps.contains("debugging") == true)
             } else if !device.paused {
                 // Paired but not here: almost every connection problem is one of these two things.
-                Text("AndroMac must be open on the phone, on the same Wi‑Fi network.")
+                // The Mac only listens (PROTOCOL §1), so there is nothing to click for it: the
+                // phone dials in as soon as both are true.
+                Text("Open AndroMac on the phone, on the same Wi‑Fi.")
                     .font(Theme.Font.label)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            Spacer(minLength: 0)
             actions
         }
     }
@@ -229,7 +280,8 @@ private struct DeviceCard: View {
         .disabled(mirror.phase(device.id).busy)
     }
 
-    /// The per-phone clipboard switch and Disconnect: reachable, but out of the way of a glance.
+    /// The per-phone clipboard switch, Disconnect and Forget: reachable, but out of the way of a
+    /// glance. Offered whatever the phone's state, offline included.
     private var more: some View {
         Menu {
             // Which phones get the Mac's clipboard is a per-device answer, so it belongs here.
@@ -238,9 +290,14 @@ private struct DeviceCard: View {
                 set: { on in Store.shared.updateDevice(id: device.id) { $0.receivesClipboard = on } }
             ))
             Button("Device settings…") { state.showMainWindow(.setting(.devices)) }
+            Divider()
             if !device.paused {
-                Divider()
                 Button("Disconnect", action: toggleConnection)
+            }
+            // The same as Forget in Settings: this phone only, hung up on at once.
+            Button("Forget", role: .destructive) {
+                Store.shared.unpair(id: device.id)
+                Task { await Server.shared.disconnect(device.id) }
             }
         } label: {
             Image(systemName: "ellipsis")

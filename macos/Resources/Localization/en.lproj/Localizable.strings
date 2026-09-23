@@ -27,9 +27,9 @@
 "Android permissions are listed on the phone, in AndroMac → Permissions." = "Android permissions are listed on the phone, in AndroMac → Permissions.";
 "AndroMac" = "AndroMac";
 "AndroMac %@ is available" = "AndroMac %@ is available";
-"AndroMac can download and install it now, then restart itself." = "AndroMac can download and install it now, then restart itself.";
+"AndroMac can't update itself in this folder. Move it to Applications and try again." = "AndroMac can't update itself in this folder. Move it to Applications and try again.";
 "AndroMac Help" = "AndroMac Help";
-"AndroMac must be open on the phone, on the same Wi‑Fi network." = "AndroMac must be open on the phone, on the same Wi‑Fi network.";
+"AndroMac was updated to %@" = "AndroMac was updated to %@";
 "Another phone wants to pair" = "Another phone wants to pair";
 "Apps" = "Apps";
 "Apps appear here after their first notification." = "Apps appear here after their first notification.";
@@ -39,6 +39,7 @@
 "Automatically, when I copy" = "Automatically, when I copy";
 "Battery" = "Battery";
 "Battery %lld%%, %@" = "Battery %lld%%, %@";
+"Beta updates" = "Beta updates";
 "Blocked or no network" = "Blocked or no network";
 "Bonjour service" = "Bonjour service";
 "Both devices must be on the same subnet." = "Both devices must be on the same subnet.";
@@ -50,8 +51,8 @@
 "Checking the download against the release checksum…" = "Checking the download against the release checksum…";
 "Checking the download…" = "Checking the download…";
 "Checking…" = "Checking…";
+"Choose a phone" = "Choose a phone";
 "Clear" = "Clear";
-"Clear search" = "Clear search";
 "Clipboard" = "Clipboard";
 "Connect" = "Connect";
 "Connect a phone" = "Connect a phone";
@@ -82,8 +83,8 @@
 "Files are saved to Downloads. Auto-accept applies to every paired phone." = "Files are saved to Downloads. Auto-accept applies to every paired phone.";
 "Forget" = "Forget";
 "Forget all devices" = "Forget all devices";
-"full" = "full";
 "Full" = "Full";
+"full" = "full";
 "General" = "General";
 "Get the app on the phone" = "Get the app on the phone";
 "History" = "History";
@@ -96,6 +97,7 @@
 "Install AndroMac on the phone and open it" = "Install AndroMac on the phone and open it";
 "Install now" = "Install now";
 "Install this update and restart" = "Install this update and restart";
+"Install updates automatically" = "Install updates automatically";
 "Installing and restarting…" = "Installing and restarting…";
 "Installing. AndroMac will restart itself." = "Installing. AndroMac will restart itself.";
 "Instant with \"Display over other apps\" allowed on the phone, otherwise the phone asks first." = "Instant with \"Display over other apps\" allowed on the phone, otherwise the phone asks first.";
@@ -127,16 +129,16 @@
 "No entries match your search." = "No entries match your search.";
 "no local network" = "no local network";
 "No notifications match your search." = "No notifications match your search.";
+"No notifications yet" = "No notifications yet";
 "not charging" = "not charging";
 "Not connected" = "Not connected";
 "Not installed" = "Not installed";
 "Not paired" = "Not paired";
 "Not started" = "Not started";
+"Nothing copied yet" = "Nothing copied yet";
 "Notifications" = "Notifications";
-"Notifications appear here once a phone connects." = "Notifications appear here once a phone connects.";
 "Notifications are off for AndroMac" = "Notifications are off for AndroMac";
 "Notifications from your phone appear here." = "Notifications from your phone appear here.";
-"Notifications from your phones appear here." = "Notifications from your phones appear here.";
 "Off" = "Off";
 "Off here, the phone never sends it." = "Off here, the phone never sends it.";
 "Offline" = "Offline";
@@ -144,10 +146,12 @@
 "Only when I ask" = "Only when I ask";
 "Open AndroMac" = "Open AndroMac";
 "Open AndroMac on the phone to pair it." = "Open AndroMac on the phone to pair it.";
+"Open AndroMac on the phone, on the same Wi‑Fi." = "Open AndroMac on the phone, on the same Wi‑Fi.";
 "Open at login" = "Open at login";
 "Open clipboard history" = "Open clipboard history";
 "Open device settings" = "Open device settings";
 "Open Local Network settings" = "Open Local Network settings";
+"Open notification history" = "Open notification history";
 "Open Notification settings" = "Open Notification settings";
 "Open on phone" = "Open on phone";
 "Open Settings" = "Open Settings";
@@ -209,7 +213,6 @@
 "Sync" = "Sync";
 "System" = "System";
 "Tap \"Pair\" on the phone" = "Tap \"Pair\" on the phone";
-"Text you copy on a phone appears here" = "Text you copy on a phone appears here";
 "Text you copy on either device appears here." = "Text you copy on either device appears here.";
 "The code did not match. Open a new code on the phone and try again." = "The code did not match. Open a new code on the phone and try again.";
 "The download could not be opened." = "The download could not be opened.";
@@ -217,8 +220,8 @@
 "The download does not contain AndroMac." = "The download does not contain AndroMac.";
 "The download does not match the checksum published with the release." = "The download does not match the checksum published with the release.";
 "The download is larger than expected." = "The download is larger than expected.";
+"The download is not signed like this copy of AndroMac." = "The download is not signed like this copy of AndroMac.";
 "The download is not the version the release announced." = "The download is not the version the release announced.";
-"The release page has the download." = "The release page has the download.";
 "The release publishes no checksum for this download." = "The release publishes no checksum for this download.";
 "The release's checksum file could not be read." = "The release's checksum file could not be read.";
 "This Mac" = "This Mac";
@@ -236,6 +239,8 @@
 "unknown" = "unknown";
 "Up to date · checked %@" = "Up to date · checked %@";
 "Updates" = "Updates";
+"Updates itself" = "Updates itself";
+"Updates through Homebrew" = "Updates through Homebrew";
 "Uptime" = "Uptime";
 "Uses Wireless debugging or a USB cable. Turn Wireless debugging off on the phone when you no longer need it." = "Uses Wireless debugging or a USB cable. Turn Wireless debugging off on the phone when you no longer need it.";
 "Version" = "Version";

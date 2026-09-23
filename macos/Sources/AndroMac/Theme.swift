@@ -33,6 +33,9 @@ enum Theme {
         static let small: CGFloat = 6
         static let medium: CGFloat = 12
         static let large: CGFloat = 16
+        /// The menu bar panel's own corner before macOS 26, which has no container shape to derive
+        /// the card corner from. On 26+ the window's shape is read instead (`panelCard`).
+        static let legacyPanel: CGFloat = 10
     }
 
     /// The window content inset.
@@ -87,31 +90,25 @@ extension View {
         }
     }
 
-    /// The same round glass control for a `Menu`. A menu does not take `.buttonStyle(.glass)` (it
-    /// draws its own bezel), so the circle is drawn around a plain label instead.
-    @ViewBuilder
+    /// The same round glass control for a `Menu`. With `.menuStyle(.button)` a menu is drawn by
+    /// the button style, so it takes exactly the bezel `glassIcon` gives a button and keeps the
+    /// menu's own full-size hit area. (Painting glass around a plain menu label left only the
+    /// 16 pt glyph clickable, and the interactive glass layer on top ate the rest of the clicks.)
     func glassMenu() -> some View {
-        let base = self
-            .menuStyle(.button)
-            .menuIndicator(.hidden)
-            .buttonStyle(.plain)
-            .fixedSize()
-            .frame(width: 24, height: 24)
-            .contentShape(Circle())
-        if #available(macOS 26.0, *) {
-            base.glassEffect(.regular.interactive(), in: Circle())
-        } else {
-            base.background(Circle().fill(Color.secondary.opacity(0.15)))
-        }
+        self.menuStyle(.button).menuIndicator(.hidden).glassIcon()
     }
 
-    /// The selected state of a capsule control (the device tabs): glass on 26+, a quiet fill before.
+    /// A card's plate, concentric with the window it sits in. On 26+ the corner is derived from
+    /// the container (the panel window), so it follows whatever radius the system gives the panel;
+    /// before 26 it is the panel radius minus the inset, with a floor so it never turns square.
     @ViewBuilder
-    func selectedCapsule(_ selected: Bool) -> some View {
+    func panelCard(_ fill: some ShapeStyle) -> some View {
         if #available(macOS 26.0, *) {
-            self.glassEffect(selected ? .regular.interactive() : .identity, in: Capsule())
+            self.background(fill, in: ConcentricRectangle(corners: .concentric(minimum: .fixed(Theme.Radius.small)), isUniform: true))
         } else {
-            self.background(Capsule().fill(selected ? Color.primary.opacity(0.10) : .clear))
+            self.background(fill, in: RoundedRectangle(
+                cornerRadius: max(Theme.Radius.legacyPanel - Theme.panelInset, Theme.Radius.small)
+            ))
         }
     }
 

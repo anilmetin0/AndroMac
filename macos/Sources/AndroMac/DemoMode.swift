@@ -55,6 +55,10 @@ enum DemoMode {
                 caps: ["clipboard", "file"]
             ),
         ]
+        // ANDROMAC_DEMO_OFFLINE=1 leaves the tablet paired but not connected, for the offline card.
+        if ProcessInfo.processInfo.environment["ANDROMAC_DEMO_OFFLINE"] == "1" {
+            state.devices.removeAll { $0.id == tablet.id }
+        }
         state.focusedDeviceID = phone.id
         state.refocus()
 
@@ -126,9 +130,8 @@ enum DemoMode {
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = true
-        panel.contentView?.wantsLayer = true
-        panel.contentView?.layer?.cornerRadius = 12
-        panel.contentView?.layer?.masksToBounds = true
+        // No corner radius of its own: the titled window's corner is the system's, close to the real
+        // panel's, and it is what the cards take their concentric corner from.
         panel.setContentSize(panel.contentView?.fittingSize ?? .zero)
         panel.center()
         panel.makeKeyAndOrderFront(nil)

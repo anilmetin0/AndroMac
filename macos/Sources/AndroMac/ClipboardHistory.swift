@@ -48,16 +48,16 @@ final class ClipboardHistory: ObservableObject {
 
     @Published private(set) var entries: [Entry] = []
     private var saveTask: Task<Void, Never>?
+    /// Nothing is written before the file was read: a save before that would replace the stored
+    /// history with only what arrived since launch.
+    private var loaded = false
+    private var loadTask: Task<Void, Never>?
 
     private init() {
-        let base = FileManager.default
+        // Application Support ignores HOME, so a demo run touches none of this (see `save`).
+        fileURL = FileManager.default
             .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("AndroMac", isDirectory: true)
-        // Private data (clipboard text, notification bodies): owner-only directory.
-        try? FileManager.default.createDirectory(
-            at: base, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700]
-        )
-        fileURL = base.appendingPathComponent("clipboard.json")
+            .appendingPathComponent("AndroMac/clipboard.json")
         load()
     }
 
@@ -79,26 +79,38 @@ final class ClipboardHistory: ObservableObject {
         scheduleSave()
     }
 
+    /// Clear, and unpairing: the file is deleted rather than rewritten, which works even before
+    /// the key is loaded.
     func clear() {
         entries.removeAll()
-        flush()
+        saveTask?.cancel(); saveTask = nil
+        loadTask?.cancel(); loadTask = nil
+        loaded = true
+        guard !DemoMode.isOn else { return }
+        try? FileManager.default.removeItem(at: fileURL)
     }
 
-    /// Read off the main thread: the history key comes from the Keychain, and the first read of
-    /// it can wait on a system prompt. Entries added meanwhile stay on top.
-    private func load() {
+    /// Reads the file once the identity key is in memory; until then it does nothing, and
+    /// Server.start calls it again after loading the identity off the main thread. The decrypt and
+    /// decode run detached. Entries added meanwhile stay on top.
+    func load() {
+        guard !DemoMode.isOn, !loaded, loadTask == nil, let key = Store.shared.historyKey else { return }
         let url = fileURL
-        Task {
+        loadTask = Task {
             let decoded: [Entry]? = await Task.detached {
-                guard let key = Store.shared.historyKey,
-                      let raw = try? Data(contentsOf: url),
+                guard let raw = try? Data(contentsOf: url),
                       let data = SealedFile.open(raw, key: key) else { return nil }
                 return try? JSONDecoder().decode([Entry].self, from: data)
             }.value
-            guard let decoded else { return }
-            let fresh = self.entries
-            self.entries = fresh + decoded.filter { old in !fresh.contains { $0.id == old.id } }
-            if self.entries.count > self.limit { self.entries.removeLast(self.entries.count - self.limit) }
+            guard !Task.isCancelled else { return }
+            loadTask = nil
+            loaded = true
+            let fresh = entries
+            if let decoded {
+                entries = fresh + decoded.filter { old in !fresh.contains { $0.id == old.id } }
+                if entries.count > limit { entries.removeLast(entries.count - limit) }
+            }
+            if !fresh.isEmpty { scheduleSave() }        // what arrived before the load was not saved
         }
     }
 
@@ -121,10 +133,16 @@ final class ClipboardHistory: ObservableObject {
     }
 
     /// Sealed with `Store.historyKey`, so the file is useless to anything without the Keychain.
+    /// Never in a demo: its seeded entries would replace the user's real history.
     private func save() {
-        guard let key = Store.shared.historyKey,
+        guard !DemoMode.isOn, loaded, let key = Store.shared.historyKey,
               let plain = try? JSONEncoder().encode(entries),
               let data = SealedFile.seal(plain, key: key) else { return }
+        // Private data (clipboard text, notification bodies): owner-only directory.
+        try? FileManager.default.createDirectory(
+            at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true,
+            attributes: [.posixPermissions: 0o700]
+        )
         try? data.write(to: fileURL, options: [.atomic, .completeFileProtection])
     }
 }
