@@ -3,9 +3,11 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The `## <version>` section that matches the `VERSION` file is the release notes of the rolling
-build for that version. It is edited in place while that version is in development; a new
-version gets a new section.
+The The `## <version>` section matching the `VERSION` file is the notes of that stable release.
+New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
+raised. Betas list their commits instead.
+
+## Unreleased
 
 ## 1.1.0 — 2026-09-23
 

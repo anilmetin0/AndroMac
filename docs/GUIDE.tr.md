@@ -82,9 +82,8 @@ Dokununca doğru ekranı açar; çarpı, başka bir izin geri alınana kadar giz
 günceller. Uygulama olarak `https://github.com/anilmetin0/AndroMac` adresini ekle ya da telefonda
 [obtainium://add/github.com/anilmetin0/AndroMac](obtainium://add/https://github.com/anilmetin0/AndroMac)
 bağlantısını aç. Yayın APK'sı her sürümde aynı anahtarla imzalanır, güncellemeler yerinde kurulur.
-Obtainium etiket adına bakar ve etiket bir sürüm geliştirmedeyken değişmez; bu yüzden aynı sürümün
-yeni paketini ancak **yayın tarihini sürüm olarak kullan** seçeneği açıkken fark eder. Aşağıda
-anlatılan uygulama içi denetim ise commit'i karşılaştırdığı için fark eder.
+Obtainium kararlı sürümleri izler; beta derlemeleri de almak için **ön sürümleri dahil et**
+seçeneğini aç.
 
 ### Güncelleme denetimi
 
