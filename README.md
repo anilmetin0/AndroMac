@@ -4,8 +4,10 @@ AndroMac keeps an Android phone and a Mac in sync over your own Wi-Fi network. I
 battery level, the clipboard in both directions, and mirrored notifications you can act on and
 dismiss from the Mac. It also carries per-app notification tiers, the track playing on the phone
 with transport controls, the phone's ringer and volume, and a button that makes a lost phone ring.
-There is no server or cloud service behind it and no account to create. Neither app uses a
-third-party library. The two apps find each other over Bonjour, agree on a key, and talk directly.
+The Mac can also show the phone's screen in a window. There is no server or cloud service
+behind it and no account to create. Neither app links a third-party library; the Mac package
+carries scrcpy and adb as separate programs for screen mirroring. The two apps find each other
+over Bonjour, agree on a key, and talk directly.
 
 [![build](https://github.com/anilmetin0/AndroMac/actions/workflows/build.yml/badge.svg)](https://github.com/anilmetin0/AndroMac/actions/workflows/build.yml)
 [![release](https://img.shields.io/github/v/release/anilmetin0/AndroMac?label=release)](https://github.com/anilmetin0/AndroMac/releases/latest)
@@ -45,10 +47,36 @@ third-party library. The two apps find each other over Bonjour, agree on a key, 
 | Verification codes | Mac | When a mirrored notification carries a one-time code, the panel puts the code itself on a copy button. Copying it does not send it back to the phone and does not enter the clipboard history. |
 | Connection guide | Both | Neither app says "cannot connect". Both show which step is stuck, and the phone has a live diagnostics screen. |
 | Metrics | Mac | Messages per hour, traffic, reconnect count and the most frequent message types, so you can check the energy claim yourself. |
+| Screen mirroring | Phone to Mac | The phone's screen in a window, with mouse, keyboard and sound, through the bundled scrcpy over Wireless debugging or USB. See [Screen mirroring](#screen-mirroring). |
 | Updates | Both | Each app checks once a day, offers what it finds at launch, and installs it itself. The download is verified against the checksum published with the release before anything is replaced. One switch turns the check off. |
 
 Out of scope: SMS, call control, more than one Mac, and access over the internet. The design is
 any number of phones and one Mac on one local network.
+
+### Screen mirroring
+
+The Mac can show the phone's screen in a window and pass the mouse, the keyboard and the sound
+through. That part is [scrcpy](https://github.com/Genymobile/scrcpy), which ships inside the Mac
+package together with adb. It does not ride the AndroMac connection. It uses Android's own
+debugging channel, so the phone needs one switch that no app can flip for you:
+
+1. On the phone, unlock Developer options by tapping **Build number** seven times, then turn on
+   **Wireless debugging**. A USB cable with USB debugging on works too.
+2. Press the mirror button on the phone's card in the Mac panel. The first time, the panel asks
+   for a pairing code. On the phone open Wireless debugging, then **Pair device with pairing
+   code**, and type the six digits into the panel. This pairing is adb's own and happens once per
+   Mac.
+3. The phone's screen opens in a window. Close the window to stop.
+
+While Wireless debugging is off the panel says so, and **Open on phone** opens that setting on
+the phone. The phone reports the switch, so the Mac carries on by itself once it is on. Settings
+→ Screen mirroring holds the sound, turning the phone's screen off, keeping it awake and a
+resolution cap. While AndroMac syncs the clipboard, scrcpy's own clipboard sync stays off so the
+two do not echo each other.
+
+Wireless debugging lets any computer the phone trusted in adb control it, so turn it off when
+you are done. A build from source without the bundled copy uses `brew install scrcpy`. What is
+bundled, and under which licenses, is in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 ### Why the clipboard is asked for in one direction
 
@@ -203,8 +231,10 @@ with `brew upgrade --cask --greedy-latest andromac` rather than plain `brew upgr
    notification access screen once, with the reason. The **Permissions** card on the main screen
    is always visible. Its first line reads "All permissions granted" or names what is missing,
    and each missing permission is listed underneath; tapping one opens the right system screen.
-   Tapping the card's header opens a full Permissions screen that lists all five, each marked
+   Tapping the card's header opens a full Permissions screen that lists all six, each marked
    Granted or Not granted and noted as Required, Recommended or Optional:
+   - **Local network access**, required on Android 17 and later. Without it the phone can
+     neither find nor reach the Mac. Android files it under Nearby devices.
    - **Allow notifications**, required, so the app can show its own ongoing and clipboard
      notifications.
    - **Notification access**, required, for notification mirroring and for reading the media
@@ -215,10 +245,9 @@ with `brew upgrade --cask --greedy-latest andromac` rather than plain `brew upgr
    - **Display over other apps**, optional, so the Mac can ask for the clipboard without you
      tapping a notification first. The app declares the `SYSTEM_ALERT_WINDOW` permission, so it
      appears in Android's list for this setting and the switch can be turned on.
-3. While either of the two required permissions is missing, a banner sits at the top of the
-   screen saying which. Tapping it opens the right settings screen, and the cross dismisses it
-   until something else is revoked. Without those two the mirror relays nothing, which is why
-   the banner interrupts.
+3. While a required permission is missing, a banner sits at the top of the screen saying which.
+   Tapping it opens the right settings screen, and the cross dismisses it until something else
+   is revoked. Without those the app relays nothing, which is why the banner interrupts.
 4. On Android 13 and later the notification access toggle is greyed out for sideloaded apps, with
    a message about restricted settings. Try it once so the system registers the attempt, then go
    to **Settings → Apps → AndroMac → ⋮ → Allow restricted settings** and try again.
@@ -316,7 +345,7 @@ Everything else is one level down.
 
 | Screen | What is on it |
 |---|---|
-| Permissions | All five permissions, each marked Granted or Not granted, with Required, Recommended or Optional noted. Tapping one opens the matching system screen. |
+| Permissions | All six permissions, each marked Granted or Not granted, with Required, Recommended or Optional noted. Tapping one opens the matching system screen. |
 | Connection | State, the Mac's name and last address, **Reconnect automatically**, **Connect now**, and **Forget this Mac**. |
 | Notification settings | **App filter** with a summary of what is set, **Silent notifications**, and **Only while the phone is locked**. It also lists what is always filtered out. |
 | App filter | The three-tier picker for every app the phone has seen, reached from Notification settings. |
@@ -343,7 +372,7 @@ Settings, and the detail lives in the window.
 | Notifications | The history, with search and a clear button. |
 | Clipboard | The history, with search, click to copy, right-click to send back or delete. |
 | Apps | The tier picker for every app on the phone. |
-| Settings | A sidebar with General, Sync, Clipboard, Notifications, Files, Devices, Permissions, Network, Updates, Metrics and Privacy. |
+| Settings | A sidebar with General, Sync, Clipboard, Notifications, Files, Screen mirroring, Devices, Permissions, Network, Updates, Metrics and Privacy. |
 
 Settings is a sidebar layout: the sections listed on the left, the chosen section's options on
 the right. General has **Open at login**, **Show battery percentage in the menu bar**, and a
@@ -441,6 +470,8 @@ per hour for each connected phone when idle. Noticeably more means one of the ru
 
 You need macOS 14 or later, Xcode 26.6 or later for the Swift 6.2 toolchain, JDK 25, and the
 Android SDK with platform 37 and build-tools 36.0.0. Gradle 9.7.1 arrives through the wrapper.
+`macos/scripts/fetch-scrcpy.sh` downloads the scrcpy release the Mac package bundles and checks
+it against a pinned SHA-256; `build.sh` includes it when it is there and skips it otherwise.
 There is no Xcode project: the macOS side is a Swift package that `build.sh` assembles into an
 app bundle.
 
@@ -508,17 +539,19 @@ CHANGELOG.md, CHANGELOG.tr.md      release notes, read by the release job
 verify-crypto.sh                   proves the two crypto implementations agree, vector by vector
 verify-handshake.sh                runs the real Swift and Kotlin session code over loopback
 scripts/setup-android-signing.sh   creates the APK signing key and uploads it as secrets
+THIRD-PARTY-NOTICES.md             what the Mac package bundles for screen mirroring, and the licenses
 Casks/andromac.rb                  Homebrew cask, resolves the current build from the release API
 .github/workflows/build.yml        verify, test, build both apps, publish the release
+.github/workflows/codeql.yml       CodeQL on the workflow files
 .github/dependabot.yml             weekly updates for the actions and the Gradle plugins
 
 docs/PROTOCOL.md                   the wire protocol both sides are written against
 docs/ENERGY.md                     the energy rules, where each lives, and how to measure them
 docs/RELEASING.md                  the release checklist and what the pipeline does with it
 
-android/                           AGP 9.4.0, Gradle 9.7.1, minSdk 29, no dependencies
+android/                           AGP 9.4.1, Gradle 9.7.1, minSdk 29, no dependencies
   app/src/main/AndroidManifest.xml
-  app/src/main/kotlin/io/github/anilmetin0/andromac/
+  app/src/main/kotlin/dev/andromac/
     core/Crypto.kt                 P-256, HKDF and AES-GCM on plain JCE, no Android API
     core/Session.kt                the handshake as initiator, plus encrypted framing
     core/Protocol.kt               message builders and constants
@@ -562,6 +595,7 @@ macos/                             Swift package, swift-tools 6.2, macOS 14+, no
   Package.swift
   build.sh                         builds and packages the .app, sets the version, signs it
   scripts/update-strings.sh        extracts the localization keys and rewrites the .strings files
+  scripts/fetch-scrcpy.sh          fetches and verifies the bundled scrcpy and adb into vendor/
   Resources/Info.plist
   Resources/Localization/          en.lproj and tr.lproj
   Resources/make-icon.swift        generates the app icon, so no binary lives in the repo
@@ -574,6 +608,7 @@ macos/                             Swift package, swift-tools 6.2, macOS 14+, no
     PairedDevice.swift             one trusted phone as it is written to disk, keyed by its static key
     VerificationCode.swift         finds the one-time code in a notification, for the copy button
     ReleaseInfo.swift              the release the update check compares against
+    AdbOutput.swift                parses `adb devices` and `adb mdns services`
   Sources/AndroMac/
     AndroMacApp.swift              the menu bar item, the window and the pairing dialog
     Server.swift                   Bonjour, handshake limits, the session, ping, dispatch
@@ -584,6 +619,7 @@ macos/                             Swift package, swift-tools 6.2, macOS 14+, no
     FileTransfer.swift             file send and receive: offer, consent window, chunks, hash, quarantine
     MenuPanel.swift                the menu bar panel
     DeviceList.swift               every paired phone as a tab, with its controls and Disconnect
+    ScreenMirror.swift             finds the phone in adb and starts scrcpy for it
     Theme.swift                    fonts, spacing and the platform surfaces the UI is built from
     DemoMode.swift                 invented data for the screenshots, off unless ANDROMAC_DEMO=1
     PanelComponents.swift          the guide step, the media row, the notification row

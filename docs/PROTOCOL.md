@@ -174,7 +174,7 @@ silently** (forward compatibility). Unknown fields are ignored too.
 ### `hello` — once from each side at the start of a connection
 ```json
 {"t":"hello","name":"Pixel 9","platform":"android","proto":3,
- "caps":["battery","clipboard","notification","find_phone","media","file","system"]}
+ "caps":["battery","clipboard","notification","find_phone","media","file","system","debugging"]}
 ```
 
 ### `battery` — Android → macOS
@@ -224,23 +224,31 @@ there is no path in this protocol that reads a phone's clipboard without one of 
 
 ### `system` — Android → macOS
 ```json
-{"t":"system","ringer":"normal","volume":9,"volume_max":15,"can_silence":true}
+{"t":"system","ringer":"normal","volume":9,"volume_max":15,"can_silence":true,"wireless_debugging":false}
 ```
 Ringer mode and media volume, sent when the link comes up and whenever either changes on the
 phone (a broadcast and a settings observer, no polling). `ringer` ∈ `normal|vibrate|silent`.
 `can_silence` reports whether the phone has Do Not Disturb access; without it Android refuses a
 silent ringer, so the Mac disables that button instead of sending a command that can only fail.
+`wireless_debugging` is Android's Wireless debugging switch (`Settings.Global.adb_wifi_enabled`,
+readable by any app). Screen mirroring needs it or a USB cable, and a Mac waiting for it continues
+once the phone reports it on. The message is sent only when one of these values changes.
 
 ### `system_control` — macOS → Android
 ```json
 {"t":"system_control","cmd":"ringer","mode":"silent"}
 {"t":"system_control","cmd":"volume","level":9}
 {"t":"system_control","cmd":"test_notification"}
+{"t":"system_control","cmd":"open_debugging"}
 ```
 `ringer` and `volume` apply the change and answer with a fresh `system`, so what the Mac shows is
 always the phone's own state rather than the last thing the Mac asked for. `test_notification`
 posts a notification on the phone that travels back through the listener — it proves the whole
-mirroring chain rather than one end of it.
+mirroring chain rather than one end of it. `open_debugging` (phones with `debugging` in `caps`)
+opens Developer options at the Wireless debugging switch, or About phone while Developer options
+are still locked. It starts the screen directly with "Display over other apps" and posts a
+notification that opens it otherwise. Screen mirroring itself does not use this protocol: the Mac
+runs scrcpy over adb, and adb has its own pairing and encryption.
 
 ### `notification` — Android → macOS
 ```json
@@ -311,6 +319,16 @@ macOS writes it to disk and never asks again. The icon is not embedded in the no
 message: that would mean ~10 KB of extra radio time per notification (§6). macOS verifies the PNG
 signature and drops anything above 512 KiB.
 
+### `sleep` — macOS → Android
+```json
+{"t":"sleep"}
+```
+Sent to every phone when the Mac is about to sleep. The phone closes the session, goes to the top
+of its backoff ladder and runs no mDNS browse until the network changes, the screen comes on or a
+session comes up again. A sleeping Mac answers neither, so without this each phone would spend
+the night on the ladder. The cost is a reconnect of up to one ladder step (300 s) after the Mac
+wakes, or at once when the phone is picked up.
+
 ### `ping` / `pong`
 ```json
 {"t":"ping"}
@@ -356,6 +374,11 @@ server. The design borrows LocalSend's offer/accept flow, Syncthing's chunk-and-
 integrity and temp-file-then-rename, and fixes what went wrong elsewhere (Quick Share
 processed payload frames before the accept response, CVE-2024-38272; KDE Connect trusts the
 transport alone and has no application-layer hash).
+
+A transfer belongs to the one session it was offered on. With several phones connected the Mac
+sends every `file_*` message for a transfer to that phone only and drops `file_*` messages for it
+that arrive from any other phone, so no phone can see, feed or cancel another phone's transfer.
+The receiver opens a received file by the type its name implies, never by the sender's `mime`.
 
 ```json
 {"t":"file_offer","id":"<32 hex>","name":"IMG_2031.jpg","size":3182011,"mime":"image/jpeg"}
@@ -425,7 +448,9 @@ Sender rules: the Android share sheet (`ACTION_SEND` / `ACTION_SEND_MULTIPLE`) a
 panel's **Send file…** button (or dropping files onto the panel) are the only entry points.
 Sharing plain text from the Android share sheet sends a `clipboard` message instead of a file.
 
-`hello.caps` in this version: `["battery","clipboard","notification","find_phone","media","file","system"]`.
+`hello.caps` from the phone in this version: `["battery","clipboard","notification","find_phone","media","file","system","debugging"]`.
+The Mac sends its own list, which has no `system` or `debugging`: those describe what a phone can
+be asked to do.
 If the other side does not advertise a capability, the matching UI element is hidden.
 
 ## 6. Energy contract

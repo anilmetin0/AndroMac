@@ -22,8 +22,8 @@ will be closed however good the code is.
 | JDK | 25 |
 | Android SDK | platform 37 (Android 17), build-tools 36.0.0 |
 | Gradle | 9.7.1, through the wrapper, downloaded automatically |
-| Android Gradle Plugin | 9.4.0, with its built-in Kotlin |
-| Kotlin | 2.4.10, for the plain-JVM `vectors` module only |
+| Android Gradle Plugin | 9.4.1, with its built-in Kotlin |
+| Kotlin | 2.4.20, for the plain-JVM `vectors` module only |
 | Python 3 | only for `macos/scripts/update-strings.sh` |
 
 The Android build targets Java 21 bytecode and `minSdk` 29, which is Android 10.
@@ -99,8 +99,12 @@ needs a new wakeup on the phone, say why in the pull request description.
 No third-party dependencies. Neither shipped app has one, and neither should. Network framework,
 CryptoKit, AppKit, UserNotifications, `NsdManager`, `javax.crypto` and `org.json` all ship with
 the platforms. The one exception is the `vectors` module, which runs on a plain JVM where
-`org.json` is not part of the runtime, so it declares that one dependency. Before adding
-anything, check what the platform already gives you.
+`org.json` is not part of the runtime, so it declares that one dependency. Screen mirroring is
+not a dependency either: the Mac package carries the scrcpy release as separate programs, started
+as child processes, pinned by version and SHA-256 in `macos/scripts/fetch-scrcpy.sh`. To move
+to a new scrcpy release, change `VERSION` and `SHA256` there together and update
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). Before adding anything, check what the platform
+already gives you.
 
 One source of truth for the wire. [docs/PROTOCOL.md](docs/PROTOCOL.md) describes the format both
 sides are written against. If you change the wire format or the message set, update it in the
