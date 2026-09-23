@@ -1,7 +1,7 @@
 # CodeQL on the workflow files themselves: script injection, over-broad permissions, untrusted
 # checkouts. The two apps have no dependencies and their security-relevant logic is covered by
-# verify-crypto.sh, verify-handshake.sh and review; this job guards the pipeline that signs and
-# publishes them.
+# scripts/verify-crypto.sh, scripts/verify-handshake.sh and review; this job guards the pipeline
+# that signs and publishes them.
 name: codeql
 
 on:

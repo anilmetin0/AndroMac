@@ -11,229 +11,100 @@ version gets a new section.
 
 ### Added
 
-- **Screen mirroring.** The phone's screen in a window on the Mac, with mouse, keyboard and
-  sound, through scrcpy 4.1, which the Mac package now carries together with adb. It runs over
-  Wireless debugging or a USB cable. The panel walks through turning the switch on and through
-  adb's one-time pairing code, and can open the switch on the phone. Settings → Screen mirroring
-  holds sound, screen off, stay awake and a resolution cap.
-- **Android 17 local network permission.** The app now declares and asks for
-  `ACCESS_LOCAL_NETWORK`, which Android 17 requires before an app targeting it can reach any
-  device on the LAN. It is listed as required on the Permissions card.
+- **Your phone's screen on the Mac.** Press the mirror button on the phone's card and its screen
+  opens in a window, with mouse, keyboard and sound. It runs over Wireless debugging or a USB
+  cable, powered by [scrcpy](https://github.com/Genymobile/scrcpy) 4.1, which now comes inside
+  the Mac app. The panel walks you through the one-time setup and can open the right setting on
+  the phone for you. If adb is already installed on the Mac, AndroMac uses that one. Settings →
+  Screen mirroring has sound, screen off, stay awake and a resolution cap.
+- **Ready for Android 17.** Android 17 asks before an app may talk to devices on your network.
+  AndroMac now asks for that permission and lists it as required on the Permissions card.
 
 ### Changed
 
-- AGP 9.4.1, Kotlin 2.4.20. Every GitHub Action is pinned by commit SHA, the Gradle wrapper
-  download is checked against its SHA-256, and a CodeQL job checks the workflow files.
-- The APK signing key is decoded only for the published build on `main` and is removed after it.
-- Pairing prompts on the Mac default to Reject in every case, since they open on their own from
-  a network event.
-- **Less energy.** The phone dials only over Wi-Fi or Ethernet, remembers which network the Mac is
-  on and stays quiet elsewhere, parks when the Mac says it is going to sleep (new `sleep`
-  message), holds battery reports while the screen is off until the next ping, skips identical
-  notification re-posts, and ignores clipboard requests with the screen off. The Mac stops its
-  clipboard poll while locked or asleep, puts tolerance on its timers, asks only the focused phone
-  for its clipboard, and no longer redraws Settings or the menu bar on every message.
-- The notification and clipboard histories on the Mac are encrypted with a key derived from the
-  Keychain identity. A 1.0 history is read once and rewritten encrypted.
+- **Easier on the battery.** The phone looks for the Mac only on Wi-Fi or Ethernet, and only on
+  the network where it last found it. It goes quiet while the Mac sleeps, holds battery updates
+  while the screen is off, skips repeated notifications, and ignores clipboard requests with the
+  screen off. The Mac stops watching the clipboard while it is locked or asleep, and wakes up
+  less often.
+- **Encrypted history.** The notification and clipboard history on the Mac is now encrypted with
+  a key tied to the Mac's identity in the Keychain. A 1.0 history is converted the first time
+  1.1 opens it.
+- **Pairing prompts default to Reject** on the Mac, since they can pop up on their own whenever
+  something on the network knocks.
 
 ### Fixed
 
-- With several phones connected, files, notification replies and dismissals, and media controls
-  went to every phone instead of the one they belonged to. Each now goes to its own phone, and a
-  phone can no longer touch another phone's transfer.
-- A second phone's `hello` renamed the first paired phone, and an unknown phone's pairing prompt
-  showed a paired phone's name.
-- The phone redialled without pause when the Mac hung up right after the handshake, for example
-  on a disconnected phone. It now waits on the backoff ladder.
-- Every change to any Android system setting sent a `system` message. Only ringer, volume and
-  Wireless debugging changes do now.
-- Frames sent from two tasks at once could reach the phone out of order and drop the link.
-- Forgetting one phone on the Mac disconnected every phone.
-- The Mac could end up with two listeners after Retry or unpair, and a locked Keychain at login
-  made phones report a changed key.
-- The updaters matched checksum lines by suffix; the name must now match exactly, and on Android
-  the installer only accepts this very package.
-- A received file opens by the type its name implies, and an APK only opens Downloads.
-- The phone ran actions the Mac asked for on notifications it had sent by title only, or not at all.
-- A phone forgotten while one of its connections was still handshaking could keep a hidden session.
-  Trust is now checked again after the handshake.
-- Devices were told apart by a 32-bit fingerprint that a paired device could grind to take over
-  another phone's slot; the full key hash is the id now.
-- File names could carry Unicode direction overrides that disguise the extension; they are
-  stripped on both sides. A received file of unknown type opens Downloads on Android.
-- On Android 10-12L the "never send sensitive content" rule did not see the marker password
-  managers set; it is read on every version now.
-- App icons were requested from, and accepted from, every phone; only the phone that posted the
-  notification is asked now.
-- Screen mirroring uses the adb already on the Mac when there is one, so it does not take over
-  Android Studio's adb server.
-
-## 1.0.0 — 2026-09-07
-
-First public release. Android and macOS talk over the local network only, with no server, no
-account and no third-party library on either side.
-
-### Added
-
-- **Pairing.** Noise-KK-style handshake over NIST P-256, HKDF-SHA256 key derivation and
-  AES-256-GCM framing. A 6-digit code appears on both screens. It is bound to the session
-  transcript and to a nonce from each side, exchanged under a commitment, so nobody on the
-  network can grind it offline until both screens agree, the class of weakness KDE Connect fixed
-  in 2025 (CWE-222). Both long-term keys travel encrypted: the Mac's under the ephemeral secret,
-  the phone's only after the Mac's key matched the pin and only readably by that Mac. The Bonjour
-  record carries no key, so a listener cannot tell which phone is present. Once the code is
-  confirmed the peer's static public key is pinned; a changed key is rejected and reported, never
-  re-pinned silently. Rejecting a pairing code on the Mac mutes that key for 1, 2, 4 … 60
-  minutes.
-- **More than one phone.** Several Androids can be paired with one Mac and be connected at the
-  same time. Pairing, connecting and disconnecting are separate: a paired phone that is switched
-  off is Offline, not unpaired, and it reconnects on its own with a 1, 2, 5, 15, 60, 300 second
-  backoff. The panel lists every device, expands on click, and each device can be paused or
-  resumed without losing the pairing. A reinstalled phone arrives as a new device with a new
-  code, and the old entry stays visible until you remove it, rather than failing silently.
-- **Clipboard targets per device.** With more than one phone paired, each one has its own
-  "Send my clipboard here" switch, so a copy can go to one phone and not the other.
-- **Battery.** Level, charging state and temperature from the phone. Optional percentage in the
-  macOS menu bar, a bar in the panel, and a one-time warning when the level drops below 15%.
-- **Clipboard, Mac to phone.** Automatically as you copy, or only when you ask: the paperplane
-  button in the menu bar panel sends the current clipboard on demand. Settings → Clipboard holds
-  the choice. Either way a silent notification carrying a Paste action arrives as a second route
-  past manufacturer restrictions. A clipboard a password manager marked concealed
-  (`org.nspasteboard.ConcealedType`) is never sent, matching what the phone already does.
-- **Clipboard, phone to Mac.** Opening the Mac panel asks the phone for its clipboard, and the
-  phone answers through an invisible activity that takes focus for a moment — with "Display over
-  other apps" granted that is instant, otherwise the phone posts a notification with one button.
-  The Quick Settings tile, the button on the ongoing notification and the share sheet still push
-  it from the phone. Android does not allow background clipboard reads at all, so nothing in this
-  direction happens without the phone answering.
-- **Clipboard protection.** Text a password manager or OTP field marked with
-  `ClipDescription.EXTRA_IS_SENSITIVE` never leaves the phone. On by default, and switchable.
-- **Clipboard history on the Mac.** The last 50 entries in both directions, searchable, click to
-  copy, right-click to send back to the phone or delete.
-- **Notification mirroring.** Notifications reach macOS Notification Center with the app's own
-  icon. Actions, including inline reply, are triggered from the Mac, and dismissal is synced in
-  both directions.
-- **Per-app notification tiers.** Full, Title only, or Off, set from either device and applied on
-  the phone. On Off the radio never wakes for that app; on Title only the body never leaves the
-  phone.
-- **Notification noise filter.** Group summaries, ongoing notifications, foreground-service
-  notifications, local-only notifications and silent channels are dropped before sending. An
-  option restricts mirroring to times when the phone is locked.
-- **Notification history on the Mac.** The last 200 entries, searchable, stored only on the Mac.
-- **Verification codes from notifications.** When a mirrored notification carries a one-time
-  code, the panel shows the code itself on a copy button. Copying it puts it on the Mac clipboard
-  without sending it back to the phone and without storing it in the clipboard history.
-- **Media.** Title, artist and app of the track playing on the phone, with previous, play/pause
-  and next from the Mac. Sent only on change, with no progress bar.
-- **Phone controls from the Mac.** The panel sets the phone's ringer (ring, vibrate, silent) and
-  its media volume, and can send a test notification that travels the whole mirroring chain and
-  comes back — a permission problem on the phone shows up as nothing arriving, which is the
-  useful answer. Silencing needs Do Not Disturb access on the phone; the phone reports whether it
-  has it, and the Mac disables the button rather than sending a command that can only fail.
-- **Permission banner on Android.** While the notification permission or notification access is
-  missing, a dismissible banner sits at the top of the main screen and opens the right settings
-  screen when tapped. The notification permission is requested at launch, and notification
-  access — which has no runtime dialog — is offered once, with its reason.
-- **Find my phone.** The Mac rings the phone at alarm volume with vibration for at most 30
-  seconds. It stops on Found it, on a second request, or on its own.
-- **Connection guide.** Both apps show which step is stuck rather than a generic failure. The
-  phone has a live diagnostics screen, and the Mac links straight to the Local Network permission.
-- **Metrics on the Mac.** Uptime, messages sent and received, messages per hour, traffic,
-  reconnect count and the most frequent message types, so the energy claim can be checked rather
-  than trusted.
-- **Launch at login** on macOS, and start on boot on Android once paired.
-- **App icon.** Two opposing arrows, out and back, on a deep navy plate: the same drawing on both
-  platforms, generated from code at build time so the repository still keeps no binary image of it.
-- **English and Turkish** throughout both apps. Android uses the per-app language picker;
-  macOS has System, English and Turkish in Settings. A new language is one file per platform and
-  no code change.
-- **Two verification scripts.** `verify-crypto.sh` compares the CryptoKit and JCE implementations
-  vector by vector, and `verify-handshake.sh` runs the real session code from both platforms
-  against each other over loopback. Both run in CI on every push.
-- **File transfer.** Share any file from the phone's share sheet, or use Send file… and
-  drag-and-drop on the Mac panel. The receiver is asked before anything is written, or accepts
-  automatically when you turn that on, which then applies to every paired phone. Files go to Downloads, are sent in
-  512 KiB chunks over the existing encrypted session with a bounded 8-chunk window (4 MiB in
-  flight, one ack per chunk), verified
-  against SHA-256 before they get their final name, sanitized on arrival, and never opened for
-  you. The Mac marks them with the browser-download quarantine flag. Settings → Files on both
-  apps.
-- **Updates, checked and installed in the app.** On by default on both sides, with the switch in
-  Settings → Updates. The app asks the GitHub releases API at most once a day, only when it is
-  opened, and offers what it finds once per release: Install now, Later, or Skip this version.
-  Installing downloads the release asset, verifies it against the `SHA256SUMS.txt` published with
-  that release, and only then replaces the app — the Mac swaps its own bundle and restarts, the
-  phone hands the APK to Android's installer, which asks for confirmation and enforces the
-  signature. A missing or mismatched checksum stops the update. A newer build is a greater
-  version or the same version built from a different commit.
-- **QR code for the APK.** Settings → Updates draws a QR code for the releases page, so the
-  phone build can be installed without typing a URL. It is drawn locally from a constant and
-  fetches nothing, so it works with the update check switched off.
-- **Homebrew.** `brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac`, then
-  `brew install --cask andromac`. The cask resolves the current build from the release API, so
-  it upgrades with `brew upgrade --cask --greedy-latest andromac`.
-- **Obtainium.** The release APK is signed with one key across versions, so updates install in
-  place; Obtainium keys on the tag name, so it only notices a new build of the same version when
-  its "release date as version string" option is on.
-- **Compared with other tools.** The README's trust-model section sets AndroMac side by side
-  with Syncthing, LocalSend, KDE Connect, Quick Share, AirDrop, Magic Wormhole and Blip, with
-  the advisories that shaped each decision.
-- **Unit tests** for version ordering, the update check, file-name sanitization and chunk math
-  on both sides, run in CI.
-
-### Changed
-
-- **Permissions on the phone.** The Setup section is now a Permissions card that is always on the
-  main screen: one line saying "All granted" or how many are missing, the missing ones listed
-  underneath, and a Permissions screen behind it that lists all five with Granted or Not granted
-  and Required, Recommended or Optional.
-- **Connection screen on the phone.** State, the Mac's name and last address, a Reconnect
-  automatically switch, Connect now, and Forget this Mac (moved here from the ⋮ menu).
-- **Reconnecting.** The backoff ceiling is 60 s while the screen is on and 300 s when it is off,
-  and turning the screen on triggers an attempt at once. The ongoing notification no longer
-  shows a countdown; it says Waiting for Mac.
-- **Phone to Mac clipboard.** Opening AndroMac on the phone sends the current clipboard to the
-  Mac, once per copy, on top of the existing routes.
-- **Device tabs on the Mac.** With more than one phone paired, the panel shows them as tabs
-  across the device card instead of expandable rows.
-- **Settings on the Mac.** A sidebar with General, Sync, Clipboard, Notifications, Files,
-  Devices, Permissions, Network, Updates, Metrics and Privacy. Sync gains a low-battery threshold
-  (10, 15, 20 or 30 %), Notifications a sound switch, and Permissions shows the state of
-  Notifications, Local Network and Keychain access with a button to the matching System Settings
-  pane. The panel warns in one line while macOS notifications are off for AndroMac.
-- **Motion.** Detail screens on the phone slide in and out; on the Mac, switching a device tab, a
-  window tab or a settings section fades. Corner radii on the Mac come from one scale.
-- **Menu bar icon.** Right-click opens a menu with Open AndroMac, Settings and Quit.
-- **Release files.** One DMG for Apple Silicon, `AndroMac-<version>-macOS-arm64.dmg`, and one
-  APK for every phone, `AndroMac-<version>-android.apk`. The release title is `AndroMac <version>`;
-  both update checks read the commit from the tag's target instead. The Mac updater installs from
-  the DMG.
-
-### Fixed
-
-- **Display over other apps** never worked: the app did not declare `SYSTEM_ALERT_WINDOW`, so it
-  was missing from Android's list and the check always failed.
-- Quitting the Mac app took two seconds every time: the shutdown waited on the main thread
-  while also trying to hop to it. It is immediate now.
-- The menu bar could freeze while a Keychain prompt was open, because the device list shared a
-  lock with the identity read. They have separate locks now.
-- The main screen no longer flickers while looking for the Mac: repeated identical link states
-  are no longer re-broadcast.
+- With several phones connected, files, notification replies, dismissals and media controls went
+  to every phone instead of the right one. A second phone could also rename the first, and a
+  stranger's pairing prompt could show a paired phone's name.
+- Forgetting one phone on the Mac disconnected all of them.
+- The phone could redial nonstop when the Mac hung up right after connecting.
+- Any change to any Android system setting was sent to the Mac. Now only the ringer, volume and
+  Wireless debugging are.
+- Two messages sent at the same moment could arrive out of order and drop the connection.
+- The Mac could end up listening twice after Try again or unpairing, and a locked Keychain at
+  login made phones report a changed key.
 
 ### Security
 
-- Ephemeral keys per session give forward secrecy. Nonces are per-direction counters, so a replay
-  closes the connection and nonce reuse cannot happen.
-- No application message is processed before the handshake completes. macOS enforces a 10-second
-  handshake timeout, a cap on concurrent unverified connections and a rate limit on the pairing
-  prompt, and it rejects peers outside private address ranges. An established session is given up
-  only after a new connection has finished its handshake, so another device on the network cannot
-  knock a paired phone offline.
-- Frames are capped at 1 MiB, and the receiver enforces its own length limits on every field
-  rather than trusting the sender.
-- The identity key lives in the macOS Keychain and, on Android, wrapped with a non-exportable
-  AES-256-GCM key held in the Android Keystore.
-- Histories are stored only on the Mac and are deleted when the pairing is removed. Logs never
-  carry message content or key material.
-- The workflow runs with read-only permissions except for the release job. Dependabot watches the
-  actions and the Gradle plugins weekly.
+- Phones were told apart by a short 32-bit fingerprint, which a paired device could brute-force
+  to take another phone's place. The full key hash is used now.
+- A phone forgotten in the middle of a handshake could keep a hidden session. Trust is checked
+  again once the handshake ends.
+- The phone ran notification actions the Mac asked for even on apps set to Title only or Off.
+- A file name could hide its real extension behind Unicode direction marks. Both sides strip them
+  now, and on Android a received APK or unknown file opens Downloads rather than the file itself.
+- On Android 10 to 12L, "Never send sensitive content" missed the marker password managers set.
+- The updaters could match the wrong line of the checksum file. They now need the exact file
+  name, and on Android the installer accepts only this app.
+- App icons are requested from, and accepted from, only the phone that sent the notification.
+
+## 1.0.0 — 2026-09-07
+
+The first public release. Your Android phone and your Mac talk directly over your own network:
+no server, no account, and no third-party libraries on either side.
+
+### Added
+
+- **Battery.** The phone's level, charging state and temperature, with an optional percentage in
+  the menu bar and a warning when it runs low.
+- **Clipboard, both ways.** Copy on the Mac and it lands on the phone, automatically or when you
+  press the button. Opening the Mac panel asks the phone for its clipboard, and the Quick Settings
+  tile, the notification button and the share sheet send it too. Anything a password manager
+  marks as sensitive stays where it is. The Mac keeps the last 50 entries, searchable.
+- **Notifications.** Phone notifications show up in Notification Center with the app's icon.
+  Reply, run actions and dismiss from the Mac, and dismissing on one side clears the other. Pick
+  Full, Title only or Off per app. The filtering happens on the phone, so Off means nothing is
+  sent at all. The Mac keeps the last 200, searchable, and puts one-time codes on a copy button.
+- **Media and phone controls.** See what is playing and skip, pause or play from the Mac. Set the
+  ringer and media volume, send a test notification, or make a lost phone ring for up to 30
+  seconds.
+- **Files.** Send from the phone's share sheet, or drop files on the Mac panel. The receiver says
+  yes first unless you turn on auto-accept, every file is checked against SHA-256, and nothing is
+  ever opened for you.
+- **Several phones.** Pair more than one Android with the same Mac. Each gets its own tab and its
+  own clipboard switch, and can be disconnected on its own.
+- **Updates.** Both apps check GitHub at most once a day, verify the download against the
+  published checksum, and install it themselves. One switch turns this off. The Mac app is also
+  on Homebrew and the APK on Obtainium.
+- **Easy on the battery.** The phone runs no timer of its own: the Mac checks the connection every
+  240 seconds and the phone only answers. Settings → Metrics on the Mac shows how much traffic
+  that really is.
+- **English and Turkish** in both apps. A new language is one file per platform.
+
+### Security
+
+- Pairing uses a Noise-KK-style handshake over P-256 with AES-256-GCM. You confirm a 6-digit code
+  on both screens, and it is built so that nobody on the network can forge a match offline, the
+  weakness KDE Connect fixed in 2025.
+- After pairing, each side pins the other's key. A changed key is refused and reported, never
+  quietly accepted.
+- Every session uses fresh keys, so recorded traffic cannot be decrypted later, and a replayed
+  message closes the connection.
+- The Mac limits unverified connections and pairing prompts, so a stranger on your Wi-Fi cannot
+  knock a paired phone offline or flood you with prompts.
+- Keys live in the macOS Keychain and the Android Keystore. Histories stay on the Mac and are
+  deleted when you unpair. Logs never contain message content.
+- The crypto is written twice, in CryptoKit and in JCE, and two scripts check on every push that
+  both halves agree.

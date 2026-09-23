@@ -31,8 +31,8 @@ cask "andromac" do
 
   caveats <<~EOS
     AndroMac is signed ad-hoc and not notarized, so macOS refuses the first launch.
-    Press "Open Anyway" in System Settings > Privacy & Security, or install without
-    the quarantine flag instead:
-      brew install --cask --no-quarantine andromac
+    Clear the quarantine flag once:
+      xattr -dr com.apple.quarantine /Applications/AndroMac.app
+    or press "Open Anyway" in System Settings > Privacy & Security after the first try.
   EOS
 end

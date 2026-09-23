@@ -11,7 +11,7 @@ import java.security.spec.ECPrivateKeySpec
 
 /**
  * Must print EXACTLY the same lines as `andromac-selftest` on macOS.
- * `./verify-crypto.sh` diffs the two. A mismatch means a handshake that fails silently on
+ * `scripts/verify-crypto.sh` diffs the two. A mismatch means a handshake that fails silently on
  * a real device.
  *
  * Run with: ./gradlew -q :vectors:run

@@ -5,7 +5,7 @@
 ## Checklist
 
 - [ ] Builds on both sides: `macos/build.sh` and `./gradlew :app:assembleDebug`.
-- [ ] `./verify-crypto.sh` and `./verify-handshake.sh` pass, if this touches crypto, the handshake, framing or the message set.
+- [ ] `scripts/verify-crypto.sh` and `scripts/verify-handshake.sh` pass, if this touches crypto, the handshake, framing or the message set.
 - [ ] Unit tests pass: `(cd macos && swift test)` and `./gradlew :vectors:test`. New pure logic (parsers, version ordering, filters) comes with a test.
 - [ ] `docs/PROTOCOL.md` updated in this PR, if the wire format or the message set changed.
 - [ ] The energy contract in `docs/ENERGY.md` still holds: no periodic timer on the phone, no polling, no wakelock, filtering at the source. If this adds a wakeup, the description says why.

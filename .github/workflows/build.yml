@@ -94,10 +94,10 @@ jobs:
           cache-disabled: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       - name: Crypto vectors (CryptoKit vs JCE)
-        run: ./verify-crypto.sh
+        run: scripts/verify-crypto.sh
 
       - name: Handshake (real Session code over loopback)
-        run: ./verify-handshake.sh
+        run: scripts/verify-handshake.sh
 
       - name: Unit tests (Swift Testing)
         working-directory: macos
@@ -250,8 +250,18 @@ jobs:
       - name: Release notes
         run: |
           section() { awk -v v="$2" '/^## /{p = ($2 == v)} p && !/^## /' "$1" | sed -e '1{/^$/d;}'; }
-          en="$(section CHANGELOG.md "$VERSION")"
-          tr="$(section CHANGELOG.tr.md "$VERSION")"
+          # Release notes render every newline as a line break, so the 100-column wrapping of
+          # the changelog is joined back into one line per paragraph and list item.
+          unwrap() { awk '
+            { q = ""; b = $0; if (b ~ /^>/) { q = ">"; sub(/^> ?/, "", b) } }
+            b ~ /^```/ { fence = !fence }
+            n && !fence && q == pq && b != "" && pb != "" && pb !~ /^(#|\[!)/ \
+              && b !~ /^ *([-*]|[0-9]+\.) / && b !~ /^(#|\||```|<)/ {
+              sub(/^ +/, "", b); line[n] = line[n] " " b; next }
+            { line[++n] = $0; pq = q; pb = b }
+            END { for (i = 1; i <= n; i++) print line[i] }'; }
+          en="$(section CHANGELOG.md "$VERSION" | unwrap)"
+          tr="$(section CHANGELOG.tr.md "$VERSION" | unwrap)"
           [ -n "$en" ] || { echo "::error::CHANGELOG.md has no '## $VERSION' section"; exit 1; }
           [ -n "$tr" ] || { echo "::error::CHANGELOG.tr.md has no '## $VERSION' section"; exit 1; }
           {

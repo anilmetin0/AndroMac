@@ -5,7 +5,7 @@
 # that a wrong pin stops the phone before it reveals its static key, and that the SAS matches
 # on both sides (and, being per-session, differs between rounds).
 set -euo pipefail
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 
 # JAVA_HOME wins if set; otherwise the newest JDK 25 on this Mac, then whatever java_home picks.
 : "${JAVA_HOME:=$(/usr/libexec/java_home -v 25 2>/dev/null || /usr/libexec/java_home 2>/dev/null || true)}"

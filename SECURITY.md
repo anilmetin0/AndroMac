@@ -31,8 +31,8 @@ fixed and released.
   `1.0.0 (12 · abc1234)`.
 - What an attacker has to be able to do first: be on the same Wi-Fi network, hold the phone,
   control a paired Mac, run code on either device.
-- Steps to reproduce, or a proof of concept. A failing case for `verify-crypto.sh` or
-  `verify-handshake.sh` is the most useful form a protocol report can take.
+- Steps to reproduce, or a proof of concept. A failing case for `scripts/verify-crypto.sh` or
+  `scripts/verify-handshake.sh` is the most useful form a protocol report can take.
 - The impact you believe it has.
 
 ### What to expect
@@ -79,8 +79,8 @@ Out of scope:
 ## Design notes a report should account for
 
 - Both sides implement the same crypto independently, CryptoKit on macOS and JCE on Android.
-  `verify-crypto.sh` compares them vector by vector and `verify-handshake.sh` runs the real
-  session code over loopback. Run both before concluding that one side is wrong.
+  `scripts/verify-crypto.sh` compares them vector by vector and `scripts/verify-handshake.sh`
+  runs the real session code over loopback. Run both before concluding that one side is wrong.
 - The Android identity key is stored wrapped, with an AES-256-GCM key that cannot leave the
   Android Keystore, but it is unwrapped into process memory for the key exchange. That is the
   known ceiling of doing P-256 in software outside the keystore, and it is documented
