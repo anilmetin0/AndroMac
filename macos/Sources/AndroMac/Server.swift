@@ -77,6 +77,18 @@ actor Server {
             }
             return
         }
+        // Locked at login: same reason, but it clears on its own, so look again shortly. One
+        // retry at a time, and `stop()` cancels it, so a stop during the wait stays a stop.
+        if store.keychainLocked {
+            await MainActor.run { AppState.shared.status = .failed(String(localized: "Waiting for the Keychain to unlock")) }
+            keychainRetry?.cancel()
+            keychainRetry = Task {
+                try? await Task.sleep(for: .seconds(15))
+                guard !Task.isCancelled else { return }
+                await self.start()
+            }
+            return
+        }
 
         var txt = NWTXTRecord()
         txt["v"] = "3"
@@ -94,8 +106,10 @@ actor Server {
             l.newConnectionHandler = { [weak self] conn in
                 Task { await self?.accept(conn) }
             }
-            l.stateUpdateHandler = { [weak self] state in
-                Task { await self?.onListenerState(state) }
+            // Tagged with its own listener: a `.cancelled` from the one `stop()` just replaced
+            // arrives after `start()` has built the next, and must not tear that one down too.
+            l.stateUpdateHandler = { [weak self, weak l] state in
+                Task { await self?.onListenerState(state, of: l) }
             }
             listener = l
             l.start(queue: queue)
@@ -122,6 +136,8 @@ actor Server {
         pingTasks.removeAll(); serveTasks.removeAll()
         for session in sessions.values { await session.close() }
         sessions.removeAll()
+        listener?.stateUpdateHandler = nil
+        listener?.newConnectionHandler = nil
         listener?.cancel(); listener = nil
         // Both hops are skipped on quit: the main thread is blocked waiting for this call, so a
         // hop to it never returns and every quit used to sit out the full 2 s timeout.
@@ -147,7 +163,8 @@ actor Server {
         await MainActor.run { AppState.shared.pairing = nil }
     }
 
-    private func onListenerState(_ state: NWListener.State) async {
+    private func onListenerState(_ state: NWListener.State, of source: NWListener?) async {
+        guard let source, source === listener else { return }
         switch state {
         case .ready:
             restartDelay = .seconds(3)
@@ -170,6 +187,8 @@ actor Server {
 
     private func restartListener(reason: String) async {
         await MainActor.run { AppState.shared.status = .failed(reason) }
+        listener?.stateUpdateHandler = nil
+        listener?.cancel()
         listener = nil
         let delay = restartDelay
         // On a permanent error (e.g. no local network permission) retrying every 3 s is a pointless wake-up.
@@ -423,10 +442,12 @@ actor Server {
 
     /// Drop one phone's session, leaving every other phone connected.
     private func closeSession(_ deviceID: String, updateUI: Bool = true) async {
+        // Out of the tables before the first `await`: the actor is reentrant, and a new session
+        // for the same phone installed during the close must not be the one removed here.
         pingTasks[deviceID]?.cancel(); pingTasks[deviceID] = nil
-        await sessions[deviceID]?.close()
-        sessions[deviceID] = nil
+        let session = sessions.removeValue(forKey: deviceID)
         serveTasks[deviceID] = nil
+        await session?.close()
         lowBatteryAlerted.remove(deviceID)
 
         if updateUI {

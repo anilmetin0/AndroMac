@@ -47,6 +47,12 @@ class UpdateSettingsActivity : Activity() {
         }
     }
 
+    /** Back from the system installer, which reports a cancel only to [Updater.InstallReceiver]. */
+    override fun onResume() {
+        super.onResume()
+        refresh()
+    }
+
     private fun refresh() {
         setRowEnabled(R.id.rowCheckNow, !checking)
 

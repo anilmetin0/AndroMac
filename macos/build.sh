@@ -25,8 +25,9 @@ if [[ -d vendor/scrcpy ]]; then
 fi
 
 # Version: CI supplies it (ANDROMAC_VERSION=1.0.0, ANDROMAC_BUILD=42, ANDROMAC_COMMIT=abc1234);
-# locally the values already in the plist are kept (version / build 1) and the commit reads "local".
+# locally it is the VERSION file, build 1, and the commit reads "local", as on Android.
 PLIST="$APP/Contents/Info.plist"
+: "${ANDROMAC_VERSION:=$(tr -d '[:space:]' < ../VERSION)}"
 if [[ -n "${ANDROMAC_VERSION:-}" ]]; then
     /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $ANDROMAC_VERSION" "$PLIST"
     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${ANDROMAC_BUILD:-1}" "$PLIST"

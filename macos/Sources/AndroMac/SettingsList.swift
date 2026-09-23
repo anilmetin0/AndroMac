@@ -439,11 +439,13 @@ struct SettingsList: View {
         return "\(reach) · \(device.shortFingerprint)"
     }
 
-    /// Forget one device, or every device when `id` is nil. Restarting the listener drops the
-    /// session of a phone that is no longer trusted instead of leaving it connected.
+    /// Forget one device, or every device when `id` is nil. A forgotten phone is hung up on at
+    /// once; forgetting one leaves the other phones connected (PROTOCOL §3).
     private func unpair(_ id: String?) {
         if let id {
             Store.shared.unpair(id: id)
+            Task { await Server.shared.disconnect(id) }
+            return
         } else {
             Store.shared.unpairAll()
             NotificationHistory.shared.clear()

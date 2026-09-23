@@ -118,6 +118,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         button.addGestureRecognizer(click)
     }
 
+    @MainActor
     private static func statusBarButton(in view: NSView) -> NSStatusBarButton? {
         if let button = view as? NSStatusBarButton { return button }
         for sub in view.subviews { if let found = statusBarButton(in: sub) { return found } }
