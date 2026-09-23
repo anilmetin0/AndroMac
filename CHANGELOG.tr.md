@@ -22,6 +22,15 @@ açar.
 
 ### Değişenler
 
+- **Daha sade bir Mac paneli.** Her telefonun pili üç kez yerine bir kez görünüyor, boşluklar
+  daha sıkı, denetimler de geri kalanı bir menüde toplayan tek sıra düğmede. macOS 26 ve sonrasında
+  panel, düğmeler ve pencere Liquid Glass kullanıyor. Pencerede geçmişler ve bütün ayar sayfaları
+  için tek bir kenar çubuğu var, ⌘, Ayarlar'ı açıyor.
+- **Daha sade bir telefon uygulaması.** Ayarlar'ın üst çubuktaki düğmenin arkasında kendi ekranı
+  var. Bağlantı rehberi eşleşince kayboluyor ve bilgi düğmesinin altında bir dokunuş uzakta kalıyor.
+  Durum, bağlı olunan ya da bağlanılan Mac'in adını söylüyor; eşleştirme de telefonun gördüğü
+  Mac'leri gösteriyor. Yeni pano geçmişi gönderilen ya da gelen son 20 metni listeliyor ve yalnızca
+  bellekte tutuyor.
 - **Pile daha hafif.** Telefon Mac'i yalnızca Wi-Fi ya da Ethernet'te ve yalnızca onu son bulduğu
   ağda arıyor. Mac uyurken sessiz kalıyor, ekran kapalıyken pil güncellemelerini bekletiyor, tekrar
   eden bildirimleri atlıyor ve ekran kapalıyken gelen pano isteklerini yok sayıyor. Mac de
