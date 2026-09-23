@@ -17,7 +17,7 @@
     <string name="state_auto_off">Otomatik bağlanma kapalı</string>
 
     <!-- onboarding -->
-    <string name="onboarding_title">BAĞLANMAK İÇİN</string>
+    <string name="onboarding_title">Bağlanmak için</string>
     <string name="onboarding_step1">Mac\'te AndroMac\'i aç</string>
     <string name="onboarding_step1_found">Mac ağda görüldü</string>
     <string name="onboarding_step1_missing">Mac ağda bulunamadı</string>
@@ -31,10 +31,10 @@
 
     <!-- help screen -->
     <string name="help_title">Bağlantı yardımı</string>
-    <string name="help_section_state">ŞU ANKİ DURUM</string>
-    <string name="help_section_common">SIK KARŞILAŞILANLAR</string>
-    <string name="help_section_how">NASIL ÇALIŞIR</string>
-    <string name="help_troubleshooting">Mac ağda bulunamıyorsa:\n• Mac\'te AndroMac menü çubuğunda çalışıyor mu?\n• İki cihaz da aynı Wi-Fi ağında mı? Telefon mobil veriye düşmüş olabilir.\n• Misafir ağı ya da cihaz izolasyonu açık olabilir; bu ağlarda cihazlar birbirini göremez.\n• macOS 15+ ilk açılışta \"Yerel Ağ\" izni sorar. Reddedildiyse: Sistem Ayarları → Gizlilik ve Güvenlik → Yerel Ağ.\n\nBağlanıyor ama kopuyorsa:\n• Pil optimizasyonundan muaf tut (ana ekranda İzinler kartı).\n• Router\'da \"AP izolasyonu\" kapalı olmalı.\n\nBildirimler gelmiyorsa:\n• Bildirim erişimi verildi mi?\n• Uygulama filtresinde o uygulama Kapalı olabilir.\n• Sessiz bildirimler varsayılan olarak gönderilmez.\n\nBildirim erişimi anahtarı gri/kapalıysa:\nAndroid 13+, dosyadan kurulan uygulamalarda bu anahtarı kilitler (\"güvenliğiniz için kullanılamıyor\"). Bir kez açmayı dene, sonra Ayarlar → Uygulamalar → AndroMac → ⋮ (sağ üst) → Kısıtlı ayarlara izin ver. Menü ögesi ancak denedikten sonra çıkar. Ardından anahtarı tekrar aç.</string>
+    <string name="help_section_state">Şu anki durum</string>
+    <string name="help_section_common">Sık karşılaşılanlar</string>
+    <string name="help_section_how">Nasıl çalışır</string>
+    <string name="help_troubleshooting">Mac ağda bulunamıyorsa:\n• Mac\'te AndroMac menü çubuğunda çalışıyor mu?\n• İki cihaz da aynı Wi-Fi ağında mı? Telefon mobil veriye düşmüş olabilir.\n• Misafir ağı ya da cihaz izolasyonu açık olabilir; bu ağlarda cihazlar birbirini göremez.\n• macOS 15+ ilk açılışta \"Yerel Ağ\" izni sorar. Reddedildiyse: Sistem Ayarları → Gizlilik ve Güvenlik → Yerel Ağ.\n\nBağlanıyor ama kopuyorsa:\n• Pil optimizasyonundan muaf tut (Ayarlar → İzinler).\n• Router\'da \"AP izolasyonu\" kapalı olmalı.\n\nBildirimler gelmiyorsa:\n• Bildirim erişimi verildi mi?\n• Uygulama filtresinde o uygulama Kapalı olabilir.\n• Sessiz bildirimler varsayılan olarak gönderilmez.\n\nBildirim erişimi anahtarı gri/kapalıysa:\nAndroid 13+, dosyadan kurulan uygulamalarda bu anahtarı kilitler (\"güvenliğiniz için kullanılamıyor\"). Bir kez açmayı dene, sonra Ayarlar → Uygulamalar → AndroMac → ⋮ (sağ üst) → Kısıtlı ayarlara izin ver. Menü ögesi ancak denedikten sonra çıkar. Ardından anahtarı tekrar aç.</string>
     <string name="help_how_it_works">Mac, yerel ağda kendini duyurur; telefon onu bulup doğrudan bağlanır. Arada sunucu yoktur, veri internete çıkmaz.\n\nEşleştirmede iki ekranda 6 haneli bir kod belirir. Kodlar aynıysa araya giren yoktur. Onaydan sonra Mac\'in anahtarı telefona kaydedilir; anahtar değişirse bağlantı reddedilir ve uyarı gösterilir.\n\nTrafik uçtan uca şifrelidir (P-256 ECDH + AES-256-GCM). Her oturumda yeni anahtar üretilir.</string>
 
     <!-- header -->
@@ -42,18 +42,13 @@
     <string name="more">Diğer</string>
 
     <!-- main screen sections -->
-    <string name="section_permissions">İZİNLER</string>
-    <string name="section_sync">SENKRONİZASYON</string>
-    <string name="section_settings">AYARLAR</string>
+    <string name="section_sync">Senkronizasyon</string>
 
     <!-- setup -->
     <string name="setup_notif_title">Bildirim erişimi</string>
     <string name="setup_notif_note">Bildirimleri Mac\'e aynalamak için gerekli. APK\'yı dosyadan kurduysan anahtar gri gelebilir; uygulama bilgisi ekranında ⋮ → Kısıtlı ayarlara izin ver.</string>
     <string name="permission_banner_title">AndroMac bir izin istiyor</string>
     <string name="permission_banner_dismiss">Kapat</string>
-    <string name="permission_banner_notif_access">Bildirim erişimi verilmedi — Mac\'e hiçbir bildirim aktarılmıyor.</string>
-    <string name="permission_banner_local_network">Yerel ağ erişimi verilmedi — telefon Mac\'inize ulaşamıyor.</string>
-    <string name="permission_banner_post">Bildirimlere izin verilmedi — durum ve pano bildirimleri hiç görünmez.</string>
     <string name="setup_local_network_title">Yerel ağ erişimine izin ver</string>
     <string name="setup_local_network_note">Verilmezse telefon Mac\'inizi bulamaz ve ona bağlanamaz. Android bunu Yakındaki cihazlar altında gösterir.</string>
     <string name="setup_post_notif_title">Bildirimlere izin ver</string>
@@ -84,8 +79,8 @@
     <!-- bağlantı ekranı -->
     <string name="settings_connection">Bağlantı</string>
     <string name="connection_title">Bağlantı</string>
-    <string name="connection_section_status">DURUM</string>
-    <string name="connection_section_options">SEÇENEKLER</string>
+    <string name="connection_section_status">Durum</string>
+    <string name="connection_section_options">Seçenekler</string>
     <string name="connection_state">Durum</string>
     <string name="connection_mac">Mac</string>
     <string name="connection_address">Son adres</string>
@@ -102,8 +97,8 @@
     <string name="sync_media">Medya</string>
 
     <!-- settings entries -->
-    <string name="settings_notifications">Bildirim ayarları</string>
-    <string name="settings_clipboard">Pano ayarları</string>
+    <string name="settings_notifications">Bildirimler</string>
+    <string name="settings_clipboard">Pano</string>
     <string name="settings_language">Dil</string>
     <string name="settings_updates">Güncellemeler</string>
     <string name="updates_summary_off">Kapalı</string>
@@ -112,7 +107,7 @@
 
     <!-- Güncellemeler ekranı -->
     <string name="update_title">Güncellemeler</string>
-    <string name="update_section_check">KONTROL</string>
+    <string name="update_section_check">Kontrol</string>
     <string name="update_check">Güncellemeleri denetle</string>
     <string name="update_check_note">Yeni sürüm için günde bir kez api.github.com\'a sorar; yalnızca uygulama sürümünü gönderir. İndirilen dosya, kurulmadan önce sürümle yayınlanan sağlama toplamına göre doğrulanır.</string>
     <string name="update_check_now">Şimdi denetle</string>
@@ -144,7 +139,7 @@
     <!-- Dosya aktarımı ekranı ve bildirimleri -->
     <string name="file_title">Dosya aktarımı</string>
     <string name="file_intro">Dosyalar İndirilenler klasörüne kaydedilir. Otomatik kabul yalnızca eşleştirdiğin Mac için geçerlidir.</string>
-    <string name="file_section">ALMA</string>
+    <string name="file_section">Alma</string>
     <string name="file_enable">Mac\'ten dosya al</string>
     <string name="file_enable_note">Paylaşım menüsünde “Mac\'e gönder” de görünür.</string>
     <string name="file_auto_accept">Dosyaları otomatik kabul et</string>
@@ -177,8 +172,8 @@
     <!-- notification settings screen -->
     <string name="notif_title">Bildirim ayarları</string>
     <string name="notif_intro">Bildirimler telefonda elenir. Gönderilmeyen bir bildirim için radyo hiç uyanmaz.</string>
-    <string name="notif_section_apps">UYGULAMALAR</string>
-    <string name="notif_section_which">HANGİ BİLDİRİMLER</string>
+    <string name="notif_section_apps">Uygulamalar</string>
+    <string name="notif_section_which">Hangi bildirimler</string>
     <string name="notif_always_filtered">Grup başlıkları, kalıcı bildirimler ve ön plan servisleri her zaman elenir; bunlar Mac\'te kopya ya da gürültüden başka bir şey üretmez.</string>
     <string name="sync_silent">Sessiz bildirimler</string>
     <string name="silent_note">Telefonda da ses ya da banner çıkarmayan düşük öncelikli bildirimler.</string>
@@ -187,9 +182,9 @@
 
     <!-- clipboard settings screen -->
     <string name="clip_title">Pano ayarları</string>
-    <string name="clip_section_incoming">MAC\'TEN TELEFONA</string>
-    <string name="clip_section_outgoing">TELEFONDAN MAC\'E</string>
-    <string name="clip_section_send">ŞİMDİ GÖNDER</string>
+    <string name="clip_section_incoming">Mac\'ten telefona</string>
+    <string name="clip_section_outgoing">Telefondan Mac\'e</string>
+    <string name="clip_section_send">Şimdi gönder</string>
     <string name="clip_auto_paste">Panoya otomatik yaz</string>
     <string name="clip_auto_paste_note">Mac\'te kopyaladığın metin telefonun panosuna doğrudan geçer.</string>
     <string name="clip_notify">Bildirim göster</string>
@@ -225,7 +220,7 @@
 
     <!-- pairing -->
     <string name="pairing_title">Eşleştirme kodu</string>
-    <string name="pairing_question">Mac ekranındaki kod ile aynı mı? Farklıysa REDDET — araya giren biri olabilir.</string>
+    <string name="pairing_question">Mac ekranındaki kod ile aynı mı? Değilse Reddet\'e dokunun: araya giren biri olabilir.</string>
     <string name="pairing_reject">Reddet</string>
     <string name="pairing_review">Kodu karşılaştır</string>
     <string name="key_changed_title">Anahtar değişti</string>
@@ -271,11 +266,10 @@
     <string name="tile_sub_ready">Mac\'e gönder</string>
 
     <!-- main screen details -->
-    <string name="pair_code">Kod: %1$s</string>
     <string name="key_changed_tap">Dokunup incele</string>
     <string name="key_changed_review">İncele</string>
-    <string name="clip_summary_auto">otomatik yapıştır</string>
-    <string name="clip_summary_notify_only">sadece bildirim</string>
+    <string name="clip_summary_auto">Otomatik yapıştır</string>
+    <string name="clip_summary_notify_only">Sadece bildirim</string>
     <string name="clip_summary_sensitive">hassas içerik korumalı</string>
 
     <!-- help screen diagnostics -->
@@ -290,4 +284,27 @@
     <string name="diag_no">hayır</string>
     <string name="diag_none">yok</string>
     <string name="diag_up">kurulu</string>
+
+    <!-- settings screen -->
+    <string name="settings_title">Ayarlar</string>
+    <string name="section_app">Uygulama</string>
+    <string name="settings_about">Hakkında</string>
+
+    <!-- main screen: status with the Mac\'s name -->
+    <string name="state_connected_to">%1$s ile bağlı</string>
+    <string name="state_connecting_to">%1$s ile bağlanılıyor…</string>
+    <string name="pair_code_with">%1$s · kod %2$s</string>
+    <string name="macs_found">Bulunan: %1$s</string>
+    <string name="pairing_others">Bu ağda ayrıca: %1$s</string>
+
+    <!-- clipboard history -->
+    <string name="section_clipboard">Pano</string>
+    <string name="history_title">Pano geçmişi</string>
+    <string name="history_empty">Henüz bir şey kopyalanmadı</string>
+    <string name="history_note">Depolamaya hiç kaydedilmez</string>
+    <string name="history_send">Mac\'e gönder</string>
+    <string name="history_clear">Temizle</string>
+    <string name="history_from_mac">Mac\'ten · %1$s</string>
+    <string name="history_to_mac">Mac\'e · %1$s</string>
+    <string name="clip_nothing_to_send">Gönderilecek yeni bir şey yok</string>
 </resources>

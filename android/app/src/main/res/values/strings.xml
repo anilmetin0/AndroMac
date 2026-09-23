@@ -23,7 +23,7 @@
     <string name="state_auto_off">Auto-connect off</string>
 
     <!-- onboarding -->
-    <string name="onboarding_title">TO CONNECT</string>
+    <string name="onboarding_title">To connect</string>
     <string name="onboarding_step1">Open AndroMac on your Mac</string>
     <string name="onboarding_step1_found">Mac seen on the network</string>
     <string name="onboarding_step1_missing">Mac not found on the network</string>
@@ -37,10 +37,10 @@
 
     <!-- help screen -->
     <string name="help_title">Connection help</string>
-    <string name="help_section_state">CURRENT STATE</string>
-    <string name="help_section_common">COMMON PROBLEMS</string>
-    <string name="help_section_how">HOW IT WORKS</string>
-    <string name="help_troubleshooting">If the Mac is not found on the network:\n• Is AndroMac running in the menu bar on your Mac?\n• Are both devices on the same Wi-Fi network? The phone may have fallen back to mobile data.\n• A guest network or client isolation may be on; devices cannot see each other on those.\n• macOS 15+ asks for \"Local Network\" permission on first launch. If it was denied: System Settings → Privacy and Security → Local Network.\n\nIf it connects but keeps dropping:\n• Exempt the app from battery optimization (Permissions card on the main screen).\n• \"AP isolation\" must be off on your router.\n\nIf notifications never arrive:\n• Has notification access been granted?\n• That app may be set to Off in the app filter.\n• Silent notifications are not sent by default.\n\nIf the notification access switch is greyed out:\nAndroid 13+ locks that switch for apps installed from a file (\"unavailable for your security\"). Try to turn it on once, then go to Settings → Apps → AndroMac → ⋮ (top right) → Allow restricted settings. The menu item only appears after you have tried. Then turn the switch on again.</string>
+    <string name="help_section_state">Current state</string>
+    <string name="help_section_common">Common problems</string>
+    <string name="help_section_how">How it works</string>
+    <string name="help_troubleshooting">If the Mac is not found on the network:\n• Is AndroMac running in the menu bar on your Mac?\n• Are both devices on the same Wi-Fi network? The phone may have fallen back to mobile data.\n• A guest network or client isolation may be on; devices cannot see each other on those.\n• macOS 15+ asks for \"Local Network\" permission on first launch. If it was denied: System Settings → Privacy and Security → Local Network.\n\nIf it connects but keeps dropping:\n• Exempt the app from battery optimization (Settings → Permissions).\n• \"AP isolation\" must be off on your router.\n\nIf notifications never arrive:\n• Has notification access been granted?\n• That app may be set to Off in the app filter.\n• Silent notifications are not sent by default.\n\nIf the notification access switch is greyed out:\nAndroid 13+ locks that switch for apps installed from a file (\"unavailable for your security\"). Try to turn it on once, then go to Settings → Apps → AndroMac → ⋮ (top right) → Allow restricted settings. The menu item only appears after you have tried. Then turn the switch on again.</string>
     <string name="help_how_it_works">Your Mac announces itself on the local network; the phone finds it and connects directly. There is no server in between and no data leaves for the internet.\n\nPairing shows a six-digit code on both screens. If the codes match, nobody is in the middle. After you approve, the Mac\'s key is pinned on the phone; if that key ever changes the connection is refused and you are warned.\n\nTraffic is end-to-end encrypted (P-256 ECDH + AES-256-GCM). Fresh keys are derived for every session.</string>
 
     <!-- header -->
@@ -48,16 +48,11 @@
     <string name="more">More</string>
 
     <!-- main screen sections -->
-    <string name="section_permissions">PERMISSIONS</string>
-    <string name="section_sync">SYNC</string>
-    <string name="section_settings">SETTINGS</string>
+    <string name="section_sync">Sync</string>
 
     <!-- permission banner -->
     <string name="permission_banner_title">AndroMac needs a permission</string>
     <string name="permission_banner_dismiss">Dismiss</string>
-    <string name="permission_banner_notif_access">Notification access is not granted — nothing is mirrored to your Mac.</string>
-    <string name="permission_banner_local_network">Local network access is not granted — the phone cannot reach your Mac.</string>
-    <string name="permission_banner_post">Notifications are not allowed — the status and clipboard notifications never appear.</string>
 
     <!-- setup -->
     <string name="setup_notif_title">Notification access</string>
@@ -92,8 +87,8 @@
     <!-- connection screen -->
     <string name="settings_connection">Connection</string>
     <string name="connection_title">Connection</string>
-    <string name="connection_section_status">STATUS</string>
-    <string name="connection_section_options">OPTIONS</string>
+    <string name="connection_section_status">Status</string>
+    <string name="connection_section_options">Options</string>
     <string name="connection_state">State</string>
     <string name="connection_mac">Mac</string>
     <string name="connection_address">Last address</string>
@@ -110,8 +105,8 @@
     <string name="sync_media">Media</string>
 
     <!-- settings entries -->
-    <string name="settings_notifications">Notification settings</string>
-    <string name="settings_clipboard">Clipboard settings</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_clipboard">Clipboard</string>
     <string name="settings_language">Language</string>
     <string name="settings_updates">Updates</string>
     <string name="updates_summary_off">Off</string>
@@ -120,7 +115,7 @@
 
     <!-- Updates screen -->
     <string name="update_title">Updates</string>
-    <string name="update_section_check">CHECK</string>
+    <string name="update_section_check">Check</string>
     <string name="update_check">Check for updates</string>
     <string name="update_check_note">Asks api.github.com once a day for the newest release, sending the app version and nothing else. The download is checked against the checksum published with the release before it is installed.</string>
     <string name="update_check_now">Check now</string>
@@ -152,7 +147,7 @@
     <!-- File transfer screen and notifications -->
     <string name="file_title">File transfer</string>
     <string name="file_intro">Files go to Downloads. Auto-accept applies only to your paired Mac.</string>
-    <string name="file_section">RECEIVING</string>
+    <string name="file_section">Receiving</string>
     <string name="file_enable">Receive files from the Mac</string>
     <string name="file_enable_note">Also shows “Send to Mac” in the share sheet.</string>
     <string name="file_auto_accept">Accept files automatically</string>
@@ -185,8 +180,8 @@
     <!-- notification settings screen -->
     <string name="notif_title">Notification settings</string>
     <string name="notif_intro">Notifications are filtered on the phone. The radio never wakes for a notification that is not sent.</string>
-    <string name="notif_section_apps">APPS</string>
-    <string name="notif_section_which">WHICH NOTIFICATIONS</string>
+    <string name="notif_section_apps">Apps</string>
+    <string name="notif_section_which">Which notifications</string>
     <string name="notif_always_filtered">Group summaries, ongoing notifications and foreground services are always filtered out; on the Mac they would only produce duplicates or noise.</string>
     <string name="sync_silent">Silent notifications</string>
     <string name="silent_note">Low priority notifications that make no sound or banner on the phone either.</string>
@@ -195,9 +190,9 @@
 
     <!-- clipboard settings screen -->
     <string name="clip_title">Clipboard settings</string>
-    <string name="clip_section_incoming">MAC TO PHONE</string>
-    <string name="clip_section_outgoing">PHONE TO MAC</string>
-    <string name="clip_section_send">SEND NOW</string>
+    <string name="clip_section_incoming">Mac to phone</string>
+    <string name="clip_section_outgoing">Phone to Mac</string>
+    <string name="clip_section_send">Send now</string>
     <string name="clip_auto_paste">Write to the clipboard</string>
     <string name="clip_auto_paste_note">Text you copy on the Mac goes straight into the phone\'s clipboard.</string>
     <string name="clip_notify">Show a notification</string>
@@ -233,7 +228,7 @@
 
     <!-- pairing -->
     <string name="pairing_title">Pairing code</string>
-    <string name="pairing_question">Does it match the code on your Mac? If it differs, REJECT — someone may be in the middle.</string>
+    <string name="pairing_question">Does it match the code on your Mac? If not, tap Reject: someone may be in the middle.</string>
     <string name="pairing_reject">Reject</string>
     <string name="pairing_review">Compare the code</string>
     <string name="key_changed_title">Key changed</string>
@@ -279,11 +274,10 @@
     <string name="tile_sub_ready">Send to Mac</string>
 
     <!-- main screen details -->
-    <string name="pair_code">Code: %1$s</string>
     <string name="key_changed_tap">Tap to review</string>
     <string name="key_changed_review">Review</string>
-    <string name="clip_summary_auto">auto paste</string>
-    <string name="clip_summary_notify_only">notification only</string>
+    <string name="clip_summary_auto">Auto paste</string>
+    <string name="clip_summary_notify_only">Notification only</string>
     <string name="clip_summary_sensitive">sensitive content protected</string>
 
     <!-- help screen diagnostics -->
@@ -298,4 +292,27 @@
     <string name="diag_no">no</string>
     <string name="diag_none">none</string>
     <string name="diag_up">up</string>
+
+    <!-- settings screen -->
+    <string name="settings_title">Settings</string>
+    <string name="section_app">App</string>
+    <string name="settings_about">About</string>
+
+    <!-- main screen: status with the Mac\'s name -->
+    <string name="state_connected_to">Connected to %1$s</string>
+    <string name="state_connecting_to">Connecting to %1$s…</string>
+    <string name="pair_code_with">%1$s · code %2$s</string>
+    <string name="macs_found">Found: %1$s</string>
+    <string name="pairing_others">Also on this network: %1$s</string>
+
+    <!-- clipboard history -->
+    <string name="section_clipboard">Clipboard</string>
+    <string name="history_title">Clipboard history</string>
+    <string name="history_empty">Nothing copied yet</string>
+    <string name="history_note">Never saved to storage</string>
+    <string name="history_send">Send to Mac</string>
+    <string name="history_clear">Clear</string>
+    <string name="history_from_mac">From Mac · %1$s</string>
+    <string name="history_to_mac">To Mac · %1$s</string>
+    <string name="clip_nothing_to_send">Nothing new to send</string>
 </resources>

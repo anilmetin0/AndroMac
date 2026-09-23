@@ -74,6 +74,16 @@
         </activity>
 
         <activity
+            android:name=".ui.SettingsActivity"
+            android:exported="false"
+            android:label="@string/settings_title" />
+
+        <activity
+            android:name=".ui.ClipboardHistoryActivity"
+            android:exported="false"
+            android:label="@string/history_title" />
+
+        <activity
             android:name=".ui.HelpActivity"
             android:exported="false"
             android:label="@string/help_title" />

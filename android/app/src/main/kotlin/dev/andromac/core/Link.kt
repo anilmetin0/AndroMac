@@ -36,6 +36,24 @@ object Link {
     var macSeenOnNetwork: Boolean = false
         internal set
 
+    /**
+     * The Mac names the last mDNS browse saw, so the screen can say which Mac a pairing goes to
+     * when there is more than one. Written by [dev.andromac.net.Discovery]
+     * only while it browses; no extra scan exists for it.
+     */
+    @Volatile
+    var discoveredMacs: List<String> = emptyList()
+        private set
+
+    /** NSD callbacks can arrive on several threads; the read-modify-write is serialized here. */
+    internal fun setDiscovered(update: (List<String>) -> List<String>) {
+        val changed = synchronized(this) {
+            val next = update(discoveredMacs)
+            (next != discoveredMacs).also { discoveredMacs = next }
+        }
+        if (changed) listeners.forEach { runCatching { it(state) } }
+    }
+
     private val listeners = CopyOnWriteArrayList<(State) -> Unit>()
 
     fun addListener(l: (State) -> Unit) { listeners += l; l(state) }

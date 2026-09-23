@@ -2,30 +2,31 @@ package dev.andromac.ui
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.app.LocaleManager
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import dev.andromac.R
 import dev.andromac.core.Link
 import dev.andromac.core.NetworkInfo
 import dev.andromac.core.Store
+import dev.andromac.feature.ClipHistory
 import dev.andromac.feature.ClipboardBridge
 import dev.andromac.feature.FindPhone
 import dev.andromac.feature.MediaBridge
 import dev.andromac.net.LinkService
 
 /**
- * The single-screen home.
+ * The home screen.
  *
- * Design rule: the screen shows state, not prose. Status on top, the permission card with what is
- * still missing, the four sync switches, and one row per detail screen with a one-line summary.
+ * Design rule: the screen shows state, not prose. Status on top (with the Mac's name), the
+ * required permissions only while one is missing, the connection guide only while unpaired, the
+ * four sync switches and the clipboard. Everything else is behind the Settings icon; the guide
+ * and diagnostics stay behind the info icon once paired.
  */
 class MainActivity : Activity() {
 
@@ -36,6 +37,7 @@ class MainActivity : Activity() {
     private lateinit var pairButton: Button
 
     private val listener: (Link.State) -> Unit = { state -> runOnUiThread { render(state) } }
+    private val historyChanged: () -> Unit = { runOnUiThread { renderClipboard() } }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,44 +45,31 @@ class MainActivity : Activity() {
         findViewById<View>(R.id.scrollRoot).padForSystemBars()
         store = Store(this)
 
-        // The main screen is the root: no back arrow. Unpair lives on the Connection screen.
-        findViewById<View>(R.id.headerBack).visibility = View.GONE
-        findViewById<TextView>(R.id.headerTitle).setText(R.string.app_name)
+        findViewById<View>(R.id.actionHelp).setOnClickListener { open(HelpActivity::class.java) }
+        findViewById<View>(R.id.actionSettings).setOnClickListener { open(SettingsActivity::class.java) }
 
         status = findViewById(R.id.status)
         detail = findViewById(R.id.detail)
         statusDot = findViewById(R.id.statusDot)
         pairButton = findViewById(R.id.pair)
         pairButton.setOnClickListener { onPairTapped() }
+        // Once paired the card opens the Mac's details: name, address, reconnect, forget.
+        bindNavRow(R.id.statusCard) { if (store.isPaired) open(ConnectionActivity::class.java) }
 
-        // One row per permission, tappable to fix; the header row opens the full list.
-        bindNavRow(R.id.rowPermissions) { startActivity(Intent(this, PermissionsActivity::class.java)) }
         for ((permission, rowId) in permissionRows) {
             bindNavRow(rowId) { startActivity(permission.settingsIntent(this)) }
         }
-        findViewById<View>(R.id.permissionBanner).setOnClickListener { fixFirstMissing() }
         findViewById<View>(R.id.permissionDismiss).setOnClickListener {
-            // Dismissal is remembered against what is missing right now, so the banner stays gone
+            // Dismissal is remembered against what is missing right now, so the card stays gone
             // for this problem and comes back if a different permission is revoked later.
             store.permissionsDismissed = Permission.missingRequired(this).joinToString(",") { it.name }
-            renderPermissionBanner()
+            renderPermissions()
         }
 
-        bindNavRow(R.id.rowHelp) { startActivity(Intent(this, HelpActivity::class.java)) }
-        bindNavRow(R.id.rowConnection) { startActivity(Intent(this, ConnectionActivity::class.java)) }
-        bindNavRow(R.id.rowNotifSettings) { startActivity(Intent(this, NotificationSettingsActivity::class.java)) }
-        bindNavRow(R.id.rowClipSettings) { startActivity(Intent(this, ClipboardSettingsActivity::class.java)) }
-        bindNavRow(R.id.rowUpdates) { startActivity(Intent(this, UpdateSettingsActivity::class.java)) }
-        bindNavRow(R.id.rowFiles) { startActivity(Intent(this, FileSettingsActivity::class.java)) }
-        bindNavRow(R.id.updateCard) { startActivity(Intent(this, UpdateSettingsActivity::class.java)) }
-        // In-app language selection arrived with API 33; below that the row has nothing to open.
-        if (Build.VERSION.SDK_INT >= 33) {
-            bindNavRow(R.id.rowLanguage) {
-                startActivity(Intent(Settings.ACTION_APP_LOCALE_SETTINGS, Uri.parse("package:$packageName")))
-            }
-        } else {
-            findViewById<View>(R.id.rowLanguage).visibility = View.GONE
-        }
+        bindNavRow(R.id.rowHelp) { open(HelpActivity::class.java) }
+        bindNavRow(R.id.updateCard) { open(UpdateSettingsActivity::class.java) }
+        bindNavRow(R.id.rowClipHistory) { open(ClipboardHistoryActivity::class.java) }
+        bindNavRow(R.id.rowSendClip) { sendClipboard() }
 
         bindSwitchRow(R.id.rowBattery, R.id.swBattery, store.syncBattery) { store.syncBattery = it }
         bindSwitchRow(R.id.rowClipboard, R.id.swClipboard, store.syncClipboard) { store.syncClipboard = it }
@@ -91,8 +80,6 @@ class MainActivity : Activity() {
             store.syncMedia = it
             MediaBridge.settingChanged()      // apply immediately if connected, do not wait for a reconnect
         }
-
-        findViewById<TextView>(R.id.version).text = getString(R.string.version_footer, versionLabel())
 
         // Ask for what can be asked for. Notification access has no runtime dialog, it is a
         // settings screen, so it is offered once, right after this, in [offerNotificationAccess].
@@ -111,6 +98,7 @@ class MainActivity : Activity() {
     override fun onStart() {
         super.onStart()
         Link.addListener(listener)
+        ClipHistory.addListener(historyChanged)
     }
 
     override fun onRequestPermissionsResult(
@@ -153,6 +141,7 @@ class MainActivity : Activity() {
 
     override fun onStop() {
         Link.removeListener(listener)
+        ClipHistory.removeListener(historyChanged)
         // On rotation the dialog stayed attached to the old activity and leaked its window.
         pairingDialog?.dismiss()
         pairingDialog = null
@@ -163,34 +152,52 @@ class MainActivity : Activity() {
 
     private fun render(state: Link.State) {
         val paired = store.isPaired
-        val (title, dotColor) = when (state) {
-            is Link.State.Connected -> R.string.state_connected to R.color.am_state_ok
-            is Link.State.Searching ->
-                (if (paired) R.string.state_waiting_mac else R.string.state_searching) to R.color.am_state_pending
-            is Link.State.NeedsPairing -> R.string.state_waiting_approval to R.color.am_state_pending
-            is Link.State.KeyChanged -> R.string.state_key_changed to R.color.am_state_alert
-            Link.State.Stopped -> when {
+        // The Mac's name as soon as it is known: the saved one, or the one met while pairing.
+        val mac = store.pairedName
+        val dotColor = when (state) {
+            is Link.State.Connected -> R.color.am_state_ok
+            is Link.State.Searching, is Link.State.NeedsPairing -> R.color.am_state_pending
+            is Link.State.KeyChanged -> R.color.am_state_alert
+            Link.State.Stopped -> R.color.am_state_idle
+        }
+        status.text = when (state) {
+            is Link.State.Connected -> getString(R.string.state_connected_to, state.peerName)
+            is Link.State.Searching -> when {
+                !paired -> getString(R.string.state_searching)
+                mac.isNotEmpty() -> getString(R.string.state_connecting_to, mac)
+                else -> getString(R.string.state_waiting_mac)
+            }
+            is Link.State.NeedsPairing -> getString(R.string.state_waiting_approval)
+            is Link.State.KeyChanged -> getString(R.string.state_key_changed)
+            Link.State.Stopped -> getString(when {
                 !paired -> R.string.state_unpaired
                 !store.autoConnect -> R.string.state_auto_off
                 else -> R.string.state_offline
-            } to R.color.am_state_idle
+            })
         }
-
-        status.setText(title)
         statusDot.background?.mutate()?.setTint(getColor(dotColor))
 
         detail.text = when (state) {
-            is Link.State.Connected -> state.peerName
-            is Link.State.NeedsPairing -> getString(R.string.pair_code, state.sas)
+            is Link.State.Connected -> ""
+            is Link.State.NeedsPairing -> getString(R.string.pair_code_with, state.peerName, state.sas.chunked(3).joinToString(" "))
             is Link.State.KeyChanged -> getString(R.string.key_changed_tap)
+            // While pairing, every Mac the browse saw, so it is clear which one answers.
+            is Link.State.Searching -> when {
+                NetworkInfo.localIpv4() == null -> getString(R.string.onboarding_step2_none)
+                !paired && Link.discoveredMacs.isNotEmpty() ->
+                    getString(R.string.macs_found, Link.discoveredMacs.joinToString(", "))
+                else -> ""
+            }
             // No detail line while unpaired: the guide right below already explains it.
-            else -> if (paired) store.pairedName else ""
+            Link.State.Stopped -> if (paired) mac else ""
         }
+        detail.visibility = if (detail.text.isEmpty()) View.GONE else View.VISIBLE
 
+        // The primary action only when there is something to do.
         pairButton.visibility = when (state) {
             is Link.State.Connected -> View.GONE
             is Link.State.Searching -> if (paired) View.GONE else View.VISIBLE
-            Link.State.Stopped -> if (paired && !store.autoConnect) View.VISIBLE else if (paired) View.GONE else View.VISIBLE
+            Link.State.Stopped -> if (paired && store.autoConnect) View.GONE else View.VISIBLE
             else -> View.VISIBLE
         }
         pairButton.setText(
@@ -201,12 +208,12 @@ class MainActivity : Activity() {
                 else -> R.string.pair
             }
         )
+        findViewById<View>(R.id.statusCard).isClickable = paired
 
         renderOnboarding()
-        renderPermissionBanner()
         renderPermissions()
-        renderSummaries()
         renderUpdate()
+        renderClipboard()
 
         if (state is Link.State.NeedsPairing) confirmPairing(state.peerName, state.sas, state.peerKey)
     }
@@ -242,32 +249,6 @@ class MainActivity : Activity() {
     }
 
     /**
-     * The banner at the top of the screen: one line saying which required permission is missing,
-     * tappable to grant it and dismissible with the cross. A mirror that relays nothing is the
-     * one state worth interrupting for; the optional permissions stay in the card below.
-     */
-    private fun renderPermissionBanner() {
-        val missing = Permission.missingRequired(this)
-        val banner = findViewById<View>(R.id.permissionBanner)
-        val show = missing.isNotEmpty() && store.permissionsDismissed != missing.joinToString(",") { it.name }
-        banner.visibility = if (show) View.VISIBLE else View.GONE
-        if (!show) return
-        findViewById<TextView>(R.id.permissionBody).text = missing.joinToString(" · ") {
-            getString(
-                when (it) {
-                    Permission.LOCAL_NETWORK -> R.string.permission_banner_local_network
-                    Permission.NOTIFICATION_ACCESS -> R.string.permission_banner_notif_access
-                    else -> R.string.permission_banner_post
-                }
-            )
-        }
-    }
-
-    private fun fixFirstMissing() {
-        Permission.missingRequired(this).firstOrNull()?.let { startActivity(it.settingsIntent(this)) }
-    }
-
-    /**
      * Notification access cannot be requested from code, only opened, so this offers it once,
      * with the reason. Asking at every launch would be nagging; the card is still there for later.
      */
@@ -288,64 +269,49 @@ class MainActivity : Activity() {
         Permission.LOCAL_NETWORK to R.id.rowLocalNetwork,
         Permission.POST_NOTIFICATIONS to R.id.rowPostNotif,
         Permission.NOTIFICATION_ACCESS to R.id.rowNotifAccess,
-        Permission.BATTERY to R.id.rowBatteryOpt,
-        Permission.DND to R.id.rowDnd,
-        Permission.OVERLAY to R.id.rowOverlay,
     )
 
-    /** The permission card: the summary row always, plus one row per permission still missing. */
+    /**
+     * The permission card: only while a REQUIRED permission is missing, one row per missing one,
+     * tappable to grant it and dismissible with the cross. A mirror that relays nothing is the one
+     * state worth interrupting for; the full list lives in Settings, Permissions.
+     */
     private fun renderPermissions() {
-        val missing = Permission.missing(this)
-        findViewById<TextView>(R.id.permissionsSummary).apply {
-            text = Permission.summary(this@MainActivity)
-            setTextColor(getColor(if (missing.isEmpty()) R.color.am_state_ok else R.color.am_state_pending))
-        }
+        val missing = Permission.missingRequired(this)
+        val show = missing.isNotEmpty() && store.permissionsDismissed != missing.joinToString(",") { it.name }
+        findViewById<View>(R.id.permissionCard).visibility = if (show) View.VISIBLE else View.GONE
         for ((permission, rowId) in permissionRows) {
             findViewById<View>(rowId).visibility = if (permission in missing) View.VISIBLE else View.GONE
         }
     }
 
-    /** The summaries under the detail rows: what is configured, visible without opening the screen. */
-    private fun renderSummaries() {
-        findViewById<TextView>(R.id.connectionSummary).text = when {
-            !store.isPaired -> getString(R.string.state_unpaired)
-            store.autoConnect -> getString(R.string.connection_summary_auto, store.pairedName)
-            else -> getString(R.string.connection_summary_manual, store.pairedName)
-        }
-        findViewById<TextView>(R.id.notifSummary).text = store.appFilterSummary(this)
-
-        val clipParts = buildList {
-            add(getString(if (store.clipboardAutoPaste) R.string.clip_summary_auto else R.string.clip_summary_notify_only))
-            if (store.clipboardSkipSensitive) add(getString(R.string.clip_summary_sensitive))
-        }
-        findViewById<TextView>(R.id.clipSummary).text = clipParts.joinToString(" · ")
-
-        findViewById<TextView>(R.id.fileSummary).setText(
-            when {
-                !store.fileTransfer -> R.string.file_summary_off
-                store.fileAutoAccept -> R.string.file_summary_auto
-                else -> R.string.file_summary_ask
-            }
-        )
-
-        if (Build.VERSION.SDK_INT >= 33) {
-            val locales = getSystemService(LocaleManager::class.java).applicationLocales
-            findViewById<TextView>(R.id.languageSummary).text =
-                if (locales.isEmpty) getString(R.string.language_system)
-                else locales[0].getDisplayName(locales[0]).replaceFirstChar(Char::uppercase)
-        }
+    /** The latest clipboard entry as a one-line preview; the send row only while connected. */
+    private fun renderClipboard() {
+        findViewById<TextView>(R.id.clipHistoryPreview).text =
+            ClipHistory.list().firstOrNull()?.text?.lineSequence()?.first()
+                ?: getString(R.string.history_empty)
+        findViewById<View>(R.id.rowSendClip).visibility = if (Link.isConnected) View.VISIBLE else View.GONE
     }
 
-    /** The update card and the Updates row summary. Both read the stored result, no request here. */
+    /** The app has focus right now, so the clipboard can be read here without the helper activity. */
+    private fun sendClipboard() {
+        val message = when {
+            !Link.isConnected -> R.string.clip_offline
+            ClipboardBridge(this, store).sendCurrentClip() -> R.string.clip_sent_from_clipboard
+            else -> R.string.clip_nothing_to_send
+        }
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun open(screen: Class<out Activity>) = startActivity(Intent(this, screen))
+
+    /** The update card. It reads the stored result, no request here. */
     private fun renderUpdate() {
         val newer = store.newerRelease(currentVersion(), currentCommit())
         findViewById<View>(R.id.updateCard).visibility = if (newer == null) View.GONE else View.VISIBLE
         if (newer != null) {
             findViewById<TextView>(R.id.updateBody).text = getString(R.string.update_card_body, newer.label)
         }
-        findViewById<TextView>(R.id.updatesSummary).text =
-            if (!store.updateCheck) getString(R.string.updates_summary_off)
-            else updateStatus(store)
     }
 
     /**
@@ -433,6 +399,12 @@ class MainActivity : Activity() {
             if (titleColor != null) setTextColor(getColor(titleColor))
         }
         findViewById<TextView>(R.id.pairPeer).text = peerName
+        // Several Macs on this network: name the others, so it is clear which one this is.
+        val others = Link.discoveredMacs.filter { it != peerName }
+        findViewById<TextView>(R.id.pairOthers).apply {
+            text = getString(R.string.pairing_others, others.joinToString(", "))
+            visibility = if (others.isEmpty()) View.GONE else View.VISIBLE
+        }
         // "123456" -> "123 456": the eye reads three digits at a time, so comparing goes faster.
         // A key-changed warning has no code (the attempt stops before one exists, PROTOCOL §3).
         findViewById<TextView>(R.id.pairCode).apply {
