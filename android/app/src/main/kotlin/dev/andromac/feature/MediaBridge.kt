@@ -40,6 +40,7 @@ class MediaBridge(context: Context, private val store: Store) {
     private var controller: MediaController? = null
     private var registered = false
     private var lastSent: String? = null
+    private var lastShape: Pair<Int, Long>? = null
     private var pending: Runnable? = null
     private var warned = false
 
@@ -48,7 +49,17 @@ class MediaBridge(context: Context, private val store: Store) {
 
     private val callback = object : MediaController.Callback() {
         override fun onMetadataChanged(metadata: MediaMetadata?) = schedule()
-        override fun onPlaybackStateChanged(state: PlaybackState?) = schedule()
+        /**
+         * Players report position updates through here too. Only a change of the state or of
+         * the available actions can change what the Mac shows, so the rest is dropped before
+         * any work is scheduled.
+         */
+        override fun onPlaybackStateChanged(state: PlaybackState?) {
+            val shape = (state?.state ?: -1) to (state?.actions ?: 0L)
+            if (shape == lastShape) return
+            lastShape = shape
+            schedule()
+        }
         override fun onSessionDestroyed() {
             controller = null
             schedule()
@@ -60,6 +71,7 @@ class MediaBridge(context: Context, private val store: Store) {
         handler.post {
             active = this
             lastSent = null
+            lastShape = null
             register()
         }
     }
@@ -70,6 +82,7 @@ class MediaBridge(context: Context, private val store: Store) {
             if (active === this) active = null
             unregister()
             lastSent = null
+            lastShape = null
         }
     }
 
@@ -125,6 +138,7 @@ class MediaBridge(context: Context, private val store: Store) {
         controller = sessions.firstOrNull { it.playbackState?.state == PlaybackState.STATE_PLAYING }
             ?: sessions.firstOrNull { it.metadata != null }
         controller?.registerCallback(callback, handler)
+        lastShape = null                 // a new session's first state always counts
         schedule()
     }
 

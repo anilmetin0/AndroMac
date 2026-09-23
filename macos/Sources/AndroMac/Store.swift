@@ -393,8 +393,12 @@ final class Store: @unchecked Sendable {
         }
     }
 
+    /// `Host.current()` resolves names and addresses and is slow; the computer name does not
+    /// change while the app runs, so it is asked once.
+    private static let hostName = Host.current().localizedName ?? "Mac"
+
     var deviceName: String {
-        get { defaults.string(forKey: "deviceName") ?? Host.current().localizedName ?? "Mac" }
+        get { defaults.string(forKey: "deviceName") ?? Self.hostName }
         set { write(newValue, "deviceName") }
     }
 

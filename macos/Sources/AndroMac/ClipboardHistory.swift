@@ -69,7 +69,9 @@ final class ClipboardHistory: ObservableObject {
         entries.removeAll { $0.text == text }
         entries.insert(Entry(text: text, direction: direction), at: 0)
         if entries.count > limit { entries.removeLast(entries.count - limit) }
-        save()
+        // Coalesced like the notification history: a copy is up to 64 KiB, and 50 of them were
+        // re-encoded and written for every copy in either direction.
+        scheduleSave()
     }
 
     func remove(_ entry: Entry) {

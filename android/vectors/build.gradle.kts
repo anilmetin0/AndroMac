@@ -23,6 +23,7 @@ kotlin {
         "dev/andromac/core/FileNames.kt",
         // Unit-tested here: version ordering and the release lookup, both Android-free.
         "dev/andromac/core/Version.kt",
+        "dev/andromac/core/NetworkInfo.kt",
         "dev/andromac/feature/UpdateCheck.kt",
     )
 }

@@ -7,7 +7,6 @@ import SwiftUI
 struct SettingsList: View {
 
     @EnvironmentObject private var state: AppState
-    @ObservedObject private var stats = LinkStats.shared
     @State private var showBatteryInMenuBar = Store.shared.showBatteryInMenuBar
     @State private var launchAtLogin = Store.shared.launchAtLogin
     @State private var launchError: String?
@@ -129,7 +128,10 @@ struct SettingsList: View {
             Toggle("Battery", isOn: $syncBattery)
                 .onChange(of: syncBattery) { _, v in Store.shared.syncBattery = v }
             Toggle("Clipboard", isOn: $syncClipboard)
-                .onChange(of: syncClipboard) { _, v in Store.shared.syncClipboard = v }
+                .onChange(of: syncClipboard) { _, v in
+                    Store.shared.syncClipboard = v
+                    Task { await ClipboardWatcher.shared.refresh() }
+                }
             Toggle("Notifications", isOn: $syncNotifications)
                 .onChange(of: syncNotifications) { _, v in Store.shared.syncNotifications = v }
             Toggle("Media", isOn: $syncMedia)
@@ -164,7 +166,10 @@ struct SettingsList: View {
                 Text("Only when I ask").tag(false)
             }
             .disabled(!syncClipboard)
-            .onChange(of: clipboardAutoSend) { _, v in Store.shared.clipboardAutoSend = v }
+            .onChange(of: clipboardAutoSend) { _, v in
+                Store.shared.clipboardAutoSend = v
+                Task { await ClipboardWatcher.shared.refresh() }
+            }
 
             Toggle("Never send a concealed clipboard", isOn: $clipboardSkipSensitive)
                 .disabled(!syncClipboard)
@@ -378,28 +383,7 @@ struct SettingsList: View {
         }
     }
 
-    private var metrics: some View {
-        Section("Metrics") {
-            LabeledContent("Uptime", value: stats.formattedUptime())
-            LabeledContent("Messages",
-                           value: String(localized: "\(stats.sent) sent · \(stats.received) received"))
-            LabeledContent("Messages / hour", value: String(format: "%.1f", stats.messagesPerHour))
-            LabeledContent("Traffic", value: stats.formattedBytes())
-            LabeledContent("Reconnects", value: "\(stats.reconnects)")
-            if !stats.topTypes.isEmpty {
-                LabeledContent(
-                    "Most frequent",
-                    value: stats.topTypes.map { "\($0.type) ×\($0.count)" }
-                        .joined(separator: ", ")
-                )
-            }
-            Text("Idle baseline is about 30 messages per hour for each connected phone.")
-                .font(Theme.Font.label)
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
-            Button("Reset counters") { stats.reset() }
-        }
-    }
+    private var metrics: some View { MetricsSection() }
 
     private var privacy: some View {
         Section("Privacy") {
@@ -600,6 +584,36 @@ private struct PermissionRow<Action: View>: View {
                     .foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+}
+
+/// The counters, in a view of their own: `LinkStats` publishes on every message, and observed from
+/// `SettingsList` it redrew every section of Settings for each ping and file chunk.
+private struct MetricsSection: View {
+
+    @ObservedObject private var stats = LinkStats.shared
+
+    var body: some View {
+        Section("Metrics") {
+            LabeledContent("Uptime", value: stats.formattedUptime())
+            LabeledContent("Messages",
+                           value: String(localized: "\(stats.sent) sent · \(stats.received) received"))
+            LabeledContent("Messages / hour", value: String(format: "%.1f", stats.messagesPerHour))
+            LabeledContent("Traffic", value: stats.formattedBytes())
+            LabeledContent("Reconnects", value: "\(stats.reconnects)")
+            if !stats.topTypes.isEmpty {
+                LabeledContent(
+                    "Most frequent",
+                    value: stats.topTypes.map { "\($0.type) ×\($0.count)" }
+                        .joined(separator: ", ")
+                )
+            }
+            Text("Idle baseline is about 30 messages per hour for each connected phone.")
+                .font(Theme.Font.label)
+                .foregroundStyle(.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
+            Button("Reset counters") { stats.reset() }
         }
     }
 }

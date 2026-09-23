@@ -5,12 +5,16 @@ import Foundation
 /// The clipboard bridge (Mac side).
 ///
 /// macOS posts no notification when the clipboard changes; polling `NSPasteboard.changeCount` is
-/// the only way. That is acceptable because the Mac is on mains power: the poll is a single Mach
+/// the only way. It is cheap enough to live with: the poll is a single Mach
 /// call, it touches no disk, network or radio, and it runs only while the phone is CONNECTED.
 ///
-/// Deliberate simplification: a fixed 0.7 s interval. Its ceiling is CPU cost — if polling ever
-/// shows up in a measurement, replace `NSPasteboard` polling with a CGEventTap listening for
-/// Cmd+C. Not worth it for now.
+/// The poll runs only while it can matter: a phone is connected, automatic sending is on, and the
+/// screen is awake and unlocked. Nobody copies on a locked or sleeping Mac, and a MacBook on
+/// battery should not be woken 1.4 times a second for nothing. The sleep carries a tolerance so
+/// the system can fold these wake-ups into others.
+///
+/// ponytail: a fixed 0.7 s interval; if it ever shows up in a measurement, a CGEventTap for Cmd+C
+/// replaces the poll.
 actor ClipboardWatcher {
 
     static let shared = ClipboardWatcher()
@@ -26,20 +30,68 @@ actor ClipboardWatcher {
     private var recentlyWritten: [String] = []
     private let echoWindow = 5
 
+    /// A phone wants the clipboard. Whatever was copied before this is not sent.
     func startWatching() {
-        guard task == nil else { return }
-        lastChangeCount = NSPasteboard.general.changeCount
-        task = Task { [weak self] in
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(700))
-                await self?.poll()
-            }
-        }
+        if !wanted { lastChangeCount = NSPasteboard.general.changeCount }
+        wanted = true
+        observeScreen()
+        refresh()
     }
 
     func stopWatching() {
-        task?.cancel()
-        task = nil
+        wanted = false
+        refresh()
+    }
+
+    /// Start or stop the poll to match the conditions above. Settings call it when a switch moves.
+    func refresh() {
+        let run = wanted && !displayAsleep && !locked
+            && Store.shared.syncClipboard && Store.shared.clipboardAutoSend
+        if run, task == nil {
+            // Whatever was copied while the poll was off (auto-send switched off, the screen
+            // locked) is not sent when it comes back: the user may have copied a password under
+            // "Only when I ask" precisely so it would not go.
+            lastChangeCount = NSPasteboard.general.changeCount
+            task = Task { [weak self] in
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .milliseconds(700), tolerance: .milliseconds(300))
+                    await self?.poll()
+                }
+            }
+        } else if !run {
+            task?.cancel()
+            task = nil
+        }
+    }
+
+    private var wanted = false
+    private var displayAsleep = false
+    private var locked = false
+    private var observingScreen = false
+
+    private func setScreen(asleep: Bool? = nil, locked: Bool? = nil) {
+        if let asleep { displayAsleep = asleep }
+        if let locked { self.locked = locked }
+        refresh()
+    }
+
+    /// Display sleep comes from NSWorkspace, the lock screen only as a distributed notification.
+    private func observeScreen() {
+        guard !observingScreen else { return }
+        observingScreen = true
+        let workspace = NSWorkspace.shared.notificationCenter
+        let distributed = DistributedNotificationCenter.default()
+        let events: [(NotificationCenter, Notification.Name, Bool?, Bool?)] = [
+            (workspace, NSWorkspace.screensDidSleepNotification, true, nil),
+            (workspace, NSWorkspace.screensDidWakeNotification, false, nil),
+            (distributed, Notification.Name("com.apple.screenIsLocked"), nil, true),
+            (distributed, Notification.Name("com.apple.screenIsUnlocked"), nil, false),
+        ]
+        for (center, name, asleep, locked) in events {
+            _ = center.addObserver(forName: name, object: nil, queue: nil) { _ in
+                Task { await ClipboardWatcher.shared.setScreen(asleep: asleep, locked: locked) }
+            }
+        }
     }
 
     /// Clipboard content arriving from the phone — write it locally and arm the echo breaker.
@@ -55,14 +107,17 @@ actor ClipboardWatcher {
     /// "copy on the phone, paste on the Mac" work without touching the phone: the panel asks when
     /// it opens, the phone reads through its invisible helper activity and replies.
     ///
-    /// Throttled: opening and closing the panel a few times in a row is one request, not five.
-    /// `force` is the button in the panel: an explicit click is consent, so it ignores the setting
-    /// but not the throttle.
+    /// Only the phone the panel is showing is asked; every other phone would wake its radio and
+    /// launch an activity for an answer nobody looks at. Throttled: opening and closing the panel
+    /// a few times in a row is one request, not five. The phone itself ignores a request while
+    /// its screen is off. `force` is the button in the panel: an explicit click is consent, so it
+    /// ignores the setting and the throttle.
     func requestFromPhones(force: Bool = false) async {
         guard Store.shared.syncClipboard, force || Store.shared.clipboardPull else { return }
-        if let lastRequest, Date().timeIntervalSince(lastRequest) < 3 { return }
+        if !force, let lastRequest, Date().timeIntervalSince(lastRequest) < 10 { return }
         lastRequest = Date()
-        await Server.shared.send(["t": "clipboard_request"])
+        guard let peer = await MainActor.run(body: { AppState.shared.focusedDevice?.id }) else { return }
+        await Server.shared.send(["t": "clipboard_request"], to: peer)
     }
 
     /// The same ceiling as the phone's `Protocol.MAX_CLIPBOARD`.
@@ -99,7 +154,7 @@ actor ClipboardWatcher {
 
     /// Send a text from the history to the phone manually (works even when auto-send is off).
     func sendManually(_ text: String) async {
-        let clipped = String(text.prefix(64 * 1024))
+        let clipped = String(text.prefix(Self.maxText))
         rememberWritten(clipped)          // echo breaker: reading it back must not send it again
         await Server.shared.sendToClipboardTargets([
             "t": "clipboard",
@@ -163,7 +218,7 @@ actor ClipboardWatcher {
         guard let text = pb.string(forType: .string), !text.isEmpty else { return }
         guard !recentlyWritten.contains(text) else { return }
 
-        let clipped = String(text.prefix(64 * 1024))
+        let clipped = String(text.prefix(Self.maxText))
         await Server.shared.sendToClipboardTargets([
             "t": "clipboard",
             "text": clipped,

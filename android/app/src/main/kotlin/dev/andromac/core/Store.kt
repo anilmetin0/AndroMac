@@ -121,6 +121,13 @@ class Store(context: Context) {
         set(v) = prefs.edit().putString(K_PEER_NAME, v).apply()
 
     /** Last address that worked — tried before the mDNS scan (PROTOCOL §1). */
+    /** The LAN the Mac was last reached on (`LinkService.networkKey`). */
+    var macNetwork: String?
+        get() = prefs.getString(K_MAC_NETWORK, null)
+        set(v) = prefs.edit().apply {
+            if (v == null) remove(K_MAC_NETWORK) else putString(K_MAC_NETWORK, v)
+        }.apply()
+
     var lastEndpoint: String?
         get() = prefs.getString(K_ENDPOINT, null)
         set(v) = prefs.edit().apply {
@@ -128,7 +135,7 @@ class Store(context: Context) {
         }.apply()
 
     fun unpair() {
-        prefs.edit().remove(K_PEER_KEY).remove(K_PEER_NAME).remove(K_ENDPOINT).apply()
+        prefs.edit().remove(K_PEER_KEY).remove(K_PEER_NAME).remove(K_ENDPOINT).remove(K_MAC_NETWORK).apply()
     }
 
     val isPaired: Boolean get() = pairedKey != null
@@ -375,6 +382,7 @@ class Store(context: Context) {
         const val K_PEER_KEY = "peer_key"
         const val K_PEER_NAME = "peer_name"
         const val K_ENDPOINT = "last_endpoint"
+        const val K_MAC_NETWORK = "mac_network"
         const val K_SYNC_BATTERY = "sync_battery"
         const val K_SYNC_CLIPBOARD = "sync_clipboard"
         const val K_SYNC_MEDIA = "sync_media"

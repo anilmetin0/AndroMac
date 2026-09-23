@@ -22,6 +22,8 @@ actor Server {
     private var pingTasks: [String: Task<Void, Never>] = [:]
     private var serveTasks: [String: Task<Void, Never>] = [:]
     private var wakeObserver: NSObjectProtocol?
+    private var sleepObserver: NSObjectProtocol?
+    private var keychainRetry: Task<Void, Never>?
 
     /// A deliberate `stop()`. This flag distinguishes listener cancellations: if the user stopped
     /// us we do not restart, if the network or the OS cancelled us we do.
@@ -106,6 +108,11 @@ actor Server {
     /// main thread on a semaphore, so hopping to the MainActor from here would deadlock.
     func stop(updateUI: Bool = true) async {
         stopping = true
+        keychainRetry?.cancel(); keychainRetry = nil
+        if let sleepObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(sleepObserver)
+            self.sleepObserver = nil
+        }
         if let wakeObserver {
             NSWorkspace.shared.notificationCenter.removeObserver(wakeObserver)
             self.wakeObserver = nil
@@ -181,6 +188,13 @@ actor Server {
             forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
         ) { _ in
             Task { await Server.shared.pingAfterWake() }
+        }
+        // Going to sleep: tell every phone, so it parks instead of spending the night on its
+        // redial ladder against a Mac that cannot answer (PROTOCOL §5 `sleep`, ENERGY rule 21).
+        sleepObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.willSleepNotification, object: nil, queue: .main
+        ) { _ in
+            Task { await Server.shared.send(["t": "sleep"]) }
         }
     }
 
@@ -381,7 +395,9 @@ actor Server {
         // it only answers, so N phones cost N pings from the Mac and nothing on the battery side.
         pingTasks[deviceID] = Task { [pingInterval] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: pingInterval)
+                // The tolerance lets macOS fold this wake-up into another; 240 s ± 15 is still far
+                // inside the phone's 300 s read timeout.
+                try? await Task.sleep(for: pingInterval, tolerance: .seconds(15))
                 if Task.isCancelled { return }
                 _ = await self.send(["t": "ping"], to: deviceID)
             }
@@ -432,7 +448,6 @@ actor Server {
         let type = msg["t"] as? String ?? ""
         // Privacy: only the message type and size are counted, the content is never logged or stored.
         await MainActor.run { LinkStats.shared.recordReceived(type, bytes: bytes) }
-        if type != "pong" { NSLog("AndroMac: message received: %@", type) }
         switch type {
         case "ping":
             await send(["t": "pong"], to: deviceID)

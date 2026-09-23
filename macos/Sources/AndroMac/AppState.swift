@@ -124,19 +124,30 @@ final class AppState: ObservableObject {
     /// Those fields are what the battery bar, the media row and the clipboard line still read from.
     /// Rather than rewrite every one of them at once, the multi-device state is authoritative and
     /// this mirrors the focused device into them, so both descriptions stay true at the same time.
+    ///
+    /// Each field is written only when it changed: a `@Published` set notifies even when the value
+    /// is equal, and every battery or media message would otherwise redraw the menu bar item.
     func refocus() {
         let device = focusedDevice
-        battery = device?.battery
-        media = device?.media
-        peerCaps = device?.caps ?? []
-        lastClipboard = device?.lastClipboard ?? ""
-        status = device.map { .connected($0.name) } ?? (status.isLive ? .listening : status)
+        Self.assign(&battery, device?.battery)
+        Self.assign(&media, device?.media)
+        Self.assign(&peerCaps, device?.caps ?? [])
+        Self.assign(&lastClipboard, device?.lastClipboard ?? "")
+        Self.assign(&status, device.map { .connected($0.name) } ?? (status.isLive ? .listening : status))
+    }
+
+    private static func assign<T: Equatable>(_ field: inout T, _ value: T) {
+        if field != value { field = value }
     }
 
     /// Update one device's state, creating its entry if this is its first message.
     func update(deviceID: String, name: String, _ change: (inout DeviceState) -> Void) {
         if let index = devices.firstIndex(where: { $0.id == deviceID }) {
-            change(&devices[index])
+            // Changed in a copy: writing an element of a `@Published` array notifies even when it
+            // comes out equal, and the menu bar label would redraw for every message.
+            var device = devices[index]
+            change(&device)
+            if device != devices[index] { devices[index] = device }
         } else {
             var fresh = DeviceState(id: deviceID, name: name)
             change(&fresh)
