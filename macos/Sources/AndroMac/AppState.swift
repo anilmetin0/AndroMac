@@ -170,14 +170,14 @@ final class AppState: ObservableObject {
     /// AppKit side (the status item's right-click menu) can open it too.
     var openMainWindow: (() -> Void)?
 
-    /// Bring the main window up on `tab`. In an LSUIElement (accessory) app this does not work in a
-    /// single call; the order matters: Dock policy first, then activation, then the window, then
-    /// making it key. When the window closes, AppDelegate returns the policy to .accessory.
     /// Settings, on the section last shown if the window was already there.
     func showSettings() {
         if case .setting = requestedTab { showMainWindow(requestedTab) } else { showMainWindow(.settings) }
     }
 
+    /// Bring the main window up on `tab`. In an LSUIElement (accessory) app this does not work in a
+    /// single call; the order matters: Dock policy first, then activation, then the window, then
+    /// making it key. When the window closes, AppDelegate returns the policy to .accessory.
     func showMainWindow(_ tab: MainWindow.Tab) {
         requestedTab = tab
         Task { @MainActor in

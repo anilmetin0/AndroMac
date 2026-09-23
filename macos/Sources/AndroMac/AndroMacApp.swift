@@ -8,6 +8,11 @@ struct AndroMacApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var state = AppState.shared
 
+    init() {
+        // Before any state exists: a second copy must not touch the Keychain or the network.
+        if !DemoMode.isOn && !SingleInstance.claim() { exit(0) }
+    }
+
     var body: some Scene {
         MenuBarExtra {
             MenuPanel().environmentObject(state)
@@ -70,6 +75,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)      // do not appear in the Dock
+        // Launching AndroMac again, from any copy, opens the window of the one already running.
+        DistributedNotificationCenter.default().addObserver(
+            forName: SingleInstance.showRequest, object: nil, queue: .main
+        ) { _ in MainActor.assumeIsolated { AppState.shared.showMainWindow(.notifications) } }
         NotificationMirror.shared.bootstrap()
 
         AppState.shared.$pairing
@@ -146,6 +155,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @MainActor
     private func openMainWindow(tab: MainWindow.Tab) { AppState.shared.showMainWindow(tab) }
+
+    /// Opening the same copy again from Finder or Spotlight: there is no Dock icon, so show the window.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag { AppState.shared.showMainWindow(.notifications) }
+        return true
+    }
 
     func applicationWillTerminate(_ notification: Notification) {
         NotificationHistory.shared.flush()
