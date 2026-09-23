@@ -3,12 +3,14 @@ package io.github.anilmetin0.andromac.feature
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.database.ContentObserver
 import android.media.AudioManager
+import android.net.Uri
 import android.os.Handler
 import android.os.HandlerThread
 import android.provider.Settings
@@ -20,7 +22,8 @@ import org.json.JSONObject
 
 /**
  * Ringer mode and media volume, reported to the Mac and settable from it (PROTOCOL §5 `system`,
- * `system_control`).
+ * `system_control`). Also whether Wireless debugging is on, which is what the Mac's screen
+ * mirroring (scrcpy over adb) needs, and a shortcut that opens that switch.
  *
  * These are the two things people reach across the desk for while the phone is in a bag: silence
  * it, or turn the music down. The state is pushed on connect and whenever it changes on the phone,
@@ -44,19 +47,40 @@ class SystemBridge(private val context: Context) {
     private val thread = HandlerThread("andromac-system").apply { start() }
     private val handler = Handler(thread.looper)
 
-    /** Ringer changes arrive as a broadcast; volume changes only through the settings observer. */
+    /**
+     * Ringer changes arrive as a broadcast; volume and Wireless debugging changes only through
+     * settings observers.
+     */
     private val ringerWatcher = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) = report()
     }
 
-    private val volumeWatcher = object : ContentObserver(handler) {
+    /**
+     * `Settings.System` is observed as a whole, because the per-stream volume keys differ between
+     * versions and manufacturers, but only a change to a volume key or to Wireless debugging is
+     * worth the binder calls in [report]. Brightness, screen timeout and the rest are dropped here.
+     */
+    private val settingsWatcher = object : ContentObserver(handler) {
         override fun onChange(selfChange: Boolean) = report()
+
+        override fun onChange(selfChange: Boolean, uri: Uri?) {
+            val key = uri?.lastPathSegment
+            if (uri == null || key == null || key.startsWith("volume") || key == ADB_WIFI_ENABLED) report()
+        }
     }
 
     private var watching = false
 
+    /**
+     * The last state sent. The settings observer fires for every system setting (brightness,
+     * screen timeout, …), so without this each of those would be a message and a radio wake-up
+     * (PROTOCOL §6.13: only on a ringer, volume or debugging change).
+     */
+    @Volatile private var lastSent: String? = null
+
     /** Called when the link comes up: the Mac gets the current state and every change after it. */
     fun start() {
+        lastSent = null
         report()
         if (watching) return
         watching = true
@@ -68,29 +92,40 @@ class SystemBridge(private val context: Context) {
             // No public broadcast carries a volume change, but the value lives in Settings.System
             // and the observer fires on every step of the hardware keys.
             context.contentResolver.registerContentObserver(
-                Settings.System.CONTENT_URI, true, volumeWatcher
+                Settings.System.CONTENT_URI, true, settingsWatcher
+            )
+            context.contentResolver.registerContentObserver(
+                Settings.Global.getUriFor(ADB_WIFI_ENABLED), false, settingsWatcher
             )
         }.onFailure { Log.i(Link.TAG, "system watchers not registered: ${it.message}") }
+    }
+
+    /** The service is going away for good; the watcher thread goes with it. */
+    fun close() {
+        stop()
+        thread.quitSafely()
     }
 
     fun stop() {
         if (!watching) return
         watching = false
         runCatching { context.unregisterReceiver(ringerWatcher) }
-        runCatching { context.contentResolver.unregisterContentObserver(volumeWatcher) }
+        runCatching { context.contentResolver.unregisterContentObserver(settingsWatcher) }
     }
 
     /** Send the current ringer and volume. Cheap: one small message, only on connect or a change. */
     fun report() {
         if (!Link.isConnected) return
-        Link.send(
-            Protocol.system(
-                ringer = ringerName(),
-                volume = runCatching { audio.getStreamVolume(AudioManager.STREAM_MUSIC) }.getOrDefault(0),
-                volumeMax = runCatching { audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC) }.getOrDefault(0),
-                canSilence = canSilence(),
-            )
+        val msg = Protocol.system(
+            ringer = ringerName(),
+            volume = runCatching { audio.getStreamVolume(AudioManager.STREAM_MUSIC) }.getOrDefault(0),
+            volumeMax = runCatching { audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC) }.getOrDefault(0),
+            canSilence = canSilence(),
+            wirelessDebugging = wirelessDebugging(),
         )
+        val text = msg.toString()
+        if (text == lastSent) return
+        if (Link.send(msg)) lastSent = text
     }
 
     /** One `system_control` from the Mac. Every branch reports back, so the Mac sees the result. */
@@ -99,6 +134,7 @@ class SystemBridge(private val context: Context) {
             "ringer" -> setRinger(msg.optString("mode"))
             "volume" -> setVolume(msg.optInt("level", -1))
             "test_notification" -> testNotification()
+            "open_debugging" -> openDebugging()
             else -> return
         }
     }
@@ -150,6 +186,59 @@ class SystemBridge(private val context: Context) {
         )
     }
 
+    /**
+     * The Mac asked to mirror the screen and Wireless debugging is off. Android has no public screen
+     * for that one switch, so this opens Developer options scrolled to it, the way Shizuku does, or
+     * About phone when Developer options have not been unlocked yet. Starting an activity from the
+     * background needs "Display over other apps"; without it the same intent rides a notification.
+     */
+    private fun openDebugging() {
+        val unlocked = runCatching {
+            Settings.Global.getInt(context.contentResolver, Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) == 1
+        }.getOrDefault(false)
+        val intent = if (unlocked) {
+            Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
+                .putExtra(":settings:fragment_args_key", "toggle_adb_wireless")
+        } else {
+            Intent(Settings.ACTION_DEVICE_INFO_SETTINGS)
+        }.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        if (Settings.canDrawOverlays(context) &&
+            runCatching { context.startActivity(intent) }.isSuccess
+        ) return
+
+        notifications.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_MIRROR, context.getString(R.string.channel_mirror),
+                NotificationManager.IMPORTANCE_HIGH,
+            )
+        )
+        val open = PendingIntent.getActivity(
+            context, REQ_DEBUGGING, intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        notifications.notify(
+            NOTIF_DEBUGGING,
+            Notification.Builder(context, CHANNEL_MIRROR)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(context.getString(R.string.mirror_debugging_title))
+                .setContentText(
+                    context.getString(
+                        if (unlocked) R.string.mirror_debugging_body else R.string.mirror_developer_body
+                    )
+                )
+                .setContentIntent(open)
+                .setAutoCancel(true)
+                .setTimeoutAfter(DEBUGGING_TIMEOUT_MS)
+                .build()
+        )
+    }
+
+    /** `Settings.Global.ADB_WIFI_ENABLED` is hidden but marked readable, so any app may read it. */
+    private fun wirelessDebugging(): Boolean = runCatching {
+        Settings.Global.getInt(context.contentResolver, ADB_WIFI_ENABLED, 0) == 1
+    }.getOrDefault(false)
+
     private fun ringerName(): String = when (runCatching { audio.ringerMode }.getOrNull()) {
         AudioManager.RINGER_MODE_SILENT -> "silent"
         AudioManager.RINGER_MODE_VIBRATE -> "vibrate"
@@ -165,5 +254,11 @@ class SystemBridge(private val context: Context) {
         private const val NOTIF_TEST = 7
         /** It has done its job the moment it reaches the Mac; it should not linger in the shade. */
         private const val TEST_TIMEOUT_MS = 30_000L
+
+        private const val ADB_WIFI_ENABLED = "adb_wifi_enabled"
+        private const val CHANNEL_MIRROR = "andromac.mirror"
+        private const val NOTIF_DEBUGGING = 8
+        private const val REQ_DEBUGGING = 9
+        private const val DEBUGGING_TIMEOUT_MS = 120_000L
     }
 }

@@ -102,6 +102,7 @@ private struct DeviceCard: View {
 
     let device: PairedDevice
     let live: AppState.DeviceState?
+    @ObservedObject private var mirror = ScreenMirror.shared
 
     private var connected: Bool { live != nil }
 
@@ -125,8 +126,11 @@ private struct DeviceCard: View {
 
             clipboardToggle
 
+            if connected { MirrorStatus(deviceID: device.id, canOpenOnPhone: live?.caps.contains("debugging") == true) }
+
             HStack(spacing: 12) {
                 Spacer(minLength: 0)
+                if connected { mirrorButton }
                 if connected, live?.caps.contains("system") == true { testNotificationButton }
                 if connected, live?.caps.contains("find_phone") == true { ringButton }
                 connectionButton
@@ -189,6 +193,25 @@ private struct DeviceCard: View {
         .controlSize(.mini)
     }
 
+    private var title: String {
+        AppState.displayName(live?.name ?? device.name) ?? String(localized: "Phone")
+    }
+
+    private var mirrorButton: some View {
+        let running = mirror.phase(device.id) == .running
+        return Button {
+            mirror.toggle(deviceID: device.id, host: live?.host, title: title)
+        } label: {
+            Image(systemName: running ? "rectangle.on.rectangle.slash" : "rectangle.on.rectangle")
+                .font(Theme.Font.body)
+                .foregroundStyle(running ? Color.accentColor : .secondary)
+        }
+        .buttonStyle(.plain)
+        .disabled(mirror.phase(device.id).busy)
+        .help(running ? String(localized: "Stop mirroring") : String(localized: "Mirror this phone's screen"))
+        .accessibilityLabel(running ? String(localized: "Stop mirroring") : String(localized: "Mirror this phone's screen"))
+    }
+
     private var ringButton: some View {
         Button {
             Task { await Server.shared.send(["t": "find_phone"], to: device.id) }
@@ -236,6 +259,97 @@ private struct DeviceCard: View {
                 Task { await Server.shared.disconnect(device.id) }
             }
         }
+    }
+}
+
+// MARK: - screen mirroring
+
+/// What screen mirroring needs from the user, one line and at most one field. Hidden while idle
+/// or running: the button already says which.
+private struct MirrorStatus: View {
+
+    let deviceID: String
+    let canOpenOnPhone: Bool
+    @ObservedObject private var mirror = ScreenMirror.shared
+    @State private var code = ""
+
+    var body: some View {
+        let phase = mirror.phase(deviceID)
+        if let message = message(phase) {
+            VStack(alignment: .leading, spacing: Theme.Space.snug) {
+                HStack(alignment: .firstTextBaseline, spacing: Theme.Space.snug) {
+                    if phase.busy { ProgressView().controlSize(.mini) }
+                    Text(message)
+                        .font(Theme.Font.label)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    if !phase.busy {
+                        Button { mirror.dismiss(deviceID) } label: {
+                            Image(systemName: "xmark").font(Theme.Font.caption)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(.tertiary)
+                        .accessibilityLabel("Dismiss")
+                    }
+                }
+                actions(phase)
+            }
+            .padding(Theme.Space.small)
+            .background(RoundedRectangle(cornerRadius: Theme.Radius.small).fill(Color.primary.opacity(0.05)))
+        }
+    }
+
+    private func message(_ phase: ScreenMirror.Phase) -> String? {
+        switch phase {
+        case .idle, .running: return nil
+        case .starting: return String(localized: "Connecting to the phone…")
+        case .needsDebugging:
+            return String(localized: "Turn on Wireless debugging on the phone, or connect it with a USB cable.")
+        case .needsPairing:
+            return String(localized: "On the phone, open Wireless debugging → Pair device with pairing code, and enter the code here.")
+        case .needsApproval: return String(localized: "Allow USB debugging on the phone.")
+        case .notInstalled: return String(localized: "Screen mirroring needs scrcpy: brew install scrcpy")
+        case .failed(let reason): return reason
+        }
+    }
+
+    @ViewBuilder
+    private func actions(_ phase: ScreenMirror.Phase) -> some View {
+        switch phase {
+        case .needsPairing:
+            HStack(spacing: Theme.Space.snug) {
+                TextField("Pairing code", text: $code)
+                    .textFieldStyle(.roundedBorder)
+                    .font(Theme.Font.body.monospacedDigit())
+                    .frame(width: 96)
+                    .onSubmit(pair)
+                Button("Pair", action: pair)
+                    .controlSize(.small)
+                    .disabled(code.filter(\.isNumber).count != 6)
+            }
+        case .needsDebugging:
+            HStack(spacing: Theme.Space.medium) {
+                if canOpenOnPhone {
+                    QuietButton(String(localized: "Open on phone")) {
+                        Task {
+                            await Server.shared.send(["t": "system_control", "cmd": "open_debugging"], to: deviceID)
+                        }
+                    }
+                }
+                QuietButton(String(localized: "Try again")) { mirror.retry(deviceID) }
+            }
+        case .needsApproval, .failed:
+            QuietButton(String(localized: "Try again")) { mirror.retry(deviceID) }
+        case .idle, .starting, .running, .notInstalled:
+            EmptyView()
+        }
+    }
+
+    private func pair() {
+        guard code.filter(\.isNumber).count == 6 else { return }
+        mirror.pair(deviceID: deviceID, code: code)
+        code = ""
     }
 }
 

@@ -268,6 +268,10 @@
     <string name="clip_request_action">Send clipboard</string>
     <string name="test_notification_title">AndroMac test</string>
     <string name="test_notification_body">If this reaches your Mac, notification mirroring works.</string>
+    <string name="channel_mirror">Screen mirroring</string>
+    <string name="mirror_debugging_title">Turn on Wireless debugging</string>
+    <string name="mirror_debugging_body">Your Mac needs it to show this screen. Tap to open the switch.</string>
+    <string name="mirror_developer_body">Your Mac needs Wireless debugging to show this screen. Tap Build number 7 times to unlock Developer options first.</string>
     <string name="clip_sent">Sent to your Mac</string>
     <string name="clip_sent_from_clipboard">Clipboard sent to your Mac</string>
     <string name="clip_pasted">Copied to the clipboard</string>

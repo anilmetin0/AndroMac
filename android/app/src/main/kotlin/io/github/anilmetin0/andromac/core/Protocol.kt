@@ -63,6 +63,7 @@ object Protocol {
             JSONArray(
                 listOf(
                     "battery", "clipboard", "notification", "find_phone", "media", "file", "system",
+                    "debugging",
                 )
             ),
         )
@@ -76,12 +77,15 @@ object Protocol {
         .put("ts", System.currentTimeMillis())
 
     /** Ringer and media volume, plus whether Do Not Disturb access lets the Mac silence the phone. */
-    fun system(ringer: String, volume: Int, volumeMax: Int, canSilence: Boolean) = JSONObject()
+    fun system(
+        ringer: String, volume: Int, volumeMax: Int, canSilence: Boolean, wirelessDebugging: Boolean,
+    ) = JSONObject()
         .put("t", T_SYSTEM)
         .put("ringer", ringer)
         .put("volume", volume)
         .put("volume_max", volumeMax)
         .put("can_silence", canSilence)
+        .put("wireless_debugging", wirelessDebugging)
 
     fun clipboard(text: String) = JSONObject()
         .put("t", T_CLIPBOARD)

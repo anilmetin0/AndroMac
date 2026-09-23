@@ -228,3 +228,29 @@
 "Settings…" = "Ayarlar…";
 
 "The download could not be opened." = "İndirilen dosya açılamadı.";
+
+"1024" = "1024";
+"1280" = "1280";
+"1920" = "1920";
+"Allow USB debugging on the phone." = "Telefonda USB hata ayıklamaya izin verin.";
+"Connecting to the phone…" = "Telefona bağlanılıyor…";
+"Dismiss" = "Kapat";
+"Included" = "Uygulamayla birlikte";
+"Keep the phone awake while plugged in" = "Şarjdayken telefonu uyanık tut";
+"Mirror this phone's screen" = "Bu telefonun ekranını yansıt";
+"Not installed" = "Yüklü değil";
+"On the phone, open Wireless debugging → Pair device with pairing code, and enter the code here." = "Telefonda Kablosuz hata ayıklama → Cihazı eşleme koduyla eşle'yi açın ve kodu buraya girin.";
+"Open on phone" = "Telefonda aç";
+"Play the phone's sound on the Mac" = "Telefonun sesini Mac'te çal";
+"Resolution" = "Çözünürlük";
+"scrcpy" = "scrcpy";
+"Screen mirroring" = "Ekran yansıtma";
+"Screen mirroring needs scrcpy: brew install scrcpy" = "Ekran yansıtma için scrcpy gerekli: brew install scrcpy";
+"Screen mirroring stopped unexpectedly." = "Ekran yansıtma beklenmedik şekilde durdu.";
+"Stop mirroring" = "Yansıtmayı durdur";
+"The code did not match. Open a new code on the phone and try again." = "Kod eşleşmedi. Telefonda yeni bir kod açıp tekrar deneyin.";
+"Try again" = "Tekrar dene";
+"Turn off the phone's screen while mirroring" = "Yansıtırken telefonun ekranını kapat";
+"Turn on Wireless debugging on the phone, or connect it with a USB cable." = "Telefonda Kablosuz hata ayıklamayı açın ya da telefonu USB kabloyla bağlayın.";
+"Uses Wireless debugging or a USB cable. Turn Wireless debugging off on the phone when you no longer need it." = "Kablosuz hata ayıklama ya da USB kablo kullanır. İşiniz bitince telefonda Kablosuz hata ayıklamayı kapatın.";
+"Waiting for the Keychain to unlock" = "Anahtar Zinciri'nin açılması bekleniyor";

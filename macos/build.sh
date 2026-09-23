@@ -14,6 +14,16 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/AndroMac"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 
+# Screen mirroring: scrcpy and adb, fetched and checksum-verified by scripts/fetch-scrcpy.sh.
+# Without them the app looks for a Homebrew scrcpy instead, so a plain source build still works.
+if [[ -d vendor/scrcpy ]]; then
+    cp vendor/scrcpy/scrcpy vendor/scrcpy/adb "$APP/Contents/MacOS/"
+    cp vendor/scrcpy/scrcpy-server vendor/scrcpy/scrcpy.png "$APP/Contents/Resources/"
+    mkdir -p "$APP/Contents/Resources/Licenses"
+    cp vendor/scrcpy/LICENSE "$APP/Contents/Resources/Licenses/scrcpy-LICENSE.txt"
+    cp ../THIRD-PARTY-NOTICES.md "$APP/Contents/Resources/Licenses/"
+fi
+
 # Version: CI supplies it (ANDROMAC_VERSION=1.0.0, ANDROMAC_BUILD=42, ANDROMAC_COMMIT=abc1234);
 # locally the values already in the plist are kept (version / build 1) and the commit reads "local".
 PLIST="$APP/Contents/Info.plist"
@@ -49,6 +59,10 @@ fi
 # signing certificate, pass it via CODESIGN_IDENTITY and the prompt appears only once:
 #     CODESIGN_IDENTITY="Apple Development: name@example.com" ./build.sh
 IDENTITY="${CODESIGN_IDENTITY:--}"
+# Nested executables first: the bundle's signature seals them as they are.
+for helper in "$APP/Contents/MacOS/scrcpy" "$APP/Contents/MacOS/adb"; do
+    [[ -f "$helper" ]] && codesign --force --sign "$IDENTITY" --timestamp=none "$helper"
+done
 codesign --force --sign "$IDENTITY" --identifier io.github.anilmetin0.andromac --timestamp=none "$APP"
 [[ "$IDENTITY" == "-" ]] && echo "Note: ad-hoc signature. Answer Always Allow to the Keychain prompt."
 

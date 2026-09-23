@@ -111,6 +111,10 @@ jobs:
       - name: Localization files complete
         run: macos/scripts/update-strings.sh --check
 
+      # scrcpy and adb for screen mirroring, pinned by version and SHA-256 in the script.
+      - name: scrcpy
+        run: macos/scripts/fetch-scrcpy.sh
+
       - name: AndroMac.app
         working-directory: macos
         env:
@@ -127,7 +131,8 @@ jobs:
         env:
           NAME: AndroMac-${{ needs.version.outputs.version }}-macOS-arm64
         run: |
-          codesign --verify --verbose=2 AndroMac.app
+          codesign --verify --strict --verbose=2 AndroMac.app
+          test -x AndroMac.app/Contents/MacOS/scrcpy
           mkdir dmg-root
           cp -R AndroMac.app dmg-root/
           ln -s /Applications dmg-root/Applications

@@ -322,6 +322,32 @@ final class Store: @unchecked Sendable {
         set { write(newValue, "clipboardPull") }
     }
 
+    // MARK: screen mirroring (scrcpy flags, ScreenMirror.swift)
+
+    /// The phone's sound on the Mac. Android 11 and later; scrcpy skips it quietly below that.
+    var mirrorAudio: Bool {
+        get { flag("mirrorAudio", default: true) }
+        set { write(newValue, "mirrorAudio") }
+    }
+
+    /// Turn the phone's own display off while it is shown on the Mac. It keeps running.
+    var mirrorScreenOff: Bool {
+        get { flag("mirrorScreenOff", default: false) }
+        set { write(newValue, "mirrorScreenOff") }
+    }
+
+    /// Keep the phone from sleeping while it is mirrored and plugged in.
+    var mirrorStayAwake: Bool {
+        get { flag("mirrorStayAwake", default: true) }
+        set { write(newValue, "mirrorStayAwake") }
+    }
+
+    /// The longer side of the picture in pixels, 0 for the phone's own resolution.
+    var mirrorMaxSize: Int {
+        get { [0, 1920, 1280, 1024].contains(defaults.integer(forKey: "mirrorMaxSize")) ? defaults.integer(forKey: "mirrorMaxSize") : 0 }
+        set { write(newValue, "mirrorMaxSize") }
+    }
+
     // MARK: updates
 
     /// Default ON. This is the single thing that ever leaves the local network: one request to
