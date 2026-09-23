@@ -20,7 +20,7 @@ will be closed however good the code is.
 ```
 README.md, README.tr.md            the short front page
 CHANGELOG.md, CHANGELOG.tr.md      release notes, read by the release job
-VERSION                            the current version; every push to main republishes its release
+VERSION                            the released version; raising it publishes the next stable release
 THIRD-PARTY-NOTICES.md             what the Mac package bundles for screen mirroring, and the licenses
 Casks/andromac.rb                  Homebrew cask; its version follows VERSION, CI checks it
 
@@ -216,11 +216,10 @@ The in-app language picker lists whatever it finds in the bundle, so no further 
 - Keep the change small and focused. One subject per pull request.
 - Use the checklist in the pull request template, and say which devices and OS versions you tested
   on.
-- Add an entry to `CHANGELOG.md` and `CHANGELOG.tr.md` under the section matching `VERSION`, if
-  the change is user-visible. That section is the release notes of the rolling build and is edited
-  in place; the release job reads it and fails when one language is missing.
-- Do not bump the `VERSION` file in a feature pull request. Raising it freezes the current release
-  and starts a new one, and that is its own commit.
+- Add an entry under `## Unreleased` in `CHANGELOG.md` and `CHANGELOG.tr.md`, if the change is
+  user-visible. That section becomes the next stable release's notes.
+- Do not bump the `VERSION` file in a feature pull request. Raising it publishes a stable
+  release, and that is its own commit.
 
 ## Reporting security problems
 
@@ -229,7 +228,7 @@ Do not open a public issue. Use private vulnerability reporting, described in
 
 ## Releases and the Homebrew cask
 
-`docs/RELEASING.md` is the checklist. Every push to `main` re-publishes the release for the
-version in `VERSION`. To start a new version, raise `VERSION`, write the section in both
-changelogs, set the same version in `Casks/andromac.rb`, and push. CI fails when the cask and
+`docs/RELEASING.md` is the checklist. Every push to `main` publishes a beta; the push that
+raises `VERSION` publishes the stable release. To release, rename `## Unreleased` in both
+changelogs to the version, set it in `VERSION` and `Casks/andromac.rb`, and push. CI fails when the cask and
 `VERSION` disagree, and anything in `Casks/` must pass `brew style Casks/*.rb`.

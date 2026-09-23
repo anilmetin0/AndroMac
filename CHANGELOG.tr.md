@@ -3,9 +3,11 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaraları
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) kuralına göre.
 
-`VERSION` dosyasındaki sürümle eşleşen `## <sürüm>` bölümü, o sürümün döner paketinin yayın
-notlarıdır. Sürüm geliştirmedeyken bu bölüm yerinde düzenlenir; yeni bir sürüm yeni bir bölüm
-açar.
+`VERSION` dosyasıyla eşleşen `## <sürüm>` bölümü o kararlı sürümün notlarıdır. Yeni kayıtlar
+`## Unreleased` altına yazılır; `VERSION` yükseltilince o bölüm yeni sürümün bölümü olur. Beta
+derlemeler bunun yerine commit'lerini listeler.
+
+## Unreleased
 
 ## 1.1.0 — 2026-09-23
 
