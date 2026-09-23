@@ -287,8 +287,9 @@ which the phone shows while it is unpaired.
 the apps collect no telemetry or analytics. The apps open no socket to the internet, with one
 exception: the update check in Settings → Updates, on by default. It asks `api.github.com` for
 the newest release at most once a day and sends only the app's version in the `User-Agent`
-header. Installing an update downloads from `github.com` as well, and only after you press the
-button. Turn the switch off and both apps speak only to each other.
+header. Installing an update downloads from `github.com` as well, right after the check when
+automatic installs are on (the phone waits for Wi-Fi), otherwise when you press Install. Turn
+the switch off and both apps speak only to each other.
 
 What leaves the phone depends on the tier you set per app. On Off, nothing, and the radio does
 not wake. On Title only, the app name alone. The title, the body and the action names are sent

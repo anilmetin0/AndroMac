@@ -31,6 +31,13 @@ derlemeler bunun yerine commit'lerini listeler.
   4.1 ile çalışır. Panel tek seferlik kurulumu adım adım gösterir, gereken ayarı telefonda senin
   için açabilir. Mac'te zaten adb kuruluysa AndroMac onu kullanır. Ayarlar → Ekran yansıtma'da ses,
   ekranı kapatma, uyanık tutma ve çözünürlük sınırı var.
+- **Okunabilen ve kendi kendine kurulan güncellemeler.** Bir güncelleme kurulmadan önce neyin
+  değiştiğini gösteren bir pencere açılıyor. **Güncellemeleri otomatik kur** açıkken (varsayılan)
+  Mac hiçbir şey açık ya da çalışır değilken, telefon ise uygulamadan çıktığında ve yalnızca
+  Wi-Fi'dayken kuruyor. Homebrew ile kurulan Mac `brew upgrade` ile güncelleniyor. **Beta
+  güncellemeleri**, sürümler arasında yayınlanan test derlemelerini izliyor.
+- **Mac'ini seç.** Aynı ağda AndroMac çalıştıran birden fazla Mac varsa Eşleştir hangisi olduğunu
+  soruyor.
 - **Android 17'ye hazır.** Android 17, bir uygulama ağındaki cihazlarla konuşmadan önce izin
   istiyor. AndroMac bu izni artık istiyor ve İzinler kartında zorunlu olarak gösteriyor.
 
@@ -45,6 +52,12 @@ derlemeler bunun yerine commit'lerini listeler.
   Durum, bağlı olunan ya da bağlanılan Mac'in adını söylüyor; eşleştirme de telefonun gördüğü
   Mac'leri gösteriyor. Yeni pano geçmişi gönderilen ya da gelen son 20 metni listeliyor ve yalnızca
   bellekte tutuyor.
+- **Her güncellemeden sonra şifre sorusu yok.** Mac uygulaması artık her derlemede aynı
+  sertifikayla imzalanıyor; bir kez **Always Allow** dedikten sonra Anahtar Zinciri bir daha
+  sormuyor. Uygulama hâlâ noter onaylı değil, ilk açılış adımı duruyor.
+- **Aynı anda tek AndroMac.** İkinci bir kopyayı açmak, zaten çalışanı öne getiriyor.
+- **Sürümler.** Bir sürüm bir kez yayınlanıyor ve yerinde kalıyor; aradaki derlemeler beta olarak
+  yayınlanıyor.
 - **Pile daha hafif.** Telefon Mac'i yalnızca Wi-Fi ya da Ethernet'te ve yalnızca onu son bulduğu
   ağda arıyor. Mac uyurken sessiz kalıyor, ekran kapalıyken pil güncellemelerini bekletiyor, tekrar
   eden bildirimleri atlıyor ve ekran kapalıyken gelen pano isteklerini yok sayıyor. Mac de
@@ -59,6 +72,12 @@ derlemeler bunun yerine commit'lerini listeler.
 - Birden fazla telefon bağlıyken dosyalar, bildirim yanıtları, kapatmalar ve medya denetimleri
   doğru telefon yerine hepsine gidiyordu. İkinci bir telefon ilkinin adını da değiştirebiliyordu,
   tanımadığın bir telefonun eşleştirme sorusu da eşleşmiş bir telefonun adını gösterebiliyordu.
+- Mac'inle eşleşmiş bir telefon, aynı Wi-Fi'daki başka birinin Mac'ini kendi Mac'i sanıp
+  anahtarın değiştiği uyarısını verebiliyordu. Artık başka Mac'leri sessizce atlıyor.
+- Mac, telefonun adı yerine "SM S926B" gibi model kodunu gösteriyordu.
+- Mac penceresinde bir sayfaya tıklamak kenar çubuğunu başlık çubuğunun altına kaydırabiliyordu,
+  telefon kartındaki ⋯ menüsü açılmıyordu ve Çık iki saniye sürüyordu.
+- Dosya aktarımının ortasında yeniden bağlanan bir telefon aktarımı takılı bırakıyordu.
 - Mac'te tek bir telefonu unutmak hepsinin bağlantısını kesiyordu.
 - Mac bağlandıktan hemen sonra kapattığında telefon durmadan yeniden arayabiliyordu.
 - Android'deki herhangi bir sistem ayarının her değişikliği Mac'e gidiyordu. Artık yalnızca zil,

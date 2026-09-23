@@ -285,8 +285,9 @@ telefon o rehberi yalnızca eşleştirilmemişken gösterir.
 analitik yok. Uygulamalar internete soket açmaz; tek istisna Ayarlar → Güncellemeler'deki,
 varsayılan olarak açık güncelleme denetimi. O da `api.github.com`'a günde en fazla bir kez en yeni
 sürümü sorar ve `User-Agent` başlığındaki uygulama sürümünden başka bir şey göndermez.
-Güncellemeyi kurmak `github.com`'dan indirir, o da sen düğmeye bastıktan sonra. Anahtarı kapatınca
-iki uygulama yine yalnızca birbiriyle konuşur.
+Güncellemeyi kurmak `github.com`'dan indirir: otomatik kurulum açıksa denetimin hemen ardından
+(telefon Wi-Fi'ı bekler), değilse sen Kur'a bastığında. Anahtarı kapatınca iki uygulama yine
+yalnızca birbiriyle konuşur.
 
 Telefondan neyin çıkacağını, uygulama başına belirlediğin kademe tayin eder. Kapalı'da hiçbir şey
 çıkmaz, radyo bile uyanmaz. Sadece başlık'ta yalnızca uygulama adı gider; başlık, gövde ve eylem

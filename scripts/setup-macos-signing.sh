@@ -54,6 +54,7 @@ fi
 if ! security find-certificate -c "$NAME" >/dev/null 2>&1; then
     security import "$P12" -P "$PASS" -T /usr/bin/codesign
     echo "Imported \"$NAME\" into the login keychain for local builds."
+    echo "  The first local build asks to use the key: enter the login password, then Always Allow."
 fi
 
 [[ "${1:-}" == "--local" ]] && exit 0
