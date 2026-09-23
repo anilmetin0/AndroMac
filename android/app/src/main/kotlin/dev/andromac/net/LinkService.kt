@@ -488,7 +488,7 @@ class LinkService : Service() {
 
         fun start(ctx: Context, action: String? = null) {
             val i = Intent(ctx, LinkService::class.java).apply { if (action != null) this.action = action }
-            if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(i) else ctx.startService(i)
+            ctx.startForegroundService(i)
         }
     }
 }
