@@ -6,9 +6,12 @@ import SwiftUI
 struct AppsList: View {
 
     @ObservedObject private var modes = AppModes.shared
+    /// Read so the list follows the tab: the apps shown are the focused phone's.
+    @EnvironmentObject private var state: AppState
     @State private var query = ""
 
     private var filtered: [AppModes.App] {
+        _ = state.focusedDeviceID
         let q = query.trimmingCharacters(in: .whitespaces).lowercased()
         guard !q.isEmpty else { return modes.apps }
         return modes.apps.filter {

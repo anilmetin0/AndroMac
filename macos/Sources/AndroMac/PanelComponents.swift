@@ -199,6 +199,8 @@ struct NotificationRow: View {
 /// syncing the position would mean a message every second.
 struct MediaRow: View {
     let media: AppState.Media
+    /// The phone playing it. With two phones, Next must skip the track on this one only.
+    let deviceID: String
 
     var body: some View {
         HStack(spacing: 8) {
@@ -227,7 +229,8 @@ struct MediaRow: View {
 
     private func control(_ symbol: String, label: String, cmd: String) -> some View {
         Button {
-            Task { await Server.shared.send(["t": "media_control", "cmd": cmd]) }
+            let deviceID = deviceID
+            Task { await Server.shared.send(["t": "media_control", "cmd": cmd], to: deviceID) }
         } label: {
             Image(systemName: symbol)
                 .font(Theme.Font.label)

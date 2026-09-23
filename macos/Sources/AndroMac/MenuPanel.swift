@@ -86,11 +86,12 @@ struct MenuPanel: View {
         }
         // Dropping files onto the panel is the second way to send (PROTOCOL §5, sender rules).
         .onDrop(of: [.fileURL], isTargeted: nil) { providers in
-            guard canSendFiles else { return false }
+            // The phone whose tab is open, the same one the Send file… button talks to.
+            guard canSendFiles, let peer = state.focusedDevice?.id else { return false }
             for provider in providers {
                 _ = provider.loadObject(ofClass: URL.self) { url, _ in
                     guard let url, url.isFileURL else { return }
-                    Task { @MainActor in FileTransfer.shared.send(urls: [url]) }
+                    Task { @MainActor in FileTransfer.shared.send(urls: [url], to: peer) }
                 }
             }
             return true
@@ -148,10 +149,11 @@ struct MenuPanel: View {
         panel.canChooseFiles = true
         panel.allowsMultipleSelection = true
         panel.prompt = String(localized: "Send")
+        guard let peer = state.focusedDevice?.id else { return }
         NSApp.activate(ignoringOtherApps: true)
         panel.begin { response in
             guard response == .OK else { return }
-            FileTransfer.shared.send(urls: panel.urls)
+            FileTransfer.shared.send(urls: panel.urls, to: peer)
         }
     }
 

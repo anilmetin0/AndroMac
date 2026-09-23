@@ -33,7 +33,12 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
 
     // MARK: presenting
 
-    func show(_ msg: [String: Any]) {
+    /// The Notification Center identifier carries the phone: two phones can post notifications
+    /// with the same key (`0|com.whatsapp|1|null|10234`), and a reply must go back to the one
+    /// that posted it.
+    private static func identifier(_ id: String, peer: String) -> String { "\(peer)/\(id)" }
+
+    func show(_ msg: [String: Any], from peer: String) {
         // Incoming fields are untrusted: we do not assume the sender clipped them (PROTOCOL,
         // incoming data limits). A notification with an empty `id` cannot be correlated, so the
         // message is dropped.
@@ -54,7 +59,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         content.body = redacted ? String(localized: "Content hidden") : text
         content.sound = (silent || !Store.shared.notificationSound) ? nil : .default
         // `silent` is needed at presentation time too: willPresent is the only place that suppresses the banner.
-        content.userInfo = ["id": id, "pkg": pkg, "silent": silent]
+        content.userInfo = ["id": id, "pkg": pkg, "silent": silent, "peer": peer]
         if silent { content.interruptionLevel = .passive }
 
         // A category is ALWAYS registered: even with no actions we still offer "Mute".
@@ -74,7 +79,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
                     try? FileManager.default.removeItem(at: icon)
                 }
             } else {
-                IconCache.shared.requestIfMissing(pkg)
+                IconCache.shared.requestIfMissing(pkg, from: peer)
             }
         }
 
@@ -83,7 +88,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         )
 
         let iconToRemove = temporaryIcon
-        center.add(UNNotificationRequest(identifier: id, content: content, trigger: nil)) { error in
+        center.add(UNNotificationRequest(identifier: Self.identifier(id, peer: peer), content: content, trigger: nil)) { error in
             if let error { NSLog("AndroMac: could not present the notification — \(error.localizedDescription)") }
             if let iconToRemove { try? FileManager.default.removeItem(at: iconToRemove) }
         }
@@ -110,9 +115,10 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
     }
 
     /// Dismissed on the phone — remove it on the Mac too.
-    func remove(_ id: String) {
-        center.removeDeliveredNotifications(withIdentifiers: [id])
-        center.removePendingNotificationRequests(withIdentifiers: [id])
+    func remove(_ id: String, from peer: String) {
+        let identifier = Self.identifier(id, peer: peer)
+        center.removeDeliveredNotifications(withIdentifiers: [identifier])
+        center.removePendingNotificationRequests(withIdentifiers: [identifier])
     }
 
     private func clip(_ value: Any?, _ limit: Int) -> String {
@@ -177,9 +183,10 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
-        let id = response.notification.request.identifier
         let userInfo = response.notification.request.content.userInfo
+        let id = userInfo["id"] as? String ?? ""
         let pkg = userInfo["pkg"] as? String ?? ""
+        let peer = userInfo["peer"] as? String ?? ""
 
         // "File received" (FileTransfer): a click reveals the file in Finder, it is never opened.
         if let path = userInfo["file"] as? String {
@@ -194,10 +201,10 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         switch response.actionIdentifier {
         case Self.muteIdentifier:
             guard !pkg.isEmpty else { return }
-            await AppModes.shared.set(.off, for: pkg)
+            await AppModes.shared.set(.off, for: pkg, on: peer)
 
         case UNNotificationDismissActionIdentifier:
-            await Server.shared.send(["t": "notification_dismiss", "id": id])
+            await Server.shared.send(["t": "notification_dismiss", "id": id], to: peer)
 
         case UNNotificationDefaultActionIdentifier:
             break        // a plain click: do nothing on the phone
@@ -208,7 +215,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
             if let textResponse = response as? UNTextInputNotificationResponse {
                 msg["reply"] = textResponse.userText
             }
-            await Server.shared.send(msg)
+            await Server.shared.send(msg, to: peer)
 
         default:
             break

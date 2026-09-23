@@ -34,38 +34,47 @@ final class FileTransfer: ObservableObject {
 
     // MARK: entry points (Server)
 
-    func handle(_ type: String, _ msg: [String: Any]) async {
+    /// Every transfer belongs to one phone. A `file_*` message from any other phone is dropped
+    /// before its id is compared, so with two phones connected neither can see, feed or cancel
+    /// the other's transfer.
+    func handle(_ type: String, _ msg: [String: Any], from peer: String) async {
         guard let id = msg["id"] as? String, !id.isEmpty, id.count <= 64 else { return }
+        if type == "file_offer" { await offered(id, msg, from: peer); return }
+        let mine = { (owner: String?) in owner == peer }
         switch type {
-        case "file_offer": await offered(id, msg)
-        case "file_accept": await accepted(id)
-        case "file_reject", "file_result": finished(id, type: type, msg)
-        case "file_chunk": await chunk(id, msg)
-        case "file_ack": await acked(id, msg)
-        case "file_done": await done(id, msg)
-        case "file_cancel": cancelled(id)
+        case "file_accept" where mine(outgoing?.peer): await accepted(id)
+        case "file_reject" where mine(outgoing?.peer), "file_result" where mine(outgoing?.peer):
+            finished(id, type: type, msg)
+        case "file_ack" where mine(outgoing?.peer): await acked(id, msg)
+        case "file_chunk" where mine(incoming?.peer): await chunk(id, msg)
+        case "file_done" where mine(incoming?.peer): await done(id, msg)
+        case "file_cancel": cancelled(id, from: peer)
         default: break
         }
     }
 
-    /// The session dropped: nothing is resumed, temporary files go (§5 step 6).
-    func sessionEnded() {
-        queue.removeAll()
-        finishOutgoing()
-        discardIncoming()
+    /// A session dropped: nothing is resumed, temporary files go (§5 step 6). Only that phone's
+    /// transfers; another phone's keep going.
+    func sessionEnded(_ peer: String) {
+        queue.removeAll { $0.peer == peer }
+        if outgoing?.peer == peer {
+            finishOutgoing()
+            Task { await offerNext() }       // another phone's file may be waiting behind it
+        }
+        if incoming?.peer == peer { discardIncoming() }
     }
 
     // MARK: entry points (panel)
 
     /// Files are queued and offered one at a time (§5 step 1). Directories and anything above
     /// 4 GiB are skipped silently.
-    func send(urls: [URL]) {
+    func send(urls: [URL], to peer: String) {
         for url in urls where queue.count < maxQueue {
             guard let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey]),
                   values.isRegularFile == true,
                   let size = values.fileSize, Int64(size) <= FileTransferMath.maxFileSize
             else { continue }
-            queue.append(url)
+            queue.append((url, peer))
         }
         Task { await offerNext() }
     }
@@ -87,6 +96,7 @@ final class FileTransfer: ObservableObject {
     private final class Outgoing {
         enum Phase { case offered, streaming, done }
         let id: String
+        let peer: String
         let name: String
         let size: Int64
         let handle: FileHandle
@@ -97,27 +107,32 @@ final class FileTransfer: ObservableObject {
         var acked = 0
         var sent: Int64 = 0
 
-        init(id: String, name: String, size: Int64, handle: FileHandle) {
-            self.id = id; self.name = name; self.size = size; self.handle = handle
+        init(id: String, peer: String, name: String, size: Int64, handle: FileHandle) {
+            self.id = id; self.peer = peer; self.name = name; self.size = size; self.handle = handle
         }
     }
 
-    private var queue: [URL] = []
+    private var queue: [(url: URL, peer: String)] = []
     private var outgoing: Outgoing?
 
     private func offerNext() async {
         guard outgoing == nil, !queue.isEmpty else { return }
-        let url = queue.removeFirst()
+        let (url, peer) = queue.removeFirst()
         guard let size = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize,
               let handle = try? FileHandle(forReadingFrom: url)
         else { await offerNext(); return }
 
-        let out = Outgoing(id: Self.newID(), name: url.lastPathComponent, size: Int64(size), handle: handle)
+        let out = Outgoing(id: Self.newID(), peer: peer, name: url.lastPathComponent, size: Int64(size), handle: handle)
         outgoing = out
         refreshProgress()
         var offer: [String: Any] = ["t": "file_offer", "id": out.id, "name": out.name, "size": out.size]
         if let mime = UTType(filenameExtension: url.pathExtension)?.preferredMIMEType { offer["mime"] = mime }
-        await Server.shared.send(offer)
+        // The phone went away between the click and here: drop this file and try the next.
+        guard await Server.shared.send(offer, to: peer) else {
+            finishOutgoing()
+            await offerNext()
+            return
+        }
     }
 
     private func accepted(_ id: String) async {
@@ -152,7 +167,7 @@ final class FileTransfer: ObservableObject {
             let seq = out.nextSeq
             out.nextSeq += 1
             await Server.shared.send(
-                ["t": "file_chunk", "id": out.id, "seq": seq, "data": data.base64EncodedString()]
+                ["t": "file_chunk", "id": out.id, "seq": seq, "data": data.base64EncodedString()], to: out.peer
             )
             // A cancel or a dropped session while we were awaiting the write ends the loop.
             guard outgoing === out, out.phase == .streaming else { return }
@@ -161,7 +176,7 @@ final class FileTransfer: ObservableObject {
         if out.sent >= out.size {
             out.phase = .done
             let hash = Self.hex(out.hasher.finalize())
-            await Server.shared.send(["t": "file_done", "id": out.id, "sha256": hash])
+            await Server.shared.send(["t": "file_done", "id": out.id, "sha256": hash], to: out.peer)
         }
     }
 
@@ -171,7 +186,7 @@ final class FileTransfer: ObservableObject {
         guard let out = outgoing, out.id == id else { return }
         if type == "file_reject" || msg["ok"] as? Bool != true {
             NSLog("AndroMac: file not delivered — %@", msg["reason"] as? String ?? type)
-            queue.removeAll()
+            queue.removeAll { $0.peer == out.peer }       // that phone said no, not the others
         }
         finishOutgoing()
         Task { await offerNext() }
@@ -179,9 +194,8 @@ final class FileTransfer: ObservableObject {
 
     private func cancelOutgoing(reason: String) async {
         guard let out = outgoing else { return }
-        let id = out.id
         finishOutgoing()
-        await Server.shared.send(["t": "file_cancel", "id": id, "reason": reason])
+        await Server.shared.send(["t": "file_cancel", "id": out.id, "reason": reason], to: out.peer)
     }
 
     private func finishOutgoing() {
@@ -194,6 +208,7 @@ final class FileTransfer: ObservableObject {
 
     private final class Incoming {
         let id: String
+        let peer: String
         let name: String            // sanitized
         let size: Int64
         let part: URL
@@ -203,31 +218,31 @@ final class FileTransfer: ObservableObject {
         var received: Int64 = 0
         var nextSeq = 0
 
-        init(id: String, name: String, size: Int64, part: URL) {
-            self.id = id; self.name = name; self.size = size; self.part = part
+        init(id: String, peer: String, name: String, size: Int64, part: URL) {
+            self.id = id; self.peer = peer; self.name = name; self.size = size; self.part = part
         }
     }
 
     private var incoming: Incoming?
 
-    private func offered(_ id: String, _ msg: [String: Any]) async {
+    private func offered(_ id: String, _ msg: [String: Any], from peer: String) async {
         guard let size = (msg["size"] as? NSNumber)?.int64Value, size >= 0 else { return }
-        if incoming != nil { await reject(id, "busy"); return }
-        guard Store.shared.fileTransfer else { await reject(id, "disabled"); return }
-        guard size <= FileTransferMath.maxFileSize else { await reject(id, "too_large"); return }
-        guard size <= freeSpace() else { await reject(id, "no_space"); return }
+        if incoming != nil { await reject(id, "busy", to: peer); return }
+        guard Store.shared.fileTransfer else { await reject(id, "disabled", to: peer); return }
+        guard size <= FileTransferMath.maxFileSize else { await reject(id, "too_large", to: peer); return }
+        guard size <= freeSpace() else { await reject(id, "no_space", to: peer); return }
 
         let name = FileNames.sanitize(msg["name"] as? String ?? "")
         // `.<name>.part` must itself fit in a path component; the final name is the sanitized one.
         let stem = String(decoding: name.utf8.prefix(FileNames.maxBytes - 6), as: UTF8.self)
-        let inc = Incoming(id: id, name: name, size: size, part: downloads.appendingPathComponent(".\(stem).part"))
+        let inc = Incoming(id: id, peer: peer, name: name, size: size, part: downloads.appendingPathComponent(".\(stem).part"))
         incoming = inc
 
         // Auto-accept applies only to the pinned phone — the only device that can reach this code.
         if Store.shared.fileAutoAccept {
             await accept(inc)
         } else {
-            FileConsentWindow.show(phone: AppState.displayName(Store.shared.pairedName), name: name, size: size) {
+            FileConsentWindow.show(phone: AppState.displayName(Store.shared.device(id: peer)?.name ?? ""), name: name, size: size) {
                 [weak self] approved in
                 Task { await self?.decide(inc, approved: approved) }
             }
@@ -240,7 +255,7 @@ final class FileTransfer: ObservableObject {
             await accept(inc)
         } else {
             incoming = nil
-            await reject(inc.id, "declined")
+            await reject(inc.id, "declined", to: inc.peer)
         }
     }
 
@@ -249,12 +264,12 @@ final class FileTransfer: ObservableObject {
               let handle = try? FileHandle(forWritingTo: inc.part)
         else {
             incoming = nil
-            await reject(inc.id, "write_error")
+            await reject(inc.id, "write_error", to: inc.peer)
             return
         }
         inc.handle = handle
         refreshProgress()
-        await Server.shared.send(["t": "file_accept", "id": inc.id])
+        await Server.shared.send(["t": "file_accept", "id": inc.id], to: inc.peer)
     }
 
     private func chunk(_ id: String, _ msg: [String: Any]) async {
@@ -275,7 +290,7 @@ final class FileTransfer: ObservableObject {
         inc.received += Int64(data.count)
         inc.nextSeq += 1
         refreshProgress()
-        await Server.shared.send(["t": "file_ack", "id": id, "seq": inc.nextSeq - 1])
+        await Server.shared.send(["t": "file_ack", "id": id, "seq": inc.nextSeq - 1], to: inc.peer)
     }
 
     private func done(_ id: String, _ msg: [String: Any]) async {
@@ -284,7 +299,7 @@ final class FileTransfer: ObservableObject {
         let claimed = (msg["sha256"] as? String ?? "").lowercased()
         guard inc.received == inc.size, Self.hex(inc.hasher.finalize()) == claimed else {
             discardIncoming()
-            await Server.shared.send(["t": "file_result", "id": id, "ok": false, "reason": "hash_mismatch"])
+            await Server.shared.send(["t": "file_result", "id": id, "ok": false, "reason": "hash_mismatch"], to: inc.peer)
             return
         }
         do {
@@ -292,11 +307,11 @@ final class FileTransfer: ObservableObject {
             incoming = nil
             refreshProgress()
             notify(id: id, file: final)
-            await Server.shared.send(["t": "file_result", "id": id, "ok": true])
+            await Server.shared.send(["t": "file_result", "id": id, "ok": true], to: inc.peer)
         } catch {
             NSLog("AndroMac: could not place the received file — \(error.localizedDescription)")
             discardIncoming()
-            await Server.shared.send(["t": "file_result", "id": id, "ok": false, "reason": "write_error"])
+            await Server.shared.send(["t": "file_result", "id": id, "ok": false, "reason": "write_error"], to: inc.peer)
         }
     }
 
@@ -317,19 +332,19 @@ final class FileTransfer: ObservableObject {
         return dest
     }
 
-    private func cancelled(_ id: String) {
-        if let out = outgoing, out.id == id {
-            queue.removeAll()
+    private func cancelled(_ id: String, from peer: String) {
+        if let out = outgoing, out.id == id, out.peer == peer {
+            queue.removeAll { $0.peer == peer }
             finishOutgoing()
+            Task { await offerNext() }
         }
-        if let inc = incoming, inc.id == id { discardIncoming() }
+        if let inc = incoming, inc.id == id, inc.peer == peer { discardIncoming() }
     }
 
     private func cancelIncoming(reason: String) async {
         guard let inc = incoming else { return }
-        let id = inc.id
         discardIncoming()
-        await Server.shared.send(["t": "file_cancel", "id": id, "reason": reason])
+        await Server.shared.send(["t": "file_cancel", "id": inc.id, "reason": reason], to: inc.peer)
     }
 
     private func discardIncoming() {
@@ -342,8 +357,8 @@ final class FileTransfer: ObservableObject {
         refreshProgress()
     }
 
-    private func reject(_ id: String, _ reason: String) async {
-        await Server.shared.send(["t": "file_reject", "id": id, "reason": reason])
+    private func reject(_ id: String, _ reason: String, to peer: String) async {
+        await Server.shared.send(["t": "file_reject", "id": id, "reason": reason], to: peer)
     }
 
     private func freeSpace() -> Int64 {

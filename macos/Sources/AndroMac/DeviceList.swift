@@ -117,7 +117,7 @@ private struct DeviceCard: View {
             }
 
             if let media = live?.media, Store.shared.syncMedia {
-                MediaRow(media: media)
+                MediaRow(media: media, deviceID: device.id)
             }
 
             if connected, let system = live?.system {
