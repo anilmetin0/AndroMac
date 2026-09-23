@@ -3,8 +3,10 @@
 AndroMac, bir Android telefonla bir Mac'i yalnızca kendi Wi-Fi ağın üzerinden eşitler. Pil
 seviyesi, iki yönde pano, Mac'ten yanıtlayıp kapatabildiğin bildirim aynası, uygulama başına
 bildirim kademesi, telefonda çalan parça ve kontrolleri, zil modu ve ses düzeyi, bir de kaybolan
-telefonu çaldıran düğme. Sunucu, hesap ya da bulut yok; iki tarafta da üçüncü parti kütüphane yok.
-İki uygulama birbirini Bonjour ile bulur, bir anahtar üzerinde anlaşır ve doğrudan konuşur.
+telefonu çaldıran düğme. Mac, telefonun ekranını bir pencerede de gösterebilir. Sunucu, hesap
+ya da bulut yok. İki uygulama da üçüncü parti kütüphaneye bağlanmaz; Mac paketi ekran yansıtma
+için scrcpy ve adb'yi ayrı programlar olarak taşır. İki uygulama birbirini Bonjour ile bulur, bir
+anahtar üzerinde anlaşır ve doğrudan konuşur.
 
 [![build](https://github.com/anilmetin0/AndroMac/actions/workflows/build.yml/badge.svg)](https://github.com/anilmetin0/AndroMac/actions/workflows/build.yml)
 [![sürüm](https://img.shields.io/github/v/release/anilmetin0/AndroMac?label=s%C3%BCr%C3%BCm)](https://github.com/anilmetin0/AndroMac/releases/latest)
@@ -44,10 +46,36 @@ telefonu çaldıran düğme. Sunucu, hesap ya da bulut yok; iki tarafta da üç�
 | Doğrulama kodları | Mac | Aynalanan bildirimde tek kullanımlık kod varsa panel kodu bir kopyalama düğmesinin üstünde gösterir. Kopyalamak kodu telefona geri göndermez ve pano geçmişine yazmaz. |
 | Bağlantı rehberi | İki taraf | İki uygulama da hangi adımın takıldığını gösterir; telefonda ayrıca canlı bir tanı ekranı var. |
 | Ölçümler | Mac | Saatlik mesaj, trafik, yeniden bağlanma sayısı ve en sık mesaj tipleri. Enerji iddiası böylece ölçülebilir. |
+| Ekran yansıtma | Telefondan Mac'e | Telefonun ekranı bir pencerede; fare, klavye ve ses ile. Kablosuz hata ayıklama ya da USB üzerinden, paketle gelen scrcpy ile. Bkz. [Ekran yansıtma](#ekran-yansıtma). |
 | Güncellemeler | İki taraf | İki uygulama da günde bir kez denetler, bulduğunu açılışta bir kez önerir ve kendisi kurar. İndirilen dosya, hiçbir şey değiştirilmeden önce sürümle yayınlanan sağlama toplamına göre doğrulanır. Tek anahtar denetimi kapatır. |
 
 Kapsam dışı: SMS, arama kontrolü, birden fazla Mac, internet üzerinden erişim. İstediğin kadar
 telefon, tek Mac, tek yerel ağ.
+
+### Ekran yansıtma
+
+Mac, telefonun ekranını bir pencerede gösterip fareyi, klavyeyi ve sesi telefona aktarabilir. Bu
+işi [scrcpy](https://github.com/Genymobile/scrcpy) yapar; adb ile birlikte Mac paketinin içinde
+gelir. AndroMac bağlantısını kullanmaz, Android'in kendi hata ayıklama kanalından geçer. Bu yüzden
+telefonda hiçbir uygulamanın senin yerine açamayacağı bir anahtar gerekir:
+
+1. Telefonda **Derleme numarası**na yedi kez dokunarak Geliştirici seçeneklerini aç, sonra
+   **Kablosuz hata ayıklama**yı aç. USB hata ayıklama açıkken USB kablo da olur.
+2. Mac panelinde telefonun kartındaki yansıtma düğmesine bas. İlk seferde panel bir eşleme kodu
+   ister. Telefonda Kablosuz hata ayıklama içinden **Cihazı eşleme koduyla eşle**'yi aç ve altı
+   haneyi panele yaz. Bu eşleme adb'nin kendisine aittir ve her Mac için bir kez yapılır.
+3. Telefonun ekranı bir pencerede açılır. Durdurmak için pencereyi kapat.
+
+Kablosuz hata ayıklama kapalıyken panel bunu söyler; **Telefonda aç** o ayarı telefonda açar.
+Telefon anahtarın durumunu bildirdiği için anahtar açılınca Mac kendiliğinden devam eder. Ayarlar
+→ Ekran yansıtma'da ses, telefon ekranını kapatma, uyanık tutma ve çözünürlük sınırı var.
+AndroMac panoyu eşitlerken scrcpy'nin kendi pano eşitlemesi kapalı kalır, ikisi birbirini
+yankılamasın diye.
+
+Kablosuz hata ayıklama, telefonun adb'de güvendiği her bilgisayara telefonu kontrol etme imkânı
+verir; işin bitince kapat. Paketlenmiş kopya olmadan kaynaktan derlenen sürüm `brew install
+scrcpy` ile kurulanı kullanır. Pakete nelerin hangi lisansla girdiği
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) dosyasında.
 
 ### Pano neden tek yönde istenerek çalışıyor
 
@@ -201,9 +229,11 @@ yerine `brew upgrade --cask --greedy-latest andromac` ile güncellenir.
 2. AndroMac'i aç. Bildirim iznini hemen ister; bildirim erişimi ekranını da gerekçesiyle birlikte
    bir kez önerir. Ana ekrandaki **İzinler** kartı durumu tek satırda özetler: ya "Tüm izinler
    verildi" yazar ya da eksik olanları söyler ve altında listeler. Eksik bir izne dokununca
-   ilgili sistem ekranı açılır. Kartın başlığına dokununca beş iznin tamamını "Verildi" ya da
+   ilgili sistem ekranı açılır. Kartın başlığına dokununca altı iznin tamamını "Verildi" ya da
    "Verilmedi" durumuyla ve Zorunlu, Önerilir ya da İsteğe bağlı notuyla listeleyen İzinler
-   ekranı açılır. İlk ikisi zorunlu, pil optimizasyonu önerilir, son ikisi isteğe bağlı:
+   ekranı açılır. İlk üçü zorunlu, pil optimizasyonu önerilir, son ikisi isteğe bağlı:
+   - **Yerel ağ erişimi**, Android 17 ve üstünde zorunlu. Verilmezse telefon Mac'i ne bulabilir
+     ne ona ulaşabilir. Android bunu Yakındaki cihazlar altında gösterir.
    - **Bildirimlere izin ver**, uygulamanın kendi kalıcı ve pano bildirimlerini gösterebilmesi
      için.
    - **Bildirim erişimi**, bildirim aynası ve medya oturumunu okumak için.
@@ -311,7 +341,7 @@ numarası ve derlendiği commit. Hata bildirirken bu satırın tamamını yaz. G
 
 | Ekran | İçinde ne var |
 |---|---|
-| İzinler | Beş iznin tamamı, "Verildi" ya da "Verilmedi" durumu ve Zorunlu, Önerilir ya da İsteğe bağlı notuyla. Ana ekrandaki İzinler kartının başlığından açılır. |
+| İzinler | Altı iznin tamamı, "Verildi" ya da "Verilmedi" durumu ve Zorunlu, Önerilir ya da İsteğe bağlı notuyla. Ana ekrandaki İzinler kartının başlığından açılır. |
 | Bağlantı | Durum, Mac'in adı ve son adresi, **Otomatik yeniden bağlan**, **Şimdi bağlan** ve **Bu Mac'i unut**. |
 | Bildirim ayarları | Neyin ayarlı olduğunu özetleyen **Uygulama filtresi**, **Sessiz bildirimler** ve **Sadece telefon kilitliyken**. Her zaman elenenleri de listeler. |
 | Uygulama filtresi | Telefonun gördüğü her uygulama için üç kademeli seçici; Bildirim ayarları'ndan açılır. |
@@ -338,7 +368,7 @@ Neyin eşitleneceği bir kez Ayarlar'da kararlaştırılır; ayrıntı pencerede
 | Bildirimler | Geçmiş; arama ve temizleme düğmesi. |
 | Pano | Geçmiş; arama, tıklayınca panoya alma, sağ tıkla geri gönderme ya da silme. |
 | Uygulamalar | Telefondaki her uygulama için kademe seçici. |
-| Ayarlar | Kenar çubuğu düzeni: solda bölüm listesi, sağda seçili bölümün seçenekleri. Bölümler sırasıyla Genel, Eşitleme, Pano, Bildirimler, Dosyalar, Cihazlar, İzinler, Ağ, Güncellemeler, Ölçümler ve Gizlilik. |
+| Ayarlar | Kenar çubuğu düzeni: solda bölüm listesi, sağda seçili bölümün seçenekleri. Bölümler sırasıyla Genel, Eşitleme, Pano, Bildirimler, Dosyalar, Ekran yansıtma, Cihazlar, İzinler, Ağ, Güncellemeler, Ölçümler ve Gizlilik. |
 
 Ayarlar → Genel'de **Oturum açınca başlat**, **Menü çubuğunda pil yüzdesi** ve Sistem, İngilizce,
 Türkçe seçenekli bir **Dil** seçici var. Dil açılışta okunduğu için değiştirince bir "Yeniden
@@ -435,6 +465,8 @@ göstermeli. Belirgin biçimde fazlası, kurallardan birinin çiğnendiği anlam
 macOS 14 ve üstü, Swift 6.2 araç zinciri için Xcode 26.6 ve üstü, JDK 25, bir de platform 37 ve
 build-tools 36.0.0 içeren Android SDK gerekiyor. Gradle 9.7.1 wrapper üzerinden geliyor. Xcode
 projesi yok; macOS tarafı bir Swift paketi, `build.sh` onu uygulama paketine dönüştürür.
+`macos/scripts/fetch-scrcpy.sh`, Mac paketine giren scrcpy sürümünü indirir ve sabitlenmiş bir
+SHA-256 ile doğrular; `build.sh` onu varsa pakete koyar, yoksa atlar.
 
 `JAVA_HOME` ayarlıysa o kullanılır. Değilse betikler `java_home`'un bildirdiği en yeni JDK 25'i
 seçer, o da yoksa varsayılan JDK'ya düşer.
@@ -499,15 +531,17 @@ CHANGELOG.md, CHANGELOG.tr.md      yayın notları, yayın işi bunları okur
 verify-crypto.sh                   iki kripto gerçeklemesinin uyuştuğunu vektör vektör kanıtlar
 verify-handshake.sh                gerçek Swift ve Kotlin oturum kodunu loopback'te konuşturur
 scripts/setup-android-signing.sh   APK imzalama anahtarını üretir ve gizli olarak yükler
+THIRD-PARTY-NOTICES.md             Mac paketinin ekran yansıtma için taşıdıkları ve lisansları
 Casks/andromac.rb                  Homebrew cask, güncel paketi yayın API'sinden bulur
 .github/workflows/build.yml        doğrula, test et, iki uygulamayı derle, yayını çıkar
+.github/workflows/codeql.yml       iş akışı dosyaları üzerinde CodeQL
 .github/dependabot.yml             action'lar ve Gradle eklentileri için haftalık güncelleme
 
 docs/PROTOCOL.md                   iki tarafın da göre yazıldığı kablo protokolü
 docs/ENERGY.md                     enerji kuralları, hangisi nerede ve nasıl ölçülür
 docs/RELEASING.md                  yayın listesi ve hattın onunla ne yaptığı
 
-android/                           AGP 9.4.0, Gradle 9.7.1, minSdk 29, bağımlılık yok
+android/                           AGP 9.4.1, Gradle 9.7.1, minSdk 29, bağımlılık yok
   app/src/main/AndroidManifest.xml
   app/src/main/kotlin/dev/andromac/
     core/Crypto.kt                 düz JCE ile P-256, HKDF ve AES-GCM; Android API'si yok
@@ -553,6 +587,7 @@ macos/                             Swift paketi, swift-tools 6.2, macOS 14+, ba�
   Package.swift
   build.sh                         .app'i derleyip paketler, sürümü yazar, imzalar
   scripts/update-strings.sh        yerelleştirme anahtarlarını çıkarır, .strings dosyalarını yazar
+  scripts/fetch-scrcpy.sh          paketlenen scrcpy ve adb'yi vendor/ içine indirip doğrular
   Resources/Info.plist
   Resources/Localization/          en.lproj ve tr.lproj
   Resources/make-icon.swift        uygulama ikonunu üretir, depoda ikili dosya durmasın diye
@@ -565,6 +600,7 @@ macos/                             Swift paketi, swift-tools 6.2, macOS 14+, ba�
     PairedDevice.swift             diske yazıldığı haliyle bir güvenilen telefon, anahtarıyla anahtarlanır
     VerificationCode.swift         bildirimdeki tek kullanımlık kodu bulur, kopyalama düğmesi için
     ReleaseInfo.swift              güncelleme denetiminin karşılaştırdığı yayın
+    AdbOutput.swift                `adb devices` ve `adb mdns services` çıktısını ayrıştırır
   Sources/AndroMac/
     AndroMacApp.swift              menü çubuğu ögesi, pencere ve eşleştirme penceresi
     Server.swift                   Bonjour, el sıkışma sınırları, oturum, ping, dağıtım
@@ -575,6 +611,7 @@ macos/                             Swift paketi, swift-tools 6.2, macOS 14+, ba�
     FileTransfer.swift             dosya gönderme ve alma: teklif, onay penceresi, parçalar, özet, karantina
     MenuPanel.swift                menü çubuğu paneli
     DeviceList.swift               eşleşmiş her telefon bir sekme; denetimleri ve "Bağlantıyı kes" ile
+    ScreenMirror.swift             telefonu adb'de bulur ve onun için scrcpy'yi başlatır
     Theme.swift                    yazı tipleri, boşluklar ve arayüzün oturduğu platform yüzeyleri
     DemoMode.swift                 ekran görüntüleri için uydurma veri, ANDROMAC_DEMO=1 olmadan kapalı
     PanelComponents.swift          rehber adımı, medya satırı, bildirim satırı

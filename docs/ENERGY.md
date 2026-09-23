@@ -1,7 +1,9 @@
 # Energy contract
 
-The goal: extra drain on the phone side that is **too small to measure**. The Mac is assumed to be
-on wall power, so the expensive work is deliberately piled onto the Mac.
+The goal: extra drain on the phone side that is **too small to measure**. The Mac does the work
+that has to happen somewhere, but a MacBook runs on battery too, so the Mac side avoids timers
+it does not need as well: nothing polls while the screen is locked or asleep, and every timer
+carries a tolerance so macOS can coalesce it.
 
 ## Basic principle
 
@@ -14,7 +16,7 @@ Every design decision was therefore made against the question "who wakes up, and
 | # | Rule | Where |
 |---|---|---|
 | 1 | **No periodic timer on the phone at all.** The Mac does the liveness check (a `ping` every 240 s), the phone only answers. | `Server.swift` pingTask / `LinkService.READ_TIMEOUT_MS` |
-| 2 | Battery only on a **1% level change or a charging-state change**, at most once every 60 s. No separate timer — we ride on the `ACTION_BATTERY_CHANGED` broadcast the system already produces. | `BatteryReporter.kt` |
+| 2 | Battery only on a **1% level change or a charging-state change**, at most once every 60 s. No separate timer — we ride on the `ACTION_BATTERY_CHANGED` broadcast the system already produces. With the screen off a level change is **held and sent with the next `pong`**, when the Mac's ping has already woken the radio, or when the screen comes on. A charging change goes out at once. | `BatteryReporter.kt` |
 | 3 | Notifications are **fully event-driven**. The system already wakes `NotificationListenerService`; there is no extra cost. | `NotificationRelay.kt` |
 | 4 | **The mDNS browse is off while connected.** Continuous multicast browsing costs measurable battery. Browsing runs only when there is no connection, and for at most 8 s. | `Discovery.kt` |
 | 5 | Reconnection is **by event, not by polling**: `ConnectivityManager.NetworkCallback` wakes it when the network returns. Backoff 1→2→5→15→60→300 s. | `LinkService.kt` |
@@ -29,6 +31,15 @@ Every design decision was therefore made against the question "who wakes up, and
 | 14 | The clipboard is **asked for, not watched**. The phone cannot read it in the background anyway, so the Mac sends `clipboard_request` when the panel opens or the user presses the button, and nothing runs on the phone in between. | `ClipboardBridge.macAskedForClipboard` |
 | 15 | While disconnected, only the **cheap cached-address SYN runs every cycle**. The 8 s mDNS browse runs on the first attempt after a network event or a pairing request, then on every 4th attempt — and every cycle only while no address is cached, where nothing else can make progress. Repeated Wi-Fi flaps inside 10 s no longer restart the backoff ladder. | `LinkService.dial` |
 | 16 | The **update check runs when the app is opened**, at most once a day, and never on a timer. Installing an update happens only when the user presses the button. | `UpdateCheck.kt` / `UpdateCheck.swift` |
+| 17 | **Nothing is dialled without Wi-Fi or Ethernet.** On mobile data alone the loop parks until the network callback reports a LAN, so a SYN to the Mac's private address never wakes the cellular radio. Sockets are bound to the LAN network, which also reaches the Mac on a Wi-Fi without internet. | `LinkService.lanNetworks` |
+| 18 | **A network the Mac was never reached on gets the slow ladder.** The Mac's network is remembered as prefix and gateway; elsewhere the 60 s screen-on ceiling does not apply and mDNS runs once per network event instead of every 4th attempt. | `LinkService.onMacNetwork` |
+| 19 | **An identical re-post of a notification is not sent.** Same title, text, actions and tier as what the Mac already shows means no message; only the reconnect push resends it, silently. | `NotificationRelay.send` |
+| 20 | The ongoing status notification is **re-posted only when its text changes**, not on every loop cycle. | `LinkService.note` |
+| 21 | **The Mac says when it goes to sleep** (`sleep`, PROTOCOL §5). The phone parks at the top of its ladder with no mDNS until a network or screen event, instead of redialling a sleeping Mac all night. | `Server.installWakeObserver` / `LinkService` |
+| 22 | **The clipboard request goes to one phone and only while its screen is on.** Opening the panel asks the phone it shows, at most every 10 s; a phone with its screen off ignores it, so it launches no activity and posts no notification from a pocket. | `ClipboardWatcher.requestFromPhones` / `ClipboardBridge.macAskedForClipboard` |
+| 23 | **Screen-on dials only on the Mac's network**, and the cached address is only tried there. | `LinkService` screen receiver, `dial` |
+| 24 | **Only a volume or Wireless debugging setting wakes `SystemBridge`**, and a position-only media update schedules nothing. | `SystemBridge.settingsWatcher`, `MediaBridge.callback` |
+| 25 | **A replayed notification the Mac already shows is dropped on the Mac** before the icon copy and the history write, so a reconnect costs the Mac almost nothing. The histories are written at most once a second. | `NotificationMirror.show`, `ClipboardHistory.record` |
 
 ## Costs deliberately pushed onto the Mac
 
@@ -36,9 +47,12 @@ Every design decision was therefore made against the question "who wakes up, and
 - **The Mac holds every session and pings each one.** The phone never learns that other phones
   exist; its side of the contract is unchanged whether the Mac has one paired device or several.
 - **The Mac polls the clipboard.** macOS posts no notification for a pasteboard change;
-  polling `NSPasteboard.changeCount` is the only way (700 ms). That is a Mach call, it touches
-  no disk, network or radio, and it runs **only while at least one phone is connected** — one
-  poller feeds every phone, so a second device costs no extra polling. The consequence:
+  polling `NSPasteboard.changeCount` is the only way (700 ms, with 300 ms of timer tolerance so
+  macOS can coalesce it). That is a Mach call, it touches no disk, network or radio, and it runs
+  **only while at least one phone is connected, automatic sending is on, and the display is
+  awake and unlocked** — a MacBook on battery is not woken for a clipboard nobody can change.
+  One poller feeds every phone, so a second device costs no extra polling. The ping timer carries
+  15 s of tolerance too. The consequence:
   clipboard history also only accumulates while connected — a deliberate trade to avoid polling
   when idle.
 - **The server role sits on the Mac.** The phone holds no listening socket.
