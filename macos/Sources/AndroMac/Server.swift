@@ -10,7 +10,7 @@ actor Server {
 
     static let shared = Server()
 
-    private let queue = DispatchQueue(label: "dev.andromac.net")
+    private let queue = DispatchQueue(label: "io.github.anilmetin0.andromac.net")
     private var listener: NWListener?
     /// Every live session, keyed by the peer's device fingerprint (`PairedDevice.id`).
     ///

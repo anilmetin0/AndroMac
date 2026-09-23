@@ -11,7 +11,7 @@
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>dev.andromac</string>
+	<string>io.github.anilmetin0.andromac</string>
 	<key>CFBundleName</key>
 	<string>AndroMac</string>
 	<key>CFBundlePackageType</key>

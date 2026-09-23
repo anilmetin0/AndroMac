@@ -9,11 +9,11 @@ val andromacBuild = (project.findProperty("andromacBuild") as String?)?.toIntOrN
 val andromacCommit = (project.findProperty("andromacCommit") as String?) ?: "local"
 
 android {
-    namespace = "dev.andromac"
+    namespace = "io.github.anilmetin0.andromac"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "dev.andromac"
+        applicationId = "io.github.anilmetin0.andromac"
         minSdk = 29          // Android 10. NsdManager + FGS types + modern crypto.
         targetSdk = 37
         versionCode = andromacBuild

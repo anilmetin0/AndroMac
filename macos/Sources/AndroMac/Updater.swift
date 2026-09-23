@@ -12,7 +12,7 @@ import Foundation
 ///
 /// What it will not do:
 ///  - install anything whose checksum is absent from `SHA256SUMS.txt` or does not match it;
-///  - install a bundle whose identifier is not `dev.andromac`, or whose version is not the one the
+///  - install a bundle whose identifier is not `io.github.anilmetin0.andromac`, or whose version is not the one the
 ///    release claimed — a redirect that ends somewhere else stops here;
 ///  - touch anything outside the app bundle and its own temporary directory.
 ///
@@ -162,7 +162,7 @@ final class Updater: ObservableObject {
         let app = directory.appendingPathComponent("AndroMac.app")
         guard FileManager.default.fileExists(atPath: app.path),
               let bundle = Bundle(url: app),
-              bundle.bundleIdentifier == "dev.andromac" else {
+              bundle.bundleIdentifier == "io.github.anilmetin0.andromac" else {
             throw UpdateError.message(String(localized: "The download does not contain AndroMac."))
         }
         let short = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""

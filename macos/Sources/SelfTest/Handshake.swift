@@ -22,7 +22,7 @@ private final class State: @unchecked Sendable {
 let messageCount = 12
 
 func runHandshakeResponder(port: UInt16, timeout: TimeInterval = 30) {
-    let queue = DispatchQueue(label: "dev.andromac.selftest")
+    let queue = DispatchQueue(label: "io.github.anilmetin0.andromac.selftest")
     let staticKey = try! P256.KeyAgreement.PrivateKey(rawRepresentation: Data(repeating: 0x22, count: 32))
     let state = State()
     let done = DispatchSemaphore(value: 0)

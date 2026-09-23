@@ -12,7 +12,20 @@ final class Store: @unchecked Sendable {
 
     static let shared = Store()
     private let defaults = UserDefaults.standard
+
+    /// 1.0 shipped as `dev.andromac`, a domain the project does not own. The settings and the paired
+    /// phones written under that name are copied over once, the first time this identifier runs.
+    private init() {
+        let legacy = "dev.andromac"
+        guard !DemoMode.isOn, Bundle.main.bundleIdentifier != legacy,
+              defaults.object(forKey: "pairedDevices") == nil,
+              let old = defaults.persistentDomain(forName: legacy), !old.isEmpty else { return }
+        for (key, value) in old { defaults.set(value, forKey: key) }
+        NSLog("AndroMac: carried the settings over from dev.andromac")
+    }
     private let keychainAccount = "static-key"
+    /// The 1.0 name, kept as it is: the item holds the identity key every phone has pinned, and a
+    /// renamed item would read as a new Mac.
     private let keychainService = "dev.andromac"
 
     // MARK: identity

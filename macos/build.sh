@@ -49,7 +49,7 @@ fi
 # signing certificate, pass it via CODESIGN_IDENTITY and the prompt appears only once:
 #     CODESIGN_IDENTITY="Apple Development: name@example.com" ./build.sh
 IDENTITY="${CODESIGN_IDENTITY:--}"
-codesign --force --sign "$IDENTITY" --identifier dev.andromac --timestamp=none "$APP"
+codesign --force --sign "$IDENTITY" --identifier io.github.anilmetin0.andromac --timestamp=none "$APP"
 [[ "$IDENTITY" == "-" ]] && echo "Note: ad-hoc signature. Answer Always Allow to the Keychain prompt."
 
 echo "Ready: $APP"

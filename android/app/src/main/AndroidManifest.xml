@@ -194,7 +194,7 @@
             android:name=".feature.Updater$InstallReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="dev.andromac.INSTALLED" />
+                <action android:name="io.github.anilmetin0.andromac.INSTALLED" />
             </intent-filter>
         </receiver>
 

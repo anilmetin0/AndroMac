@@ -518,7 +518,7 @@ docs/RELEASING.md                  the release checklist and what the pipeline d
 
 android/                           AGP 9.4.0, Gradle 9.7.1, minSdk 29, no dependencies
   app/src/main/AndroidManifest.xml
-  app/src/main/kotlin/dev/andromac/
+  app/src/main/kotlin/io/github/anilmetin0/andromac/
     core/Crypto.kt                 P-256, HKDF and AES-GCM on plain JCE, no Android API
     core/Session.kt                the handshake as initiator, plus encrypted framing
     core/Protocol.kt               message builders and constants

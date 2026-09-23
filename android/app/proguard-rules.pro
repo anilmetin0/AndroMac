@@ -1,5 +1,5 @@
 # Components instantiated by name from the manifest
--keep class dev.andromac.feature.NotificationRelay { *; }
--keep class dev.andromac.feature.ClipTile { *; }
--keep class dev.andromac.net.LinkService { *; }
--keep class dev.andromac.feature.FindPhoneStopReceiver { *; }
+-keep class io.github.anilmetin0.andromac.feature.NotificationRelay { *; }
+-keep class io.github.anilmetin0.andromac.feature.ClipTile { *; }
+-keep class io.github.anilmetin0.andromac.net.LinkService { *; }
+-keep class io.github.anilmetin0.andromac.feature.FindPhoneStopReceiver { *; }

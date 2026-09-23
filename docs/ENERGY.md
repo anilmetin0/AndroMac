@@ -75,7 +75,7 @@ The counters are kept in memory only; no content is stored.
 # Unplug the phone, turn the screen off, wait 30 min:
 adb shell dumpsys batterystats --reset
 # ... 30 min ...
-adb shell dumpsys batterystats | grep -A4 "dev.andromac"
+adb shell dumpsys batterystats | grep -A4 "io.github.anilmetin0.andromac"
 ```
 
 What to look at: the `Wake lock` total (should be 0), `wifi running` time, `Wakeup alarms`

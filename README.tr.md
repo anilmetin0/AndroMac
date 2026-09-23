@@ -509,7 +509,7 @@ docs/RELEASING.md                  yayın listesi ve hattın onunla ne yaptığ�
 
 android/                           AGP 9.4.0, Gradle 9.7.1, minSdk 29, bağımlılık yok
   app/src/main/AndroidManifest.xml
-  app/src/main/kotlin/dev/andromac/
+  app/src/main/kotlin/io/github/anilmetin0/andromac/
     core/Crypto.kt                 düz JCE ile P-256, HKDF ve AES-GCM; Android API'si yok
     core/Session.kt                başlatan taraf olarak el sıkışma ve şifreli çerçeveleme
     core/Protocol.kt               mesaj kurucuları ve sabitler

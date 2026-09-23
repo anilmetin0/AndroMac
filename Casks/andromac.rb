@@ -22,11 +22,12 @@ cask "andromac" do
 
   app "AndroMac.app"
 
-  uninstall quit: "dev.andromac"
+  uninstall quit: "io.github.anilmetin0.andromac"
 
   zap trash: [
     "~/Library/Application Support/AndroMac",
     "~/Library/Preferences/dev.andromac.plist",
+    "~/Library/Preferences/io.github.anilmetin0.andromac.plist",
   ]
 
   caveats <<~EOS
