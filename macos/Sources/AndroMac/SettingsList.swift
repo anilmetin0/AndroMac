@@ -455,10 +455,12 @@ struct SettingsList: View {
         (Locale.current.localizedString(forIdentifier: code) ?? code).capitalized
     }
 
+    /// The new copy starts once this one has exited; SingleInstance would turn it away before.
     private static func relaunch() {
         let task = Process()
-        task.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-        task.arguments = ["-n", Bundle.main.bundlePath]
+        task.executableURL = URL(fileURLWithPath: "/bin/sh")
+        task.arguments = ["-c", "while kill -0 \"$1\" 2>/dev/null; do sleep 0.2; done; open \"$2\"",
+                          "relaunch", String(ProcessInfo.processInfo.processIdentifier), Bundle.main.bundlePath]
         try? task.run()
         NSApp.terminate(nil)
     }
