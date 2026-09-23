@@ -7,6 +7,68 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaral
 notlarıdır. Sürüm geliştirmedeyken bu bölüm yerinde düzenlenir; yeni bir sürüm yeni bir bölüm
 açar.
 
+## 1.1.0 — 2026-09-23
+
+### Eklenenler
+
+- **Ekran yansıtma.** Telefonun ekranı Mac'te bir pencerede; fare, klavye ve ses ile. Bu işi
+  Mac paketinin artık adb ile birlikte taşıdığı scrcpy 4.1 yapar. Kablosuz hata ayıklama ya da USB
+  kablo üzerinden çalışır. Panel, anahtarı açmayı ve adb'nin tek seferlik eşleme kodunu adım adım
+  gösterir, anahtarı telefonda açabilir. Ayarlar → Ekran yansıtma'da ses, ekranı kapatma, uyanık
+  tutma ve çözünürlük sınırı var.
+- **Android 17 yerel ağ izni.** Uygulama artık `ACCESS_LOCAL_NETWORK` iznini bildirir ve ister;
+  Android 17'yi hedefleyen bir uygulama bu izin olmadan yerel ağdaki hiçbir cihaza ulaşamaz. İzinler
+  kartında zorunlu olarak listelenir.
+
+### Değişenler
+
+- AGP 9.4.1, Kotlin 2.4.20. Tüm GitHub Action'lar commit SHA ile sabitlendi, Gradle wrapper
+  indirmesi SHA-256 ile doğrulanıyor ve bir CodeQL işi iş akışı dosyalarını denetliyor.
+- APK imzalama anahtarı yalnızca `main` üzerindeki yayınlanan derleme için açılıyor ve sonra
+  siliniyor.
+- Mac'teki eşleştirme penceresi her durumda Reddet'i varsayılan yapıyor, çünkü bir ağ olayıyla
+  kendiliğinden açılıyor.
+- **Daha az enerji.** Telefon yalnızca Wi-Fi ya da Ethernet üzerinden arıyor, Mac'in hangi ağda
+  olduğunu hatırlayıp başka ağlarda sessiz kalıyor, Mac uykuya geçtiğini söyleyince bekliyor (yeni
+  `sleep` mesajı), ekran kapalıyken pil raporlarını bir sonraki ping'e kadar tutuyor, aynı
+  bildirimin tekrarını göndermiyor ve ekran kapalıyken pano isteklerini yok sayıyor. Mac, kilitliyken
+  ya da uykudayken pano yoklamasını durduruyor, zamanlayıcılarına tolerans veriyor, panoyu yalnızca
+  seçili telefondan istiyor ve her mesajda Ayarlar'ı ya da menü çubuğunu yeniden çizmiyor.
+- Mac'teki bildirim ve pano geçmişi, Anahtar Zinciri'ndeki kimlikten türetilen bir anahtarla
+  şifreleniyor. 1.0'dan kalan geçmiş bir kez okunup şifreli olarak yeniden yazılıyor.
+
+### Düzeltilenler
+
+- Birden fazla telefon bağlıyken dosyalar, bildirim yanıtları ve kapatmaları ve medya denetimleri
+  ait oldukları telefon yerine hepsine gidiyordu. Artık her biri kendi telefonuna gidiyor ve bir
+  telefon başka bir telefonun aktarımına dokunamıyor.
+- İkinci telefonun `hello` mesajı ilk eşleşmiş telefonun adını değiştiriyordu; tanınmayan bir
+  telefonun eşleştirme penceresi de eşleşmiş bir telefonun adını gösteriyordu.
+- Mac el sıkışmadan hemen sonra kapattığında (örneğin bağlantısı kesilmiş bir telefonda) telefon
+  hiç beklemeden yeniden arıyordu. Artık geri çekilme merdiveninde bekliyor.
+- Android'de herhangi bir sistem ayarındaki her değişiklik bir `system` mesajı gönderiyordu. Artık
+  yalnızca zil, ses ve Kablosuz hata ayıklama değişiklikleri gönderiyor.
+- İki görevden aynı anda gönderilen çerçeveler telefona sırasız ulaşıp bağlantıyı düşürebiliyordu.
+- Mac'te tek bir telefonu unutmak bütün telefonların bağlantısını kesiyordu.
+- Tekrar Dene ya da eşleştirme kaldırma sonrası Mac'te iki dinleyici kalabiliyordu; oturum açılışında
+  kilitli Anahtar Zinciri telefonlarda anahtar değişti uyarısına yol açıyordu.
+- Güncelleyiciler sağlama satırlarını son eke göre eşliyordu; artık ad birebir eşleşmeli ve
+  Android'de yükleyici yalnızca bu paketi kabul ediyor.
+- Alınan dosya adının belirttiği türle açılıyor; bir APK yalnızca İndirilenler'i açıyor.
+- Telefon, Mac'e yalnızca başlığını gönderdiği ya da hiç göndermediği bildirimlerde de Mac'in istediği eylemleri çalıştırıyordu.
+- Bağlantılarından biri hâlâ el sıkışırken unutulan bir telefon gizli bir oturum tutabiliyordu.
+  Güven artık el sıkışmadan sonra yeniden denetleniyor.
+- Cihazlar, eşleşmiş bir cihazın hesaplayıp başka bir telefonun yerine geçebileceği 32 bitlik bir
+  parmak iziyle ayırt ediliyordu; artık kimlik anahtarın tam özeti.
+- Dosya adları uzantıyı gizleyen Unicode yön işaretleri taşıyabiliyordu; iki tarafta da siliniyor.
+  Android'de türü bilinmeyen bir dosya İndirilenler'i açıyor.
+- Android 10-12L'de "hassas içeriği asla gönderme" kuralı parola yöneticilerinin koyduğu işareti
+  görmüyordu; artık her sürümde okunuyor.
+- Uygulama ikonları her telefondan isteniyor ve her telefondan kabul ediliyordu; artık yalnızca
+  bildirimi gönderen telefona soruluyor.
+- Ekran yansıtma, Mac'te zaten bir adb varsa onu kullanıyor; böylece Android Studio'nun adb
+  sunucusunu devralmıyor.
+
 ## 1.0.0 — 2026-09-07
 
 İlk genel sürüm. Android ve macOS yalnızca yerel ağ üzerinden konuşur: sunucu yok, hesap yok,

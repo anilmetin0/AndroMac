@@ -7,6 +7,67 @@ The `## <version>` section that matches the `VERSION` file is the release notes 
 build for that version. It is edited in place while that version is in development; a new
 version gets a new section.
 
+## 1.1.0 — 2026-09-23
+
+### Added
+
+- **Screen mirroring.** The phone's screen in a window on the Mac, with mouse, keyboard and
+  sound, through scrcpy 4.1, which the Mac package now carries together with adb. It runs over
+  Wireless debugging or a USB cable. The panel walks through turning the switch on and through
+  adb's one-time pairing code, and can open the switch on the phone. Settings → Screen mirroring
+  holds sound, screen off, stay awake and a resolution cap.
+- **Android 17 local network permission.** The app now declares and asks for
+  `ACCESS_LOCAL_NETWORK`, which Android 17 requires before an app targeting it can reach any
+  device on the LAN. It is listed as required on the Permissions card.
+
+### Changed
+
+- AGP 9.4.1, Kotlin 2.4.20. Every GitHub Action is pinned by commit SHA, the Gradle wrapper
+  download is checked against its SHA-256, and a CodeQL job checks the workflow files.
+- The APK signing key is decoded only for the published build on `main` and is removed after it.
+- Pairing prompts on the Mac default to Reject in every case, since they open on their own from
+  a network event.
+- **Less energy.** The phone dials only over Wi-Fi or Ethernet, remembers which network the Mac is
+  on and stays quiet elsewhere, parks when the Mac says it is going to sleep (new `sleep`
+  message), holds battery reports while the screen is off until the next ping, skips identical
+  notification re-posts, and ignores clipboard requests with the screen off. The Mac stops its
+  clipboard poll while locked or asleep, puts tolerance on its timers, asks only the focused phone
+  for its clipboard, and no longer redraws Settings or the menu bar on every message.
+- The notification and clipboard histories on the Mac are encrypted with a key derived from the
+  Keychain identity. A 1.0 history is read once and rewritten encrypted.
+
+### Fixed
+
+- With several phones connected, files, notification replies and dismissals, and media controls
+  went to every phone instead of the one they belonged to. Each now goes to its own phone, and a
+  phone can no longer touch another phone's transfer.
+- A second phone's `hello` renamed the first paired phone, and an unknown phone's pairing prompt
+  showed a paired phone's name.
+- The phone redialled without pause when the Mac hung up right after the handshake, for example
+  on a disconnected phone. It now waits on the backoff ladder.
+- Every change to any Android system setting sent a `system` message. Only ringer, volume and
+  Wireless debugging changes do now.
+- Frames sent from two tasks at once could reach the phone out of order and drop the link.
+- Forgetting one phone on the Mac disconnected every phone.
+- The Mac could end up with two listeners after Retry or unpair, and a locked Keychain at login
+  made phones report a changed key.
+- The updaters matched checksum lines by suffix; the name must now match exactly, and on Android
+  the installer only accepts this very package.
+- A received file opens by the type its name implies, and an APK only opens Downloads.
+- The phone ran actions the Mac asked for on notifications it had sent by title only, or not at all.
+- A phone forgotten while one of its connections was still handshaking could keep a hidden session.
+  Trust is now checked again after the handshake.
+- Devices were told apart by a 32-bit fingerprint that a paired device could grind to take over
+  another phone's slot; the full key hash is the id now.
+- File names could carry Unicode direction overrides that disguise the extension; they are
+  stripped on both sides. A received file of unknown type opens Downloads on Android.
+- On Android 10-12L the "never send sensitive content" rule did not see the marker password
+  managers set; it is read on every version now.
+- App icons were requested from, and accepted from, every phone; only the phone that posted the
+  notification is asked now.
+- Screen mirroring uses the adb already on the Mac when there is one, so it does not take over
+  Android Studio's adb server.
+
 ## 1.0.0 — 2026-09-07
 
 First public release. Android and macOS talk over the local network only, with no server, no
