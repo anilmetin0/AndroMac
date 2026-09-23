@@ -52,7 +52,10 @@
     <string name="permission_banner_title">AndroMac bir izin istiyor</string>
     <string name="permission_banner_dismiss">Kapat</string>
     <string name="permission_banner_notif_access">Bildirim erişimi verilmedi — Mac\'e hiçbir bildirim aktarılmıyor.</string>
+    <string name="permission_banner_local_network">Yerel ağ erişimi verilmedi — telefon Mac\'inize ulaşamıyor.</string>
     <string name="permission_banner_post">Bildirimlere izin verilmedi — durum ve pano bildirimleri hiç görünmez.</string>
+    <string name="setup_local_network_title">Yerel ağ erişimine izin ver</string>
+    <string name="setup_local_network_note">Verilmezse telefon Mac\'inizi bulamaz ve ona bağlanamaz. Android bunu Yakındaki cihazlar altında gösterir.</string>
     <string name="setup_post_notif_title">Bildirimlere izin ver</string>
     <string name="setup_post_notif_note">Verilmezse durum bildirimi ve Mac panosu bildirimi hiç görünmez.</string>
     <string name="setup_battery_title">Pil optimizasyonu</string>

@@ -20,6 +20,18 @@ import io.github.anilmetin0.andromac.feature.NotificationRelay
  */
 enum class Permission(val titleRes: Int, val noteRes: Int, val kind: Kind) {
 
+    /** Android 17+: without it the phone cannot find or reach the Mac at all. */
+    LOCAL_NETWORK(R.string.setup_local_network_title, R.string.setup_local_network_note, Kind.REQUIRED) {
+        override fun granted(ctx: Context): Boolean =
+            Build.VERSION.SDK_INT < 37 ||
+                ctx.checkSelfPermission(android.Manifest.permission.ACCESS_LOCAL_NETWORK) ==
+                PackageManager.PERMISSION_GRANTED
+
+        /** The runtime dialog is asked for at launch; after a denial only the app's page can grant it. */
+        override fun settingsIntent(ctx: Context): Intent =
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${ctx.packageName}"))
+    },
+
     POST_NOTIFICATIONS(R.string.setup_post_notif_title, R.string.setup_post_notif_note, Kind.REQUIRED) {
         /** Before API 33 there is no such permission; there it always counts as granted. */
         override fun granted(ctx: Context): Boolean =
