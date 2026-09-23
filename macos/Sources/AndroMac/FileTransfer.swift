@@ -393,10 +393,9 @@ final class FileTransfer: ObservableObject {
             } else if let preview {
                 try? FileManager.default.removeItem(at: preview)
             }
-            UNUserNotificationCenter.current().add(
-                UNNotificationRequest(identifier: "andromac.file." + id, content: content, trigger: nil)
-            ) { error in
-                if let error {
+            let request = UNNotificationRequest(identifier: "andromac.file." + id, content: content, trigger: nil)
+            Task {
+                do { try await UNUserNotificationCenter.current().add(request) } catch {
                     NSLog("AndroMac: could not present the file notification — \(error.localizedDescription)")
                 }
             }

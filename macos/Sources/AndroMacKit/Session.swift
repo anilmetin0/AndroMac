@@ -39,7 +39,14 @@ public actor Session {
     public func send(json: Data) async throws -> Int {
         let ct = try Crypto.seal(sendKey, sendCounter, json)
         sendCounter &+= 1
-        try await wire.writeFrame(ct)
+        // Sealed and queued without a suspension in between: an `await` here would let another
+        // send seal the next counter and reach the socket first, and the phone closes the link
+        // on a frame out of order (PROTOCOL §4).
+        try await withCheckedThrowingContinuation { (c: CheckedContinuation<Void, Error>) in
+            wire.enqueueFrame(ct) { error in
+                if let error { c.resume(throwing: error) } else { c.resume() }
+            }
+        }
         return json.count
     }
 

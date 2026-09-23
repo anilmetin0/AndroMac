@@ -77,10 +77,21 @@ public actor Wire {
     }
 
     public func writeFrame(_ payload: Data) async throws {
+        try await withCheckedThrowingContinuation { (c: CheckedContinuation<Void, Error>) in
+            enqueueFrame(payload) { error in
+                if let error { c.resume(throwing: error) } else { c.resume() }
+            }
+        }
+    }
+
+    /// Hands a frame to the connection immediately, without an actor hop. NWConnection keeps
+    /// sends in call order, so a caller that seals and enqueues in one synchronous step puts
+    /// frames on the wire in counter order however many tasks are sending at once.
+    public nonisolated func enqueueFrame(_ payload: Data, completion: @escaping @Sendable (Error?) -> Void) {
         var out = Data(capacity: payload.count + 4)
         out.append(contentsOf: withUnsafeBytes(of: UInt32(payload.count).bigEndian) { Data($0) })
         out.append(payload)
-        try await send(out)
+        conn.send(content: out, completion: .contentProcessed { completion($0) })
     }
 
     public func close() {

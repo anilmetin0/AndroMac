@@ -31,7 +31,7 @@ enum NetworkInfo {
                 &host, socklen_t(host.count), nil, 0, NI_NUMERICHOST
             )
             guard result == 0 else { continue }
-            let candidate = String(cString: host)
+            let candidate = String(decoding: host.prefix { $0 != 0 }.map(UInt8.init(bitPattern:)), as: UTF8.self)
             guard !candidate.hasPrefix("169.254") else { continue }   // link-local, not a real network
             address = candidate
             break

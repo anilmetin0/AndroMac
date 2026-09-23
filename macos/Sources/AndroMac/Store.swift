@@ -181,8 +181,14 @@ final class Store: @unchecked Sendable {
         pairedDevices.first { $0.id == id }
     }
 
+    /// Held across every read-modify-write of the list. `lock` only guards one get or one set, so
+    /// the Server's `lastSeen` write could otherwise land between the UI's read and write of
+    /// `paused` and quietly let a disconnected phone back in.
+    private let mutation = NSLock()
+
     /// Add a newly paired device, or refresh the name of one we already trust.
     func remember(_ device: PairedDevice) {
+        mutation.lock(); defer { mutation.unlock() }
         var devices = pairedDevices
         if let index = devices.firstIndex(where: { $0.key == device.key }) {
             devices[index].name = device.name
@@ -194,6 +200,7 @@ final class Store: @unchecked Sendable {
 
     /// Apply a change to one device in place. No-op if it is not paired.
     func updateDevice(id: String, _ change: (inout PairedDevice) -> Void) {
+        mutation.lock(); defer { mutation.unlock() }
         var devices = pairedDevices
         guard let index = devices.firstIndex(where: { $0.id == id }) else { return }
         change(&devices[index])
@@ -230,6 +237,7 @@ final class Store: @unchecked Sendable {
 
     /// Forget one phone. The others stay.
     func unpair(id: String) {
+        mutation.lock(); defer { mutation.unlock() }
         pairedDevices = pairedDevices.filter { $0.id != id }
     }
 
