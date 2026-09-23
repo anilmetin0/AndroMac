@@ -170,7 +170,13 @@ jobs:
           security import "$RUNNER_TEMP/signing.p12" -k "$kc" -P "$P12_PASS" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$kcpass" "$kc" >/dev/null
           rm -f "$RUNNER_TEMP/signing.p12"
-          echo "CODESIGN_IDENTITY=AndroMac Self-Signed" >> "$GITHUB_ENV"
+          # codesign looks identities up through the search list, and an untrusted self-signed
+          # certificate is not found by name; the keychain goes on the list and the certificate
+          # is named by its SHA-1.
+          security list-keychains -d user -s "$kc" $(security list-keychains -d user | tr -d '"')
+          sha1="$(security find-certificate -c "AndroMac Self-Signed" -Z "$kc" | awk '/SHA-1/ {print $NF}')"
+          [ -n "$sha1" ] || { echo "::error::the imported certificate was not found"; exit 1; }
+          echo "CODESIGN_IDENTITY=$sha1" >> "$GITHUB_ENV"
           echo "CODESIGN_KEYCHAIN=$kc" >> "$GITHUB_ENV"
 
       - name: AndroMac.app
