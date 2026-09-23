@@ -25,6 +25,8 @@ kotlin {
         "io/github/anilmetin0/andromac/core/Version.kt",
         "io/github/anilmetin0/andromac/core/NetworkInfo.kt",
         "io/github/anilmetin0/andromac/feature/UpdateCheck.kt",
+        // The in-memory clipboard history: bounded, newest first.
+        "io/github/anilmetin0/andromac/feature/ClipHistory.kt",
     )
 }
 

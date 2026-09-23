@@ -46,6 +46,7 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
         val text = raw.take(Protocol.MAX_CLIPBOARD)
         if (text.isEmpty() || !store.syncClipboard) return
         lastFromMac = text
+        ClipHistory.add(text, fromMac = true)
 
         if (store.clipboardAutoPaste) {
             runCatching { cm.setPrimaryClip(ClipData.newPlainText("AndroMac", text)) }
@@ -108,7 +109,7 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
         val text = clip.getItemAt(0).coerceToText(context)?.toString().orEmpty()
         if (text.isEmpty()) return false
         if (text == lastFromMac) return false          // break the echo
-        return sendText(text)
+        return sendText(text, clip.description)
     }
 
     /**
@@ -122,7 +123,7 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
         if (sensitiveBlocked(clip.description)) return
         val text = clip.getItemAt(0).coerceToText(context)?.toString().orEmpty()
         if (text.isEmpty() || text == lastFromMac || text == lastSent) return
-        sendText(text)
+        sendText(text, clip.description)
     }
 
     /**
@@ -135,6 +136,8 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
         if (sensitiveBlocked(description)) return false
         val queued = Link.send(Protocol.clipboard(text))
         if (queued) lastSent = text
+        // Sent anyway with the protection off, but a password never lands in the history.
+        if (queued && !isSensitive(description)) ClipHistory.add(text, fromMac = false)
         return queued
     }
 
@@ -146,10 +149,13 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
      */
     private fun sensitiveBlocked(description: ClipDescription?): Boolean {
         if (!store.clipboardSkipSensitive) return false
-        val sensitive = description?.extras?.getBoolean(EXTRA_IS_SENSITIVE) == true
+        val sensitive = isSensitive(description)
         if (sensitive) Log.i(Link.TAG, "sensitive clipboard content not sent")
         return sensitive
     }
+
+    private fun isSensitive(description: ClipDescription?): Boolean =
+        description?.extras?.getBoolean(EXTRA_IS_SENSITIVE) == true
 
     private fun notifyPastable(text: String) {
         val paste = PendingIntent.getActivity(

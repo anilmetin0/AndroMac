@@ -57,6 +57,7 @@ class Discovery(context: Context) {
     fun findOne(): Peer? {
         found.clear()
         synchronized(this) { queued.clear(); resolving = false }
+        Link.setDiscovered { emptyList() }
         // On some devices mDNS multicast packets are filtered out without this lock.
         lock = wifi.createMulticastLock("andromac-mdns").apply { setReferenceCounted(false); acquire() }
 
@@ -69,6 +70,8 @@ class Discovery(context: Context) {
             override fun onStopDiscoveryFailed(t: String, code: Int) = Unit
 
             override fun onServiceFound(info: NsdServiceInfo) {
+                // The instance name is the Mac's name (Server.swift advertises deviceName).
+                Link.setDiscovered { (it + info.serviceName).distinct() }
                 if (Build.VERSION.SDK_INT >= 34) watch(info) else enqueue(info)
             }
 

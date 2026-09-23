@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Every detail screen, one row each with a one-line summary of what is configured there. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbarStyle="outsideOverlay"
+    android:clipToPadding="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
+
+        <include layout="@layout/view_header" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="8dp">
+
+        <LinearLayout style="@style/Card">
+
+            <LinearLayout android:id="@+id/rowConnection" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/settings_connection" />
+                    <TextView android:id="@+id/connectionSummary" style="@style/RowSubtitle" />
+                </LinearLayout>
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="12dp"
+                    android:src="@drawable/ic_chevron"
+                    android:contentDescription="@null" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView style="@style/SectionLabel" android:text="@string/section_sync" />
+
+        <LinearLayout style="@style/Card">
+
+            <LinearLayout android:id="@+id/rowNotifSettings" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/settings_notifications" />
+                    <TextView android:id="@+id/notifSummary" style="@style/RowSubtitle" />
+                </LinearLayout>
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="12dp"
+                    android:src="@drawable/ic_chevron"
+                    android:contentDescription="@null" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/rowClipSettings" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/settings_clipboard" />
+                    <TextView android:id="@+id/clipSummary" style="@style/RowSubtitle" />
+                </LinearLayout>
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="12dp"
+                    android:src="@drawable/ic_chevron"
+                    android:contentDescription="@null" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/rowFiles" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/settings_files" />
+                    <TextView android:id="@+id/fileSummary" style="@style/RowSubtitle" />
+                </LinearLayout>
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="12dp"
+                    android:src="@drawable/ic_chevron"
+                    android:contentDescription="@null" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView style="@style/SectionLabel" android:text="@string/section_app" />
+
+        <LinearLayout style="@style/Card">
+
+            <LinearLayout android:id="@+id/rowPermissions" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/permissions_title" />
+                    <TextView android:id="@+id/permissionsSummary" style="@style/RowSubtitle" />
+                </LinearLayout>
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="12dp"
+                    android:src="@drawable/ic_chevron"
+                    android:contentDescription="@null" />
+            </LinearLayout>
+
+            <!-- Hidden below API 33: in-app language selection arrived there. -->
+            <LinearLayout android:id="@+id/rowLanguage" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/settings_language" />
+                    <TextView android:id="@+id/languageSummary" style="@style/RowSubtitle" />
+                </LinearLayout>
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="12dp"
+                    android:src="@drawable/ic_chevron"
+                    android:contentDescription="@null" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/rowUpdates" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/settings_updates" />
+                    <TextView android:id="@+id/updatesSummary" style="@style/RowSubtitle" />
+                </LinearLayout>
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="12dp"
+                    android:src="@drawable/ic_chevron"
+                    android:contentDescription="@null" />
+            </LinearLayout>
+
+            <!-- The version is the first thing asked for in a bug report. -->
+            <LinearLayout android:id="@+id/rowAbout" style="@style/Row" android:background="@null" android:baselineAligned="false">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/settings_about" />
+                    <TextView android:id="@+id/versionSummary" style="@style/RowSubtitle" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
