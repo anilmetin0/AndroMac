@@ -3,7 +3,7 @@ import CryptoKit
 import Foundation
 
 // Crypto conformance vectors. The `:vectors` module on the Kotlin side must produce EXACTLY
-// the same lines; `verify-crypto.sh` diffs the two. This is the only proof that the two
+// the same lines; `scripts/verify-crypto.sh` diffs the two. This is the only proof that the two
 // independent crypto implementations match byte for byte — if they do not, the handshake
 // fails silently on device.
 

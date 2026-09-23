@@ -6,9 +6,9 @@ every push and pull request; only a push to `main` publishes at the end.
 
 ## What every run does
 
-1. `verify-crypto.sh`: the CryptoKit and JCE implementations produce identical vectors.
-2. `verify-handshake.sh`: the real Swift responder and Kotlin initiator complete a session over
-   loopback.
+1. `scripts/verify-crypto.sh`: the CryptoKit and JCE implementations produce identical vectors.
+2. `scripts/verify-handshake.sh`: the real Swift responder and Kotlin initiator complete a
+   session over loopback.
 3. `swift test` and `./gradlew :vectors:test`: the unit tests on both sides.
 4. `macos/scripts/update-strings.sh --check`: every localization key exists in every language.
 5. `brew style Casks/*.rb`: the Homebrew cask lints clean.
@@ -71,7 +71,8 @@ Without the secrets the APK is signed with a debug key that changes every run, a
 refuse to upgrade an installation signed with a different key.
 
 The macOS bundle is signed ad-hoc. Homebrew therefore cannot promise Gatekeeper acceptance; the
-cask says so in its caveats and the README shows the `--no-quarantine` flag.
+cask says so in its caveats, and the README's install lines clear the quarantine flag with
+`xattr`.
 
 ## If something goes wrong
 

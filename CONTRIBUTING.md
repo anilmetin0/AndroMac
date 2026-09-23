@@ -4,7 +4,9 @@ Thanks for looking. AndroMac is a small project with a narrow scope and a few ru
 negotiable, so read this before writing code.
 
 The repository language is English: code, comments, commit messages, issues and documentation.
-Turkish exists as a translation, in `README.tr.md`, `CHANGELOG.tr.md` and the app resources.
+Turkish exists as a translation, in `README.tr.md`, `docs/GUIDE.tr.md`, `CHANGELOG.tr.md` and
+the app resources. The README is the short front page; detail belongs in `docs/GUIDE.md`, and each
+English file and its Turkish twin keep the same structure.
 Issues and pull request descriptions in Turkish are fine.
 
 ## Scope
@@ -12,6 +14,60 @@ Issues and pull request descriptions in Turkish are fine.
 Out of scope: SMS, call control, more than one Mac, and any access over the internet. The design
 is any number of phones and one Mac on one local network. A pull request that adds one of those
 will be closed however good the code is.
+
+## Repository layout
+
+```
+README.md, README.tr.md            the short front page
+CHANGELOG.md, CHANGELOG.tr.md      release notes, read by the release job
+VERSION                            the current version; every push to main republishes its release
+THIRD-PARTY-NOTICES.md             what the Mac package bundles for screen mirroring, and the licenses
+Casks/andromac.rb                  Homebrew cask, resolves the current build from the release API
+
+docs/
+  GUIDE.md, GUIDE.tr.md            the user guide: install, pairing, features, settings, trust model
+  PROTOCOL.md                      the wire protocol both sides are written against
+  ENERGY.md                        the energy rules, where each lives, and how to measure them
+  RELEASING.md                     the release checklist and what the pipeline does with it
+  images/                          screenshots and the icon the READMEs show
+
+scripts/
+  verify-crypto.sh                 proves the two crypto implementations agree, vector by vector
+  verify-handshake.sh              runs the real Swift and Kotlin session code over loopback
+  setup-android-signing.sh         creates the APK signing key and uploads it as secrets
+
+.github/
+  workflows/build.yml              verify, test, build both apps, publish the release
+  workflows/codeql.yml             CodeQL on the workflow files
+  dependabot.yml                   weekly updates for the actions and the Gradle plugins
+  ISSUE_TEMPLATE/, PULL_REQUEST_TEMPLATE.md
+
+android/                           AGP 9.4.1, Gradle 9.7.1, minSdk 29, no dependencies
+  app/src/main/kotlin/io/github/anilmetin0/andromac/
+    core/                          platform-free: Crypto, Session, Protocol, Store, Link, Version,
+                                   FileNames, NetworkInfo
+    net/                           LinkService (connect loop, backoff, dispatch), Discovery (mDNS
+                                   only while there is no connection), BootReceiver
+    feature/                       one file per synced thing: NotificationRelay, ClipboardBridge,
+                                   BatteryReporter, MediaBridge, SystemBridge, FileTransfer,
+                                   FindPhone, UpdateCheck, Updater, and their helpers
+    ui/                            the activities and the Permissions model
+  app/src/main/res/                values/ is English, the base language; values-tr/ is Turkish
+  vectors/                         runs Crypto, Session and Protocol on a plain JVM for the scripts
+    src/test/                      JVM unit tests
+
+macos/                             Swift package, swift-tools 6.2, macOS 14+, no dependencies
+  build.sh                         builds and packages the .app, sets the version, signs it
+  scripts/fetch-scrcpy.sh          fetches and verifies the bundled scrcpy and adb into vendor/
+  scripts/update-strings.sh        extracts the localization keys and rewrites the .strings files
+  Resources/                       Info.plist, en.lproj and tr.lproj, make-icon.swift
+  Sources/AndroMacKit/             platform-free: Crypto, Session, Wire, Version, FileNames,
+                                   PairedDevice, SealedFile, AdbOutput, ReleaseInfo, VerificationCode
+  Sources/AndroMac/                the app: Server (Bonjour, handshake limits, dispatch), AppState,
+                                   Store, ScreenMirror, FileTransfer, the updater and the SwiftUI views
+  Sources/SelfTest/                the vector printer and handshake responder the scripts use
+  Tests/AndroMacKitTests/          Swift Testing unit tests
+```
 
 ## Toolchain
 
@@ -34,12 +90,13 @@ reports, and fall back to the default JDK, so a normal machine needs no setup.
 ## Build
 
 ```bash
-./verify-crypto.sh && ./verify-handshake.sh          # proof first
+scripts/verify-crypto.sh && scripts/verify-handshake.sh   # proof first
 
-macos/build.sh                                       # → macos/build/AndroMac.app
+macos/scripts/fetch-scrcpy.sh                             # optional: bundle scrcpy and adb
+macos/build.sh                                            # → macos/build/AndroMac.app
 open macos/build/AndroMac.app
 
-android/gradlew -p android :app:installDebug         # phone attached over adb
+android/gradlew -p android :app:installDebug              # phone attached over adb
 ```
 
 `android/gradlew -p android :app:assembleDebug` builds the APK without installing it.
@@ -48,8 +105,8 @@ android/gradlew -p android :app:installDebug         # phone attached over adb
 Unit tests live next to the pure logic they cover and run without a device:
 
 ```bash
-(cd macos && swift test)                             # macos/Tests/AndroMacKitTests
-android/gradlew -p android :vectors:test             # android/vectors/src/test
+(cd macos && swift test)                                  # macos/Tests/AndroMacKitTests
+android/gradlew -p android :vectors:test                  # android/vectors/src/test
 ```
 
 Platform-free Kotlin (anything in `core/` or `feature/` that imports no `android.*` package) can be
@@ -81,8 +138,8 @@ implementations agree.
 
 | Script | What it proves |
 |---|---|
-| `verify-crypto.sh` | CryptoKit and JCE produce identical vectors: key encoding, HKDF, nonce layout, GCM tag position, SAS derivation. |
-| `verify-handshake.sh` | The real `Session.accept` in Swift talks to the real `Session.connect` in Kotlin over loopback: frame order, the confirmation round, the pin check, the SAS matching on both sides, and 12 frames in counter order in each direction. |
+| `scripts/verify-crypto.sh` | CryptoKit and JCE produce identical vectors: key encoding, HKDF, nonce layout, GCM tag position, SAS derivation. |
+| `scripts/verify-handshake.sh` | The real `Session.accept` in Swift talks to the real `Session.connect` in Kotlin over loopback: frame order, the confirmation round, the pin check, the SAS matching on both sides, and 12 frames in counter order in each direction. |
 
 Run both whenever you touch crypto, the handshake, framing or the message set. Passing one does
 not imply the other. During development the vectors passed while the handshake failed, because
