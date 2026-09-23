@@ -12,7 +12,11 @@ final class IconCache {
     static let shared = IconCache()
 
     private let directory: URL
-    private var requested = Set<String>()
+    /// Packages asked for this session, and which phone was asked. An `app_icon` is only taken
+    /// from that phone: with two phones, neither may learn the other's apps or repaint its icons.
+    private var requested: [String: String] = [:]
+    /// Packages whose file is known to be absent, so a list redraw does not stat the disk each time.
+    private var missing = Set<String>()
     /// Decoded icons. SwiftUI evaluates the body often, and decoding the PNG every time was
     /// visibly expensive in lists.
     private var images: [String: NSImage] = [:]
@@ -36,8 +40,13 @@ final class IconCache {
     }
 
     func cachedURL(for pkg: String) -> URL? {
+        if missing.contains(pkg) { return nil }
         let candidate = url(for: pkg)
-        return FileManager.default.fileExists(atPath: candidate.path) ? candidate : nil
+        guard FileManager.default.fileExists(atPath: candidate.path) else {
+            missing.insert(pkg)
+            return nil
+        }
+        return candidate
     }
 
     /// The icon used by the panel and the lists; served from memory after the first read.
@@ -48,14 +57,16 @@ final class IconCache {
         return image
     }
 
-    /// Ask the phone for the icon unless it was already requested in this session.
-    func requestIfMissing(_ pkg: String) {
-        guard cachedURL(for: pkg) == nil, !requested.contains(pkg) else { return }
-        requested.insert(pkg)
-        Task { await Server.shared.send(["t": "icon_request", "pkg": pkg]) }
+    /// Ask the phone that posted the notification for the icon, once per session.
+    func requestIfMissing(_ pkg: String, from peer: String) {
+        guard cachedURL(for: pkg) == nil, requested[pkg] == nil else { return }
+        requested[pkg] = peer
+        Task { await Server.shared.send(["t": "icon_request", "pkg": pkg], to: peer) }
     }
 
-    func store(pkg: String, base64PNG: String) {
+    /// An icon arrived. Only the phone that was asked for this package may supply it.
+    func store(pkg: String, base64PNG: String, from peer: String) {
+        guard requested[pkg] == peer else { return }
         guard let data = Data(base64Encoded: base64PNG), data.count < 512 * 1024 else { return }
         // PNG signature: do not let fabricated data be written to disk.
         guard data.starts(with: [0x89, 0x50, 0x4E, 0x47]) else {
@@ -63,6 +74,7 @@ final class IconCache {
             return
         }
         try? data.write(to: url(for: pkg), options: .atomic)
+        missing.remove(pkg)
         images[pkg] = NSImage(data: data)      // make the new icon appear immediately
     }
 
@@ -71,6 +83,7 @@ final class IconCache {
     func clear() {
         images.removeAll()
         requested.removeAll()
+        missing.removeAll()
         let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
         for file in files where file.pathExtension == "png" { try? FileManager.default.removeItem(at: file) }
     }

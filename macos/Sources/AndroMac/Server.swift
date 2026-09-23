@@ -396,7 +396,7 @@ actor Server {
                 AppState.shared.removeDevice(id: deviceID)
                 if !stillConnected { AppState.shared.status = .listening }
                 LinkStats.shared.sessionEnded()
-                FileTransfer.shared.sessionEnded()
+                FileTransfer.shared.sessionEnded(deviceID)
             }
         }
         // The poller exists to feed phones; with none left it is just a timer burning cycles.
@@ -412,7 +412,7 @@ actor Server {
         if type != "pong" { NSLog("AndroMac: message received: %@", type) }
         switch type {
         case "ping":
-            await send(["t": "pong"])
+            await send(["t": "pong"], to: deviceID)
 
         case "pong":
             break
@@ -421,10 +421,16 @@ actor Server {
             let name = clip(msg["name"], 64).isEmpty ? "Android" : clip(msg["name"], 64)
             // We show no button in the UI for a capability the peer did not advertise.
             let caps = Set(msg["caps"] as? [String] ?? [])
-            Store.shared.pairedName = name
+            // Per device: with two phones, the second one's hello must not rename the first, and
+            // its caps must land on its own row, which is what the device card and `refocus` read.
+            if Store.shared.device(id: deviceID)?.name != name {
+                Store.shared.updateDevice(id: deviceID) { $0.name = name }
+            }
             await MainActor.run {
-                AppState.shared.status = .connected(name)
-                AppState.shared.peerCaps = caps
+                AppState.shared.update(deviceID: deviceID, name: name) {
+                    $0.name = name
+                    $0.caps = caps
+                }
             }
 
         case "battery":
@@ -493,23 +499,23 @@ actor Server {
 
         case "notification":
             guard Store.shared.syncNotifications else { break }
-            await NotificationMirror.shared.show(msg)
+            await NotificationMirror.shared.show(msg, from: deviceID)
 
         case "app_modes":
             let raw = msg["apps"] as? [[String: Any]] ?? []
-            await MainActor.run { AppModes.shared.replace(with: raw) }
+            await MainActor.run { AppModes.shared.replace(with: Array(raw.prefix(2000)), from: deviceID) }
 
         case "app_icon":
-            guard let pkg = msg["pkg"] as? String, let png = msg["png"] as? String else { break }
-            await MainActor.run { IconCache.shared.store(pkg: pkg, base64PNG: png) }
+            guard let pkg = msg["pkg"] as? String, pkg.count <= 256, let png = msg["png"] as? String else { break }
+            await MainActor.run { IconCache.shared.store(pkg: pkg, base64PNG: png, from: deviceID) }
 
         case "notification_remove":
             guard let id = msg["id"] as? String else { break }
-            await NotificationMirror.shared.remove(id)
+            await NotificationMirror.shared.remove(id, from: deviceID)
 
         case _ where type.hasPrefix("file_"):
             // PROTOCOL §5 file_* — offer/accept/chunk/ack/done/result/cancel, both directions.
-            await FileTransfer.shared.handle(type, msg)
+            await FileTransfer.shared.handle(type, msg, from: deviceID)
 
         default:
             break        // unknown type: ignore silently (forward compatibility)

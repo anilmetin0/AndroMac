@@ -42,39 +42,45 @@ final class AppModes: ObservableObject {
         var id: String { pkg }
     }
 
-    @Published private(set) var apps: [App] = []
+    /// Per phone: each one has its own apps and its own tiers, and its `app_modes` must not
+    /// overwrite another phone's list. Keyed by `PairedDevice.id`.
+    @Published private var byDevice: [String: [App]] = [:]
 
-    func replace(with raw: [[String: Any]]) {
-        apps = raw.compactMap { item in
+    /// The phone the Apps tab and the panel are showing.
+    private var focused: String? { AppState.shared.focusedDevice?.id }
+
+    /// The focused phone's apps, which is what the Apps tab lists.
+    var apps: [App] { focused.flatMap { byDevice[$0] } ?? [] }
+
+    func replace(with raw: [[String: Any]], from peer: String) {
+        byDevice[peer] = raw.compactMap { item in
             guard let pkg = item["pkg"] as? String, !pkg.isEmpty else { return nil }
             return App(
-                pkg: pkg,
-                label: item["label"] as? String ?? pkg,
+                pkg: String(pkg.prefix(256)),
+                label: String((item["label"] as? String ?? pkg).prefix(200)),
                 mode: Mode(rawValue: item["mode"] as? Int ?? 2) ?? .full
             )
         }
         .sorted { $0.label.localizedCaseInsensitiveCompare($1.label) == .orderedAscending }
     }
 
-    func mode(for pkg: String) -> Mode {
-        apps.first { $0.pkg == pkg }?.mode ?? .full
-    }
-
-    /// An optimistic update; replaced once the phone confirms it with `app_modes`.
-    /// Rolled back if the send fails: with no connection (the "Mute" action on a notification also
-    /// lands here) the UI used to show "applied" while nothing changed on the phone.
-    func set(_ mode: Mode, for pkg: String) {
-        let previous = apps.first { $0.pkg == pkg }?.mode
-        if let index = apps.firstIndex(where: { $0.pkg == pkg }) {
-            apps[index].mode = mode
+    /// An optimistic update on one phone; replaced once it confirms with `app_modes`. `peer` nil
+    /// means the focused phone (the Apps tab). Rolled back if the send fails: with no connection
+    /// (the "Mute" action on a notification also lands here) the UI used to show "applied" while
+    /// nothing changed on the phone.
+    func set(_ mode: Mode, for pkg: String, on peer: String? = nil) {
+        guard let peer = peer ?? focused else { return }
+        let previous = byDevice[peer]?.first { $0.pkg == pkg }?.mode
+        if let index = byDevice[peer]?.firstIndex(where: { $0.pkg == pkg }) {
+            byDevice[peer]?[index].mode = mode
         }
         Task {
-            let sent = await Server.shared.send(["t": "app_mode", "pkg": pkg, "mode": mode.rawValue])
-            if !sent, let previous, let index = self.apps.firstIndex(where: { $0.pkg == pkg }) {
-                self.apps[index].mode = previous
+            let sent = await Server.shared.send(["t": "app_mode", "pkg": pkg, "mode": mode.rawValue], to: peer)
+            if !sent, let previous, let index = self.byDevice[peer]?.firstIndex(where: { $0.pkg == pkg }) {
+                self.byDevice[peer]?[index].mode = previous
             }
         }
     }
 
-    func clear() { apps = [] }
+    func clear() { byDevice = [:] }
 }
