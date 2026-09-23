@@ -137,6 +137,12 @@
     <string name="update_open_page">Open the release page</string>
     <string name="update_later">Later</string>
     <string name="update_skip">Skip this version</string>
+    <!-- updates -->
+    <string name="update_auto">Install updates automatically</string>
+    <string name="update_ready">Installs once you leave the app</string>
+    <string name="update_beta">Beta updates</string>
+    <string name="update_done">AndroMac was updated to %1$s</string>
+    <string name="update_confirm">Ready to install</string>
     <string name="language_system">System</string>
 
     <string name="settings_files">File transfer</string>
@@ -315,4 +321,7 @@
     <string name="history_from_mac">From Mac · %1$s</string>
     <string name="history_to_mac">To Mac · %1$s</string>
     <string name="clip_nothing_to_send">Nothing new to send</string>
+    <!-- pairing chooser -->
+    <string name="pair_choose_title">Choose a Mac</string>
+    <string name="pair_search_again">Search again</string>
 </resources>

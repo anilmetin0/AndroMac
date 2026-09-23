@@ -27,6 +27,8 @@ kotlin {
         "io/github/anilmetin0/andromac/feature/UpdateCheck.kt",
         // The in-memory clipboard history: bounded, newest first.
         "io/github/anilmetin0/andromac/feature/ClipHistory.kt",
+        // Which discovered Mac to dial, and "key changed" versus "somebody else's Mac".
+        "io/github/anilmetin0/andromac/core/MacPick.kt",
     )
 }
 

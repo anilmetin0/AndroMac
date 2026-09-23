@@ -27,8 +27,8 @@ import javax.crypto.spec.GCMParameterSpec
  */
 class Store(context: Context) {
 
-    private val prefs = context.applicationContext
-        .getSharedPreferences("andromac", Context.MODE_PRIVATE)
+    private val app = context.applicationContext
+    private val prefs = app.getSharedPreferences("andromac", Context.MODE_PRIVATE)
 
     // --- persistent identity ---
 
@@ -317,21 +317,34 @@ class Store(context: Context) {
         set(v) = prefs.edit().putLong(K_UPDATE_LAST, v).apply()
 
     /**
-     * The release the last check found, or null when up to date. Persisted with its commit so the
-     * main screen can re-apply [UpdateCheck.isNewer] after a restart without another request.
+     * The release the last check found, or null when up to date. Persisted with its commit, build
+     * and beta flag so the main screen can re-apply [UpdateCheck.isNewer] after a restart without
+     * another request, and its label matches [updateSkipped].
      */
     var updateFound: UpdateCheck.Release?
         get() {
             val v = prefs.getString(K_UPDATE_FOUND_VERSION, null)?.let(Version::find) ?: return null
             val u = prefs.getString(K_UPDATE_FOUND_URL, null) ?: return null
-            return UpdateCheck.Release(v, prefs.getString(K_UPDATE_FOUND_COMMIT, null), u)
+            val build = prefs.getInt(K_UPDATE_FOUND_BUILD, -1).takeIf { it >= 0 }
+            return UpdateCheck.Release(
+                v, prefs.getString(K_UPDATE_FOUND_COMMIT, null), u,
+                build = build, prerelease = prefs.getBoolean(K_UPDATE_FOUND_PRERELEASE, false),
+            )
         }
         set(r) = prefs.edit().apply {
             if (r == null) remove(K_UPDATE_FOUND_VERSION).remove(K_UPDATE_FOUND_COMMIT).remove(K_UPDATE_FOUND_URL)
+                .remove(K_UPDATE_FOUND_BUILD).remove(K_UPDATE_FOUND_PRERELEASE)
             else putString(K_UPDATE_FOUND_VERSION, r.version.toString())
                 .putString(K_UPDATE_FOUND_COMMIT, r.commit)
                 .putString(K_UPDATE_FOUND_URL, r.url)
+                .putInt(K_UPDATE_FOUND_BUILD, r.build ?: -1)
+                .putBoolean(K_UPDATE_FOUND_PRERELEASE, r.prerelease)
         }.apply()
+
+    /** The channel [updateFound] was found on: true for beta. A release of the other channel is not offered. */
+    var updateFoundBeta: Boolean
+        get() = prefs.getBoolean(K_UPDATE_FOUND_BETA, false)
+        set(v) = prefs.edit().putBoolean(K_UPDATE_FOUND_BETA, v).apply()
 
     // --- permissions ---
 
@@ -345,9 +358,22 @@ class Store(context: Context) {
         get() = prefs.getBoolean(K_PERM_OFFERED, false)
         set(v) = prefs.edit().putBoolean(K_PERM_OFFERED, v).apply()
 
+    /**
+     * What the Mac calls this phone: the name the user gave it in Settings (About phone), then
+     * the Bluetooth name, then the model ("SM-S926B") as the last resort. 64 chars, as the Mac clips.
+     */
     var deviceName: String
-        get() = prefs.getString(K_NAME, null) ?: android.os.Build.MODEL
+        get() = clip(prefs.getString(K_NAME, null) ?: systemName() ?: android.os.Build.MODEL, 64)
         set(v) = prefs.edit().putString(K_NAME, v).apply()
+
+    private fun systemName(): String? {
+        val cr = app.contentResolver
+        // bluetooth_name is not a public key: newer releases may refuse to read it.
+        return sequenceOf(
+            { android.provider.Settings.Global.getString(cr, android.provider.Settings.Global.DEVICE_NAME) },
+            { android.provider.Settings.Secure.getString(cr, "bluetooth_name") },
+        ).firstNotNullOfOrNull { read -> runCatching(read).getOrNull()?.trim()?.takeIf { it.isNotEmpty() } }
+    }
 
     companion object {
         /**
@@ -402,6 +428,9 @@ class Store(context: Context) {
         const val K_UPDATE_FOUND_VERSION = "update_found_version"
         const val K_UPDATE_FOUND_COMMIT = "update_found_commit"
         const val K_UPDATE_FOUND_URL = "update_found_url"
+        const val K_UPDATE_FOUND_BUILD = "update_found_build"
+        const val K_UPDATE_FOUND_PRERELEASE = "update_found_prerelease"
+        const val K_UPDATE_FOUND_BETA = "update_found_beta"
         const val K_UPDATE_SKIPPED = "update_skipped"
         const val K_PERM_DISMISSED = "permissions_dismissed"
         const val K_PERM_OFFERED = "notification_access_offered"
@@ -436,5 +465,10 @@ class Store(context: Context) {
             if (index < 0) index = entry.indexOf(LEGACY_SEP)
             return if (index <= 0) null else entry.substring(0, index) to entry.substring(index + 1)
         }
+
+        /** At most [max] code points: `take` counts UTF-16 units and can split an emoji's surrogate pair. */
+        fun clip(text: String, max: Int): String =
+            if (text.codePointCount(0, text.length) <= max) text
+            else text.substring(0, text.offsetByCodePoints(0, max))
     }
 }

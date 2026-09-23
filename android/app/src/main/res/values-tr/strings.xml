@@ -129,6 +129,12 @@
     <string name="update_open_page">Sürüm sayfasını aç</string>
     <string name="update_later">Sonra</string>
     <string name="update_skip">Bu sürümü atla</string>
+    <!-- updates -->
+    <string name="update_auto">Güncellemeleri otomatik kur</string>
+    <string name="update_ready">Uygulamadan çıkınca kurulur</string>
+    <string name="update_beta">Beta güncellemeleri</string>
+    <string name="update_done">AndroMac %1$s sürümüne güncellendi</string>
+    <string name="update_confirm">Kurulmaya hazır</string>
     <string name="language_system">Sistem</string>
 
     <string name="settings_files">Dosya aktarımı</string>
@@ -307,4 +313,7 @@
     <string name="history_from_mac">Mac\'ten · %1$s</string>
     <string name="history_to_mac">Mac\'e · %1$s</string>
     <string name="clip_nothing_to_send">Gönderilecek yeni bir şey yok</string>
+    <!-- pairing chooser -->
+    <string name="pair_choose_title">Bir Mac seçin</string>
+    <string name="pair_search_again">Yeniden ara</string>
 </resources>
