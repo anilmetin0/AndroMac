@@ -22,7 +22,7 @@ README.md, README.tr.md            the short front page
 CHANGELOG.md, CHANGELOG.tr.md      release notes, read by the release job
 VERSION                            the current version; every push to main republishes its release
 THIRD-PARTY-NOTICES.md             what the Mac package bundles for screen mirroring, and the licenses
-Casks/andromac.rb                  Homebrew cask, resolves the current build from the release API
+Casks/andromac.rb                  Homebrew cask; its version follows VERSION, CI checks it
 
 docs/
   GUIDE.md, GUIDE.tr.md            the user guide: install, pairing, features, settings, trust model
@@ -231,5 +231,5 @@ Do not open a public issue. Use private vulnerability reporting, described in
 
 `docs/RELEASING.md` is the checklist. Every push to `main` re-publishes the release for the
 version in `VERSION`. To start a new version, raise `VERSION`, write the section in both
-changelogs, and push. `Casks/andromac.rb` resolves the current build from the release API, so it
-needs no edit per release. Anything in `Casks/` must pass `brew style Casks/*.rb`, which CI runs.
+changelogs, set the same version in `Casks/andromac.rb`, and push. CI fails when the cask and
+`VERSION` disagree, and anything in `Casks/` must pass `brew style Casks/*.rb`.

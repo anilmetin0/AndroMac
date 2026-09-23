@@ -11,10 +11,12 @@ there is no Intel build. The APK is one file for every phone, since the app has 
 
 ### Mac, macOS 14 Sonoma or later
 
-With [Homebrew](https://brew.sh). The tap lives in this repository, so it is added by URL:
+With [Homebrew](https://brew.sh). The tap lives in this repository, so it is added by URL, and
+Homebrew 7 loads a tap from outside Homebrew only after you trust it:
 
 ```bash
 brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
+brew trust anilmetin0/andromac
 brew install --cask andromac
 xattr -dr com.apple.quarantine /Applications/AndroMac.app
 ```
@@ -35,8 +37,8 @@ On first launch:
 3. Look for AndroMac in the menu bar, not the Dock. The phone silhouette opens the panel.
 4. Optional: Settings → General → **Open at login**.
 
-The cask has no fixed version. It asks the release API for the current build, so it upgrades with
-`brew upgrade --cask --greedy-latest andromac` rather than plain `brew upgrade`.
+After that the app updates itself. `brew upgrade --cask andromac` also moves to a new version
+once it is out.
 
 ### Android 10 or later
 

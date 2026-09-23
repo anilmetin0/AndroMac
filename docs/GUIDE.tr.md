@@ -12,10 +12,12 @@ kod yok.
 
 ### Mac, macOS 14 Sonoma ve üstü
 
-[Homebrew](https://brew.sh) ile. Tap bu deponun içinde, o yüzden URL ile eklenir:
+[Homebrew](https://brew.sh) ile. Tap bu deponun içinde, o yüzden URL ile eklenir; Homebrew 7,
+Homebrew dışından gelen bir tap'i ancak ona güvendiğini söyledikten sonra yükler:
 
 ```bash
 brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
+brew trust anilmetin0/andromac
 brew install --cask andromac
 xattr -dr com.apple.quarantine /Applications/AndroMac.app
 ```
@@ -35,8 +37,8 @@ açılışı reddeder. Komut yerine uygulamayı bir kez açmayı deneyip reddedi
 3. AndroMac'i Dock'ta değil menü çubuğunda ara. Telefon silüeti paneli açar.
 4. İsteğe bağlı: Ayarlar → Genel → **Oturum açınca başlat**.
 
-Cask'in sabit bir sürümü yok; güncel paketi yayın API'sinden bulur. Bu yüzden düz `brew upgrade`
-yerine `brew upgrade --cask --greedy-latest andromac` ile güncellenir.
+Bundan sonra uygulama kendini günceller. Yeni bir sürüm çıktığında `brew upgrade --cask andromac`
+da ona geçer.
 
 ### Android 10 ve üstü
 
