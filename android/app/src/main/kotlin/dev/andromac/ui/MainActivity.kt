@@ -96,9 +96,15 @@ class MainActivity : Activity() {
 
         // Ask for what can be asked for. Notification access has no runtime dialog, it is a
         // settings screen, so it is offered once, right after this, in [offerNotificationAccess].
-        if (Build.VERSION.SDK_INT >= 33 && !Permission.POST_NOTIFICATIONS.granted(this)) {
-            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), REQ_POST_NOTIF)
+        val ask = buildList {
+            if (Build.VERSION.SDK_INT >= 37 && !Permission.LOCAL_NETWORK.granted(this@MainActivity)) {
+                add(android.Manifest.permission.ACCESS_LOCAL_NETWORK)
+            }
+            if (Build.VERSION.SDK_INT >= 33 && !Permission.POST_NOTIFICATIONS.granted(this@MainActivity)) {
+                add(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
+        if (ask.isNotEmpty()) requestPermissions(ask.toTypedArray(), REQ_POST_NOTIF)
         LinkService.start(this)
     }
 
@@ -112,6 +118,13 @@ class MainActivity : Activity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         render(Link.state)
+        // The link thread dialled while the dialog was up, failed, and is waiting out its
+        // backoff. With the permission in place, the next attempt should not wait for that.
+        // The string, not the API 37 field: an inlined constant, harmless below 37 (never asked there).
+        val local = permissions.indexOf("android.permission.ACCESS_LOCAL_NETWORK")
+        if (local >= 0 && grantResults.getOrNull(local) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            LinkService.start(this)
+        }
         if (requestCode == REQ_POST_NOTIF) offerNotificationAccess()
     }
 
@@ -241,8 +254,11 @@ class MainActivity : Activity() {
         if (!show) return
         findViewById<TextView>(R.id.permissionBody).text = missing.joinToString(" · ") {
             getString(
-                if (it == Permission.NOTIFICATION_ACCESS) R.string.permission_banner_notif_access
-                else R.string.permission_banner_post
+                when (it) {
+                    Permission.LOCAL_NETWORK -> R.string.permission_banner_local_network
+                    Permission.NOTIFICATION_ACCESS -> R.string.permission_banner_notif_access
+                    else -> R.string.permission_banner_post
+                }
             )
         }
     }
@@ -269,6 +285,7 @@ class MainActivity : Activity() {
     }
 
     private val permissionRows = mapOf(
+        Permission.LOCAL_NETWORK to R.id.rowLocalNetwork,
         Permission.POST_NOTIFICATIONS to R.id.rowPostNotif,
         Permission.NOTIFICATION_ACCESS to R.id.rowNotifAccess,
         Permission.BATTERY to R.id.rowBatteryOpt,

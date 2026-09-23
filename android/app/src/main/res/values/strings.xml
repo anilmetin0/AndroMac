@@ -56,11 +56,14 @@
     <string name="permission_banner_title">AndroMac needs a permission</string>
     <string name="permission_banner_dismiss">Dismiss</string>
     <string name="permission_banner_notif_access">Notification access is not granted — nothing is mirrored to your Mac.</string>
+    <string name="permission_banner_local_network">Local network access is not granted — the phone cannot reach your Mac.</string>
     <string name="permission_banner_post">Notifications are not allowed — the status and clipboard notifications never appear.</string>
 
     <!-- setup -->
     <string name="setup_notif_title">Notification access</string>
     <string name="setup_notif_note">Required to mirror notifications to your Mac. If you installed the APK from a file the switch may be greyed out; on the app info screen tap ⋮ → Allow restricted settings.</string>
+    <string name="setup_local_network_title">Allow local network access</string>
+    <string name="setup_local_network_note">Without it the phone cannot find or reach your Mac. Android lists it under Nearby devices.</string>
     <string name="setup_post_notif_title">Allow notifications</string>
     <string name="setup_post_notif_note">Without it the status notification and the Mac clipboard notification never appear.</string>
     <string name="setup_battery_title">Battery optimization</string>
