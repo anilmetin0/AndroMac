@@ -37,16 +37,17 @@ object Link {
         internal set
 
     /**
-     * The Mac names the last mDNS browse saw, so the screen can say which Mac a pairing goes to
-     * when there is more than one. Written by [dev.andromac.net.Discovery]
+     * The Macs the last mDNS browse saw, in the order found: Bonjour instance name to the Mac's
+     * own TXT `n` (the instance name until it resolves). The screen says which Mac a pairing goes
+     * to when there is more than one. Written by [dev.andromac.net.Discovery]
      * only while it browses; no extra scan exists for it.
      */
     @Volatile
-    var discoveredMacs: List<String> = emptyList()
+    var discoveredMacs: Map<String, String> = emptyMap()
         private set
 
     /** NSD callbacks can arrive on several threads; the read-modify-write is serialized here. */
-    internal fun setDiscovered(update: (List<String>) -> List<String>) {
+    internal fun setDiscovered(update: (Map<String, String>) -> Map<String, String>) {
         val changed = synchronized(this) {
             val next = update(discoveredMacs)
             (next != discoveredMacs).also { discoveredMacs = next }

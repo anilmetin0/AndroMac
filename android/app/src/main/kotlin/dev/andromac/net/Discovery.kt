@@ -7,10 +7,11 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Log
 import dev.andromac.core.Link
+import dev.andromac.core.MacPick.Peer
 import java.net.InetAddress
 import java.util.ArrayDeque
-import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.Executor
+import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
 /**
@@ -26,13 +27,12 @@ class Discovery(context: Context) {
     private val nsd = app.getSystemService(Context.NSD_SERVICE) as NsdManager
     private val wifi = app.getSystemService(Context.WIFI_SERVICE) as WifiManager
 
-    data class Peer(val host: InetAddress, val port: Int, val name: String)
-
     private var listener: NsdManager.DiscoveryListener? = null
     private var lock: WifiManager.MulticastLock? = null
 
-    /** The first peer resolved this round; [findOne] blocks on it. */
-    private val found = ArrayBlockingQueue<Peer>(1)
+    /** Every Mac resolved this round, by instance name; [browse] wakes on each new one. */
+    private val found = LinkedHashMap<String, Peer>()
+    private val resolved = Semaphore(0)
 
     /**
      * API 29-33 only: NsdManager resolves ONE service at a time. A second concurrent
@@ -53,11 +53,15 @@ class Discovery(context: Context) {
     /** Callbacks may run on the system's own thread; everything they touch is thread-safe. */
     private val direct = Executor { it.run() }
 
-    /** Blocking. Returns the first peer found, or null if none appears within [TIMEOUT_MS]. */
-    fun findOne(): Peer? {
-        found.clear()
-        synchronized(this) { queued.clear(); resolving = false }
-        Link.setDiscovered { emptyList() }
+    /**
+     * Blocking. Browses until [enough] holds for the Macs resolved so far, then [settleMs] more
+     * so a second Mac answering right behind the first is seen too, or until [TIMEOUT_MS].
+     * Returns every Mac resolved in that window.
+     */
+    fun browse(settleMs: Long = 0, enough: (List<Peer>) -> Boolean): List<Peer> {
+        synchronized(this) { found.clear(); queued.clear(); resolving = false }
+        resolved.drainPermits()
+        Link.setDiscovered { emptyMap() }
         // On some devices mDNS multicast packets are filtered out without this lock.
         lock = wifi.createMulticastLock("andromac-mdns").apply { setReferenceCounted(false); acquire() }
 
@@ -71,7 +75,7 @@ class Discovery(context: Context) {
 
             override fun onServiceFound(info: NsdServiceInfo) {
                 // The instance name is the Mac's name (Server.swift advertises deviceName).
-                Link.setDiscovered { (it + info.serviceName).distinct() }
+                Link.setDiscovered { if (info.serviceName in it) it else it + (info.serviceName to info.serviceName) }
                 if (Build.VERSION.SDK_INT >= 34) watch(info) else enqueue(info)
             }
 
@@ -81,9 +85,20 @@ class Discovery(context: Context) {
         listener = l
         return try {
             nsd.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, l)
-            found.poll(TIMEOUT_MS, TimeUnit.MILLISECONDS)
+            val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(TIMEOUT_MS)
+            var until = deadline
+            while (true) {
+                val left = until - System.nanoTime()
+                if (left <= 0) break
+                resolved.tryAcquire(left, TimeUnit.NANOSECONDS)
+                if (until == deadline && enough(peers())) {
+                    if (settleMs <= 0) break
+                    until = minOf(deadline, System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(settleMs))
+                }
+            }
+            peers()
         } catch (e: Exception) {
-            Log.w(Link.TAG, "discovery error", e); null
+            Log.w(Link.TAG, "discovery error", e); peers()
         } finally {
             stop()
         }
@@ -101,6 +116,18 @@ class Discovery(context: Context) {
     private fun nameOf(info: NsdServiceInfo): String =
         info.attributes["n"]?.toString(Charsets.UTF_8) ?: info.serviceName
 
+    private fun peers(): List<Peer> = synchronized(this) { found.values.toList() }
+
+    /** A re-resolve of a known Mac (a new address) replaces it and wakes nobody. */
+    private fun offer(host: InetAddress, info: NsdServiceInfo) {
+        val name = nameOf(info)
+        val fresh = synchronized(this) {
+            found.put(info.serviceName, Peer(host, info.port, info.serviceName, name)) == null
+        }
+        Link.setDiscovered { it + (info.serviceName to name) }
+        if (fresh) resolved.release()
+    }
+
     // ---------------------------------------------------------------- API 34+
 
     /**
@@ -115,9 +142,7 @@ class Discovery(context: Context) {
             }
 
             override fun onServiceUpdated(serviceInfo: NsdServiceInfo) {
-                serviceInfo.hostAddresses.firstOrNull()?.let {
-                    found.offer(Peer(it, serviceInfo.port, nameOf(serviceInfo)))
-                }
+                serviceInfo.hostAddresses.firstOrNull()?.let { offer(it, serviceInfo) }
             }
 
             override fun onServiceLost() = Unit
@@ -157,7 +182,7 @@ class Discovery(context: Context) {
             }
 
             override fun onServiceResolved(i: NsdServiceInfo) {
-                i.host?.let { found.offer(Peer(it, i.port, nameOf(i))) }
+                i.host?.let { offer(it, i) }
                 resolveDone()
             }
         })

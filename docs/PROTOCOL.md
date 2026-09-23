@@ -120,6 +120,10 @@ middle, can choose its input after all the others are known. An attacker gets ex
   "key changed" warning, never a first contact — tapping "Pair" does not drop the pin. **On the
   Mac**, which pins a set of phones, that state does not exist: an unknown key is an unknown
   device and gets the ordinary first-contact prompt (see the multi-device bullet below).
+- **Other Macs on the network.** The phone dials the Mac advertising the paired name first. A
+  mismatching key from a Mac that advertises a different name is somebody else's Mac: it is
+  skipped for the rest of the network session, with no warning. Only a mismatch under the paired
+  name is a "key changed". While unpaired, Pair with two or more Macs in view asks which one.
 - On first contact the connection is **closed** after the handshake; both sides show the SAS and
   wait for confirmation. On a phone-side mismatch the phone hangs up before message 3 and shows
   "key changed" without a code; the Mac shows that attempt's code. After

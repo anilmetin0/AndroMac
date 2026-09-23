@@ -40,6 +40,27 @@
                 <Switch android:id="@+id/swCheck" style="@style/RowSwitch" />
             </LinearLayout>
 
+            <LinearLayout android:id="@+id/rowAuto" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/update_auto" />
+                    <TextView style="@style/RowSubtitle" android:text="@string/update_ready" />
+                </LinearLayout>
+                <Switch android:id="@+id/swAuto" style="@style/RowSwitch" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/rowBeta" style="@style/Row">
+                <TextView
+                    style="@style/RowTitle"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="@string/update_beta" />
+                <Switch android:id="@+id/swBeta" style="@style/RowSwitch" />
+            </LinearLayout>
+
             <LinearLayout android:id="@+id/rowCheckNow" style="@style/Row">
                 <LinearLayout
                     android:layout_width="0dp"
@@ -56,6 +77,16 @@
                     android:src="@drawable/ic_chevron"
                     android:contentDescription="@null" />
             </LinearLayout>
+
+            <!-- The notes of the newer build, English or Turkish, from the release body. -->
+            <TextView
+                android:id="@+id/notes"
+                style="@style/RowSubtitle"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:paddingTop="8dp"
+                android:textIsSelectable="true"
+                android:visibility="gone" />
 
             <!-- Only while a newer build is known: the one action that matters gets the one filled button. -->
             <Button

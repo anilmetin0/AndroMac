@@ -122,12 +122,13 @@ class MainActivity : Activity() {
         render(Link.state)          // permissions may have changed while away in Settings
         offerNotificationAccess()
         // At most daily, and only when the app is opened: the phone never polls (ENERGY rule 1).
-        runUpdateCheckIfDue(store) {
+        // A check that starts now offers when it is done; the stored result may be stale.
+        val checking = runUpdateCheckIfDue(store) {
             if (isFinishing) return@runUpdateCheckIfDue
             renderUpdate()
             offerUpdate()
         }
-        offerUpdate()
+        if (!checking) offerUpdate()
     }
 
     /**
@@ -145,6 +146,14 @@ class MainActivity : Activity() {
         // On rotation the dialog stayed attached to the old activity and leaked its window.
         pairingDialog?.dismiss()
         pairingDialog = null
+        chooserDialog?.dismiss()
+        chooserDialog = null
+        keyDialog?.dismiss()
+        keyDialog = null
+        // A rotation takes the unanswered offer along to the new screen; anything else counts as Later.
+        if (updateDialog?.isShowing == true && isChangingConfigurations) updateOffered = false
+        updateDialog?.dismiss()
+        updateDialog = null
         super.onStop()
     }
 
@@ -185,11 +194,16 @@ class MainActivity : Activity() {
             is Link.State.Searching -> when {
                 NetworkInfo.localIpv4() == null -> getString(R.string.onboarding_step2_none)
                 !paired && Link.discoveredMacs.isNotEmpty() ->
-                    getString(R.string.macs_found, Link.discoveredMacs.joinToString(", "))
+                    getString(R.string.macs_found, Link.discoveredMacs.keys.joinToString(", "))
                 else -> ""
             }
-            // No detail line while unpaired: the guide right below already explains it.
-            Link.State.Stopped -> if (paired) mac else ""
+            // Unpaired: the Macs the last browse saw, never a prompt for one of them.
+            Link.State.Stopped -> when {
+                paired -> mac
+                Link.discoveredMacs.isNotEmpty() ->
+                    getString(R.string.macs_found, Link.discoveredMacs.keys.joinToString(", "))
+                else -> ""
+            }
         }
         detail.visibility = if (detail.text.isEmpty()) View.GONE else View.VISIBLE
 
@@ -216,6 +230,12 @@ class MainActivity : Activity() {
         renderClipboard()
 
         if (state is Link.State.NeedsPairing) confirmPairing(state.peerName, state.sas, state.peerKey)
+        // The Pair tap browsed and found several Macs: let the user pick one.
+        if (state !is Link.State.Searching && state != Link.State.Stopped) awaitingChoice = false
+        if (awaitingChoice && !paired && state == Link.State.Stopped && Link.discoveredMacs.size > 1) {
+            awaitingChoice = false
+            chooseMac()
+        }
     }
 
     /**
@@ -307,7 +327,7 @@ class MainActivity : Activity() {
 
     /** The update card. It reads the stored result, no request here. */
     private fun renderUpdate() {
-        val newer = store.newerRelease(currentVersion(), currentCommit())
+        val newer = newerRelease(store)
         findViewById<View>(R.id.updateCard).visibility = if (newer == null) View.GONE else View.VISIBLE
         if (newer != null) {
             findViewById<TextView>(R.id.updateBody).text = getString(R.string.update_card_body, newer.label)
@@ -315,45 +335,59 @@ class MainActivity : Activity() {
     }
 
     /**
-     * "AndroMac 1.1.0 is available": Install now, Later, or Skip this version.
-     *
-     * Asked once per launch and once per release: a skipped release never comes back, and the
-     * Updates screen still has the button for whoever changes their mind.
+     * The notes with Install now, Later and Skip this version, or a silent install once the user
+     * leaves the app when allowed. Once per process and once per release: Later holds until the
+     * app is next started, a skipped release never comes back, and the Updates screen still has
+     * the button for whoever changes their mind.
      */
     private fun offerUpdate() {
         if (updateOffered || isFinishing) return
-        val release = store.newerRelease(currentVersion(), currentCommit()) ?: return
-        if (release.label == store.updateSkipped) return
-        updateOffered = true
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.update_available_title, release.label))
-            .setMessage(
-                if (release.apk == null) getString(R.string.update_available_page)
-                else getString(R.string.update_available_body)
-            )
-            .setPositiveButton(
-                if (release.apk == null) R.string.update_open_page else R.string.update_install_now
-            ) { _, _ ->
-                if (release.apk == null) openReleasePage(release.url)
-                else startUpdateInstall(store) { if (!isFinishing) renderUpdate() }
-            }
-            .setNegativeButton(R.string.update_later, null)
-            .setNeutralButton(R.string.update_skip) { _, _ -> store.updateSkipped = release.label }
-            .show()
+        updateOffered = offerOrInstallUpdate(store) { updateDialog = it }
     }
 
-    private var updateOffered = false
+    private var updateDialog: AlertDialog? = null
 
     // ---------------------------------------------------------------- pairing
 
     private var pairingDialog: AlertDialog? = null
+    private var chooserDialog: AlertDialog? = null
+    private var keyDialog: AlertDialog? = null
+    /** Pair was tapped with fewer than two Macs known; the browse may still turn up more. */
+    private var awaitingChoice = false
 
     private fun onPairTapped() {
         when (val s = Link.state) {
             is Link.State.NeedsPairing -> confirmPairing(s.peerName, s.sas, s.peerKey)
             is Link.State.KeyChanged -> warnKeyChange(s.peerName, s.sas)
-            else -> LinkService.start(this, if (store.isPaired) LinkService.ACTION_CONNECT else LinkService.ACTION_PAIR)
+            else -> when {
+                store.isPaired -> LinkService.start(this, LinkService.ACTION_CONNECT)
+                Link.discoveredMacs.size > 1 -> chooseMac()
+                else -> {
+                    awaitingChoice = true
+                    LinkService.start(this, LinkService.ACTION_PAIR)
+                }
+            }
         }
+    }
+
+    /**
+     * Several Macs on this network: the chosen one is the only one dialled for pairing. The last
+     * item browses again, for a Mac that was missing or has gone.
+     */
+    private fun chooseMac() {
+        if (chooserDialog?.isShowing == true) return
+        val macs = Link.discoveredMacs.keys.toList()
+        chooserDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.pair_choose_title)
+            .setItems((macs + getString(R.string.pair_search_again)).toTypedArray()) { _, i ->
+                if (i < macs.size) LinkService.start(this, LinkService.ACTION_PAIR, macs[i])
+                else {
+                    awaitingChoice = true
+                    LinkService.start(this, LinkService.ACTION_PAIR)
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun confirmPairing(peerName: String, sas: String, key: ByteArray) {
@@ -374,7 +408,8 @@ class MainActivity : Activity() {
     }
 
     private fun warnKeyChange(peerName: String, sas: String) {
-        AlertDialog.Builder(this)
+        if (keyDialog?.isShowing == true) return
+        keyDialog = AlertDialog.Builder(this)
             .setView(
                 pairingView(
                     R.string.key_changed_title, R.color.am_state_alert, peerName, sas,
@@ -399,8 +434,9 @@ class MainActivity : Activity() {
             if (titleColor != null) setTextColor(getColor(titleColor))
         }
         findViewById<TextView>(R.id.pairPeer).text = peerName
-        // Several Macs on this network: name the others, so it is clear which one this is.
-        val others = Link.discoveredMacs.filter { it != peerName }
+        // Several Macs on this network: name the others, so it is clear which one this is. The
+        // peer is named by its advertised `n`, the list by service name: either may match.
+        val others = Link.discoveredMacs.filter { (service, name) -> service != peerName && name != peerName }.keys
         findViewById<TextView>(R.id.pairOthers).apply {
             text = getString(R.string.pairing_others, others.joinToString(", "))
             visibility = if (others.isEmpty()) View.GONE else View.VISIBLE
@@ -416,5 +452,7 @@ class MainActivity : Activity() {
 
     private companion object {
         const val REQ_POST_NOTIF = 1
+        /** The launch offer was made (or an automatic install started) in this process. */
+        var updateOffered = false
     }
 }

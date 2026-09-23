@@ -28,6 +28,8 @@
         confirms it there, and the system still enforces the signature.
     -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Android 12+: an app updating itself may skip the confirmation dialog (Updater.kt). -->
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
 
     <!--
         "Display over other apps" (ui/Permissions.kt, ClipboardBridge.kt). Nothing is ever drawn
@@ -52,6 +54,7 @@
     </queries>
 
     <application
+        android:name=".App"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"

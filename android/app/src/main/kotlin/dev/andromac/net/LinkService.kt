@@ -19,6 +19,7 @@ import android.os.SystemClock
 import android.util.Log
 import dev.andromac.R
 import dev.andromac.core.Link
+import dev.andromac.core.MacPick
 import dev.andromac.core.NetworkInfo
 import dev.andromac.core.Protocol
 import dev.andromac.core.Session
@@ -70,6 +71,8 @@ class LinkService : Service() {
     @Volatile private var worker: Thread? = null
     /** The user started the pairing flow: turn this round's pin check into a SAS prompt. */
     @Volatile private var pairingRequested = false
+    /** The Bonjour instance the user picked out of several Macs; null pairs with the only one. */
+    @Volatile private var pairTarget: String? = null
 
     private var netCallback: ConnectivityManager.NetworkCallback? = null
     /** The open session. If onDestroy does not close the socket, the read loop lives on for another 300 s. */
@@ -94,7 +97,12 @@ class LinkService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_PAIR -> { pairingRequested = true; restartLadder() }
+            ACTION_PAIR -> {
+                pairTarget = intent.getStringExtra(EXTRA_MAC)
+                pairingRequested = true
+                notOurs.clear()              // "not ours" was measured against the old pin
+                restartLadder()
+            }
             ACTION_CONNECT -> { connectRequested = true; restartLadder() }
         }
         // Never start a second worker: a START_STICKY restart can arrive while the old
@@ -132,6 +140,16 @@ class LinkService : Service() {
     @Volatile private var attempt = 0
     /** True when the socket in hand came from [Store.lastEndpoint] rather than from mDNS. */
     private var dialedFromCache = false
+    /** Browsed Macs not dialled yet this round, best first ([MacPick.dialOrder]). Link thread only. */
+    private val pending = ArrayDeque<MacPick.Peer>()
+    /** The browsed Mac the socket in hand leads to; null for the cached address. */
+    private var dialedPeer: MacPick.Peer? = null
+    /**
+     * Macs on this network that proved they are somebody else's ([MacPick.Peer.id]). They are
+     * not dialled again until the network changes or a new pairing starts. Memory only.
+     */
+    private val notOurs: MutableSet<String> = ConcurrentHashMap.newKeySet()
+    private var notOursNet: String? = null
     /** "Connect now" with auto-connect off: one full attempt, then park again. */
     @Volatile private var connectRequested = false
     private var screenReceiver: BroadcastReceiver? = null
@@ -202,6 +220,8 @@ class LinkService : Service() {
 
             val dialed = dial(discovery)
             if (dialed == null) {
+                // Several Macs and none picked: park until the user chooses one.
+                if (!store.isPaired && !pairingRequested) continue
                 sleepBackoff()
                 continue
             }
@@ -224,6 +244,8 @@ class LinkService : Service() {
                     // The handshake gave a definitive answer, so the flag has done its job.
                     // Leaving it set kept the loop dialling forever after a later unpair.
                     pairingRequested = false
+                    pairTarget = null
+                    pending.clear()
                     Link.macSeenOnNetwork = true
                     store.lastEndpoint = "${s.inetAddress.hostAddress}:${s.port}"
                     store.macNetwork = networkKey()
@@ -235,7 +257,25 @@ class LinkService : Service() {
                 if (macAsleep) backoffIndex = backoff.lastIndex
                 sleepBackoff()
             } catch (e: UntrustedPeerException) {
+                val peer = dialedPeer
+                if (e.pinMismatch && dialedFromCache) {
+                    // The key is unproven on a bare address: the browse decides by the name the
+                    // Mac advertises there, right away (no cached address means it runs).
+                    store.lastEndpoint = null
+                    continue
+                }
+                if (e.pinMismatch && peer != null && MacPick.skipOnMismatch(peer, store.pairedName, pending)) {
+                    // Somebody else's Mac on this Wi-Fi (another name, or ours is still to be
+                    // tried under the same name), not a key change: skip it quietly and for good
+                    // on this network. The next candidate goes now, otherwise the ladder.
+                    notOurs += peer.id
+                    if (pending.isEmpty()) sleepBackoff()
+                    continue
+                }
                 pairingRequested = false
+                pairTarget = null
+                pending.clear()
+                if (!e.pinMismatch) notOurs.clear()   // a new pin is about to be saved
                 Link.setState(
                     if (e.pinMismatch) Link.State.KeyChanged(e.peerName, e.sas)
                     else Link.State.NeedsPairing(e.peerStaticPub, e.peerName, e.sas)
@@ -264,10 +304,16 @@ class LinkService : Service() {
      * A connected socket plus the peer name. The last known address is tried first and the
      * SUCCESSFUL SOCKET IS REUSED: the old version opened a probe socket, closed it, and then
      * dialled again — ENERGY §6 promises exactly one handshake per reconnect. If that address
-     * does not work, it falls back to mDNS (PROTOCOL §1).
+     * does not work, it falls back to mDNS (PROTOCOL §1). Macs left over from the last browse
+     * are dialled before anything else, without a new browse.
      */
     private fun dial(discovery: Discovery): Pair<Socket, String>? {
         dialedFromCache = false
+        dialedPeer = null
+        // "Not ours" holds for one network: somebody else's Mac on this Wi-Fi.
+        networkKey().let { if (it != notOursNet) { notOurs.clear(); pending.clear(); notOursNet = it } }
+        if (attempt == 0) pending.clear()    // a network event or a request: browse afresh
+        if (pending.isNotEmpty()) return dialPending()
         val cached = store.lastEndpoint
         // The cached address belongs to the Mac's own LAN; on another network it is somebody
         // else's host, or nobody's.
@@ -293,10 +339,50 @@ class LinkService : Service() {
             (cached == null || attempt == 0 || (onMacNetwork() && attempt % BROWSE_EVERY == 0))
         attempt++
         if (!browse) return null
-        val peer = discovery.findOne()
-        Link.macSeenOnNetwork = peer != null
-        peer ?: return null
-        return connect(peer.host, peer.port)?.let { it to peer.name }
+        val paired = store.isPaired
+        val name = store.pairedName
+        val target = pairTarget.takeUnless { paired }
+        // Paired: a moment more after the first Mac with our Mac's name, so a neighbour's Mac of the
+        // same name does not hide ours. Pairing with no pick: a longer moment after the first, so
+        // a second Mac is not missed and paired with by accident.
+        val settle = when {
+            target != null -> 0L
+            paired -> PAIRED_SETTLE_MS
+            else -> PAIR_SETTLE_MS
+        }
+        val peers = discovery.browse(settleMs = settle) { found ->
+            when {
+                target != null -> found.any { it.service == target }
+                paired -> found.any { it.id !in notOurs && (name.isEmpty() || it.name == name) }
+                else -> found.isNotEmpty()
+            }
+        }
+        Link.macSeenOnNetwork = peers.isNotEmpty()
+        if (target != null && peers.none { it.service == target }) {
+            // The Mac picked in the chooser did not answer: stop, and let Pair offer the list again.
+            pairingRequested = false
+            pairTarget = null
+            Link.setState(Link.State.Stopped)
+            return null
+        }
+        if (!paired && target == null && Link.discoveredMacs.size > 1) {
+            // Several Macs: the user picks one (MainActivity's chooser); none is dialled on a guess.
+            pairingRequested = false
+            Link.setState(Link.State.Stopped)
+            return null
+        }
+        pending.addAll(MacPick.dialOrder(peers, name, notOurs, target))
+        return dialPending()
+    }
+
+    private fun dialPending(): Pair<Socket, String>? {
+        while (true) {
+            val peer = pending.removeFirstOrNull() ?: return null
+            connect(peer.host, peer.port)?.let {
+                dialedPeer = peer
+                return it to peer.name
+            }
+        }
     }
 
     /**
@@ -396,7 +482,7 @@ class LinkService : Service() {
                 macAsleep = false
                 backoffIndex = 0
                 attempt = 0
-                store.pairedName = msg.optString("name", store.pairedName).take(64)
+                store.pairedName = Store.clip(msg.optString("name", store.pairedName), 64)
                 Link.setState(Link.State.Connected(store.pairedName))
                 note(getString(R.string.fgs_connected, store.pairedName), connected = true)
             }
@@ -573,6 +659,8 @@ class LinkService : Service() {
     companion object {
         const val ACTION_PAIR = "dev.andromac.PAIR"
         const val ACTION_CONNECT = "dev.andromac.CONNECT"
+        /** With [ACTION_PAIR]: the Bonjour instance name the user chose. */
+        const val EXTRA_MAC = "mac"
         const val CHANNEL_STATUS = "status"
         const val CHANNEL_CLIP = "clipboard"
         private const val FGS_ID = 1
@@ -584,13 +672,20 @@ class LinkService : Service() {
         private const val HANDSHAKE_TIMEOUT_MS = 10_000
         /** One mDNS browse per this many failed attempts while an address is cached. */
         private const val BROWSE_EVERY = 4
+        /** Pairing with no Mac picked: how long to keep listening after the first one answers. */
+        private const val PAIR_SETTLE_MS = 1_500L
+        /** Paired: how long to keep listening after the first Mac with our Mac's name answers. */
+        private const val PAIRED_SETTLE_MS = 1_000L
         /** Repeated `onAvailable` events inside this window do not restart the ladder. */
         private const val FLAP_GUARD_MS = 10_000L
         /** The backoff ceiling while the screen is on; 300 s stays for a phone in a pocket. */
         private const val SCREEN_ON_CEILING_MS = 60_000L
 
-        fun start(ctx: Context, action: String? = null) {
-            val i = Intent(ctx, LinkService::class.java).apply { if (action != null) this.action = action }
+        fun start(ctx: Context, action: String? = null, mac: String? = null) {
+            val i = Intent(ctx, LinkService::class.java).apply {
+                if (action != null) this.action = action
+                if (mac != null) putExtra(EXTRA_MAC, mac)
+            }
             ctx.startForegroundService(i)
         }
     }
