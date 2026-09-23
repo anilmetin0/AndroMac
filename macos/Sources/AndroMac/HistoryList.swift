@@ -34,7 +34,7 @@ struct HistoryList: View {
                 EmptyState(
                     symbol: history.entries.isEmpty ? "bell.slash" : "magnifyingglass",
                     message: history.entries.isEmpty
-                        ? String(localized: "No notifications yet.")
+                        ? String(localized: "Notifications from your phone appear here.")
                         : String(localized: "No notifications match your search.")
                 )
             } else {
@@ -42,8 +42,8 @@ struct HistoryList: View {
                 List(filtered) { entry in
                     HistoryRow(entry: entry)
                         .listRowInsets(EdgeInsets(
-                            top: Theme.Space.snug, leading: Theme.Space.medium,
-                            bottom: Theme.Space.snug, trailing: Theme.Space.medium
+                            top: Theme.Space.tight, leading: Theme.Space.small,
+                            bottom: Theme.Space.tight, trailing: Theme.Space.small
                         ))
                 }
                 .listStyle(.inset)
@@ -58,10 +58,10 @@ private struct HistoryRow: View {
     let entry: NotificationHistory.Entry
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            AppIcon(pkg: entry.pkg, fallback: entry.app, size: 28)
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
+        HStack(alignment: .top, spacing: Theme.Space.small) {
+            AppIcon(pkg: entry.pkg, fallback: entry.app, size: 24)
+            VStack(alignment: .leading, spacing: Theme.Space.hair) {
+                HStack(spacing: Theme.Space.tight) {
                     Text(entry.app)
                         .font(Theme.Font.label.weight(.semibold))
                         .foregroundStyle(.secondary)
@@ -82,6 +82,5 @@ private struct HistoryRow: View {
                 }
             }
         }
-        .padding(.vertical, 2)
     }
 }

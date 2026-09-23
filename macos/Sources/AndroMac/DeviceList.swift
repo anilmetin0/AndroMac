@@ -30,11 +30,14 @@ struct DeviceList: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Space.small) {
+            // The tabs are navigation, so they sit on the panel above the card, not inside it.
             if paired.count > 1 { tabs }
             if let device = selected {
-                DeviceCard(device: device, live: state.devices.first { $0.id == device.id })
-                    .id(device.id)
-                    .transition(.opacity)
+                PanelCard {
+                    DeviceCard(device: device, live: state.devices.first { $0.id == device.id })
+                }
+                .id(device.id)
+                .transition(.opacity)
             }
         }
         .animation(.easeOut(duration: 0.18), value: state.focusedDeviceID)
@@ -55,10 +58,12 @@ struct DeviceList: View {
                 }
             }
         }
+        .glassGroup(spacing: Theme.Space.tight)
     }
 }
 
-/// One tab: a status dot and the name, the battery when the phone is reporting one.
+/// One tab: a status dot and the name. The battery shows on the tabs that are NOT open; the open
+/// phone prints its own in the card, so no percentage appears twice.
 private struct DeviceTab: View {
 
     let device: PairedDevice
@@ -68,27 +73,24 @@ private struct DeviceTab: View {
 
     var body: some View {
         Button(action: select) {
-            HStack(spacing: Theme.Space.snug) {
+            HStack(spacing: Theme.Space.tight) {
                 Circle()
                     .fill(DeviceCard.dotColor(device: device, connected: live != nil))
-                    .frame(width: 7, height: 7)
-                Text(AppState.displayName(live?.name ?? device.name) ?? String(localized: "Phone"))
+                    .frame(width: 6, height: 6)
+                Text(DeviceCard.name(device, live))
                     .font(selected ? Theme.Font.label.weight(.semibold) : Theme.Font.label)
                     .lineLimit(1)
-                if let battery = live?.battery {
+                if !selected, let battery = live?.battery, Store.shared.syncBattery {
                     Text("\(battery.level)%")
                         .font(Theme.Font.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
             }
             .padding(.horizontal, Theme.Space.small)
-            .padding(.vertical, Theme.Space.tight + 1)
+            .padding(.vertical, Theme.Space.tight)
             .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.Radius.small)
-                    .fill(selected ? Color.primary.opacity(0.10) : Color.clear)
-            )
-            .contentShape(Rectangle())
+            .contentShape(Capsule())
+            .selectedCapsule(selected)
         }
         .buttonStyle(.plain)
         .foregroundStyle(selected ? .primary : .secondary)
@@ -97,23 +99,31 @@ private struct DeviceTab: View {
     }
 }
 
-/// The selected phone: name and state, battery, the track, ringer and volume, and its buttons.
+/// The selected phone, top to bottom: who and what state, battery, the track, ringer and volume,
+/// then one row of actions. Everything secondary is one click further, in the More menu.
 private struct DeviceCard: View {
 
     let device: PairedDevice
     let live: AppState.DeviceState?
+    @EnvironmentObject private var state: AppState
     @ObservedObject private var mirror = ScreenMirror.shared
 
     private var connected: Bool { live != nil }
 
+    static func name(_ device: PairedDevice, _ live: AppState.DeviceState?) -> String {
+        AppState.displayName(live?.name ?? device.name) ?? String(localized: "Phone")
+    }
+
+    private var title: String { Self.name(device, live) }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Theme.Space.small) {
             header
 
-            // The battery belongs to the device, not to the panel: with two phones, one bar at
-            // the bottom of the card could only ever describe one of them.
+            // The battery belongs to the device, not to the panel: with two phones, one line at
+            // the bottom could only ever describe one of them.
             if let battery = live?.battery, Store.shared.syncBattery {
-                BatteryBar(battery: battery)
+                BatteryLine(battery: battery)
             }
 
             if let media = live?.media, Store.shared.syncMedia {
@@ -124,46 +134,44 @@ private struct DeviceCard: View {
                 PhoneControls(deviceID: device.id, system: system)
             }
 
-            clipboardToggle
-
-            if connected { MirrorStatus(deviceID: device.id, canOpenOnPhone: live?.caps.contains("debugging") == true) }
-
-            HStack(spacing: 12) {
-                Spacer(minLength: 0)
-                if connected { mirrorButton }
-                if connected, live?.caps.contains("system") == true { testNotificationButton }
-                if connected, live?.caps.contains("find_phone") == true { ringButton }
-                connectionButton
+            if connected {
+                MirrorStatus(deviceID: device.id, name: title,
+                             canOpenOnPhone: live?.caps.contains("debugging") == true)
+            } else if !device.paused {
+                // Paired but not here: almost every connection problem is one of these two things.
+                Text("AndroMac must be open on the phone, on the same Wi‑Fi network.")
+                    .font(Theme.Font.label)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+
+            actions
         }
     }
 
+    /// Clicking the name opens this phone's entry in Settings.
     private var header: some View {
-        HStack(spacing: 9) {
-            Circle()
-                .fill(Self.dotColor(device: device, connected: connected))
-                .frame(width: 9, height: 9)
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text(AppState.displayName(live?.name ?? device.name) ?? String(localized: "Phone"))
+        Button {
+            state.showMainWindow(.setting(.devices))
+        } label: {
+            HStack(spacing: Theme.Space.small) {
+                Circle()
+                    .fill(Self.dotColor(device: device, connected: connected))
+                    .frame(width: 8, height: 8)
+                Text(title)
                     .font(Theme.Font.heading)
                     .lineLimit(1)
+                Spacer(minLength: Theme.Space.tight)
                 Text(statusLine)
-                    .font(Theme.Font.caption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-
-            Spacer(minLength: 4)
-
-            if let battery = live?.battery {
-                Text("\(battery.level)%")
-                    .font(Theme.Font.label.monospacedDigit())
-                    .foregroundStyle(.secondary)
-            }
+            .contentShape(Rectangle())
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(device.name), \(statusLine)")
+        .buttonStyle(.plain)
+        .help("Open device settings")
+        .accessibilityLabel("\(title), \(statusLine)")
     }
 
     /// Three states worth telling apart, in the vocabulary Syncthing settled on: a disconnected
@@ -179,85 +187,79 @@ private struct DeviceCard: View {
         return connected ? .green : .orange
     }
 
-    /// Which phones get the Mac's clipboard is a per-device answer, so it belongs on the device.
-    private var clipboardToggle: some View {
-        Toggle(isOn: Binding(
-            get: { device.receivesClipboard },
-            set: { on in Store.shared.updateDevice(id: device.id) { $0.receivesClipboard = on } }
-        )) {
-            Text("Send my clipboard here")
-                .font(Theme.Font.label)
-                .foregroundStyle(.secondary)
+    private var actions: some View {
+        HStack(spacing: Theme.Space.small) {
+            if device.paused {
+                Button("Connect", action: toggleConnection)
+                    .secondaryAction()
+                    .controlSize(.small)
+            }
+            if connected, live?.caps.contains("find_phone") == true {
+                IconButton(symbol: "bell.and.waves.left.and.right",
+                           label: String(localized: "Ring this phone")) {
+                    Task { await Server.shared.send(["t": "find_phone"], to: device.id) }
+                }
+            }
+            // Proves the whole notification chain in one click: the phone posts a notification to
+            // itself, its listener picks it up and it comes back here.
+            if connected, live?.caps.contains("system") == true {
+                IconButton(symbol: "bell.badge",
+                           label: String(localized: "Send a test notification from this phone")) {
+                    Task {
+                        await Server.shared.send(
+                            ["t": "system_control", "cmd": "test_notification"], to: device.id
+                        )
+                    }
+                }
+            }
+            if connected { mirrorButton }
+            Spacer(minLength: 0)
+            more
         }
-        .toggleStyle(.switch)
-        .controlSize(.mini)
-    }
-
-    private var title: String {
-        AppState.displayName(live?.name ?? device.name) ?? String(localized: "Phone")
+        .glassGroup()
     }
 
     private var mirrorButton: some View {
         let running = mirror.phase(device.id) == .running
-        return Button {
+        let label = running ? String(localized: "Stop mirroring") : String(localized: "Mirror this phone's screen")
+        return IconButton(symbol: running ? "rectangle.on.rectangle.slash" : "rectangle.on.rectangle",
+                          label: label, active: running) {
             mirror.toggle(deviceID: device.id, host: live?.host, title: title)
-        } label: {
-            Image(systemName: running ? "rectangle.on.rectangle.slash" : "rectangle.on.rectangle")
-                .font(Theme.Font.body)
-                .foregroundStyle(running ? Color.accentColor : .secondary)
         }
-        .buttonStyle(.plain)
         .disabled(mirror.phase(device.id).busy)
-        .help(running ? String(localized: "Stop mirroring") : String(localized: "Mirror this phone's screen"))
-        .accessibilityLabel(running ? String(localized: "Stop mirroring") : String(localized: "Mirror this phone's screen"))
     }
 
-    private var ringButton: some View {
-        Button {
-            Task { await Server.shared.send(["t": "find_phone"], to: device.id) }
-        } label: {
-            Image(systemName: "bell.and.waves.left.and.right")
-                .font(Theme.Font.body)
-                .foregroundStyle(.secondary)
-        }
-        .buttonStyle(.plain)
-        .help("Ring this phone")
-        .accessibilityLabel("Ring this phone")
-    }
-
-    /// Proves the whole notification chain in one click: the phone posts a notification to itself,
-    /// its listener picks it up and it comes back here. If nothing appears, the missing piece is on
-    /// the phone, which is a far more useful answer than a settings screen full of green ticks.
-    private var testNotificationButton: some View {
-        Button {
-            Task {
-                await Server.shared.send(
-                    ["t": "system_control", "cmd": "test_notification"], to: device.id
-                )
+    /// The per-phone clipboard switch and Disconnect: reachable, but out of the way of a glance.
+    private var more: some View {
+        Menu {
+            // Which phones get the Mac's clipboard is a per-device answer, so it belongs here.
+            Toggle("Send my clipboard here", isOn: Binding(
+                get: { device.receivesClipboard },
+                set: { on in Store.shared.updateDevice(id: device.id) { $0.receivesClipboard = on } }
+            ))
+            Button("Device settings…") { state.showMainWindow(.setting(.devices)) }
+            if !device.paused {
+                Divider()
+                Button("Disconnect", action: toggleConnection)
             }
         } label: {
-            Image(systemName: "bell.badge")
-                .font(Theme.Font.body)
-                .foregroundStyle(.secondary)
+            Image(systemName: "ellipsis")
+                .font(Theme.Font.label)
+                .frame(width: 16, height: 16)
         }
-        .buttonStyle(.plain)
-        .help("Send a test notification from this phone")
-        .accessibilityLabel("Send a test notification")
+        .glassMenu()
+        .help("More")
+        .accessibilityLabel("More")
     }
 
     /// Disconnect hangs up and keeps the phone from coming back; Connect lets it in again.
-    ///
-    /// It used to say "Pause", which is what the flag is called on disk, and people read that as
-    /// "stop syncing for a moment" rather than "hang up now", which is what it does.
-    private var connectionButton: some View {
-        QuietButton(device.paused ? String(localized: "Connect") : String(localized: "Disconnect")) {
-            Store.shared.updateDevice(id: device.id) { $0.paused.toggle() }
-            // Disconnecting has to hang up as well as refuse the next attempt, or the phone stays
-            // on the line until something else drops it. Reconnecting is the phone's job: it
-            // retries on its own backoff (PROTOCOL §1), the Mac only stops turning it away.
-            if Store.shared.device(id: device.id)?.paused == true {
-                Task { await Server.shared.disconnect(device.id) }
-            }
+    private func toggleConnection() {
+        Store.shared.updateDevice(id: device.id) { $0.paused.toggle() }
+        // Disconnecting has to hang up as well as refuse the next attempt, or the phone stays on
+        // the line until something else drops it. Reconnecting is the phone's job: it retries on
+        // its own backoff (PROTOCOL §1), the Mac only stops turning it away.
+        if Store.shared.device(id: device.id)?.paused == true {
+            Task { await Server.shared.disconnect(device.id) }
         }
     }
 }
@@ -269,6 +271,7 @@ private struct DeviceCard: View {
 private struct MirrorStatus: View {
 
     let deviceID: String
+    let name: String
     let canOpenOnPhone: Bool
     @ObservedObject private var mirror = ScreenMirror.shared
     @State private var code = ""
@@ -276,8 +279,8 @@ private struct MirrorStatus: View {
     var body: some View {
         let phase = mirror.phase(deviceID)
         if let message = message(phase) {
-            VStack(alignment: .leading, spacing: Theme.Space.snug) {
-                HStack(alignment: .firstTextBaseline, spacing: Theme.Space.snug) {
+            VStack(alignment: .leading, spacing: Theme.Space.tight) {
+                HStack(alignment: .firstTextBaseline, spacing: Theme.Space.tight) {
                     if phase.busy { ProgressView().controlSize(.mini) }
                     Text(message)
                         .font(Theme.Font.label)
@@ -295,15 +298,13 @@ private struct MirrorStatus: View {
                 }
                 actions(phase)
             }
-            .padding(Theme.Space.small)
-            .background(RoundedRectangle(cornerRadius: Theme.Radius.small).fill(Color.primary.opacity(0.05)))
         }
     }
 
     private func message(_ phase: ScreenMirror.Phase) -> String? {
         switch phase {
         case .idle, .running: return nil
-        case .starting: return String(localized: "Connecting to the phone…")
+        case .starting: return String(localized: "Connecting to \(name)…")
         case .needsDebugging:
             return String(localized: "Turn on Wireless debugging on the phone, or connect it with a USB cable.")
         case .needsPairing:
@@ -318,7 +319,7 @@ private struct MirrorStatus: View {
     private func actions(_ phase: ScreenMirror.Phase) -> some View {
         switch phase {
         case .needsPairing:
-            HStack(spacing: Theme.Space.snug) {
+            HStack(spacing: Theme.Space.small) {
                 TextField("Pairing code", text: $code)
                     .textFieldStyle(.roundedBorder)
                     .font(Theme.Font.body.monospacedDigit())
@@ -367,39 +368,32 @@ private struct PhoneControls: View {
     /// put a hundred messages on the wire for one gesture.
     @State private var dragging: Double?
 
+    /// One row, Control Center style: the ringer mode as a single menu, then the volume.
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            volume
+        HStack(spacing: Theme.Space.small) {
             ringer
-        }
-    }
-
-    private var volume: some View {
-        HStack(spacing: 8) {
-            Image(systemName: level == 0 ? "speaker.slash" : "speaker.wave.2")
-                .font(Theme.Font.label)
+            Image(systemName: "speaker.fill")
+                .font(Theme.Font.caption)
                 .foregroundStyle(.secondary)
-                .frame(width: 16, alignment: .leading)
-
+            // No `step`: a stepped macOS slider draws a tick mark per step. The value is rounded
+            // when it is sent instead.
             Slider(
                 value: Binding(get: { dragging ?? Double(system.volume) },
                                set: { dragging = $0 }),
                 in: 0...Double(max(system.volumeMax, 1)),
-                step: 1,
                 onEditingChanged: { editing in
                     guard !editing, let value = dragging else { return }
                     dragging = nil
                     send("volume", level: Int(value.rounded()))
                 }
             )
-            .controlSize(.mini)
-
-            Text("\(percent)%")
-                .font(Theme.Font.caption.monospacedDigit())
+            .controlSize(.small)
+            .accessibilityLabel("Phone volume")
+            .accessibilityValue("\(percent)%")
+            Image(systemName: "speaker.wave.3.fill")
+                .font(Theme.Font.caption)
                 .foregroundStyle(.secondary)
-                .frame(width: 30, alignment: .trailing)
         }
-        .accessibilityLabel("Phone volume")
     }
 
     private var level: Int { Int((dragging ?? Double(system.volume)).rounded()) }
@@ -408,46 +402,43 @@ private struct PhoneControls: View {
         system.volumeMax > 0 ? level * 100 / system.volumeMax : 0
     }
 
-    private var ringer: some View {
-        HStack(spacing: 6) {
-            ringerButton("normal", symbol: "bell", label: String(localized: "Ring"))
-            ringerButton("vibrate", symbol: "iphone.radiowaves.left.and.right",
-                         label: String(localized: "Vibrate"))
-            ringerButton("silent", symbol: "bell.slash", label: String(localized: "Silent"))
-            Spacer(minLength: 0)
-            if !system.canSilence {
-                // Android refuses a silent ringer to an app without Do Not Disturb access, so say
-                // where the switch is instead of letting the button fail quietly.
-                Text("Allow Do Not Disturb access on the phone to silence it")
-                    .font(Theme.Font.micro)
-                    .foregroundStyle(.tertiary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
+    private static let modes: [(mode: String, symbol: String, label: LocalizedStringKey)] = [
+        ("normal", "bell", "Ring"),
+        ("vibrate", "iphone.radiowaves.left.and.right", "Vibrate"),
+        ("silent", "bell.slash", "Silent"),
+    ]
+
+    private var current: (mode: String, symbol: String, label: LocalizedStringKey) {
+        Self.modes.first { $0.mode == system.ringer } ?? Self.modes[0]
     }
 
-    private func ringerButton(_ mode: String, symbol: String, label: String) -> some View {
-        let selected = system.ringer == mode
-        // Silencing is the one mode that needs the extra grant; the other two always work.
-        let enabled = mode == "normal" || mode == "vibrate" || system.canSilence
-        return Button {
-            send("ringer", mode: mode)
+    private var ringer: some View {
+        Menu {
+            ForEach(Self.modes, id: \.mode) { option in
+                Toggle(isOn: Binding(
+                    get: { system.ringer == option.mode },
+                    set: { if $0 { send("ringer", mode: option.mode) } }
+                )) {
+                    Label(option.label, systemImage: option.symbol)
+                }
+                // Silencing is the one mode that needs the extra grant; the other two always work.
+                .disabled(option.mode == "silent" && !system.canSilence)
+            }
+            if !system.canSilence {
+                Divider()
+                // Android refuses a silent ringer to an app without Do Not Disturb access, so say
+                // where the switch is instead of letting the item fail quietly.
+                Text("Allow Do Not Disturb access on the phone to silence it")
+            }
         } label: {
-            Image(systemName: symbol)
+            Image(systemName: current.symbol)
                 .font(Theme.Font.label)
-                .frame(width: 26, height: 20)
-                .background(
-                    RoundedRectangle(cornerRadius: Theme.Radius.small)
-                        .fill(selected ? Color.accentColor.opacity(0.85) : Color.secondary.opacity(0.14))
-                )
-                .foregroundStyle(selected ? Color.white : Color.secondary)
+                .frame(width: 16, height: 16)
         }
-        .buttonStyle(.plain)
-        .disabled(!enabled)
-        .opacity(enabled ? 1 : 0.4)
-        .help(label)
-        .accessibilityLabel(label)
+        .glassMenu()
+        .help("Ringer")
+        .accessibilityLabel("Ringer")
+        .accessibilityValue(current.label)
     }
 
     /// The message is built inside the task: a dictionary of `Any` cannot cross an actor boundary,

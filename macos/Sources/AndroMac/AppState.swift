@@ -1,4 +1,5 @@
 import AndroMacKit
+import AppKit
 import Foundation
 import SwiftUI
 
@@ -168,6 +169,28 @@ final class AppState: ObservableObject {
     /// The scene's `openWindow` for the main window, handed over by the menu bar label so the
     /// AppKit side (the status item's right-click menu) can open it too.
     var openMainWindow: (() -> Void)?
+
+    /// Bring the main window up on `tab`. In an LSUIElement (accessory) app this does not work in a
+    /// single call; the order matters: Dock policy first, then activation, then the window, then
+    /// making it key. When the window closes, AppDelegate returns the policy to .accessory.
+    /// Settings, on the section last shown if the window was already there.
+    func showSettings() {
+        if case .setting = requestedTab { showMainWindow(requestedTab) } else { showMainWindow(.settings) }
+    }
+
+    func showMainWindow(_ tab: MainWindow.Tab) {
+        requestedTab = tab
+        Task { @MainActor in
+            NSApp.setActivationPolicy(.regular)
+            try? await Task.sleep(for: .milliseconds(100))
+            NSApp.activate(ignoringOtherApps: true)
+            openMainWindow?()
+            try? await Task.sleep(for: .milliseconds(200))
+            NSApp.windows
+                .first { $0.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true }?
+                .makeKeyAndOrderFront(nil)
+        }
+    }
     /// Published separately so the menu bar label is redrawn.
     @Published var showBatteryInMenuBar: Bool = Store.shared.showBatteryInMenuBar {
         didSet { Store.shared.showBatteryInMenuBar = showBatteryInMenuBar }
@@ -197,7 +220,7 @@ final class AppState: ObservableObject {
     /// The second line: which device, or why. Hidden when there is nothing to say.
     var subheadline: String? {
         if Store.shared.keychainDenied {
-            return String(localized: "Keychain access denied — restart the app and allow it")
+            return String(localized: "Keychain access denied. Restart the app and allow it.")
         }
         switch status {
         case .connected(let name): return AppState.displayName(name)
