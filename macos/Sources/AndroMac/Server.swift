@@ -232,7 +232,8 @@ actor Server {
 
             sessions[deviceID] = session
             Store.shared.updateDevice(id: deviceID) { $0.lastSeen = Date() }
-            serveTasks[deviceID] = Task { await self.serve(session, id: deviceID) }
+            let address = Self.ipv4(host)
+            serveTasks[deviceID] = Task { await self.serve(session, id: deviceID, address: address) }
         } catch let WireError.untrusted(key, name, sas, isFirstDevice) {
             // An untrusted peer does not touch the current session; the user is simply asked.
             NSLog("AndroMac: pairing required, SAS %@", sas)
@@ -245,21 +246,32 @@ actor Server {
     /// RFC 1918 / link-local / ULA / loopback. A peer that gives a name (DNS) is not assumed to be
     /// local: on incoming connections the endpoint is always an IP.
     private static func isPrivate(_ host: NWEndpoint.Host) -> Bool {
+        if let v4 = v4Bytes(host) { return isPrivateV4(v4) }
+        guard case .ipv6(let a) = host else { return false }
+        if a.isLoopback || a.isLinkLocal { return true }
+        let b = [UInt8](a.rawValue)
+        return b.count == 16 && (b[0] & 0xFE) == 0xFC     // fc00::/7 (ULA)
+    }
+
+    /// The four IPv4 bytes, also when the peer arrives as `::ffff:a.b.c.d`, which is how an IPv4
+    /// peer can appear on a dual-stack listener. Nil for a real IPv6 address.
+    private static func v4Bytes(_ host: NWEndpoint.Host) -> [UInt8]? {
         switch host {
         case .ipv4(let a):
-            return isPrivateV4([UInt8](a.rawValue))
-        case .ipv6(let a):
-            if a.isLoopback || a.isLinkLocal { return true }
             let b = [UInt8](a.rawValue)
-            guard b.count == 16 else { return false }
-            // ::ffff:a.b.c.d — how an IPv4 peer can appear on a dual-stack listener.
-            if b[0..<10].allSatisfy({ $0 == 0 }), b[10] == 0xFF, b[11] == 0xFF {
-                return isPrivateV4(Array(b[12...]))
-            }
-            return (b[0] & 0xFE) == 0xFC                  // fc00::/7 (ULA)
+            return b.count == 4 ? b : nil
+        case .ipv6(let a):
+            let b = [UInt8](a.rawValue)
+            guard b.count == 16, b[0..<10].allSatisfy({ $0 == 0 }), b[10] == 0xFF, b[11] == 0xFF else { return nil }
+            return Array(b[12...])
         default:
-            return false
+            return nil
         }
+    }
+
+    /// The peer's IPv4 address as text, unwrapping `::ffff:a.b.c.d`. adb lists phones by IPv4.
+    private static func ipv4(_ host: NWEndpoint.Host) -> String? {
+        v4Bytes(host)?.map(String.init).joined(separator: ".")
     }
 
     private static func isPrivateV4(_ b: [UInt8]) -> Bool {
@@ -327,12 +339,12 @@ actor Server {
         }
     }
 
-    private func serve(_ session: Session, id deviceID: String) async {
+    private func serve(_ session: Session, id deviceID: String, address: String?) async {
         let store = Store.shared
         let name = store.device(id: deviceID)?.name ?? ""
         await MainActor.run {
             AppState.shared.focusedDeviceID = deviceID
-            AppState.shared.update(deviceID: deviceID, name: name) { _ in }
+            AppState.shared.update(deviceID: deviceID, name: name) { $0.host = address }
             LinkStats.shared.sessionStarted()
         }
 
@@ -470,11 +482,13 @@ actor Server {
                     ? clip(msg["ringer"], 16) : "normal",
                 volume: min(Swift.max(msg["volume"] as? Int ?? 0, 0), max),
                 volumeMax: max,
-                canSilence: msg["can_silence"] as? Bool ?? false
+                canSilence: msg["can_silence"] as? Bool ?? false,
+                wirelessDebugging: msg["wireless_debugging"] as? Bool ?? false
             )
             let systemName = Store.shared.device(id: deviceID)?.name ?? ""
             await MainActor.run {
                 AppState.shared.update(deviceID: deviceID, name: systemName) { $0.system = system }
+                ScreenMirror.shared.phoneReported(deviceID: deviceID, wirelessDebugging: system.wirelessDebugging)
             }
 
         case "notification":

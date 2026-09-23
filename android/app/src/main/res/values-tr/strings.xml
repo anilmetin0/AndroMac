@@ -260,6 +260,10 @@
     <string name="clip_request_action">Panoyu gönder</string>
     <string name="test_notification_title">AndroMac testi</string>
     <string name="test_notification_body">Bu Mac\'inize ulaştıysa bildirim aktarımı çalışıyor.</string>
+    <string name="channel_mirror">Ekran yansıtma</string>
+    <string name="mirror_debugging_title">Kablosuz hata ayıklamayı açın</string>
+    <string name="mirror_debugging_body">Mac\'inizin bu ekranı gösterebilmesi için gerekli. Ayarı açmak için dokunun.</string>
+    <string name="mirror_developer_body">Mac\'inizin bu ekranı göstermesi için Kablosuz hata ayıklama gerekli. Önce Geliştirici seçeneklerini açmak için Derleme numarasına 7 kez dokunun.</string>
     <string name="clip_sent">Mac\'e gönderildi</string>
     <string name="clip_sent_from_clipboard">Pano Mac\'e gönderildi</string>
     <string name="clip_pasted">Panoya kopyalandı</string>

@@ -31,6 +31,10 @@ struct SettingsList: View {
     @ObservedObject private var updates = UpdateCheck.shared
     @ObservedObject private var updater = Updater.shared
     @State private var updateCheck = Store.shared.updateCheck
+    @State private var mirrorAudio = Store.shared.mirrorAudio
+    @State private var mirrorScreenOff = Store.shared.mirrorScreenOff
+    @State private var mirrorStayAwake = Store.shared.mirrorStayAwake
+    @State private var mirrorMaxSize = Store.shared.mirrorMaxSize
 
     var body: some View {
         // A sidebar instead of one long scroll: eleven sections were past the point where a
@@ -51,6 +55,7 @@ struct SettingsList: View {
                 case .clipboard: clipboard
                 case .notifications: notifications
                 case .files: files
+                case .mirroring: mirroring
                 case .devices: devices
                 case .permissions: permissions
                 case .network: network
@@ -200,6 +205,37 @@ struct SettingsList: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
+
+    private var mirroring: some View {
+        Section("Screen mirroring") {
+            Toggle("Play the phone's sound on the Mac", isOn: $mirrorAudio)
+                .onChange(of: mirrorAudio) { _, v in Store.shared.mirrorAudio = v }
+            Toggle("Turn off the phone's screen while mirroring", isOn: $mirrorScreenOff)
+                .onChange(of: mirrorScreenOff) { _, v in Store.shared.mirrorScreenOff = v }
+            Toggle("Keep the phone awake while plugged in", isOn: $mirrorStayAwake)
+                .onChange(of: mirrorStayAwake) { _, v in Store.shared.mirrorStayAwake = v }
+            Picker("Resolution", selection: $mirrorMaxSize) {
+                Text("Full").tag(0)
+                Text("1920").tag(1920)
+                Text("1280").tag(1280)
+                Text("1024").tag(1024)
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: mirrorMaxSize) { _, v in Store.shared.mirrorMaxSize = v }
+            LabeledContent("scrcpy", value: mirrorTools)
+            Text("Uses Wireless debugging or a USB cable. Turn Wireless debugging off on the phone when you no longer need it.")
+                .font(Theme.Font.label)
+                .foregroundStyle(.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    /// Where the running copy of scrcpy comes from, so a bug report can say. Looked up when the
+    /// settings open, not on every redraw: it stats a handful of paths.
+    @State private var mirrorTools: String = {
+        guard let tools = ScreenMirror.Tools.find() else { return String(localized: "Not installed") }
+        return tools.server == nil ? tools.scrcpy.path : String(localized: "Included")
+    }()
 
     private var updatesSection: some View {
         Section("Updates") {
@@ -497,8 +533,8 @@ struct SettingsList: View {
 
 /// The sidebar entries, in display order.
 enum SettingsSection: String, CaseIterable, Identifiable {
-    case general, sync, clipboard, notifications, files, devices, permissions, network, updates,
-         metrics, privacy
+    case general, sync, clipboard, notifications, files, mirroring, devices, permissions, network,
+         updates, metrics, privacy
 
     var id: String { rawValue }
 
@@ -509,6 +545,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .clipboard: return "Clipboard"
         case .notifications: return "Notifications"
         case .files: return "Files"
+        case .mirroring: return "Screen mirroring"
         case .devices: return "Devices"
         case .permissions: return "Permissions"
         case .network: return "Network"
@@ -525,6 +562,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .clipboard: return "doc.on.clipboard"
         case .notifications: return "bell"
         case .files: return "arrow.up.doc"
+        case .mirroring: return "rectangle.on.rectangle"
         case .devices: return "iphone"
         case .permissions: return "checkmark.shield"
         case .network: return "network"

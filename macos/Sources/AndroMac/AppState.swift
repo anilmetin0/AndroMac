@@ -50,6 +50,8 @@ final class AppState: ObservableObject {
         var volume: Int
         var volumeMax: Int
         var canSilence: Bool
+        /// Wireless debugging is on, so screen mirroring can reach the phone without a cable.
+        var wirelessDebugging: Bool = false
 
         var fraction: Double {
             volumeMax > 0 ? Double(volume) / Double(volumeMax) : 0
@@ -85,6 +87,8 @@ final class AppState: ObservableObject {
         var caps: Set<String> = []
         var lastClipboard: String = ""
         var system: PhoneSystem?
+        /// The IPv4 address the session came from. Screen mirroring finds the phone in adb by it.
+        var host: String?
     }
 
     /// The phones with a live session, in the order they connected.
