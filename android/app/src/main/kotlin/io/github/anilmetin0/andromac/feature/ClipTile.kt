@@ -33,7 +33,8 @@ class ClipTile : TileService() {
                 )
             )
         } else {
-            @Suppress("DEPRECATION")
+            // Below 34 the PendingIntent overload does not exist; the Intent one is gated here.
+            @Suppress("DEPRECATION", "StartActivityAndCollapseDeprecated")
             startActivityAndCollapse(intent)
         }
     }
