@@ -60,6 +60,7 @@ Quick Share ile karşılaştırmasını anlatır.
 
 ```bash
 brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
+brew trust anilmetin0/andromac
 brew install --cask andromac
 xattr -dr com.apple.quarantine /Applications/AndroMac.app
 ```

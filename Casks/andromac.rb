@@ -1,22 +1,26 @@
-# One rolling release per version, rebuilt from every push to main; the DMG is found on the
-# latest release through the GitHub API, so nothing here needs a CI bump. The checksum is not
-# pinned because the build changes on every push; SHA256SUMS.txt on the release page carries it.
-# Apple Silicon only: CI builds arm64 and there is no Intel build.
+# One rolling release per version, rebuilt from every push to main. The version here must equal
+# the VERSION file (CI checks it); a rebuild of the same version keeps the same file name, so the
+# checksum is not pinned and SHA256SUMS.txt on the release page carries it. The app updates
+# itself between builds. Apple Silicon only: CI builds arm64 and there is no Intel build.
 #
 #   brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
+#   brew trust anilmetin0/andromac
 #   brew install --cask andromac
-#   brew upgrade --cask --greedy-latest andromac   # pick up a newer build
 cask "andromac" do
-  version :latest
+  version "1.1.0"
   sha256 :no_check
 
-  url "https://api.github.com/repos/anilmetin0/AndroMac/releases/latest" do |page|
-    page[%r{https://github\.com/anilmetin0/AndroMac/releases/download/[^"]+-macOS-arm64\.dmg}]
-  end
+  url "https://github.com/anilmetin0/AndroMac/releases/download/v#{version}/AndroMac-#{version}-macOS-arm64.dmg"
   name "AndroMac"
   desc "Sync battery, clipboard, notifications, media and files with Android phones"
   homepage "https://github.com/anilmetin0/AndroMac"
 
+  livecheck do
+    url :url
+    strategy :github_latest
+  end
+
+  auto_updates true
   depends_on arch: :arm64
   depends_on macos: :sonoma
 

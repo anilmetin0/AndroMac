@@ -53,8 +53,9 @@ page directly.
 
 ## Homebrew and Obtainium
 
-- `Casks/andromac.rb` uses `version :latest` and finds the current DMG on the latest release
-  through the GitHub API, so it needs no edit when a build or a version changes. The checksum is
+- `Casks/andromac.rb` carries the version and downloads
+  `releases/download/v<VERSION>/AndroMac-<VERSION>-macOS-arm64.dmg`. It changes with `VERSION`,
+  and CI fails when the two disagree; a rebuild of the same version needs no edit. The checksum is
   not pinned (`sha256 :no_check`) because every push changes the DMG; `SHA256SUMS.txt` on the
   release page carries it. Users pick up a newer build with
   `brew upgrade --cask --greedy-latest andromac`.

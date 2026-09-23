@@ -17,8 +17,8 @@ version gets a new section.
 > - **Android:** install the 1.1.0 APK, pair it with your Mac again, then uninstall the old
 >   AndroMac. Until you do, both sit side by side on the phone.
 > - **Mac:** the 1.0 updater cannot install this build. Download the DMG and replace the app, or
->   run `brew upgrade --cask --greedy-latest andromac`, then follow the
->   [install steps](https://github.com/anilmetin0/AndroMac#install). Your settings carry over.
+>   reinstall with Homebrew following the [install steps](https://github.com/anilmetin0/AndroMac#install).
+>   Your settings carry over.
 >   Once the new phone app is paired, forget the old entry in Settings → Devices.
 
 ### Added

@@ -17,9 +17,8 @@ açar.
 > - **Android:** 1.1.0 APK'sını kur, Mac'inle yeniden eşleştir, sonra eski AndroMac'i kaldır.
 >   Kaldırana kadar ikisi telefonda yan yana durur.
 > - **Mac:** 1.0'ın güncelleyicisi bu paketi kuramaz. DMG'yi indirip uygulamanın üzerine koy ya da
->   `brew upgrade --cask --greedy-latest andromac` çalıştır, ardından
 >   [kurulum adımlarını](https://github.com/anilmetin0/AndroMac/blob/main/README.tr.md#kurulum)
->   izle. Ayarların olduğu gibi kalır. Yeni telefon uygulamasını eşleştirince eski kaydı
+>   izleyerek Homebrew ile yeniden kur. Ayarların olduğu gibi kalır. Yeni telefon uygulamasını eşleştirince eski kaydı
 >   Ayarlar → Cihazlar'dan unut.
 
 ### Eklenenler
