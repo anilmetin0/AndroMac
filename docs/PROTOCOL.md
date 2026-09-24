@@ -513,7 +513,7 @@ These rules are part of the protocol, and both implementations must follow them:
 7. App icons are sent once per package for their lifetime (`icon_request` / `app_icon`). A
    notification's picture (`img`) goes only for the full tier, only when it changed for that
    notification, and never above 96 KiB.
-8. Notification sending is delayed by 50 ms. Apps can update a notification several times per
+8. Notification sending is delayed by 300 ms. Apps can update a notification several times per
    second (download percentage, a "typing" indicator). Repeats inside that window collapse into a
    single send, and anything deleted before the window closes is never sent.
 9. Existing notifications sent when the connection comes up are marked `silent=true`, so a

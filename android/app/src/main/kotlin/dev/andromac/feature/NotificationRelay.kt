@@ -303,7 +303,7 @@ class NotificationRelay : NotificationListenerService() {
     private val sentImages = NotificationImage.Sent()
 
     companion object {
-        private const val COALESCE_MS = 50L
+        private const val COALESCE_MS = 300L
         private const val PICTURE_EDGE = NotificationImage.PICTURE_EDGE
         private const val AVATAR_EDGE = NotificationImage.AVATAR_EDGE
 

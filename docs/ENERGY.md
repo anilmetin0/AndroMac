@@ -21,7 +21,7 @@ Every design decision was made against the question "who wakes up, and how often
 | 4 | The mDNS browse is off while connected, because continuous multicast browsing costs measurable battery. Browsing runs only when there is no connection, and for at most 8 s. A paired phone stops 1 s after its own Mac answers, so a neighbour with the same name is seen too. | `Discovery.kt` / `LinkService.PAIRED_SETTLE_MS` |
 | 5 | Reconnection is triggered by events: `ConnectivityManager.NetworkCallback` wakes it when the network returns. The backoff is 1, 2, 5, 15, 60, then 300 s. | `LinkService.kt` |
 | 6 | The last successful `ip:port` is stored and tried before mDNS, so most reconnections take a single TCP SYN. | `Store.lastEndpoint` |
-| 7 | Notification sending is delayed by 50 ms and coalesced. Rapidly updated notifications collapse into one packet, and deleted ones are never sent. | `NotificationRelay.schedule` |
+| 7 | Notification sending is delayed by 300 ms and coalesced. Rapidly updated notifications collapse into one packet (an app that posts the text and then the sender's photo arrives once, whole), and deleted ones are never sent. | `NotificationRelay.schedule` |
 | 8 | Silent notifications (channel importance < DEFAULT) are not sent at all by default, since a notification that makes no sound on the phone is not worth waking the radio for. | `NotificationRelay.send` (structural filter in `isRelayable`) |
 | 9 | If "only while the phone is locked" is selected, nothing is sent while the phone is in use. | `NotificationRelay.send` |
 | 10 | There is no wakelock. The foreground service keeps the connection up and leaves the CPU free to sleep. | `LinkService.kt` |
@@ -40,7 +40,7 @@ Every design decision was made against the question "who wakes up, and how often
 | 23 | Turning the screen on dials only on the Mac's network, and the cached address is only tried there. | `LinkService` screen receiver, `dial` |
 | 24 | Only a volume or Wireless debugging setting wakes `SystemBridge`, and a media update that only changes the position schedules nothing. | `SystemBridge.settingsWatcher`, `MediaBridge.callback` |
 | 25 | A replayed notification the Mac already shows is dropped on the Mac before the icon copy and the history write, so a reconnect costs the Mac almost nothing. The histories are written at most once a second. | `NotificationMirror.show`, `ClipboardHistory.record` |
-| 26 | A notification's picture goes only on the full tier, only when it changed, and never above 96 KiB. There is one picture per notification (the big picture, else the last chat photo, else the large icon), scaled to 512 px (128 px for an avatar) and JPEG encoded on the relay thread inside the 50 ms window. The phone keeps a digest of the scaled pixels per key, so an identical re-post, a text-only update or a reconnect sends no picture again. The title-only and off tiers never send one. | `NotificationRelay.newPicture`, `NotificationImage.kt` |
+| 26 | A notification's picture goes only on the full tier, only when it changed, and never above 96 KiB. There is one picture per notification (the big picture, else the last chat photo, else the large icon), scaled to 512 px (128 px for an avatar) and JPEG encoded on the relay thread inside the 300 ms window. The phone keeps a digest of the scaled pixels per key, so an identical re-post, a text-only update or a reconnect sends no picture again. The title-only and off tiers never send one. | `NotificationRelay.newPicture`, `NotificationImage.kt` |
 
 ## Costs deliberately pushed onto the Mac
 

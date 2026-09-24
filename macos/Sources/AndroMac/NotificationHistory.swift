@@ -97,7 +97,21 @@ final class NotificationHistory: ObservableObject {
         return ok ? name : nil
     }
 
-    func add(_ entry: Entry) {
+    /// The web address in the entry's text, for the Open link button (WebLink).
+    static func link(_ entry: Entry) -> URL? { WebLink.find(in: entry.title + "\n" + entry.text) }
+
+    func add(_ entry: Entry, silent: Bool = false) {
+        // A silent update of one already listed (the replay on every reconnect, a picture that
+        // arrived late) changes it in place: it keeps its time and its row, so the list does not
+        // jump and an old notification does not come back as "now".
+        if silent, let index = entries.firstIndex(where: { $0.id == entry.id }) {
+            let old = entries[index]
+            entries[index] = Entry(id: entry.id, app: entry.app, pkg: entry.pkg, title: entry.title,
+                                   text: entry.text, date: old.date, image: entry.image)
+            if let image = old.image, image != entry.image { deleteImages([image]) }
+            scheduleSave()
+            return
+        }
         // When the same notification is updated (same key), the new one replaces the old.
         var dropped = entries.filter { $0.id == entry.id }
         entries.removeAll { $0.id == entry.id }
