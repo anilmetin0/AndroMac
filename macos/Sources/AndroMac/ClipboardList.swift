@@ -9,6 +9,7 @@ struct ClipboardList: View {
     @State private var query = ""
     @State private var autoSend = Store.shared.clipboardAutoSend
     @State private var copied: UUID?
+    @State private var confirmClear = false
 
     private var filtered: [ClipboardHistory.Entry] {
         let q = query.trimmingCharacters(in: .whitespaces).lowercased()
@@ -65,9 +66,13 @@ struct ClipboardList: View {
                 .padding(.vertical, Theme.Space.small)
         }
         .searchable(text: $query, prompt: "Search clipboard history")
+        .navigationSubtitle(query.isEmpty ? Text(verbatim: "") : Text("\(filtered.count) / \(history.entries.count)"))
         .toolbar {
-            Button("Clear") { history.clear() }
+            Button("Clear") { confirmClear = true }
                 .disabled(history.entries.isEmpty)
+        }
+        .confirmationDialog("Clear the clipboard history?", isPresented: $confirmClear) {
+            Button("Clear", role: .destructive) { history.clear() }
         }
     }
 }
@@ -86,23 +91,25 @@ private struct ClipboardRow: View {
                     .frame(width: 14, height: 14)
                     .padding(.top, Theme.Space.hair)
                     .help(entry.direction.label)
+                    .accessibilityLabel(entry.direction.label)
 
                 VStack(alignment: .leading, spacing: Theme.Space.hair) {
                     Text(entry.preview)
                         .font(Theme.Font.body)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
-                    Text(entry.date.formatted(date: .abbreviated, time: .shortened))
-                        .font(Theme.Font.caption)
-                        .foregroundStyle(.tertiary)
+                    RelativeTime(date: entry.date)
+                        .font(Theme.Font.label)
+                        .foregroundStyle(.secondary)
                 }
 
                 Spacer(minLength: Theme.Space.small)
 
                 // The one moment of feedback: a brief confirmation on click, then it fades away.
-                Image(systemName: justCopied ? "checkmark.circle.fill" : "arrow.down.doc")
+                Image(systemName: justCopied ? "checkmark.circle.fill" : "doc.on.doc")
                     .font(Theme.Font.label)
-                    .foregroundStyle(justCopied ? Color.green : Color.secondary.opacity(0.5))
+                    .foregroundStyle(justCopied ? Color.green : Color.secondary)
+                    .accessibilityHidden(true)
                     .animation(.easeOut(duration: 0.18), value: justCopied)
             }
             .contentShape(Rectangle())

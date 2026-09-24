@@ -6,7 +6,6 @@
 "%@, %@" = "%@, %@";
 "%lld" = "%lld";
 "%lld / %lld" = "%lld / %lld";
-"%lld apps" = "%lld apps";
 "%lld entries" = "%lld entries";
 "%lld h %lld min" = "%lld h %lld min";
 "%lld min" = "%lld min";
@@ -53,6 +52,8 @@
 "Checking…" = "Checking…";
 "Choose a phone" = "Choose a phone";
 "Clear" = "Clear";
+"Clear the clipboard history?" = "Clear the clipboard history?";
+"Clear the notification history?" = "Clear the notification history?";
 "Clipboard" = "Clipboard";
 "Connect" = "Connect";
 "Connect a phone" = "Connect a phone";
@@ -77,14 +78,16 @@
 "Dismiss" = "Dismiss";
 "Downloading AndroMac %@… %lld%%" = "Downloading AndroMac %@… %lld%%";
 "Downloading… %lld%%" = "Downloading… %lld%%";
+"Every phone has to pair again. The notification and clipboard histories are cleared." = "Every phone has to pair again. The notification and clipboard histories are cleared.";
 "Everything stays on your local network, end-to-end encrypted. The optional update check is the only exception." = "Everything stays on your local network, end-to-end encrypted. The optional update check is the only exception.";
 "File received" = "File received";
 "Files" = "Files";
 "Files are saved to Downloads. Auto-accept applies to every paired phone." = "Files are saved to Downloads. Auto-accept applies to every paired phone.";
 "Forget" = "Forget";
 "Forget all devices" = "Forget all devices";
-"Full" = "Full";
+"Forget all devices?" = "Forget all devices?";
 "full" = "full";
+"Full" = "Full";
 "General" = "General";
 "Get the app on the phone" = "Get the app on the phone";
 "History" = "History";

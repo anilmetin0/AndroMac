@@ -512,9 +512,12 @@ struct FileConsentView: View {
             }
 
             HStack(spacing: Theme.Space.small) {
-                Image(systemName: "doc")
-                    .font(.system(size: 22))
-                    .foregroundStyle(.secondary)
+                // The type's own Finder icon, looked up by extension only: nothing is on disk yet.
+                Image(nsImage: NSWorkspace.shared.icon(
+                    for: UTType(filenameExtension: (name as NSString).pathExtension) ?? .data))
+                    .resizable()
+                    .frame(width: 32, height: 32)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(name)
                         .font(Theme.Font.body.weight(.medium))

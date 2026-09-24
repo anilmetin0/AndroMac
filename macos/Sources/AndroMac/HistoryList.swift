@@ -7,6 +7,7 @@ struct HistoryList: View {
 
     @ObservedObject private var history = NotificationHistory.shared
     @State private var query = ""
+    @State private var confirmClear = false
 
     private var filtered: [NotificationHistory.Entry] {
         let q = query.trimmingCharacters(in: .whitespaces).lowercased()
@@ -42,14 +43,21 @@ struct HistoryList: View {
             }
         }
         .searchable(text: $query, prompt: "Search app, title or text")
-        .navigationSubtitle(Text("\(filtered.count) / \(history.entries.count)"))
+        // A count says something only while a search narrows the list.
+        .navigationSubtitle(query.isEmpty ? Text(verbatim: "") : Text("\(filtered.count) / \(history.entries.count)"))
         .toolbar {
-            Button("Clear") { history.clear() }
+            Button("Clear") { confirmClear = true }
                 .disabled(history.entries.isEmpty)
+        }
+        .confirmationDialog("Clear the notification history?", isPresented: $confirmClear) {
+            Button("Clear", role: .destructive) { history.clear() }
         }
     }
 }
 
+/// Icon, then one text column (app and time, title, text), then the picture as a trailing square
+/// level with the column's top. The picture is about as tall as three lines of text, so a row with
+/// one is not taller than a row without.
 private struct HistoryRow: View {
     let entry: NotificationHistory.Entry
 
@@ -58,28 +66,27 @@ private struct HistoryRow: View {
             AppIcon(pkg: entry.pkg, fallback: entry.app, size: 28)
             VStack(alignment: .leading, spacing: Theme.Space.hair) {
                 HStack(spacing: Theme.Space.tight) {
-                    Text(entry.app)
-                        .font(Theme.Font.label.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    Spacer(minLength: 4)
-                    Text(entry.date.formatted(date: .abbreviated, time: .shortened))
-                        .font(Theme.Font.caption)
-                        .foregroundStyle(.tertiary)
-                        .fixedSize()
+                    Text(entry.app).lineLimit(1)
+                    Text(verbatim: "·")
+                    RelativeTime(date: entry.date).fixedSize()
                 }
+                .font(Theme.Font.label)
+                .foregroundStyle(.secondary)
                 if !entry.title.isEmpty {
                     Text(entry.title).font(Theme.Font.heading)
                 }
                 if !entry.text.isEmpty {
                     Text(entry.text)
                         .font(Theme.Font.body)
-                        .foregroundStyle(.secondary)
                         .textSelection(.enabled)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             if entry.image != nil {
-                NotificationPicture(entry: entry, size: 60)
+                NotificationPicture(entry: entry, size: 48)
             }
         }
+        .padding(.vertical, Theme.Space.hair)
+        .accessibilityElement(children: .combine)
     }
 }

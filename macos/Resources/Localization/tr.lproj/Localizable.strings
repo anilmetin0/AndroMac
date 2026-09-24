@@ -4,7 +4,6 @@
 "%@ wants to send you a file" = "%@ size bir dosya göndermek istiyor";
 "%lld" = "%lld";
 "%lld / %lld" = "%lld / %lld";
-"%lld apps" = "%lld uygulama";
 "%lld entries" = "%lld kayıt";
 "%lld h %lld min" = "%lld sa %lld dk";
 "%lld min" = "%lld dk";
@@ -269,3 +268,7 @@
 "AndroMac can't update itself in this folder. Move it to Applications and try again." = "AndroMac bu klasörde kendini güncelleyemiyor. Uygulamalar klasörüne taşıyıp yeniden dene.";
 "The download is not signed like this copy of AndroMac." = "İndirilen dosya, bu AndroMac kopyasıyla aynı imzayı taşımıyor.";
 
+"Clear the clipboard history?" = "Pano geçmişi temizlensin mi?";
+"Clear the notification history?" = "Bildirim geçmişi temizlensin mi?";
+"Every phone has to pair again. The notification and clipboard histories are cleared." = "Her telefonun yeniden eşleşmesi gerekir. Bildirim ve pano geçmişi temizlenir.";
+"Forget all devices?" = "Bütün cihazlar unutulsun mu?";

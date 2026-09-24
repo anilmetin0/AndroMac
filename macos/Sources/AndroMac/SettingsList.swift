@@ -35,6 +35,7 @@ struct SettingsList: View {
     @State private var mirrorScreenOff = Store.shared.mirrorScreenOff
     @State private var mirrorStayAwake = Store.shared.mirrorStayAwake
     @State private var mirrorMaxSize = Store.shared.mirrorMaxSize
+    @State private var confirmForgetAll = false
 
     var body: some View {
         Form {
@@ -292,7 +293,7 @@ struct SettingsList: View {
                     Text("Get the app on the phone")
                     Text("Scan to open the releases page and download the APK.")
                         .font(Theme.Font.label)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -333,7 +334,13 @@ struct SettingsList: View {
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             } else if Store.shared.pairedDevices.count > 1 {
-                Button("Forget all devices", role: .destructive) { unpair(nil) }
+                // It also wipes both histories and the app list, so it asks first.
+                Button("Forget all devices", role: .destructive) { confirmForgetAll = true }
+                    .confirmationDialog("Forget all devices?", isPresented: $confirmForgetAll) {
+                        Button("Forget all devices", role: .destructive) { unpair(nil) }
+                    } message: {
+                        Text("Every phone has to pair again. The notification and clipboard histories are cleared.")
+                    }
             }
         }
     }
@@ -436,10 +443,11 @@ struct SettingsList: View {
     }
 
     /// Fingerprint and reachability: enough to tell two phones of the same model apart, and to see
-    /// which one the Mac is actually talking to right now.
+    /// which one the Mac is actually talking to right now. The panel's three words for it.
     private func deviceDetail(_ device: PairedDevice) -> String {
         let live = state.devices.contains { $0.id == device.id }
-        let reach = live ? String(localized: "Connected") : String(localized: "Offline")
+        let reach = device.paused ? String(localized: "Disconnected")
+            : live ? String(localized: "Connected") : String(localized: "Offline")
         return "\(reach) · \(device.shortFingerprint)"
     }
 
@@ -564,8 +572,9 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         switch self {
         case .general: return "gearshape"
         case .sync: return "arrow.triangle.2.circlepath"
-        case .clipboard: return "doc.on.clipboard"
-        case .notifications: return "bell"
+        // Not the list's own symbols: the sidebar has a Clipboard and a Notifications list above.
+        case .clipboard: return "clipboard"
+        case .notifications: return "bell.badge"
         case .files: return "arrow.up.doc"
         case .mirroring: return "rectangle.on.rectangle"
         case .devices: return "iphone"

@@ -216,10 +216,12 @@ private struct DeviceCard: View {
                     .font(Theme.Font.heading)
                     .lineLimit(1)
                 Spacer(minLength: Theme.Space.tight)
+                // A long name truncates; the state beside it stays whole.
                 Text(statusLine)
                     .font(Theme.Font.label)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
+                    .fixedSize()
             }
             .contentShape(Rectangle())
         }

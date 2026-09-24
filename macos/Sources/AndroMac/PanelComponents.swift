@@ -111,14 +111,6 @@ struct NotificationRow: View {
 
     let entry: NotificationHistory.Entry
 
-    /// `Text(date, style: .relative)` ticked once a second and kept redrawing the panel — burning
-    /// CPU for nothing in a menu bar app. Format it once instead.
-    static let relative: RelativeDateTimeFormatter = {
-        let f = RelativeDateTimeFormatter()
-        f.dateTimeStyle = .named
-        return f
-    }()
-
     private var summary: String {
         [entry.title, entry.text]
             .filter { !$0.isEmpty }
@@ -131,27 +123,32 @@ struct NotificationRow: View {
 
     @State private var copied = false
 
+    /// App and time on the first line, the text on the second, and a trailing slot of its own for
+    /// the code to copy or the picture. The time used to sit at the text column's trailing edge,
+    /// where a code button beside it squeezed both and left "now" floating mid-row.
     var body: some View {
         HStack(alignment: .center, spacing: Theme.Space.small) {
             AppIcon(pkg: entry.pkg, fallback: entry.app, size: 24)
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 4) {
+                HStack(spacing: Theme.Space.tight) {
                     Text(entry.app)
-                        .font(Theme.Font.label)
+                        .font(Theme.Font.label.weight(.medium))
                         .lineLimit(1)
-                    Spacer(minLength: 4)
-                    Text(NotificationRow.relative.localizedString(for: entry.date, relativeTo: Date()))
-                        .font(Theme.Font.caption)
-                        .foregroundStyle(.tertiary)
-                        .lineLimit(1)
+                    Text(verbatim: "·").foregroundStyle(.secondary)
+                    // Never cut: the app name gives way first.
+                    RelativeTime(date: entry.date)
+                        .foregroundStyle(.secondary)
                         .fixedSize()
                 }
+                .font(Theme.Font.label)
                 Text(summary.isEmpty ? String(localized: "Content hidden") : summary)
                     .font(Theme.Font.label)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.tail)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .combine)
             if let code { copyCode(code) }
             if entry.image != nil { NotificationPicture(entry: entry, size: Self.pictureSize) }
         }
@@ -166,25 +163,23 @@ struct NotificationRow: View {
         }
     }
 
-    /// The code itself on the button: the user can read it without opening anything, and clicking
-    /// saves retyping it. A code is short, so it costs no room the summary needed.
+    /// The code itself on a small glass button: readable without opening anything, one click
+    /// saves retyping it. Fixed at its own size, so the text column is what gives way.
     private func copyCode(_ code: String) -> some View {
         Button {
             put(code)
         } label: {
-            HStack(spacing: Theme.Space.hair) {
+            HStack(spacing: Theme.Space.tight) {
                 Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                    .font(Theme.Font.caption)
-                Text(code)
-                    .font(Theme.Font.caption.monospacedDigit())
+                Text(verbatim: code).monospacedDigit()
             }
-            .foregroundStyle(copied ? Color.green : Color.secondary)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 3)
-            .background(Color.secondary.opacity(0.12), in: Capsule())
-            .contentShape(Capsule())
+            .font(Theme.Font.label)
+            .foregroundStyle(copied ? Color.green : Color.primary)
         }
-        .buttonStyle(.plain)
+        .buttonBorderShape(.capsule)
+        .secondaryAction()
+        .controlSize(.small)
+        .fixedSize()
         .help("Copy this code to the Mac clipboard")
         .accessibilityLabel("Copy code \(code)")
     }

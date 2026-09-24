@@ -86,6 +86,33 @@ struct EmptyState: View {
     }
 }
 
+/// "7 min. ago", redrawn once a minute, with the full date and time on hover.
+///
+/// `Text(date, style: .relative)` ticks every second ("7 min, 3 sec") and kept redrawing the panel;
+/// a minute is as fine as this needs to be.
+struct RelativeTime: View {
+    let date: Date
+
+    var body: some View {
+        TimelineView(.everyMinute) { context in
+            Text(Self.string(date, now: context.date))
+        }
+        .help(date.formatted(date: .abbreviated, time: .shortened))
+    }
+
+    private static let formatter: RelativeDateTimeFormatter = {
+        let f = RelativeDateTimeFormatter()
+        f.dateTimeStyle = .named
+        f.unitsStyle = .short
+        return f
+    }()
+
+    /// Under a minute reads "now": the view redraws once a minute, so "20 sec. ago" would stand still.
+    static func string(_ date: Date, now: Date = Date()) -> String {
+        formatter.localizedString(for: now.timeIntervalSince(date) < 60 ? now : date, relativeTo: now)
+    }
+}
+
 /// The phone's own app icon, cut like a Mac app icon; an initial-letter badge when there is none.
 struct AppIcon: View {
     let pkg: String

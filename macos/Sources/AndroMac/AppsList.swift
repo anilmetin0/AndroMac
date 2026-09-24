@@ -39,15 +39,15 @@ struct AppsList: View {
                 .softScrollEdges()
 
                 Text("Title only leaves the content on the phone.")
-                    .font(Theme.Font.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(Theme.Font.label)
+                    .foregroundStyle(.secondary)
                     .padding(.horizontal, Theme.inset)
                     .padding(.vertical, Theme.Space.small)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
         .searchable(text: $query, prompt: "Search apps")
-        .navigationSubtitle(Text("\(modes.apps.count) apps"))
+        .navigationSubtitle(query.isEmpty ? Text(verbatim: "") : Text("\(filtered.count) / \(modes.apps.count)"))
     }
 }
 
@@ -56,15 +56,19 @@ private struct AppRow: View {
 
     var body: some View {
         HStack(spacing: Theme.Space.small) {
-            AppIcon(pkg: app.pkg, fallback: app.label, size: 22)
-            VStack(alignment: .leading, spacing: 0) {
-                Text(app.label).font(Theme.Font.heading)
-                Text(app.pkg)
-                    .font(Theme.Font.caption)
-                    .foregroundStyle(.tertiary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+            // Dimmed when off; the picker stays at full strength, since it is what turns it back on.
+            HStack(spacing: Theme.Space.small) {
+                AppIcon(pkg: app.pkg, fallback: app.label, size: 22)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(app.label).font(Theme.Font.heading).lineLimit(1)
+                    Text(app.pkg)
+                        .font(Theme.Font.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
             }
+            .opacity(app.mode == .off ? 0.55 : 1)
             Spacer(minLength: Theme.Space.small)
             Picker("", selection: Binding(
                 get: { app.mode },
@@ -77,7 +81,7 @@ private struct AppRow: View {
             .labelsHidden()
             .pickerStyle(.menu)
             .frame(width: 130)
+            .accessibilityLabel(app.label)
         }
-        .opacity(app.mode == .off ? 0.55 : 1)
     }
 }
