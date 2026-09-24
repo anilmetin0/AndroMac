@@ -12,6 +12,7 @@ import android.view.View
 import android.widget.TextView
 import dev.andromac.R
 import dev.andromac.core.Store
+import dev.andromac.feature.UpdateCheck
 
 /**
  * Every detail screen in one place, each row with a one-line summary of what is set there.
@@ -41,6 +42,7 @@ class SettingsActivity : Activity() {
             findViewById<View>(R.id.rowLanguage).visibility = View.GONE
         }
         findViewById<TextView>(R.id.versionSummary).text = getString(R.string.version_footer, versionLabel())
+        findViewById<View>(R.id.rowSource).setOnClickListener { openReleasePage("https://github.com/${UpdateCheck.REPO}") }
         bindNavRow(R.id.rowReset) {
             AlertDialog.Builder(this)
                 .setTitle(R.string.reset_title)

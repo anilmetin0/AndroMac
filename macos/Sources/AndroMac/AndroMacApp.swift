@@ -36,6 +36,8 @@ struct AndroMacApp: App {
             }
             CommandGroup(replacing: .help) {
                 Link("AndroMac Help", destination: URL(string: "https://github.com/anilmetin0/AndroMac#readme")!)
+                Link("AndroMac on GitHub", destination: Release.repositoryURL)
+                Link("Report a Problem", destination: URL(string: "https://github.com/anilmetin0/AndroMac/issues/new/choose")!)
             }
         }
     }

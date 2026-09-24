@@ -32,6 +32,8 @@ derlemeler bunun yerine commit'lerini listeler.
   96 KB.
 - **Bağlantılar bildirimden açılıyor.** Bildirimde bir web adresi varsa Mac bildiriminde Bağlantıyı
   aç düğmesi çıkıyor, geçmişte ve panelde de yanında bir düğme duruyor.
+- **Proje bir dokunuş uzakta.** Telefonda Ayarlar, Mac'te Ayarlar → Genel GitHub'daki depoyu
+  açıyor; Mac'in Yardım menüsünde Sorun bildir de var.
 - **AndroMac'i sıfırla.** İki uygulamada da Ayarlar, uygulamanın tuttuğu her şeyi silip baştan başlatabiliyor.
 - **Mac'ini seç.** Aynı ağda AndroMac çalıştıran birden fazla Mac varsa Eşleştir hangisi olduğunu
   soruyor.

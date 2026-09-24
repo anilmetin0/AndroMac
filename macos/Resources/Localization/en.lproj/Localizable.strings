@@ -28,6 +28,7 @@
 "AndroMac %@ is available" = "AndroMac %@ is available";
 "AndroMac can't update itself in this folder. Move it to Applications and try again." = "AndroMac can't update itself in this folder. Move it to Applications and try again.";
 "AndroMac Help" = "AndroMac Help";
+"AndroMac on GitHub" = "AndroMac on GitHub";
 "AndroMac was updated to %@" = "AndroMac was updated to %@";
 "Another phone wants to pair" = "Another phone wants to pair";
 "Apps" = "Apps";
@@ -184,6 +185,7 @@
 "Received from phone" = "Received from phone";
 "Reconnects" = "Reconnects";
 "Reject" = "Reject";
+"Report a Problem" = "Report a Problem";
 "Reset AndroMac" = "Reset AndroMac";
 "Reset AndroMac?" = "Reset AndroMac?";
 "Reset AndroMac…" = "Reset AndroMac…";

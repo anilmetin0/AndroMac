@@ -70,6 +70,7 @@ public struct Release: Equatable, Sendable {
     /// This is what the QR code in Settings encodes, so the phone can be pointed at the APK
     /// without typing anything.
     public static let latestURL = URL(string: "https://github.com/\(repo)/releases/latest")!
+    public static let repositoryURL = URL(string: "https://github.com/\(repo)")!
 
     /// A GitHub release object → `Release`; `nil` when it carries no version or points elsewhere.
     public static func parse(_ json: Data) -> Release? {

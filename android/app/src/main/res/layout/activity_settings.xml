@@ -132,6 +132,19 @@
                     <TextView android:id="@+id/versionSummary" style="@style/RowSubtitle" />
                 </LinearLayout>
             </LinearLayout>
+
+            <!-- The source, the issues and the releases, one tap from the app. -->
+            <LinearLayout android:id="@+id/rowSource" style="@style/Row" android:baselineAligned="false">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/settings_source" />
+                    <TextView style="@style/RowSubtitle" android:text="@string/settings_source_summary" />
+                </LinearLayout>
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout style="@style/Card">

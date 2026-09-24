@@ -313,6 +313,8 @@
     <string name="settings_title">Settings</string>
     <string name="section_app">App</string>
     <string name="settings_about">About</string>
+    <string name="settings_source">AndroMac on GitHub</string>
+    <string name="settings_source_summary">Source code, issues and releases</string>
     <string name="reset_title">Reset AndroMac</string>
     <string name="reset_summary">Erase the pairing and all settings</string>
     <string name="reset_confirm">This erases the pairing with your Mac, this phone\'s identity key, all settings, app filter tiers, clipboard history and any pending update. The Mac will have to pair again.</string>

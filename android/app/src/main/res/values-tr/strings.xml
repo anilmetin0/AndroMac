@@ -303,6 +303,8 @@
     <string name="settings_title">Ayarlar</string>
     <string name="section_app">Uygulama</string>
     <string name="settings_about">Hakkında</string>
+    <string name="settings_source">GitHub\'da AndroMac</string>
+    <string name="settings_source_summary">Kaynak kod, sorunlar ve sürümler</string>
     <string name="reset_title">AndroMac\'i sıfırla</string>
     <string name="reset_summary">Eşleşmeyi ve tüm ayarları sil</string>
     <string name="reset_confirm">Mac ile eşleşme, bu telefonun kimlik anahtarı, tüm ayarlar, uygulama filtresi kademeleri, pano geçmişi ve bekleyen güncelleme silinir. Mac\'in yeniden eşleşmesi gerekir.</string>

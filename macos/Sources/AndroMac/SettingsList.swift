@@ -112,6 +112,12 @@ struct SettingsList: View {
             }
         }
 
+        // The version is the first thing asked for in a bug report; the repository is where it goes.
+        Section {
+            LabeledContent("Version", value: Self.version)
+            Link("AndroMac on GitHub", destination: Release.repositoryURL)
+        }
+
         Section {
             Button("Reset AndroMac…", role: .destructive) { confirmReset = true }
                 .confirmationDialog("Reset AndroMac?", isPresented: $confirmReset) {
@@ -327,7 +333,6 @@ struct SettingsList: View {
     private var devices: some View {
         Section {
             LabeledContent("This Mac", value: Store.shared.deviceName)
-            LabeledContent("Version", value: Self.version)
         }
 
         Section {
