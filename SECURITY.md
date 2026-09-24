@@ -11,7 +11,7 @@ expose a user's notifications, clipboard or identity key, so it is handled priva
 | The latest build of the current version (the `v<VERSION>` release) | Yes |
 | Anything older | No |
 
-Fixes land in the next build of the current version. There are no backports to older versions.
+Fixes ship in the next beta and the next stable release. There are no backports to older versions.
 
 ## Reporting a vulnerability
 
@@ -62,16 +62,17 @@ In scope:
   key, and the notification and clipboard histories on the Mac.
 - Data leaving a device. Anything that sends content the user asked to keep local: an app on the
   Off tier, a title-only app whose body leaves the phone, a clipboard flagged sensitive.
-- The build and release path. The workflow in `.github/workflows/build.yml` and
-  `scripts/setup-android-signing.sh`.
+- The build and release path. The workflow in `.github/workflows/build.yml`,
+  `scripts/setup-android-signing.sh` and `scripts/setup-macos-signing.sh`.
 
 Out of scope:
 
 - An attacker who already has code execution, root or physical unlocked access to either device.
 - Denial of service on the local network. Anyone on your Wi-Fi can already flood it, and the
   design accepts a dropped connection as normal, since it reconnects on a backoff ladder.
-- The absence of macOS notarization. The app is ad-hoc signed, which is documented in the README
-  and is a distribution choice.
+- The absence of macOS notarization. Release builds are signed with AndroMac's own self-signed
+  certificate and are not notarized, which is documented in the README and is a distribution
+  choice.
 - Traffic analysis that reveals that two devices are talking, or roughly how often. The frame
   length is visible on the wire by design.
 - Findings from an automated scanner with no demonstrated impact.

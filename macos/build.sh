@@ -61,7 +61,8 @@ fi
 #
 # An ad-hoc signature (`-`) produces a DIFFERENT identity on every build; macOS then treats the
 # app as a new one and Keychain asks for the password every time. One persistent certificate
-# keeps the identity: `scripts/setup-macos-signing.sh --local` creates "AndroMac Self-Signed" and
+# keeps the designated requirement (the Keychain may still ask once per update without a
+# Developer ID): `scripts/setup-macos-signing.sh --local` creates "AndroMac Self-Signed" and
 # this script uses it when CODESIGN_IDENTITY is unset. CI passes its own through
 # CODESIGN_IDENTITY and CODESIGN_KEYCHAIN. The first local build with it asks once to use the
 # key (login password, then Always Allow); CODESIGN_IDENTITY=- signs ad-hoc instead.

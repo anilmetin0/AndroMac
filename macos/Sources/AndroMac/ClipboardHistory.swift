@@ -4,8 +4,9 @@ import SwiftUI
 
 /// Clipboard history — both directions.
 ///
-/// Privacy: plain JSON under Application Support, on this Mac only. It is sent nowhere. Deleted
-/// when the pairing is removed or the user clears it.
+/// Privacy: JSON sealed with `Store.historyKey` under Application Support, on this Mac only. It is
+/// sent nowhere. Deleted when every device is forgotten, on Reset AndroMac, or when the user
+/// clears it.
 /// Capped at [limit]; the clipboard usually carries short text, so the history stays small.
 @MainActor
 final class ClipboardHistory: ObservableObject {

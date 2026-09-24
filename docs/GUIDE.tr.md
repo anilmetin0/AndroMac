@@ -25,9 +25,10 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app
 Homebrew olmadan: `AndroMac-<sürüm>-macOS-arm64.dmg` dosyasını indir, aç, `AndroMac.app`'i
 **Uygulamalar**'a sürükle ve yukarıdaki `xattr` satırını çalıştır.
 
-`xattr` satırı bir kez gerekir. Uygulama ad-hoc imzalı ve noter onaylı değil, bu yüzden macOS ilk
-açılışı reddeder. Komut yerine uygulamayı bir kez açmayı deneyip reddedilmesini bekleyebilir, sonra
-**Sistem Ayarları → Gizlilik ve Güvenlik**'te **Yine de Aç**'a basabilirsin.
+`xattr` satırı bir kez gerekir. Yayın derlemeleri AndroMac'in kendinden imzalı sertifikasıyla
+imzalanır ve noter onaylı değildir, bu yüzden macOS ilk açılışı reddeder. Komut yerine uygulamayı
+bir kez açmayı deneyip reddedilmesini bekleyebilir, sonra **Sistem Ayarları → Gizlilik ve
+Güvenlik**'te **Yine de Aç**'a basabilirsin.
 
 İlk açılışta:
 
@@ -56,9 +57,10 @@ adb install AndroMac-*-android.apk
 Sonra AndroMac'i aç ve izinleri ver:
 
 1. Uygulama bildirim iznini hemen ister, bildirim erişimi ekranını da gerekçesiyle bir kez önerir.
-2. Ana ekrandaki **İzinler** kartı ya "Tüm izinler verildi" yazar ya da eksik olanları söyler. Bir
-   satıra dokununca ilgili sistem ekranı açılır. Kartın başlığına dokununca her biri Zorunlu,
-   Önerilir ya da İsteğe bağlı olarak işaretli tam liste açılır:
+2. Zorunlu bir izin eksikken ana ekranın üstünde onu söyleyen bir kart çıkar. Bir satıra dokununca
+   ilgili sistem ekranı açılır; çarpı, eksik izinler değişene kadar kartı gizler. Tam liste
+   Ayarlar → İzinler'de; eksik bir şey kalmayınca özeti "Tümü verildi" olur. Her biri Zorunlu,
+   Önerilir ya da İsteğe bağlı olarak işaretlidir:
    - **Yerel ağ erişimi**, Android 17 ve üstünde zorunlu. Verilmezse telefon Mac'i ne bulabilir
      ne ona ulaşabilir. Android bunu Yakındaki cihazlar altında gösterir.
    - **Bildirimlere izin ver**, zorunlu; uygulamanın kendi kalıcı ve pano bildirimlerini
@@ -72,9 +74,6 @@ Sonra AndroMac'i aç ve izinleri ver:
    kısıtlı ayarlardan söz eden bir mesaj çıkar. Sistem denemeyi kaydetsin diye bir kez dene, sonra
    **Ayarlar → Uygulamalar → AndroMac → ⋮ → Kısıtlı ayarlara izin ver** yolunu izleyip tekrar dene.
 
-Zorunlu bir izin eksikken ekranın üstünde hangisinin eksik olduğunu söyleyen bir şerit durur.
-Dokununca doğru ekranı açar; çarpı, başka bir izin geri alınana kadar gizler.
-
 [Obtainium](https://github.com/ImranR98/Obtainium) APK'yı doğrudan yayın sayfasından kurar ve
 günceller. Uygulama olarak `https://github.com/anilmetin0/AndroMac` adresini ekle ya da telefonda
 [obtainium://add/github.com/anilmetin0/AndroMac](obtainium://add/https://github.com/anilmetin0/AndroMac)
@@ -85,20 +84,25 @@ seçeneğini aç.
 ### Güncelleme denetimi
 
 İki uygulama da günde bir kez denetler ve bulduğunu kendisi kurabilir. İki tarafta da **Ayarlar →
-Güncellemeler**'de bir anahtar ve **Şimdi denetle** düğmesi var. Denetim yalnızca açılışta ve menü
-çubuğu paneli açıldığında çalışır; zamanlayıcı yok. Daha yeni bir paket varsa uygulama bunu bir
-kez `1.0.0 (fd7d47a)` biçiminde önerir: **Şimdi kur**, **Sonra**, **Bu sürümü atla**. Daha yeni
-paket, daha büyük bir sürüm ya da aynı sürümün başka bir commit'ten derlenmiş hali olabilir.
+Güncellemeler**'de denetim anahtarı, **Güncellemeleri otomatik kur** ve **Beta güncellemeleri**
+var. Mac'te bunlara bir **Şimdi denetle** düğmesi eklenir; telefonda ise bekleyen işe göre
+denetleyen, indiren ya da kuran tek bir düğme var. Denetim yalnızca açılışta ve menü çubuğu paneli
+açıldığında çalışır; zamanlayıcı yok. Daha yeni bir paket varsa uygulama bunu bir kez
+`1.0.0 (fd7d47a)` biçiminde önerir: **Şimdi kur**, **Sonra**, **Bu sürümü atla**. Daha yeni paket,
+daha büyük bir sürüm ya da aynı sürümün daha yüksek derleme numaralı hâlidir.
 
 Kurulumu oradan sonra uygulama üstlenir. Yayın dosyasını indirir, o yayınla birlikte yayınlanan
 `SHA256SUMS.txt` ile doğrular ve ancak ondan sonra kendini değiştirir. Mac paketini takas edip
 yeniden başlar; telefon APK'yı Android'in kurucusuna verir, kurucu sana sorar ve imzayı denetler.
 Eksik ya da uyuşmayan bir sağlama toplamı güncellemeyi durdurur.
 
-Uygulamaların bir sunucuyla konuşmasına yol açan tek şey bu denetimdir: api.github.com'a giden,
-yalnızca uygulama sürümünü taşıyan tek bir istek. Varsayılan olarak açık, çünkü hiçbir mağazada
-olmayan bir uygulamanın sana düzeltme çıktığını söyleyebileceği başka bir yol yok. Anahtarı
-kapatırsan ağından hiçbir şey çıkmaz. Bkz. [Gizlilik ve güvenlik](#gizlilik-ve-güvenlik).
+Eşitleme trafiği ağından hiç çıkmaz. Dışarı çıkan tek trafik güncelleme denetimi ve güncellemenin
+indirilmesidir. Denetim, api.github.com'a giden ve yalnızca uygulama sürümünü taşıyan tek bir
+istektir (`releases/latest`, **Beta güncellemeleri** açıksa `releases?per_page=10`); indirme
+github.com'dan yapılır. Homebrew ile kurulan Mac, yeni bir sürüm kurulacağı zaman bunun yerine
+`brew upgrade` çalıştırır. Denetim varsayılan olarak açık, çünkü hiçbir mağazada olmayan bir
+uygulamanın sana düzeltme çıktığını söyleyebileceği başka bir yol yok. Anahtarı kapatırsan
+ağından hiçbir şey çıkmaz. Bkz. [Gizlilik ve güvenlik](#gizlilik-ve-güvenlik).
 
 ## Eşleştirme
 
@@ -124,8 +128,9 @@ göre çözüm listesi. Mac'te Ayarlar → Ağ aynı bilgiyi verir ve Yerel Ağ 
 sunar.
 
 Mac'in eşleştirme penceresi de telefonunki de haneleri büyük gruplar hâlinde gösterir. Daha önce
-sabitlenmiş anahtar değişmişse telefonda varsayılan düğme **Reddet** olur. Mac'te ilk telefonda
-varsayılan **Eşleştir**, sonraki her istekte **Reddet**; beklenmedik bir telefon şüphelidir.
+sabitlenmiş anahtar değişmişse telefonda varsayılan düğme **Reddet** olur. Mac'te ilki dahil her
+eşleştirme sorusunda varsayılan **Reddet**'tir, çünkü Wi-Fi'daki herkes bu soruyu çıkarabilir.
+Eşleştirmek için her zaman **Eşleştir**'e tıklamak gerekir.
 
 ## Özellikler
 
@@ -208,7 +213,7 @@ derlendiği commit. Telefonda Ayarlar → Hakkında'da durur. Hata bildirirken b
 
 | Ekran | İçinde ne var |
 |---|---|
-| Ayarlar | Bağlantı, Bildirimler, Pano, Dosya aktarımı, İzinler, Dil, Güncellemeler ve Hakkında; her biri tek satırlık bir özetle. |
+| Ayarlar | Bağlantı, Bildirimler, Pano, Dosya aktarımı, İzinler, Dil, Güncellemeler ve Hakkında; her biri tek satırlık bir özetle. En altta **AndroMac'i sıfırla** önce sorar, sonra eşleşmeyi, bu telefonun kimlik anahtarını, tüm ayarları, uygulama filtresi kademelerini, pano geçmişini ve bekleyen güncellemeyi siler. |
 | Pano geçmişi | Mac'e giden ya da Mac'ten gelen son 20 metin, en yenisi üstte. Dokununca panoya alınır, gönder düğmesi yeniden gönderir. Yalnızca bellekte tutulur, depolamaya hiç yazılmaz; hassas kayıtlar tutulmaz. |
 | İzinler | Altı iznin tamamı, "Verildi" ya da "Verilmedi" durumu ve Zorunlu, Önerilir ya da İsteğe bağlı notuyla. Ayarlar'dan açılır. |
 | Bağlantı | Durum, Mac'in adı ve son adresi, **Otomatik yeniden bağlan**, **Şimdi bağlan** ve **Bu Mac'i unut**. |
@@ -216,8 +221,8 @@ derlendiği commit. Telefonda Ayarlar → Hakkında'da durur. Hata bildirirken b
 | Uygulama filtresi | Telefonun gördüğü her uygulama için üç kademeli seçici; Bildirim ayarları'ndan açılır. |
 | Pano ayarları | Gelen: **Panoya otomatik yaz**, **Bildirim göster**. Giden: **Hassas içeriği gönderme**. Bir de **Panoyu Mac'e gönder**. |
 | Bağlantı yardımı | Canlı tanı, sık karşılaşılan sorunlar ve işin nasıl yürüdüğü. **ⓘ** düğmesinden ya da eşleştirme rehberindeki **Bağlanamıyorum**'dan açılır. |
-| Güncellemeler | Günlük güncelleme denetimi: anahtar, **Şimdi denetle** ve yeni paketi indirip doğrulayarak kuran **Kur** düğmesi. |
-| Dosyalar | **Dosya al** ve **Dosyaları otomatik kabul et**. Gelen dosyalar İndirilenler'e iner; gönderme herhangi bir uygulamanın paylaşım menüsünden yapılır. |
+| Güncellemeler | **Güncellemeleri denetle** (günlük denetim), **Güncellemeleri otomatik kur**, **Beta güncellemeleri** ve bekleyen işe göre denetleyen, indiren ya da kuran tek bir düğme. İndirilen dosya kurulmadan önce doğrulanır. |
+| Dosyalar | **Mac'ten dosya al** ve **Dosyaları otomatik kabul et**. Gelen dosyalar İndirilenler'e iner; gönderme herhangi bir uygulamanın paylaşım menüsünden yapılır. |
 | Dil | Android'in uygulama başına dil seçicisini açar; İngilizce ve Türkçe sunar. |
 
 Mac'te menü çubuğu paneli göz atmak içindir. Birden fazla telefon eşliyse üstteki sekmeler
@@ -244,20 +249,24 @@ bütün ayar bölümleri.
 
 Ayarlar → Genel'de **Oturum açınca başlat**, **Menü çubuğunda pil yüzdesi** ve Sistem, İngilizce,
 Türkçe seçenekli bir **Dil** seçici var. Dil açılışta okunduğu için değiştirince bir "Yeniden
-başlat" düğmesi çıkar. Eşitleme bölümü **Pil**, **Pano**, **Bildirimler** ve **Medya**
-anahtarlarını tutar; düşük pil uyarısı anahtarı ve %10, %15, %20 ya da %30 seçenekli eşik seçici
-de oradadır. Pano bölümünde **Mac'ten telefona** için otomatik/elle seçimi, gizli pano kuralı ve
-panel açılınca telefondan panosunun istenip istenmeyeceği var. Bildirimler bölümünde yansıtılan
-bildirimler için ses çalma anahtarı ve geçmişteki kayıt sayısı var. Dosyalar'da **Dosya al** ve
-eşleşmiş bütün telefonlar için geçerli **Dosyaları otomatik kabul et** var. Cihazlar bölümü
-eşleşmiş bütün telefonları durumlarıyla listeler ve her biri için **Unut** düğmesi verir; birden
-fazla telefon varsa **Bütün cihazları unut** da vardır. Bu Mac'in adı ve uygulama sürümü de
-oradadır. İzinler bölümü macOS Bildirimler, Yerel Ağ ve Anahtar Zinciri erişiminin durumunu
-gösterir; verilmemiş olanın yanında ilgili Sistem Ayarları bölmesini açan bir düğme durur. Ağ,
-iki adresi ve Yerel Ağ iznine bir kestirmeyi gösterir. Güncellemeler, [Güncelleme
-denetimi](#güncelleme-denetimi) başlığındaki denetimi barındırır ve sürüm sayfasının QR kodunu
-çizer; APK'yı telefona kurmak için adres yazman gerekmez. Ölçümler [Enerji](#enerji) başlığında
-anlatılıyor. Gizlilik, neyin nerede saklandığını yazar.
+başlat" düğmesi çıkar. **AndroMac'i sıfırla…** önce sorar, sonra eşleşmiş telefonları, iki geçmişi
+ve görsellerini, uygulama ikonlarını, bütün ayarları ve bu Mac'in kimlik anahtarını silip uygulamayı
+yeniden başlatır; her telefonun yeniden eşleşmesi gerekir. Eşitleme bölümü **Pil**, **Pano**,
+**Bildirimler** ve **Medya** anahtarlarını tutar; düşük pil uyarısı anahtarı ve %10, %15, %20 ya da
+%30 seçenekli eşik seçici de oradadır. Pano bölümünde **Mac'ten telefona** için otomatik/elle
+seçimi, gizli pano kuralı ve panel açılınca telefondan panosunun istenip istenmeyeceği var.
+Bildirimler bölümünde yansıtılan bildirimler için ses çalma anahtarı var ve geçmişte kaç kayıt
+olduğu gösterilir. Dosyalar'da **Dosya al** ve eşleşmiş bütün telefonlar için geçerli **Dosyaları
+otomatik kabul et** var. Cihazlar bölümü eşleşmiş bütün telefonları durumlarıyla listeler ve her
+biri için **Unut** düğmesi verir; birden fazla telefon varsa **Bütün cihazları unut** da vardır. Bu
+Mac'in adı ve uygulama sürümü de oradadır. İzinler bölümü macOS Bildirimler, Yerel Ağ ve Anahtar
+Zinciri erişiminin durumunu gösterir; verilmemiş olanın yanında ilgili Sistem Ayarları bölmesini
+açan bir düğme durur. Ağ, iki adresi ve Yerel Ağ iznine bir kestirmeyi gösterir. Güncellemeler,
+[Güncelleme denetimi](#güncelleme-denetimi) başlığındaki denetimi barındırır ve sürüm sayfasının QR
+kodunu çizer; APK'yı telefona kurmak için adres yazman gerekmez. Ölçümler [Enerji](#enerji)
+başlığında anlatılıyor. Gizlilik, isteğe bağlı güncelleme denetimi dışında her şeyin yerel ağda
+kaldığını, saklanan verinin yalnızca bu Mac'te durduğunu ve bütün cihazları unutunca silindiğini
+yazar.
 
 ## Sorun giderme
 
@@ -267,7 +276,7 @@ anlatılıyor. Gizlilik, neyin nerede saklandığını yazar.
 | Bağlanıyor, sonra kopuyor | Telefonda pil optimizasyonu muafiyeti ve router'daki AP izolasyonu. |
 | Bildirimler gelmiyor | Bildirim erişimi, Android 13+ kısıtlı ayarlar akışı dahil; uygulama Kapalı kademesinde olabilir; sessiz bildirimler varsayılan olarak gönderilmez. macOS bildirimleri AndroMac için kapalıysa panel ve Ayarlar → İzinler bunu söyler. |
 | Telefonda "Anahtar değişti" uyarısı | Mac uygulamasını yeniden kurduysan normaldir; telefonda eşleştirmeyi kaldırıp yeniden eşleştir. Kurmadıysan reddet. Yeniden kurulan bir telefon ise Mac'e yeni bir cihaz olarak gelir; eski kayıt sen silene kadar durur. |
-| Keychain her açılışta soruyor | Ad-hoc imza her derlemede değişir. Yayın paketini kullan ya da `CODESIGN_IDENTITY` ile derle. |
+| Keychain güncellemeden sonra yine soruyor | Yayın derlemeleri Developer ID olmadan, kendinden imzalıdır; Keychain her güncellemeden sonra bir kez sorabilir, **Always Allow** de. Yerel derleme ad-hoc imzalanır ve her derlemede yeni bir kimlik olur; `scripts/setup-macos-signing.sh --local` AndroMac Self-Signed sertifikasını oluşturduysa `macos/build.sh` onu kullanır. |
 | Pano telefondan kendiliğinden gelmiyor | [Yukarıda anlatılan](#pano-neden-tek-yönde-istenerek-çalışıyor) Android kısıtı. Mac paneli açılınca telefondan ister; telefonda AndroMac'i öne getirmek de gönderir. Anında yanıt için telefonda **Diğer uygulamaların üzerinde göster** iznini ver; yoksa telefonun gösterdiği bildirime, kareye ya da paylaşım menüsüne dokun. |
 | Mac'ten telefon sessize alınmıyor | Telefonda **Rahatsız Etmeyin erişimi** ver. O olmadan Android değişikliği reddeder, Mac de düğmeyi kapalı gösterir. |
 | Ekran yansıtma Kablosuz hata ayıklama istiyor | Geliştirici seçeneklerinde **Kablosuz hata ayıklama**'yı aç, telefon Mac ile aynı Wi-Fi'da olsun; ya da USB hata ayıklama açıkken kabloyla bağla. İlk seferde **Cihazı eşleme koduyla eşle** ekranındaki kodu panele yaz. |
@@ -278,13 +287,14 @@ telefon o rehberi yalnızca eşleştirilmemişken gösterir.
 
 ## Gizlilik ve güvenlik
 
-Yerel ağdan hiçbir şey çıkmaz. Ulaşılacak bir sunucu, açılacak bir hesap, telemetri ya da
-analitik yok. Uygulamalar internete soket açmaz; tek istisna Ayarlar → Güncellemeler'deki,
-varsayılan olarak açık güncelleme denetimi. O da `api.github.com`'a günde en fazla bir kez en yeni
-sürümü sorar ve `User-Agent` başlığındaki uygulama sürümünden başka bir şey göndermez.
-Güncellemeyi kurmak `github.com`'dan indirir: otomatik kurulum açıksa denetimin hemen ardından
-(telefon Wi-Fi'ı bekler), değilse sen Kur'a bastığında. Anahtarı kapatınca iki uygulama yine
-yalnızca birbiriyle konuşur.
+Eşitleme trafiği yerel ağdan hiç çıkmaz. Ulaşılacak bir sunucu, açılacak bir hesap, telemetri ya
+da analitik yok. Yerel ağdan çıkan tek trafik Ayarlar → Güncellemeler'deki, varsayılan olarak
+açık güncelleme denetimine ait. O da `api.github.com`'a günde en fazla bir kez en yeni sürümü sorar
+ve `User-Agent` başlığındaki uygulama sürümünden başka bir şey göndermez. Güncellemeyi kurmak
+`github.com`'dan indirir: otomatik kurulum açıksa denetimin hemen ardından, değilse sen Kur'a
+bastığında. Telefon Wi-Fi'ı bekler; Android 12'den eski telefonlar önce sorar. Homebrew ile
+kurulan Mac, yeni bir sürüm kurulacağı zaman bunun yerine `brew upgrade` çalıştırır. Anahtarı
+kapatınca iki uygulama yine yalnızca birbiriyle konuşur.
 
 Telefondan neyin çıkacağını, uygulama başına belirlediğin kademe tayin eder. Kapalı'da hiçbir şey
 çıkmaz, radyo bile uyanmaz. Sadece başlık'ta yalnızca uygulama adı gider; başlık, gövde ve eylem
@@ -300,7 +310,7 @@ Ne nerede duruyor:
 | Mac'in kimlik anahtarı | macOS Keychain |
 | Telefonun kimlik anahtarı | Android Keystore'da duran ve dışarı çıkarılamayan bir AES-256-GCM anahtarıyla sarmalanmış. Anahtar değişimi sırasında belleğe açılır; P-256'yı yazılımda yapmanın tavanı bu |
 | Sabitlenen karşı anahtar, cihaz adı ve ayarlar | Her cihazda yerel olarak |
-| Bildirim ve pano geçmişi, bildirim görselleri | Yalnızca Mac'te, Application Support altında; Anahtar Zinciri'ndeki Mac kimliğinden türetilen bir anahtarla şifreli. Eşleştirmeyi kaldırınca silinir |
+| Bildirim ve pano geçmişi, bildirim görselleri | Yalnızca Mac'te, Application Support altında; Anahtar Zinciri'ndeki Mac kimliğinden türetilen bir anahtarla şifreli. Bütün cihazları unutunca ya da AndroMac'i sıfırlayınca silinir; tek bir telefonu unutmak onları silmez |
 
 Diske yazılan tek şey dosyalar. Bir transfer ancak alıcı kabul ettikten sonra ya da eşleşmiş
 cihazlar için otomatik kabulü açtıysan başlar; ondan önce hiçbir şey yazılmaz. Dosya, son adını
@@ -417,7 +427,7 @@ zayıflığı ya da yayımlanmış bir güvenlik duyurusu olan her tasarımda An
 | Dosya adı ne olacak? | Quick Share zincirinde alıcı tarafında bir yol geçişi (path traversal) vardı. AirDrop, bilinmeyen türlerde uzantının arkasına " 2" ekler. | Alıcı yalnızca son yol bileşenini tutar, denetim karakterlerini ve baştaki noktaları atar, uzunluğu sınırlar ve kopyaları uzantıdan önce numaralar. |
 | Gelen dosya açılır mı? | KDE Connect'in `open` bayrağı dosyayı gelir gelmez başlatır. | Hiçbir zaman. macOS, tarayıcı indirmesine konan karantina bayrağının aynısını koyar. Android dosyayı MediaStore üzerinden İndirilenler'e yazar; uygulamanın depolama iznine ihtiyacı yoktur. |
 | Bir yabancı uygulamayı tüketebilir mi? | KDE Connect doğrulanmamış bağlantılarla açık tutulabiliyordu ([CVE-2020-26164](https://nvd.nist.gov/vuln/detail/CVE-2020-26164)). | En fazla dört bekleyen el sıkışma, her biri 10 saniye. 30 saniyede bir eşleştirme sorusu, yön başına tek transfer ve 8 parçalık (4 MiB) sınırlı pencere; karşı taraf telefonun belleğini şişiremez. |
-| Yerel ağdan bir şey çıkar mı? | Blip ve Magic Wormhole doğrudan yol bulunamayınca internet üzerinden aktarır; Syncthing'de küresel keşif ve aktarıcılar var. | Hiçbir zaman. Geri düşülecek bir aktarıcı yok. |
+| Yerel ağdan bir şey çıkar mı? | Blip ve Magic Wormhole doğrudan yol bulunamayınca internet üzerinden aktarır; Syncthing'de küresel keşif ve aktarıcılar var. | Eşitleme trafiği hiçbir zaman çıkmaz; geri düşülecek bir aktarıcı yok. |
 
 Olduğu gibi alınanlar da var. LocalSend'in transfer başına kimlikli teklif-sonra-kabul akışı,
 Syncthing'in parçala-ve-özetle disiplini ile geçici dosya sonra yeniden adlandırma yaklaşımı,

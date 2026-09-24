@@ -2,10 +2,11 @@
 # Creates a permanent self-signed code-signing certificate for the Mac app and uploads it to
 # GitHub Actions secrets.
 #
-# Why: an ad-hoc signature is a different identity on every build, so the Keychain treats each
-# update as a new app and asks for the login password again. Signed with one certificate, every
-# build has the same designated requirement: after one "Always Allow" the Keychain stops asking,
-# across updates. It does not replace notarization; Gatekeeper still needs the first-launch step.
+# Why: an ad-hoc signature is a different identity on every build. Signed with one certificate,
+# every build has the same designated requirement, so the app keeps its identity across updates.
+# Without a Developer ID the Keychain may still ask once after an update (its access partition
+# follows the build), then "Always Allow" holds until the next one. It does not replace
+# notarization; Gatekeeper still needs the first-launch step.
 #
 # Run this ONCE. The certificate and its password stay under ~/.andromac/ (never in the repo);
 # back that directory up, a new certificate means one more Keychain prompt for every user.

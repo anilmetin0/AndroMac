@@ -15,8 +15,11 @@ against it.
 - The browse stops as soon as a connection is established, because continuous mDNS scanning
   costs battery.
 
-Traffic stays on the local network. macOS rejects any peer outside the private address ranges
-(§3), and neither app ever opens an internet socket.
+Sync traffic never leaves the local network: macOS rejects any peer outside the private address
+ranges (§3). The only connections that leave the LAN are the update check (one HTTPS GET to
+api.github.com, `releases/latest`, or `releases?per_page=10` on the beta channel), the update
+download from github.com, and `brew upgrade` on a Mac that Homebrew installed, when a new version
+installs.
 
 ## 2. Handshake
 
@@ -139,9 +142,9 @@ sees.
   opening a TCP connection. Connections from outside the private address ranges (not RFC 1918 /
   link-local / ULA) are rejected before the handshake.
 - The Mac trusts a set of phones and the phone trusts one Mac. macOS pins a list of static public
-  keys and will hold a session with each of them at the same time, keyed by the device's
-  fingerprint (the first 8 hex of SHA-256 over its static public key). Android still pins exactly
-  one Mac. Consequences on the macOS side:
+  keys and will hold a session with each of them at the same time, keyed by the device ID (the
+  full SHA-256 over its static public key, in hex). The 8-hex fingerprint is only for display.
+  Android still pins exactly one Mac. Consequences on the macOS side:
   - There is no "the pinned key changed" state, because it can only be defined when there is
     exactly one pinned key. A key that is not in the set belongs to a device the Mac has not met,
     whether it is a new phone or one that was wiped and reinstalled, and both need the same fresh
@@ -197,8 +200,9 @@ Only `text/plain` is sent. Empty text is not sent, and anything above 64 KiB is 
 Sensitive content is never sent in either direction. Password managers and OTP fields mark the
 clipboard as secret, and each platform has its own marker for it:
 
-- Android: `ClipDescription.EXTRA_IS_SENSITIVE` (API 33+). A clipboard carrying that flag never
-  leaves the phone.
+- Android: `ClipDescription.EXTRA_IS_SENSITIVE` (`android.content.extra.IS_SENSITIVE`), read by
+  its string name on every supported version. A clipboard carrying that flag never leaves the
+  phone.
 - macOS: the de-facto pasteboard types `org.nspasteboard.ConcealedType` and
   `org.nspasteboard.TransientType`, which macOS clipboard managers already honour. A pasteboard
   carrying either type never leaves the Mac.
@@ -496,7 +500,8 @@ These rules are part of the protocol, and both implementations must follow them:
 3. `notification` is fully event driven (`NotificationListenerService`), with no polling.
 4. While a connection is up, the mDNS browse is off. A network event
    (`ConnectivityManager.NetworkCallback`) triggers reconnection; nothing polls.
-5. Reconnect backoff: 1s, 2s, 5s, 15s, 60s, then a 300s ceiling.
+5. Reconnect backoff: 1s, 2s, 5s, 15s, 60s, then a 300s ceiling. While the screen is on and the
+   phone is on the Mac's network, the ceiling is 60s.
 6. The notification filter and content redaction run on the phone. A notification from an app the
    user switched off is dropped there and never sent, because filtering it on macOS would wake
    the radio for nothing. Filter order on the phone: structural (group summary, ongoing,

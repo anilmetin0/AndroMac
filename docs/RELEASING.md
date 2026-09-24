@@ -10,9 +10,10 @@ every push and pull request; only a push to `main` publishes at the end.
 2. `scripts/verify-handshake.sh`: the real Swift responder and Kotlin initiator complete a
    session over loopback.
 3. `swift test` and `./gradlew :vectors:test`: the unit tests on both sides.
-4. `macos/scripts/update-strings.sh --check`: every localization key exists in every language.
-5. `brew style Casks/*.rb`, and the cask's version equals `VERSION`.
-6. The macOS bundle and the Android APK are built and uploaded as workflow artifacts.
+4. `./gradlew :app:lintDebug`: Android lint.
+5. `macos/scripts/update-strings.sh --check`: every localization key exists in every language.
+6. `brew style Casks/*.rb`, and the cask's version equals `VERSION`.
+7. The macOS bundle and the Android APK are built and uploaded as workflow artifacts.
 
 A pull request, or a push to any other branch, stops there. A push to `main` continues to the
 release job, on one of two channels.
@@ -21,22 +22,26 @@ release job, on one of two channels.
 
 | | Stable | Beta |
 |---|---|---|
-| When | The first push to `main` after `VERSION` changes, or a manual run with channel `stable` | Every other push to `main` |
+| When | The first push to `main` after `VERSION` changes, a push whose commit message contains `[stable]`, or a manual run with channel `stable` | Every other push to `main` |
 | Tag | `v<VERSION>` | `beta-<BUILD>-<sha>` |
 | Title | `AndroMac <VERSION>` | `AndroMac <VERSION> beta <BUILD> (<sha>)` |
 | Marked | Latest | Pre-release, never latest |
 | Assets | `AndroMac-<VERSION>-macOS-arm64.dmg`, `AndroMac-<VERSION>-android.apk`, `SHA256SUMS.txt` | `AndroMac-beta-<BUILD>-macOS-arm64.dmg`, `AndroMac-beta-<BUILD>-android.apk`, `SHA256SUMS.txt` |
-| Notes | The `## <VERSION>` sections of `CHANGELOG.md` and `CHANGELOG.tr.md`, then the commits since the previous stable release | A test-build notice, then the commits since `v<VERSION>` |
+| Notes | The `## <VERSION>` sections of `CHANGELOG.md` and `CHANGELOG.tr.md`, then the commits since the previous version's tag | A test-build notice, then the commits since `v<VERSION>` |
 | Kept | Forever | The newest five |
 
-A stable release does not move once it is out. `/releases/latest`, the Homebrew cask and
-Obtainium's default settings see only stable releases. The apps follow stable releases unless
-**Beta updates** is on in Settings → Updates.
+Ordinary pushes never rebuild a stable release. A manual run with channel `stable`, or a push
+whose commit message contains `[stable]`, re-publishes it from that commit and moves the
+`v<VERSION>` tag there. `/releases/latest`, the Homebrew cask and Obtainium's default settings
+see only stable releases. The apps follow stable releases unless **Beta updates** is on in
+Settings → Updates.
 
-Every release body ends with `Build <N> · commit <sha>`. The build number is the workflow run
-number, which is also the Android `versionCode`, so a newer build always installs over an older
-one. Inside the apps the version reads `<VERSION> (build · commit)`; a beta after 1.1.0 reads
-`1.1.0 (57 · abc1234)`. Local builds show build 1, commit `local`.
+Every release body ends with a line naming the build, the commit, the APK signing key and the
+checksum file: `Build <N> · commit <sha> · APK signing: release · checksums in SHA256SUMS.txt`
+(`debug` instead of `release` when the signing secrets are missing). The build number is the
+workflow run number, which is also the Android `versionCode`, so a newer build always installs
+over an older one. Inside the apps the version reads `<VERSION> (build · commit)`; a beta after
+1.1.0 reads `1.1.0 (57 · abc1234)`. Local builds show build 1, commit `local`.
 
 A stable release fails, and publishes nothing, if either changelog lacks a `## <VERSION>`
 section. The header may carry a date (`## 1.2.0 - 2026-10-01`); only the version is matched.
@@ -73,10 +78,10 @@ commit message of the push, or run the workflow on `main` from the Actions tab w
   that changes every run, and Android refuses to upgrade an installation signed with a
   different key.
 - macOS: the bundle is signed with the self-signed certificate in the `MACOS_SIGNING_*`
-  secrets, created by `scripts/setup-macos-signing.sh`. The same certificate on every build keeps
-  the app's identity, so the Keychain's "Always Allow" carries over to updates. Without the
-  secrets the build is signed ad-hoc and the Keychain asks after every update. Neither makes the
-  app notarized; the first-launch step in the README stays.
+  secrets, created by `scripts/setup-macos-signing.sh`. It is not a Developer ID certificate, so
+  the app is not notarized and the first-launch step in the README stays. Without a Developer ID
+  the Keychain can still ask once after an update, and one "Always Allow" answers it. Without the
+  secrets the build is signed ad-hoc.
 
 Both scripts keep their key and its password in `~/.andromac/` on the machine that ran them and
 never in the repository. Back that directory up: a lost Android key closes the upgrade path, and

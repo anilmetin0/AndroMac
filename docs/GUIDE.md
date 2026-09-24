@@ -24,9 +24,10 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app
 Without Homebrew, download `AndroMac-<version>-macOS-arm64.dmg`, open it, drag `AndroMac.app` to
 **Applications**, and run the `xattr` line above.
 
-The `xattr` line is needed once. The app is signed ad-hoc and not notarized, so macOS refuses the
-first launch. Instead of the command you can open the app once, let it be refused, and press
-**Open Anyway** in **System Settings → Privacy & Security**.
+The `xattr` line is needed once. Release builds are signed with AndroMac's own self-signed
+certificate and are not notarized, so macOS refuses the first launch. Instead of the command you can
+open the app once, let it be refused, and press **Open Anyway** in **System Settings → Privacy &
+Security**.
 
 On first launch:
 
@@ -56,9 +57,10 @@ Then open AndroMac and grant permissions:
 
 1. The app asks for the notification permission straight away and offers the notification access
    screen once, with the reason.
-2. The **Permissions** card on the main screen reads "All permissions granted" or names what is
-   missing. Tap a line to open the right system screen. Tapping the card's header opens the full
-   list, each marked Required, Recommended or Optional:
+2. While a required permission is missing, a card at the top of the main screen names it. Tap a
+   line to open the right system screen; the cross hides the card until the set of missing
+   permissions changes. The full list is in Settings → Permissions, whose summary reads "All
+   granted" once nothing is missing. Each entry is marked Required, Recommended or Optional:
    - **Local network access**, required on Android 17 and later. Without it the phone can
      neither find nor reach the Mac. Android files it under Nearby devices.
    - **Allow notifications**, required, so the app can show its own ongoing and clipboard
@@ -74,9 +76,6 @@ Then open AndroMac and grant permissions:
    with a message about restricted settings. Try it once so the system registers the attempt,
    then go to **Settings → Apps → AndroMac → ⋮ → Allow restricted settings** and try again.
 
-While a required permission is missing, a banner at the top of the screen says which. Tap it to
-open the right screen; the cross hides it until something else is revoked.
-
 [Obtainium](https://github.com/ImranR98/Obtainium) installs and updates the APK straight from the
 releases page. Add `https://github.com/anilmetin0/AndroMac` as an app, or open
 [obtainium://add/github.com/anilmetin0/AndroMac](obtainium://add/https://github.com/anilmetin0/AndroMac)
@@ -87,19 +86,23 @@ betas too.
 ### Update check
 
 Both apps check once a day, and both can install what they find. **Settings → Updates** on either
-side has the switch and a **Check now** button; the check runs at launch and when the menu bar
-panel is opened, never on a timer. A newer build means a greater version, or the same version
-built from a different commit. The app offers it once, as `1.0.0 (fd7d47a)`, with
-**Install now**, **Later** and **Skip this version**.
+side has the check switch, **Install updates automatically** and **Beta updates**. The Mac adds a
+**Check now** button; on the phone one button checks, downloads or installs, depending on what is
+pending. The check runs at launch and when the menu bar panel is opened, never on a timer. A newer
+build is a greater version, or the same version with a higher build number. The app offers it once,
+as `1.0.0 (fd7d47a)`, with **Install now**, **Later** and **Skip this version**.
 
 Installing is the app's own job from there. It downloads the release asset, checks it against the
 `SHA256SUMS.txt` published with that release, and only then replaces itself. The Mac swaps its
 bundle and restarts. The phone hands the APK to Android's installer, which asks you to confirm and
 enforces the signature. A checksum that is missing or does not match stops the update.
 
-The check is the only time either app talks to a server. It sends one request to api.github.com
-carrying only the app version. It is on by default because an app distributed outside any store
-has no other way to tell you a fix exists. The switch turns it off, and then nothing leaves your
+Sync traffic never leaves your network. The only traffic that does is the update check and the
+update download. The check is one request to api.github.com (`releases/latest`, or
+`releases?per_page=10` with **Beta updates** on) carrying only the app version, and the download
+comes from github.com. A Mac installed with Homebrew runs `brew upgrade` instead when a new
+version installs. The check is on by default because an app distributed outside any store has no
+other way to tell you a fix exists. The switch turns it off, and then nothing leaves your
 network. See [Privacy and security](#privacy-and-security).
 
 ## Pairing
@@ -116,9 +119,9 @@ is stuck:
 
 | Step | On the phone | On the Mac |
 |---|---|---|
-| Is the app open on the Mac | `Mac seen on the network` or `not found` | `This Mac is advertising` |
+| Is the app open on the Mac | `Mac seen on the network` or `not found` | `This Mac is visible on the network` |
 | Same network | `Phone: 192.168.1.42` | `This Mac: 192.168.1.5` |
-| Pair | `Ready` or `Complete the previous steps` | Waiting for the phone |
+| Pair | `Ready` or `Finish the steps above` | Waiting for the phone |
 
 If it still will not connect, **I can't connect** at the bottom of that guide opens live
 diagnostics. They show the phone's address and subnet, whether the Mac was seen, the pairing and
@@ -126,9 +129,9 @@ connection state, and the app version, followed by a list of fixes per symptom. 
 Network on the Mac shows the same information and links to the Local Network permission.
 
 The Mac's pairing dialog and the phone's both show the digits in large groups. On the phone, a key
-that has changed since the last pairing defaults to **Reject**. On the Mac the first phone defaults
-to **Pair** and every later request defaults to **Reject**, because an unexpected phone is the
-suspicious case.
+that has changed since the last pairing defaults to **Reject**. On the Mac every pairing prompt
+defaults to **Reject**, the first one included, because anyone on the Wi-Fi can make the prompt
+appear. Pairing always takes a click on **Pair**.
 
 ## Features
 
@@ -210,7 +213,7 @@ in a bug report.
 
 | Screen | What is on it |
 |---|---|
-| Settings | Connection, Notifications, Clipboard, File transfer, Permissions, Language, Updates and About, each with a one-line summary. |
+| Settings | Connection, Notifications, Clipboard, File transfer, Permissions, Language, Updates and About, each with a one-line summary. At the bottom, **Reset AndroMac** asks first, then erases the pairing, this phone's identity key, all settings, the app filter tiers, the clipboard history and any pending update. |
 | Clipboard history | The last 20 texts sent to or received from the Mac, newest first. Tap to copy, the send button to send again. Kept in memory only and never written to storage; sensitive clips are not recorded. |
 | Permissions | All six permissions, each marked Granted or Not granted, with Required, Recommended or Optional noted. Tapping one opens the matching system screen. |
 | Connection | State, the Mac's name and last address, **Reconnect automatically**, **Connect now**, and **Forget this Mac**. |
@@ -218,8 +221,8 @@ in a bug report.
 | App filter | The three-tier picker for every app the phone has seen, reached from Notification settings. |
 | Clipboard settings | Incoming: **Write to the clipboard**, **Show a notification**. Outgoing: **Never send sensitive content**. Plus **Send clipboard to Mac**. |
 | Connection help | Live diagnostics, common problems, and how the whole thing works. Reached through the **ⓘ** button, or **I can't connect** in the pairing guide. |
-| Updates | The daily update check: switch, **Check now**, and an **Install** button that downloads, verifies and installs the newer build. |
-| Files | **Receive files** and **Accept files automatically**. Received files go to Downloads; sending is done from any app's share sheet. |
+| Updates | **Check for updates** (the daily check), **Install updates automatically**, **Beta updates**, and one button that checks, downloads or installs, depending on what is pending. The download is verified before it installs. |
+| Files | **Receive files from the Mac** and **Accept files automatically**. Received files go to Downloads; sending is done from any app's share sheet. |
 | Language | Opens the Android per-app language picker, which offers English and Turkish. |
 
 On the Mac the menu bar panel is for glancing. With more than one phone paired, tabs across the
@@ -244,22 +247,25 @@ settings section.
 | Apps | The tier picker for every app on the phone. |
 | Settings | General, Sync, Clipboard, Notifications, Files, Screen mirroring, Devices, Permissions, Network, Updates, Metrics and Privacy. |
 
-General has **Open at login**, **Show battery percentage in the menu bar**, and a
-**Language** picker offering System, English and Turkish. Changing the language shows a Restart
-button, because the language is read at launch. Sync holds the four switches for **Battery**,
-**Clipboard**, **Notifications** and **Media**, the low-battery alert switch, and a threshold
-picker with 10, 15, 20 and 30 percent. Clipboard holds the **Mac to phone** choice between
-automatic and manual, the concealed clipboard rule, and whether opening the panel asks the phone
-for its clipboard. Notifications has **Play a sound for mirrored notifications** and the number
-of history entries to keep. Files has **Receive files** and **Accept files automatically**, the
-latter for every paired phone. Devices lists every paired phone with its status and holds
-**Forget** for each, plus **Forget all devices** when more than one is paired; this Mac's name
-and the app version are there too. Permissions shows the state of Notifications, Local Network
-and Keychain access, each with a button that opens the matching System Settings pane when it is
-not granted. Network shows both addresses with a shortcut to the Local Network permission.
-Updates holds the update check described under [Update check](#update-check), and draws a QR
-code for the releases page so the APK can be installed on the phone without typing a URL.
-Metrics is described under [Energy](#energy). Privacy states what is stored and where.
+General has **Open at login**, **Show battery percentage in the menu bar**, and a **Language**
+picker offering System, English and Turkish. Changing the language shows a Restart button, because
+the language is read at launch. **Reset AndroMac…** asks first, then erases the paired phones, both
+histories and their pictures, the app icons, every setting and this Mac's identity key, and restarts
+the app; every phone has to pair again. Sync holds the four switches for **Battery**, **Clipboard**,
+**Notifications** and **Media**, the low-battery alert switch, and a threshold picker with 10, 15,
+20 and 30 percent. Clipboard holds the **Mac to phone** choice between automatic and manual, the
+concealed clipboard rule, and whether opening the panel asks the phone for its clipboard.
+Notifications has **Play a sound for mirrored notifications** and shows how many entries the history
+holds. Files has **Receive files** and **Accept files automatically**, the latter for every paired
+phone. Devices lists every paired phone with its status and holds **Forget** for each, plus **Forget
+all devices** when more than one is paired; this Mac's name and the app version are there too.
+Permissions shows the state of Notifications, Local Network and Keychain access, each with a button
+that opens the matching System Settings pane when it is not granted. Network shows both addresses
+with a shortcut to the Local Network permission. Updates holds the update check described under
+[Update check](#update-check), and draws a QR code for the releases page so the APK can be installed
+on the phone without typing a URL. Metrics is described under [Energy](#energy). Privacy says that
+everything stays on the local network apart from the optional update check, and that the stored data
+is kept only on this Mac and cleared when you forget all devices.
 
 ## Troubleshooting
 
@@ -269,7 +275,7 @@ Metrics is described under [Energy](#energy). Privacy states what is stored and 
 | It connects, then drops | The battery optimization exemption on the phone, and AP isolation on the router. |
 | Notifications do not arrive | Notification access, including the Android 13+ restricted settings flow; the app may be on the Off tier; silent notifications are not sent by default. If macOS notifications are off for AndroMac, the panel and Settings → Permissions say so. |
 | A "key changed" warning on the phone | Expected if you reinstalled the Mac app: unpair on the phone and pair again. If you did not, reject it. A reinstalled phone arrives on the Mac as a new device, and the old entry stays until you forget it. |
-| The Keychain asks on every launch | An ad-hoc signature changes on every build. Use the release package, or build with `CODESIGN_IDENTITY`. |
+| The Keychain asks again after an update | Release builds are self-signed without a Developer ID, so the Keychain can ask once per update; answer **Always Allow**. A local build is signed ad-hoc, a new identity on every build, unless `scripts/setup-macos-signing.sh --local` created the AndroMac Self-Signed certificate, which `macos/build.sh` then uses. |
 | The clipboard does not arrive from the phone by itself | That is the Android restriction [described above](#why-the-clipboard-is-asked-for-in-one-direction). Opening the Mac panel asks the phone for it, and opening AndroMac on the phone sends it. For an instant answer grant **Display over other apps** on the phone; otherwise tap the notification it posts, the tile, or the share sheet. |
 | Silencing the phone from the Mac does nothing | Grant **Do Not Disturb access** on the phone. Without it Android refuses the change, and the Mac disables the button. |
 | Screen mirroring asks for Wireless debugging | Turn on **Wireless debugging** in Developer options, with the phone on the same Wi-Fi as the Mac, or connect a USB cable with USB debugging on. The first time, type the code from **Pair device with pairing code** into the panel. |
@@ -280,13 +286,14 @@ which the phone shows while it is unpaired.
 
 ## Privacy and security
 
-Nothing leaves the local network. There is no server to reach and no account to create, and
-the apps collect no telemetry or analytics. The apps open no socket to the internet, with one
-exception: the update check in Settings → Updates, on by default. It asks `api.github.com` for
+Sync traffic never leaves the local network. There is no server to reach and no account to
+create, and the apps collect no telemetry or analytics. The only traffic that leaves the LAN
+belongs to the update check in Settings → Updates, on by default. It asks `api.github.com` for
 the newest release at most once a day and sends only the app's version in the `User-Agent`
 header. Installing an update downloads from `github.com` as well, right after the check when
-automatic installs are on (the phone waits for Wi-Fi), otherwise when you press Install. Turn
-the switch off and both apps speak only to each other.
+automatic installs are on, otherwise when you press Install. The phone waits for Wi-Fi, and
+before Android 12 it asks first. A Mac installed with Homebrew runs `brew upgrade` instead when a
+new version installs. Turn the switch off and both apps speak only to each other.
 
 What leaves the phone depends on the tier you set per app. On Off, nothing, and the radio does
 not wake. On Title only, the app name alone. The title, the body and the action names are sent
@@ -302,7 +309,7 @@ Where things are stored:
 | The Mac's identity key | The macOS Keychain |
 | The phone's identity key | Wrapped with an AES-256-GCM key that lives in the Android Keystore and cannot be exported. It is unwrapped into memory during the key exchange, which is the ceiling of doing P-256 in software |
 | The pinned peer key, the device name and settings | Locally on each device |
-| Notification and clipboard history, and notification pictures | Only on the Mac, under Application Support, encrypted with a key derived from the Mac's identity in the Keychain. Deleted when you unpair |
+| Notification and clipboard history, and notification pictures | Only on the Mac, under Application Support, encrypted with a key derived from the Mac's identity in the Keychain. Deleted when you forget all devices or reset AndroMac; forgetting one phone keeps them |
 
 Files are the one thing that is written to disk on purpose. A transfer starts only after the
 receiver accepted it, or after you turned on auto-accept, which applies to every paired phone.
@@ -421,7 +428,7 @@ had a documented weakness or a published advisory, AndroMac does it differently.
 | What about the file name? | Quick Share's chain included a path traversal on the receiver. AirDrop appends " 2" after the extension for unknown types. | The receiver keeps only the last path component, strips control characters and leading dots, caps the length, and numbers duplicates before the extension. |
 | Is the received file opened? | KDE Connect has an `open` flag that launches the file on arrival. | Never. macOS marks it with the same quarantine flag a browser download gets; Android puts it in Downloads through MediaStore, so the app needs no storage permission. |
 | Can a stranger exhaust the app? | KDE Connect could be held open with unauthenticated connections ([CVE-2020-26164](https://nvd.nist.gov/vuln/detail/CVE-2020-26164)). | Four pending handshakes at most, 10 seconds each, one pairing prompt per 30 seconds, one transfer at a time per direction, and a bounded 8-chunk window (4 MiB) so a peer cannot grow the phone's heap. |
-| Does anything leave the LAN? | Blip and Magic Wormhole relay through the internet when a direct path fails; Syncthing has global discovery and relays. | Never. There is no relay to fall back to. |
+| Does anything leave the LAN? | Blip and Magic Wormhole relay through the internet when a direct path fails; Syncthing has global discovery and relays. | Sync traffic never does; there is no relay to fall back to. |
 
 Some ideas were borrowed as they are: LocalSend's offer-then-accept flow with a per-transfer id,
 Syncthing's chunk-and-hash discipline and temp-file-then-rename, Quick Share's idea of a short

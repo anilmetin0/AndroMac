@@ -46,7 +46,7 @@ telefonun pili bunu neredeyse fark etmez.
 - Kendi kendine kurulan güncellemeler; uygulamayı Homebrew kurduysa onun üzerinden, isteğe bağlı beta kanalıyla
 
 ### Gizlilik
-- Yalnızca yerel ağ; ağdan çıkan tek istek günlük güncelleme denetimidir ve tek anahtarla kapanır
+- Eşitleme trafiği yerel ağdan hiç çıkmaz. GitHub'a yalnızca günlük güncelleme denetimi ve güncellemenin indirilmesi gider (Homebrew ile kurulduysa `brew upgrade` üzerinden); tek anahtar ikisini de kapatır
 - P-256 üzerinde Noise-KK tarzı bir el sıkışma ve AES-256-GCM, iki ekranda 6 haneli kodla onaylanır
 - Kripto iki kez yazıldı (CryptoKit ve JCE); iki betik ikisinin uyuştuğunu kanıtlar
 - Telemetri yok, analiz yok, iki uygulamada da üçüncü parti kütüphane yok
@@ -105,7 +105,7 @@ macos/scripts/fetch-scrcpy.sh && macos/build.sh           # → macos/build/Andr
 android/gradlew -p android :app:assembleDebug             # → APK
 ```
 
-Xcode 26.6+, JDK 25 ve platform 37'li Android SDK gerekir. Araç zincirinin tamamı, testler ve her
+Xcode 26 ya da sonrası, JDK 25 ve platform 37'li Android SDK gerekir. Araç zincirinin tamamı, testler ve her
 değişikliğin uyması gereken kurallar [CONTRIBUTING.md](CONTRIBUTING.md)'de. Kablo protokolü
 [docs/PROTOCOL.md](docs/PROTOCOL.md)'de, enerji kuralları [docs/ENERGY.md](docs/ENERGY.md)'de.
 

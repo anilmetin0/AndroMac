@@ -65,7 +65,7 @@ will be closed however good the code is.
 | | Version |
 |---|---|
 | macOS | 14 Sonoma or later to run, and to build |
-| Xcode | 26.6 or later, for the Swift 6.2 toolchain |
+| Xcode | 26 or later, for the Swift 6.2 toolchain |
 | JDK | 25 |
 | Android SDK | platform 37 (Android 17), build-tools 36.0.0 |
 | Gradle | 9.7.1, through the wrapper, downloaded automatically |
@@ -103,11 +103,14 @@ android/gradlew -p android :vectors:test                  # android/vectors/src/
 Platform-free Kotlin (anything in `core/` or `feature/` that imports no `android.*` package) can be
 added to the `vectors` source set in `android/vectors/build.gradle.kts` and tested there.
 
-`build.sh` signs the bundle ad-hoc, and an ad-hoc signature is a different identity on every
-build, so the Keychain asks for permission every time you launch. With a persistent certificate
-it asks once:
+`build.sh` signs the bundle with the "AndroMac Self-Signed" certificate when your Keychain has
+it, and ad-hoc otherwise. An ad-hoc signature is a different identity on every build, so the
+Keychain asks for permission every time you launch. `scripts/setup-macos-signing.sh --local`
+creates the certificate for local builds. `CODESIGN_IDENTITY` picks another one, and
+`CODESIGN_IDENTITY=-` forces ad-hoc:
 
 ```bash
+scripts/setup-macos-signing.sh --local
 CODESIGN_IDENTITY="Apple Development: you@example.com" macos/build.sh
 ```
 
@@ -235,6 +238,8 @@ scripts/
   verify-crypto.sh                 proves the two crypto implementations agree, vector by vector
   verify-handshake.sh              runs the real Swift and Kotlin session code over loopback
   setup-android-signing.sh         creates the APK signing key and uploads it as secrets
+  setup-macos-signing.sh           creates the Mac's self-signed certificate and uploads it as
+                                   secrets; --local only imports it for local builds
 
 .github/
   workflows/build.yml              verify, test, build both apps, publish the release
@@ -245,7 +250,7 @@ scripts/
 android/                           AGP 9.4.1, Gradle 9.7.1, minSdk 29, no dependencies
   app/src/main/kotlin/dev/andromac/
     core/                          platform-free: Crypto, Session, Protocol, Store, Link, Version,
-                                   FileNames, NetworkInfo
+                                   FileNames, NetworkInfo, MacPick, NotificationImage
     net/                           LinkService (connect loop, backoff, dispatch), Discovery (mDNS
                                    only while there is no connection), BootReceiver
     feature/                       one file per synced thing: NotificationRelay, ClipboardBridge,
@@ -262,7 +267,8 @@ macos/                             Swift package, swift-tools 6.2, macOS 14+, no
   scripts/update-strings.sh        extracts the localization keys and rewrites the .strings files
   Resources/                       Info.plist, en.lproj and tr.lproj, make-icon.swift
   Sources/AndroMacKit/             platform-free: Crypto, Session, Wire, Version, FileNames,
-                                   PairedDevice, SealedFile, AdbOutput, ReleaseInfo, VerificationCode
+                                   PairedDevice, SealedFile, AdbOutput, ReleaseInfo,
+                                   VerificationCode, NotificationAction, NotificationImage
   Sources/AndroMac/                the app: Server (Bonjour, handshake limits, dispatch), AppState,
                                    Store, ScreenMirror, FileTransfer, the updater and the SwiftUI views
   Sources/SelfTest/                the vector printer and handshake responder the scripts use

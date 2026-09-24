@@ -1,7 +1,8 @@
-# One rolling release per version, rebuilt from every push to main. The version here must equal
-# the VERSION file (CI checks it); a rebuild of the same version keeps the same file name, so the
-# checksum is not pinned and SHA256SUMS.txt on the release page carries it. The app updates
-# itself between builds. Apple Silicon only: CI builds arm64 and there is no Intel build.
+# One stable release per version; the betas published in between are prereleases the cask never
+# sees. The version here must equal the VERSION file (CI checks it). A re-published stable release
+# keeps the same file name, so the checksum is not pinned and SHA256SUMS.txt on the release page
+# carries it. The app updates itself. Apple Silicon only: CI builds arm64 and there is no Intel
+# build.
 #
 #   brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
 #   brew trust anilmetin0/andromac
@@ -34,7 +35,8 @@ cask "andromac" do
   ]
 
   caveats <<~EOS
-    AndroMac is signed ad-hoc and not notarized, so macOS refuses the first launch.
+    AndroMac is signed with its own self-signed certificate and not notarized,
+    so macOS refuses the first launch.
     Clear the quarantine flag once:
       xattr -dr com.apple.quarantine /Applications/AndroMac.app
     or press "Open Anyway" in System Settings > Privacy & Security after the first try.

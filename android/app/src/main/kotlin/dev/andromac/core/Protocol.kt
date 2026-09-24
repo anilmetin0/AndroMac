@@ -48,9 +48,9 @@ object Protocol {
     const val MAX_CLIPBOARD = 64 * 1024
 
     /**
-     * Notification field limits from PROTOCOL §8. The receiver truncates to these anyway, so
-     * clamping here keeps a long `EXTRA_BIG_TEXT` body off the radio instead of sending
-     * kilobytes the Mac will only discard.
+     * Notification field limits from PROTOCOL §5, "Limits on incoming data". The receiver
+     * truncates to these anyway, so clamping here keeps a long `EXTRA_BIG_TEXT` body off the radio
+     * instead of sending kilobytes the Mac will only discard.
      */
     const val MAX_NOTIFICATION_TEXT = 2048
     const val MAX_NOTIFICATION_ID = 256

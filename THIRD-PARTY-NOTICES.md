@@ -1,16 +1,20 @@
 # Third-party notices
 
 Neither app links a third-party library. The macOS release package ships two separate programs
-for screen mirroring, unmodified, as published by their authors. AndroMac starts them as child
-processes and does not link to them. `macos/scripts/fetch-scrcpy.sh` pins the exact release and
-its SHA-256.
+for screen mirroring as published by their authors, unmodified apart from being re-signed with
+the app (and adb being thinned to arm64). AndroMac starts them as child processes and does not
+link to them. `macos/scripts/fetch-scrcpy.sh` pins the exact release and its SHA-256.
+
+The license copies sit in `Contents/Resources/Licenses/`: `scrcpy-LICENSE.txt` and this file,
+`THIRD-PARTY-NOTICES.md`.
 
 ## scrcpy 4.1
 
 - Copyright (C) 2018 Genymobile, Copyright (C) 2018-2026 Romain Vimont
 - License: Apache License 2.0, included in the app as `Contents/Resources/Licenses/scrcpy-LICENSE.txt`
 - Source: https://github.com/Genymobile/scrcpy/tree/v4.1
-- Files in the bundle: `Contents/MacOS/scrcpy`, `Contents/Resources/scrcpy-server`
+- Files in the bundle: `Contents/MacOS/scrcpy`, `Contents/Resources/scrcpy-server`,
+  `Contents/Resources/scrcpy.png` (the mirroring window's icon)
 
 The `scrcpy` binary is the static macOS build from the scrcpy release. It contains:
 

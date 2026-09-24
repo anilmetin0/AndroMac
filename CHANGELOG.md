@@ -9,7 +9,7 @@ raised. Betas list their commits instead.
 
 ## Unreleased
 
-## 1.1.0 - 2026-09-23
+## 1.1.0 - 2026-09-24
 
 ### Added
 
@@ -21,7 +21,8 @@ raised. Betas list their commits instead.
   Screen mirroring has sound, screen off, stay awake and a resolution cap.
 - **Updates you can read, and that install themselves.** Before an update installs, a window
   shows what changed. With **Install updates automatically** on (the default), the Mac installs
-  once nothing is open or running, and the phone once you leave the app, on Wi-Fi only. A Mac
+  once nothing is open or running, and the phone once you leave the app, on Wi-Fi only. The
+  phone installs on its own on Android 12 and later; older phones ask first. A Mac
   installed with Homebrew updates through `brew upgrade`. **Beta updates** follows the test
   builds published between releases.
 - **Pictures in notifications.** A photo in a chat message, a notification's big picture or the
@@ -46,12 +47,13 @@ raised. Betas list their commits instead.
   The status names the Mac you are connected or connecting to, and pairing shows the Macs the
   phone can see. A new clipboard history lists the last 20 texts sent or received, kept in memory
   only.
-- **No more password prompt after every update.** The Mac app is now signed with one
-  certificate on every build, so after one **Always Allow** the Keychain stops asking. It is
-  still not notarized, so the first-launch step stays.
+- **One signing certificate for the Mac app.** Release builds are now signed with AndroMac's own
+  self-signed certificate instead of ad-hoc. They are still not notarized, so the first-launch
+  step stays, and the Keychain can ask once after an update; answer **Always Allow**.
 - **One AndroMac at a time.** Opening a second copy brings up the one already running.
-- **Releases.** A version is released once and stays put; the builds in between are published
-  as betas.
+- **Releases.** Each version has one stable release, and the builds in between are published as
+  betas. Ordinary pushes never rebuild the stable release. Only a manual stable run or a commit
+  with `[stable]` in its message re-publishes it, which moves its tag.
 - **Easier on the battery.** The phone looks for the Mac only on Wi-Fi or Ethernet, and only on
   the network where it last found it. It goes quiet while the Mac sleeps, holds battery updates
   while the screen is off, skips repeated notifications, and ignores clipboard requests with the

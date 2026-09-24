@@ -61,7 +61,7 @@ jobs:
           fetch-depth: 0
       # channel: stable on the first push of a new VERSION (or when asked for), beta otherwise,
       # none off main. previous: where the notes' commit list starts. For stable, the previous
-      # stable tag (or this version's old target on a re-publish); for beta, v<VERSION>.
+      # version's tag; for beta, v<VERSION>.
       - id: v
         env:
           REQUESTED: ${{ inputs.channel }}
@@ -84,7 +84,9 @@ jobs:
             name="AndroMac-beta-$build"; previous="$current"
           else
             name="AndroMac-$version"
-            previous="${current:-$(git tag --list 'v[0-9]*' --sort=-v:refname | grep -vx "v$version" | head -1 || true)}"
+            # The previous version's tag, also on a re-publish: the notes list the whole version,
+            # and this version's old target may no longer be an ancestor after a rewrite.
+            previous="$(git tag --list 'v[0-9]*' --sort=-v:refname | grep -vx "v$version" | head -1 || true)"
           fi
           {
             echo "version=$version"

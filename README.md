@@ -46,7 +46,7 @@ the phone's battery barely notices.
 - Updates that install themselves, through Homebrew when it installed the app, with an optional beta channel
 
 ### Privacy
-- Local network only; the daily update check is the one request that leaves it, and one switch turns it off
+- Sync traffic never leaves the local network. Only the daily update check and the update download reach GitHub (through `brew upgrade` on a Homebrew install), and one switch turns them off
 - A Noise-KK-style handshake over P-256 and AES-256-GCM, confirmed with a 6-digit code on both screens
 - The crypto is written twice (CryptoKit and JCE), and two scripts prove the two agree
 - No telemetry, no analytics, no third-party library in either app
@@ -105,7 +105,7 @@ macos/scripts/fetch-scrcpy.sh && macos/build.sh           # → macos/build/Andr
 android/gradlew -p android :app:assembleDebug             # → the APK
 ```
 
-You need Xcode 26.6+, JDK 25 and the Android SDK with platform 37. [CONTRIBUTING.md](CONTRIBUTING.md)
+You need Xcode 26 or later, JDK 25 and the Android SDK with platform 37. [CONTRIBUTING.md](CONTRIBUTING.md)
 has the full toolchain, the tests and the rules every change has to keep. The wire format is in
 [docs/PROTOCOL.md](docs/PROTOCOL.md) and the energy rules in [docs/ENERGY.md](docs/ENERGY.md).
 

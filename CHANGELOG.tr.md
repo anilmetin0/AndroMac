@@ -9,7 +9,7 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ## Unreleased
 
-## 1.1.0 - 2026-09-23
+## 1.1.0 - 2026-09-24
 
 ### Eklenenler
 
@@ -22,7 +22,8 @@ derlemeler bunun yerine commit'lerini listeler.
 - **Okunabilen ve kendi kendine kurulan güncellemeler.** Bir güncelleme kurulmadan önce neyin
   değiştiğini gösteren bir pencere açılıyor. **Güncellemeleri otomatik kur** açıkken (varsayılan)
   Mac hiçbir şey açık ya da çalışır değilken, telefon ise uygulamadan çıktığında ve yalnızca
-  Wi-Fi'dayken kuruyor. Homebrew ile kurulan Mac `brew upgrade` ile güncelleniyor. **Beta
+  Wi-Fi'dayken kuruyor. Telefon kendiliğinden kurmayı Android 12 ve sonrasında yapıyor; daha eski
+  telefonlar önce soruyor. Homebrew ile kurulan Mac `brew upgrade` ile güncelleniyor. **Beta
   güncellemeleri**, sürümler arasında yayınlanan test derlemelerini izliyor.
 - **Bildirimlerde görseller.** Sohbet mesajındaki fotoğraf, bildirimin büyük resmi ya da gönderenin
   profil fotoğrafı bildirimle birlikte geliyor ve Mac'te uygulamanın ikonunun yanında küçük resim
@@ -47,12 +48,15 @@ derlemeler bunun yerine commit'lerini listeler.
   Durum, bağlı olunan ya da bağlanılan Mac'in adını söylüyor; eşleştirme de telefonun gördüğü
   Mac'leri gösteriyor. Yeni pano geçmişi gönderilen ya da gelen son 20 metni listeliyor ve yalnızca
   bellekte tutuyor.
-- **Her güncellemeden sonra şifre sorusu yok.** Mac uygulaması artık her derlemede aynı
-  sertifikayla imzalanıyor; bir kez **Always Allow** dedikten sonra Anahtar Zinciri bir daha
-  sormuyor. Uygulama hâlâ noter onaylı değil, ilk açılış adımı duruyor.
+- **Mac uygulaması için tek imza sertifikası.** Yayın derlemeleri artık ad-hoc yerine
+  AndroMac'in kendinden imzalı sertifikasıyla imzalanıyor. Hâlâ noter onaylı değiller, bu yüzden
+  ilk açılış adımı duruyor; Anahtar Zinciri de bir güncellemeden sonra bir kez sorabilir, **Always
+  Allow** de.
 - **Aynı anda tek AndroMac.** İkinci bir kopyayı açmak, zaten çalışanı öne getiriyor.
-- **Sürümler.** Bir sürüm bir kez yayınlanıyor ve yerinde kalıyor; aradaki derlemeler beta olarak
-  yayınlanıyor.
+- **Sürümler.** Her sürümün tek bir kararlı yayını var, aradaki derlemeler beta olarak
+  yayınlanıyor. Sıradan push'lar kararlı yayını yeniden derlemez. Onu yalnızca elle başlatılan
+  kararlı bir çalıştırma ya da mesajında `[stable]` geçen bir commit yeniden yayınlar; bu da
+  etiketini taşır.
 - **Pile daha hafif.** Telefon Mac'i yalnızca Wi-Fi ya da Ethernet'te ve yalnızca onu son bulduğu
   ağda arıyor. Mac uyurken sessiz kalıyor, ekran kapalıyken pil güncellemelerini bekletiyor, tekrar
   eden bildirimleri atlıyor ve ekran kapalıyken gelen pano isteklerini yok sayıyor. Mac de
