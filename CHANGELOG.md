@@ -32,8 +32,9 @@ raised. Betas list their commits instead.
   96 KB.
 - **Links open from the notification.** When a notification carries a web address, the Mac
   notification has an Open link button, and the history and the panel show one next to it.
-- **The project one tap away.** Settings on the phone and Settings → General on the Mac open the
-  repository on GitHub; the Mac's Help menu adds Report a Problem.
+- **The project one tap away.** The GitHub mark next to the version, in Settings on the phone
+  and Settings → General on the Mac, opens the repository; the Mac's Help menu adds Report a
+  Problem.
 - **Reset AndroMac.** Settings on both apps can erase everything the app keeps and start over.
 - **Pick your Mac.** With several Macs running AndroMac on the same network, Pair asks which one.
 - **Ready for Android 17.** Android 17 asks before an app may talk to devices on your network.
@@ -77,6 +78,11 @@ raised. Betas list their commits instead.
   notification in place and keeps its time, and a history row whose text grew no longer shows
   half a line until it is scrolled.
 - Clearing the notification or clipboard history on the Mac no longer crashes the app.
+- Mac notifications show AndroMac's icon instead of a blank one. The icon now also ships as an
+  asset catalog, and an update swaps the app in one step, so the system never sees a
+  half-copied app without an icon.
+- In the Mac panel, a notification's picture shows on its own, without a grey plate behind it,
+  and an offline phone's More button sits on the hint line instead of a row of its own.
 - With several phones connected, files, notification replies, dismissals and media controls went
   to every phone instead of the right one. A second phone could also rename the first, and a
   stranger's pairing prompt could show a paired phone's name.

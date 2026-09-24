@@ -32,8 +32,8 @@ derlemeler bunun yerine commit'lerini listeler.
   96 KB.
 - **Bağlantılar bildirimden açılıyor.** Bildirimde bir web adresi varsa Mac bildiriminde Bağlantıyı
   aç düğmesi çıkıyor, geçmişte ve panelde de yanında bir düğme duruyor.
-- **Proje bir dokunuş uzakta.** Telefonda Ayarlar, Mac'te Ayarlar → Genel GitHub'daki depoyu
-  açıyor; Mac'in Yardım menüsünde Sorun bildir de var.
+- **Proje bir dokunuş uzakta.** Telefonda Ayarlar'da ve Mac'te Ayarlar → Genel'de sürümün
+  yanındaki GitHub simgesi depoyu açıyor; Mac'in Yardım menüsünde Sorun bildir de var.
 - **AndroMac'i sıfırla.** İki uygulamada da Ayarlar, uygulamanın tuttuğu her şeyi silip baştan başlatabiliyor.
 - **Mac'ini seç.** Aynı ağda AndroMac çalıştıran birden fazla Mac varsa Eşleştir hangisi olduğunu
   soruyor.
@@ -78,6 +78,11 @@ derlemeler bunun yerine commit'lerini listeler.
   bildirimi yerinde güncelliyor ve saatini koruyor; metni uzayan bir geçmiş satırı da artık
   kaydırılana kadar yarım görünmüyor.
 - Mac'te bildirim ya da pano geçmişini temizlemek artık uygulamayı çökertmiyor.
+- Mac bildirimlerinde boş bir simge yerine AndroMac'in simgesi görünüyor. Simge artık bir varlık
+  kataloğu olarak da geliyor ve güncelleme uygulamayı tek adımda değiştiriyor; sistem simgesiz,
+  yarım kopyalanmış bir uygulama görmüyor.
+- Mac panelinde bildirimin resmi arkasında gri bir zemin olmadan görünüyor; çevrimdışı telefonun
+  Diğer düğmesi ayrı bir satır yerine ipucu satırında duruyor.
 - Birden fazla telefon bağlıyken dosyalar, bildirim yanıtları, kapatmalar ve medya denetimleri
   doğru telefon yerine hepsine gidiyordu. İkinci bir telefon ilkinin adını da değiştirebiliyordu,
   tanımadığın bir telefonun eşleştirme sorusu da eşleşmiş bir telefonun adını gösterebiliyordu.

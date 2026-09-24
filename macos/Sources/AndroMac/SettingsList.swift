@@ -112,10 +112,22 @@ struct SettingsList: View {
             }
         }
 
-        // The version is the first thing asked for in a bug report; the repository is where it goes.
+        // The version is the first thing asked for in a bug report; the GitHub mark beside it opens
+        // the repository, where the report goes.
         Section {
-            LabeledContent("Version", value: Self.version)
-            Link("AndroMac on GitHub", destination: Release.repositoryURL)
+            LabeledContent("Version") {
+                HStack(spacing: Theme.Space.small) {
+                    Text(Self.version)
+                    Link(destination: Release.repositoryURL) {
+                        Image("GitHubMark")
+                            .resizable()
+                            .frame(width: 14, height: 14)
+                    }
+                    .foregroundStyle(.secondary)
+                    .help("AndroMac on GitHub")
+                    .accessibilityLabel("AndroMac on GitHub")
+                }
+            }
         }
 
         Section {
