@@ -5,7 +5,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.os.Build
 import android.os.Bundle
-import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
@@ -68,7 +67,7 @@ class ClipboardHistoryActivity : Activity() {
                 if (entry.fromMac) R.drawable.ic_arrow_down else R.drawable.ic_arrow_up
             )
             row.findViewById<TextView>(R.id.clipText).text = entry.text
-            val ago = DateUtils.getRelativeTimeSpanString(entry.time, now, DateUtils.MINUTE_IN_MILLIS)
+            val ago = ago(entry.time, now)
             row.findViewById<TextView>(R.id.clipMeta).text =
                 getString(if (entry.fromMac) R.string.history_from_mac else R.string.history_to_mac, ago)
             row.setOnClickListener { copy(entry.text) }

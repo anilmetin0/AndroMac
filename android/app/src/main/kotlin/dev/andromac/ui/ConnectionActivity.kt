@@ -63,7 +63,7 @@ class ConnectionActivity : Activity() {
             store.lastEndpoint?.substringBeforeLast(':') ?: getString(R.string.diag_none)
         // Nothing to connect to, or already connected: the row would be a dead end.
         setRowEnabled(R.id.rowConnectNow, paired && state !is Link.State.Connected)
-        findViewById<View>(R.id.rowUnpair).visibility = if (paired) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.unpairCard).visibility = if (paired) View.VISIBLE else View.GONE
     }
 
     private fun confirmUnpair() {

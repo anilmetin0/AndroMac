@@ -58,14 +58,18 @@
                     <Switch android:id="@+id/swAuto" style="@style/RowSwitch" />
                 </LinearLayout>
 
-                <LinearLayout android:id="@+id/rowConnectNow" style="@style/Row">
-                    <TextView style="@style/RowTitle" android:layout_width="0dp" android:layout_weight="1"
-                        android:text="@string/connection_now" />
-                    <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
-                </LinearLayout>
+                <TextView
+                    android:id="@+id/rowConnectNow"
+                    style="@style/Row"
+                    android:textAppearance="@style/TextAppearance.AM.BodyLarge"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:drawableEnd="@drawable/ic_chevron"
+                    android:drawablePadding="16dp"
+                    android:text="@string/connection_now" />
             </LinearLayout>
 
-            <LinearLayout style="@style/Card">
+            <!-- Hidden as a whole while unpaired: an empty card left a grey strip. -->
+            <LinearLayout android:id="@+id/unpairCard" style="@style/Card">
                 <LinearLayout android:id="@+id/rowUnpair" style="@style/Row">
                     <TextView style="@style/RowTitle" android:layout_width="0dp" android:layout_weight="1"
                         android:textColor="@color/am_error"

@@ -187,7 +187,8 @@
         <item quantity="one">Sending %d file to your Mac</item>
         <item quantity="other">Sending %d files to your Mac</item>
     </plurals>
-    <string name="file_dropped">Up to 50 files at a time; %1$d skipped</string>
+    <!-- "skipped" does not change with the count in English or Turkish. -->
+    <string name="file_dropped" tools:ignore="PluralsCandidate">Up to 50 files at a time; %1$d skipped</string>
 
 
     <!-- notification settings screen -->
@@ -327,6 +328,8 @@
     <string name="history_clear">Clear</string>
     <string name="history_from_mac">From Mac · %1$s</string>
     <string name="history_to_mac">To Mac · %1$s</string>
+    <!-- A time under a minute ago; the platform would say "0 minutes ago". -->
+    <string name="just_now">just now</string>
     <string name="clip_nothing_to_send">Nothing new to send</string>
     <!-- pairing chooser -->
     <string name="pair_choose_title">Choose a Mac</string>

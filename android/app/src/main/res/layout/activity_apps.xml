@@ -43,6 +43,7 @@
         android:layout_gravity="center"
         android:gravity="center"
         android:padding="32dp"
+        android:textAppearance="@style/TextAppearance.AM.BodyMedium"
         android:textColor="?android:attr/textColorSecondary"
         android:visibility="gone"
         android:text="@string/apps_empty" />

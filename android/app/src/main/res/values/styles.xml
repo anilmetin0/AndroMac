@@ -150,10 +150,15 @@
     </style>
 
 
-    <!-- Material 3 filled button, the one primary action on a screen. 48dp touch target, 40dp pill. -->
+    <!-- Material 3 filled button, the one primary action on a screen. 48dp touch target, 40dp pill.
+         It hugs its label and sits at the end of its card, like Material card actions; the card
+         gives it 16dp to the side. -->
     <style name="PrimaryButton">
-        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">end</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:minWidth">64dp</item>
         <item name="android:minHeight">48dp</item>
         <item name="android:paddingStart">24dp</item>
         <item name="android:paddingEnd">24dp</item>

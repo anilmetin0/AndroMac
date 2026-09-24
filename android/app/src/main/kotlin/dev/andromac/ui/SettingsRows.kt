@@ -1,7 +1,10 @@
 package dev.andromac.ui
 
 import android.app.Activity
+import android.content.Context
+import android.text.format.DateUtils
 import android.view.View
+import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Switch
 import android.widget.TextView
 import dev.andromac.R
@@ -16,6 +19,16 @@ import dev.andromac.R
 
 fun Activity.bindSwitchRow(rowId: Int, switchId: Int, initial: Boolean, set: (Boolean) -> Unit) {
     val toggle = findViewById<Switch>(switchId).apply { isChecked = initial }
+    // The switch is not focusable, so TalkBack lands on the row: make the row announce itself
+    // as the switch it is, "Battery, switch, on", instead of a bare "Battery, double-tap".
+    findViewById<View>(rowId).accessibilityDelegate = object : View.AccessibilityDelegate() {
+        override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfo) {
+            super.onInitializeAccessibilityNodeInfo(host, info)
+            info.className = Switch::class.java.name
+            info.isCheckable = true
+            info.isChecked = toggle.isChecked
+        }
+    }
     // The row tap only flips the switch; the checked-change listener is the SOLE writer.
     // Writing here as well made every tap save the preference twice.
     findViewById<View>(rowId).setOnClickListener { toggle.isChecked = !toggle.isChecked }
@@ -68,3 +81,8 @@ fun Activity.setupDetailScreen(layoutId: Int, titleRes: Int) {
     findViewById<TextView>(R.id.headerTitle).setText(titleRes)
     findViewById<View>(R.id.headerBack).setOnClickListener { finish() }
 }
+
+/** "5 minutes ago", or "just now" under a minute, where the platform says "0 minutes ago". */
+fun Context.ago(time: Long, now: Long = System.currentTimeMillis()): CharSequence =
+    if (now - time < DateUtils.MINUTE_IN_MILLIS) getString(R.string.just_now)
+    else DateUtils.getRelativeTimeSpanString(time, now, DateUtils.MINUTE_IN_MILLIS)

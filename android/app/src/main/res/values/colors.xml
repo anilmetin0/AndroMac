@@ -25,9 +25,10 @@
 
     <color name="am_error">#FFBA1A1A</color>
 
-    <!-- The status colours are semantic and do not follow the wallpaper; only their brightness is adapted. -->
-    <color name="am_state_ok">#FF1E8E45</color>
-    <color name="am_state_pending">#FFB0680A</color>
+    <!-- The status colours are semantic and do not follow the wallpaper; only their brightness is adapted.
+         Tone 40 so the Permissions state text clears 4.5:1 on surface-container (5.5:1). -->
+    <color name="am_state_ok">#FF146C2E</color>
+    <color name="am_state_pending">#FF8B5000</color>
     <color name="am_state_alert">#FFBA1A1A</color>
-    <color name="am_state_idle">#FF8A929E</color>
+    <color name="am_state_idle">#FF74777F</color>
 </resources>

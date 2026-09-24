@@ -63,15 +63,14 @@
 
         </LinearLayout>
 
-        <LinearLayout style="@style/Card">
+        <LinearLayout style="@style/Card" android:paddingTop="16dp" android:paddingBottom="16dp">
 
             <!-- One line: what the install is doing or why it stopped, else what the last check found. -->
             <TextView
                 android:id="@+id/checkSummary"
                 style="@style/RowSubtitle"
-                android:paddingStart="18dp"
-                android:paddingEnd="18dp"
-                android:paddingTop="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:accessibilityLiveRegion="polite" />
 
             <ProgressBar
@@ -79,8 +78,8 @@
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="18dp"
-                android:layout_marginEnd="18dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:layout_marginTop="8dp"
                 android:max="100"
                 android:visibility="gone" />
@@ -89,8 +88,8 @@
             <TextView
                 android:id="@+id/notes"
                 style="@style/RowSubtitle"
-                android:paddingStart="18dp"
-                android:paddingEnd="18dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:paddingTop="8dp"
                 android:textIsSelectable="true"
                 android:visibility="gone" />
@@ -99,10 +98,8 @@
             <Button
                 android:id="@+id/download"
                 style="@style/PrimaryButton"
-                android:layout_marginStart="18dp"
-                android:layout_marginEnd="18dp"
                 android:layout_marginTop="12dp"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="-4dp" />
         </LinearLayout>
 
         </LinearLayout>

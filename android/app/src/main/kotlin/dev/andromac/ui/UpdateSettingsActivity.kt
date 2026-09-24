@@ -12,7 +12,6 @@ import android.os.Build
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.text.Spanned
-import android.text.format.DateUtils
 import android.text.style.StyleSpan
 import android.view.View
 import android.widget.Button
@@ -321,7 +320,7 @@ fun Activity.updateStatus(store: Store): String {
     if (lastUpdateError != null) return getString(R.string.update_status_error)
     val last = store.updateLastCheck
     if (last == 0L) return getString(R.string.update_status_never)
-    val ago = DateUtils.getRelativeTimeSpanString(last, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS)
+    val ago = ago(last)
     val newer = newerRelease(store)
     return if (newer == null) getString(R.string.update_status_uptodate, ago)
     else getString(R.string.update_status_available, newer.label, ago)

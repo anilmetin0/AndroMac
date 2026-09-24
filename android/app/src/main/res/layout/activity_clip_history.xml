@@ -32,8 +32,11 @@
                 android:id="@+id/historyEmpty"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="48dp"
+                android:paddingTop="96dp"
                 android:gravity="center"
+                android:drawableTop="@drawable/ic_clipboard"
+                android:drawableTint="?android:attr/textColorSecondary"
+                android:drawablePadding="16dp"
                 android:textAppearance="@style/TextAppearance.AM.BodyLarge"
                 android:textColor="?android:attr/textColorSecondary"
                 android:text="@string/history_empty" />

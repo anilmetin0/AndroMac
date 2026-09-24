@@ -50,6 +50,5 @@
         android:textAppearance="@style/TextAppearance.AM.LabelLarge"
         android:textColor="?android:attr/textColorPrimary"
         android:gravity="end"
-        android:minWidth="100dp"
-        android:paddingStart="8dp" />
+        android:minWidth="100dp" />
 </LinearLayout>

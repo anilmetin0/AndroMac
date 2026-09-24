@@ -23,9 +23,17 @@
             android:paddingEnd="16dp"
             android:paddingTop="12dp">
 
+            <!-- "2 not granted": a status line, so supporting text like the other screens' intros,
+                 not a primary-coloured section heading. -->
             <TextView
                 android:id="@+id/permissionsSummary"
-                style="@style/SectionLabel" />
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="16dp"
+                android:textAppearance="@style/TextAppearance.AM.BodyMedium"
+                android:textColor="?android:attr/textColorSecondary" />
 
             <!-- Rows are added in code from item_permission.xml, one per Permission. -->
             <LinearLayout

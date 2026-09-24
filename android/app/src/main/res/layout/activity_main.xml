@@ -59,6 +59,9 @@
             android:paddingBottom="16dp"
             android:foreground="?android:attr/selectableItemBackground">
 
+            <!-- Material 3 card: the state as the title, the detail as supporting text, the one
+                 action below at the end, hugging its label. -->
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -101,9 +104,8 @@
             <Button
                 android:id="@+id/pair"
                 style="@style/PrimaryButton"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
                 android:layout_marginTop="12dp"
+                android:layout_marginBottom="-4dp"
                 android:text="@string/pair" />
         </LinearLayout>
 
@@ -271,8 +273,6 @@
             <Button
                 android:id="@+id/rowSendClip"
                 style="@style/TonalButton"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
                 android:layout_marginBottom="8dp"
                 android:text="@string/clip_send_now" />
         </LinearLayout>

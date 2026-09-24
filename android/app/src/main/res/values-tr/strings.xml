@@ -319,6 +319,7 @@
     <string name="history_clear">Temizle</string>
     <string name="history_from_mac">Mac\'ten · %1$s</string>
     <string name="history_to_mac">Mac\'e · %1$s</string>
+    <string name="just_now">az önce</string>
     <string name="clip_nothing_to_send">Gönderilecek yeni bir şey yok</string>
     <!-- pairing chooser -->
     <string name="pair_choose_title">Bir Mac seçin</string>
