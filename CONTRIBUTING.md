@@ -222,7 +222,7 @@ when the cask and `VERSION` disagree, and anything in `Casks/` must pass `brew s
 
 ```
 README.md, README.tr.md            the short front page
-CHANGELOG.md, CHANGELOG.tr.md      release notes, read by the release job
+CHANGELOG.md, CHANGELOG.tr.md      the changelog; the release job reads CHANGELOG.md
 VERSION                            the released version; raising it publishes the next stable release
 THIRD-PARTY-NOTICES.md             what the Mac package bundles for screen mirroring, and the licenses
 Casks/andromac.rb                  Homebrew cask; its version follows VERSION, CI checks it

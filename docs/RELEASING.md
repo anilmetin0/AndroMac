@@ -25,16 +25,29 @@ release job, on one of two channels.
 | When | The first push to `main` after `VERSION` changes, a push whose commit message contains `[stable]`, or a manual run with channel `stable` | Every other push to `main` |
 | Tag | `v<VERSION>` | `beta-<BUILD>-<sha>` |
 | Title | `AndroMac <VERSION>` | `AndroMac <VERSION> beta <BUILD> (<sha>)` |
-| Marked | Latest | Pre-release, never latest |
+| Marked | Pre-release until promoted, then Latest | Pre-release, never latest |
 | Assets | `AndroMac-<VERSION>-macOS-arm64.dmg`, `AndroMac-<VERSION>-android.apk`, `SHA256SUMS.txt` | `AndroMac-beta-<BUILD>-macOS-arm64.dmg`, `AndroMac-beta-<BUILD>-android.apk`, `SHA256SUMS.txt` |
-| Notes | The `## <VERSION>` sections of `CHANGELOG.md` and `CHANGELOG.tr.md`, then the commits since the previous version's tag | A test-build notice, then the commits since `v<VERSION>` |
+| Notes | The `## <VERSION>` section of `CHANGELOG.md`, then the commits since the previous version's tag | A test-build notice, then the commits since `v<VERSION>` |
 | Kept | Forever | The newest five |
 
 Ordinary pushes never rebuild a stable release. A manual run with channel `stable`, or a push
 whose commit message contains `[stable]`, re-publishes it from that commit and moves the
-`v<VERSION>` tag there. `/releases/latest`, the Homebrew cask and Obtainium's default settings
-see only stable releases. The apps follow stable releases unless **Beta updates** is on in
-Settings → Updates.
+`v<VERSION>` tag there.
+
+A stable release goes out as a pre-release, so the apps with **Beta updates** on (Settings →
+Updates) get it first. Once it holds up, promote it:
+
+```bash
+gh release edit v<VERSION> --prerelease=false --latest
+```
+
+From then on `/releases/latest`, Obtainium's default settings and the apps' stable channel see
+it. Until then they keep offering the previous version. The Homebrew cask is the exception: it
+follows `VERSION` in the repository, so `brew install` already fetches the new DMG.
+
+The notes are in English only; `CHANGELOG.tr.md` is the Turkish changelog in the repository. The
+commit list is grouped into New (`feat`), Fixed (`fix`) and Other, with the scope shown as the
+platform (`fix(macos):` becomes **Mac:**).
 
 Every release body ends with a line naming the build, the commit, the APK signing key and the
 checksum file: `Build <N> · commit <sha> · APK signing: release · checksums in SHA256SUMS.txt`
@@ -43,7 +56,7 @@ workflow run number, which is also the Android `versionCode`, so a newer build a
 over an older one. Inside the apps the version reads `<VERSION> (build · commit)`; a beta after
 1.1.0 reads `1.1.0 (57 · abc1234)`. Local builds show build 1, commit `local`.
 
-A stable release fails, and publishes nothing, if either changelog lacks a `## <VERSION>`
+A stable release fails, and publishes nothing, if `CHANGELOG.md` lacks a `## <VERSION>`
 section. The header may carry a date (`## 1.2.0 - 2026-10-01`); only the version is matched.
 
 ## Releasing a version
@@ -53,9 +66,9 @@ section. The header may carry a date (`## 1.2.0 - 2026-10-01`); only the version
 2. Rename `## Unreleased` to `## <version> - <date>` in `CHANGELOG.md` and `CHANGELOG.tr.md`.
 3. Write the version into `VERSION` (one line, no `v`) and into `Casks/andromac.rb`.
 4. Commit as `chore(release): <version>` and push to `main`. That push publishes the stable
-   release; the pushes after it publish betas until the next version.
-5. Watch the run with `gh run watch`, then check
-   `https://github.com/anilmetin0/AndroMac/releases/latest`.
+   release as a pre-release; the pushes after it publish betas until the next version.
+5. Watch the run with `gh run watch`, then check the release page.
+6. Once it works on real devices, promote it with the `gh release edit` line above.
 
 To rebuild a stable release in place, for example after a broken asset, put `[stable]` in the
 commit message of the push, or run the workflow on `main` from the Actions tab with channel
@@ -92,6 +105,6 @@ a new Mac certificate means one more Keychain prompt for every user.
 - If the release job failed: a stable re-publish deletes the old release before creating the new
   one, so a failure after that point leaves no release for the version until the next
   successful run. Fix the cause, then re-run the workflow.
-- If a changelog section is missing, the stable job stops before touching the release; add the
+- If the changelog section is missing, the stable job stops before touching the release; add the
   section and run it again.
 - If the notes are wrong, edit the release on GitHub, or fix the changelog and re-publish.

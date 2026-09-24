@@ -6,11 +6,13 @@
 # is published.
 #
 # Pushes to main also publish, on one of two channels:
-#   • stable: the first push after VERSION changes (the tag v<VERSION> does not exist yet), or a
-#     manual run with channel=stable. Tag v<VERSION>, title "AndroMac <VERSION>", marked latest,
-#     assets AndroMac-<VERSION>-macOS-arm64.dmg, AndroMac-<VERSION>-android.apk, SHA256SUMS.txt.
-#     The notes are the "## <VERSION>" sections of CHANGELOG.md and CHANGELOG.tr.md plus the
-#     commits since the previous stable release. Homebrew and /releases/latest see only these.
+#   • stable: the first push after VERSION changes (the tag v<VERSION> does not exist yet), a
+#     push whose message has [stable], or a manual run with channel=stable. Tag v<VERSION>, title
+#     "AndroMac <VERSION>", assets AndroMac-<VERSION>-macOS-arm64.dmg,
+#     AndroMac-<VERSION>-android.apk, SHA256SUMS.txt. It goes out as a prerelease, so beta
+#     testers get it first; `gh release edit v<VERSION> --prerelease=false --latest` makes it the
+#     one /releases/latest and the stable updaters see. The notes are the "## <VERSION>" section
+#     of CHANGELOG.md plus the commits since the previous version, grouped by type.
 #   • beta: every other push. A prerelease tagged beta-<BUILD>-<sha>, titled
 #     "AndroMac <VERSION> beta <BUILD> (<sha>)", assets AndroMac-beta-<BUILD>-…; the notes list
 #     the commits since v<VERSION>. Only the newest five betas are kept.
@@ -319,8 +321,9 @@ jobs:
         working-directory: dist
         run: sha256sum * > SHA256SUMS.txt
 
-      # Stable: the "## <version>" section of CHANGELOG.md, the Turkish one folded below it, then
-      # the commits since the previous stable release. Beta: the commits since v<VERSION>.
+      # Stable: the "## <version>" section of CHANGELOG.md, then the commits since the previous
+      # version. Beta: the commits since v<VERSION>. English only; the Turkish changelog lives in
+      # the repository.
       - name: Release notes
         run: |
           section() { awk -v v="$2" '/^## /{p = ($2 == v)} p && !/^## /' "$1" | sed -e '1{/^$/d;}'; }
@@ -334,45 +337,54 @@ jobs:
               sub(/^ +/, "", b); line[n] = line[n] " " b; next }
             { line[++n] = $0; pq = q; pb = b }
             END { for (i = 1; i <= n; i++) print line[i] }'; }
+          # Conventional Commit subjects, grouped: features, fixes, then the rest. The scope
+          # becomes the platform, the type and the [stable] marker go.
           commits() {
-            if [ -n "$PREVIOUS" ]; then git log --no-merges --format='- %s (%h)' "${PREVIOUS}..HEAD" | head -50
-            else echo "First build."; fi
+            if [ -z "$PREVIOUS" ]; then echo "First build."; return; fi
+            git log --no-merges --format='%h%x09%s' "${PREVIOUS}..HEAD" | head -80 | awk -F'\t' '
+              { s = $2; sub(/ *\[stable\]/, "", s); t = "other"; scope = ""
+                if (match(s, /^[a-z]+(\([^)]*\))?!?: /)) {
+                  head = substr(s, 1, RLENGTH - 2); s = substr(s, RLENGTH + 1)
+                  t = head; sub(/[(!].*/, "", t)
+                  if (match(head, /\([^)]*\)/)) scope = substr(head, RSTART + 1, RLENGTH - 2)
+                }
+                if (scope == "macos") scope = "Mac"; else if (scope == "android") scope = "Android"
+                else if (scope != "") scope = toupper(substr(scope, 1, 1)) substr(scope, 2)
+                line = "- " (scope != "" ? "**" scope ":** " : "") toupper(substr(s, 1, 1)) substr(s, 2) " (" $1 ")"
+                g = (t == "feat") ? 1 : (t == "fix") ? 2 : 3
+                out[g] = out[g] line "\n" }
+              END { split("New|Fixed|Other", name, "|")
+                for (g = 1; g <= 3; g++) if (out[g] != "") printf "### %s\n\n%s\n", name[g], out[g] }'
           }
           if [ "$CHANNEL" = "stable" ]; then
             en="$(section CHANGELOG.md "$VERSION" | unwrap)"
-            tr="$(section CHANGELOG.tr.md "$VERSION" | unwrap)"
             [ -n "$en" ] || { echo "::error::CHANGELOG.md has no '## $VERSION' section"; exit 1; }
-            [ -n "$tr" ] || { echo "::error::CHANGELOG.tr.md has no '## $VERSION' section"; exit 1; }
           fi
           {
             if [ "$CHANNEL" = "stable" ]; then
               echo "## What's new"; echo; echo "$en"; echo
-              echo "<details>"; echo "<summary><b>Türkçe</b></summary>"; echo
-              echo "## Yenilikler"; echo; echo "$tr"; echo
-              echo "</details>"; echo
               echo "## Changes in this release"; echo; commits; echo
             else
               echo "> [!WARNING]"
               echo "> A test build of what comes after ${VERSION}. The stable release is the one marked Latest."
-              echo ">"
-              echo "> Bir sonraki sürümün test derlemesi. Kararlı sürüm, Latest olarak işaretli olan."
               echo
               echo "## Changes since ${VERSION}"; echo; commits; echo
             fi
-            echo "**Install:** see the [README](https://github.com/${GITHUB_REPOSITORY}#install) · "
-            echo "**Kurulum:** [README.tr](https://github.com/${GITHUB_REPOSITORY}/blob/main/README.tr.md#kurulum)"
+            echo "**Install:** see the [README](https://github.com/${GITHUB_REPOSITORY}#install)."
             echo
             echo "<sub>Build ${BUILD} · commit ${COMMIT} · APK signing: ${SIGNING} · checksums in SHA256SUMS.txt</sub>"
           } > notes.md
 
-      # Stable: one release per version, re-created only on a manual re-publish.
+      # Stable: one release per version, re-created on a re-publish. Always a prerelease first;
+      # promoting it to latest is a deliberate step (docs/RELEASING.md).
       - name: Publish stable release
         if: env.CHANNEL == 'stable'
         run: |
           gh release delete "v${VERSION}" --cleanup-tag --yes 2>/dev/null || true
           gh release create "v${VERSION}" \
             --target "$GITHUB_SHA" \
-            --latest \
+            --prerelease \
+            --latest=false \
             --title "AndroMac ${VERSION}" \
             --notes-file notes.md \
             dist/*
