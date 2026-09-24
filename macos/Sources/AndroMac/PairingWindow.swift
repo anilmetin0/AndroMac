@@ -68,7 +68,7 @@ struct PairingView: View {
             // what lets the user connect the prompt they approved to the entry they see later.
             Text("Device \(request.fingerprint)")
                 .font(Theme.Font.label.monospaced())
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.secondary)
 
             Text(request.isFirstDevice
                  ? "Pair only if this code matches the one on the phone."
@@ -105,7 +105,7 @@ struct PairingView: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, Theme.Space.medium)
             .background(
-                RoundedRectangle(cornerRadius: Theme.Radius.medium)
+                RoundedRectangle(cornerRadius: Theme.Radius.medium, style: .continuous)
                     .fill(Color.secondary.opacity(0.10))
             )
             .textSelection(.enabled)

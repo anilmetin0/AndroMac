@@ -500,7 +500,8 @@ struct FileConsentView: View {
     let decide: @MainActor (Bool) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        // The pairing window's measurements, so the two prompts read as one family.
+        VStack(alignment: .leading, spacing: Theme.Space.medium) {
             Text("Incoming file")
                 .font(Theme.Font.title)
 
@@ -510,7 +511,7 @@ struct FileConsentView: View {
                     .foregroundStyle(.secondary)
             }
 
-            HStack(spacing: 10) {
+            HStack(spacing: Theme.Space.small) {
                 Image(systemName: "doc")
                     .font(.system(size: 22))
                     .foregroundStyle(.secondary)
@@ -525,24 +526,27 @@ struct FileConsentView: View {
                 }
                 Spacer(minLength: 0)
             }
-            .padding(10)
+            .padding(Theme.Space.medium)
             .frame(maxWidth: .infinity)
-            .background(RoundedRectangle(cornerRadius: Theme.Radius.small).fill(Color.secondary.opacity(0.10)))
+            .background(RoundedRectangle(cornerRadius: Theme.Radius.medium, style: .continuous)
+                .fill(Color.secondary.opacity(0.10)))
 
             Text("It is saved to your Downloads folder and never opened automatically.")
                 .font(Theme.Font.label)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Space.small) {
                 Spacer(minLength: 0)
                 Button("Decline") { decide(false) }
+                    .secondaryAction()
                 Button("Accept") { decide(true) }
-                    .buttonStyle(.borderedProminent)
+                    .prominentAction()
                     .keyboardShortcut(.defaultAction)
             }
+            .controlSize(.large)
         }
-        .padding(20)
-        .frame(width: 360)
+        .padding(Theme.Space.large)
+        .frame(width: 380)
     }
 }

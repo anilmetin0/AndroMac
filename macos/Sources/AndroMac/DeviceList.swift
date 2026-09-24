@@ -89,7 +89,7 @@ struct DeviceList: View {
             .menuStyle(.button)
             .buttonStyle(.plain)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Capsule().fill(Color.primary.opacity(0.06)))
+            .panelCard(Color.primary.opacity(0.06))
             .help("Choose a phone")
         } else {
             HStack(spacing: 0) {
@@ -103,7 +103,9 @@ struct DeviceList: View {
                 }
             }
             .padding(Theme.Space.hair)
-            .background(Capsule().fill(Color.primary.opacity(0.06)))
+            // The track has the cards' corner, the open segment that corner minus the gap around
+            // it: concentric with the panel like every other plate on it.
+            .panelCard(Color.primary.opacity(0.06))
         }
     }
 }
@@ -130,7 +132,7 @@ private struct DeviceSegment: View {
         .padding(.horizontal, Theme.Space.small)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background { if selected { pill } }
-        .contentShape(Capsule())
+        .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(DeviceCard.name(device, live))
     }
@@ -140,7 +142,8 @@ private struct DeviceSegment: View {
     @ViewBuilder
     private var pill: some View {
         if #available(macOS 26.0, *) {
-            Capsule().fill(.clear).glassEffect(.regular, in: Capsule())
+            let shape = RoundedRectangle(cornerRadius: Theme.Radius.card - Theme.Space.hair, style: .continuous)
+            shape.fill(.clear).glassEffect(.regular, in: shape)
         } else {
             Capsule().fill(Color.primary.opacity(0.12))
         }

@@ -31,13 +31,13 @@ struct MenuPanel: View {
             // listener itself is down. Otherwise every phone reports its own state one row below,
             // and repeating it here was the same sentence twice.
             if !isPaired || !state.status.isLive {
-                status.padding(.horizontal, Theme.Space.tight)
+                status.padding(.horizontal, Theme.Space.medium)
             }
-            if let release = updates.available { update(release).padding(.horizontal, Theme.Space.tight) }
+            if let release = updates.available { update(release).padding(.horizontal, Theme.Space.medium) }
             // Mirroring into a Notification Center that refuses us is the quietest failure the app
             // has, so it is said here, once, with the switch one click away.
             if state.notificationsAuthorized == false {
-                notificationsOff.padding(.horizontal, Theme.Space.tight)
+                notificationsOff.padding(.horizontal, Theme.Space.medium)
             }
 
             if isPaired {
@@ -63,14 +63,15 @@ struct MenuPanel: View {
                 PanelCard { onboarding }
             }
 
-            footer.padding(.horizontal, Theme.Space.tight)
+            // Every line outside a card starts where the text inside a card does.
+            footer.padding(.horizontal, Theme.Space.medium)
         }
-        // `.menuBarExtraStyle(.window)` adds its own inset above and below the content but not at
-        // the sides, so the vertical padding is the smaller number to look equal.
-        .padding(.horizontal, Theme.panelInset)
-        .padding(.top, Theme.panelInset)
-        .padding(.bottom, Theme.Space.tight)
+        // The same inset on all four sides. Linked against the macOS 26+ SDK the window adds no
+        // inset of its own: on a capture of the real panel the first card sat exactly this far below
+        // the top edge, and the footer half as far above the bottom one while this was smaller.
+        .padding(Theme.panelInset)
         .frame(width: Theme.panelWidth)
+        .panelContainer()
         // `.menuBarExtraStyle(.window)` gives the panel a chrome band above and below the content
         // that our view does not reach — verified by filling the content with a flat colour and
         // measuring where it stopped. The band renders the window's own translucency, so against a
@@ -156,18 +157,18 @@ struct MenuPanel: View {
                 UpdateWindow.show(release)
             }
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Space.small) {
                 Image(systemName: updater.phase.busy ? "arrow.down.circle.fill" : "arrow.down.circle")
-                    .font(.system(size: 11))
+                    .font(Theme.Font.label)
                     .foregroundStyle(.secondary)
                 Text(updateLine(release))
-                    .font(.system(size: 11))
+                    .font(Theme.Font.label)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                 Spacer(minLength: 4)
                 if !updater.phase.busy {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 9, weight: .semibold))
+                        .font(Theme.Font.caption.weight(.semibold))
                         .foregroundStyle(.tertiary)
                 }
             }
@@ -180,7 +181,7 @@ struct MenuPanel: View {
 
     private func updateLine(_ release: Release) -> String {
         switch updater.phase {
-        case .downloading: return String(localized: "Downloading AndroMac \(release.label)…")
+        case .downloading(let p): return String(localized: "Downloading AndroMac \(release.label)… \(p)%")
         case .verifying: return String(localized: "Checking the download…")
         case .installing: return String(localized: "Installing and restarting…")
         case .failed(let reason): return reason
@@ -195,17 +196,17 @@ struct MenuPanel: View {
                 NSWorkspace.shared.open(url)
             }
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Space.small) {
                 Image(systemName: "bell.slash")
-                    .font(.system(size: 11))
+                    .font(Theme.Font.label)
                     .foregroundStyle(.orange)
                 Text("Notifications are off for AndroMac")
-                    .font(.system(size: 11))
+                    .font(Theme.Font.label)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                 Spacer(minLength: 4)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(Theme.Font.caption.weight(.semibold))
                     .foregroundStyle(.tertiary)
             }
             .contentShape(Rectangle())
@@ -410,7 +411,7 @@ struct MenuPanel: View {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(recent) { NotificationRow(entry: $0) }
             }
-            .frame(height: CGFloat(recent.count) * NotificationRow.height, alignment: .top)
+            .frame(height: recent.map(NotificationRow.height).reduce(0, +), alignment: .top)
 
             if history.entries.count > recent.count {
                 QuietButton(String(localized: "Show all (\(history.entries.count))")) {

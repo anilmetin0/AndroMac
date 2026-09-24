@@ -1,5 +1,6 @@
 import AppKit
 import CoreImage.CIFilterBuiltins
+import ImageIO
 import SwiftUI
 
 // MARK: - shared
@@ -85,20 +86,27 @@ struct EmptyState: View {
     }
 }
 
-/// The cached app icon; an initial-letter badge when there is none.
+/// The phone's own app icon, cut like a Mac app icon; an initial-letter badge when there is none.
 struct AppIcon: View {
     let pkg: String
     let fallback: String
     var size: CGFloat = 20
+    /// Redraws when the phone's icon arrives, instead of at the next unrelated change.
+    @ObservedObject private var icons = IconCache.shared
+
+    private var shape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: size * 0.225, style: .continuous)
+    }
 
     var body: some View {
-        if let image = IconCache.shared.image(for: pkg) {
+        if let image = icons.image(for: pkg) ?? DemoMode.icon(for: pkg) {
             Image(nsImage: image)
                 .resizable()
+                .interpolation(.high)
                 .frame(width: size, height: size)
-                .clipShape(RoundedRectangle(cornerRadius: size * 0.22))
+                .clipShape(shape)
         } else {
-            RoundedRectangle(cornerRadius: size * 0.22)
+            shape
                 .fill(Color.secondary.opacity(0.2))
                 .frame(width: size, height: size)
                 .overlay(
@@ -107,5 +115,64 @@ struct AppIcon: View {
                         .foregroundStyle(.secondary)
                 )
         }
+    }
+}
+
+/// The picture a notification carried (a photo in a chat, a big picture), as a thumbnail.
+///
+/// The frame is fixed before anything loads, so the row never moves when the picture arrives. The
+/// file is decoded off the main thread straight to the size it is drawn at, and kept in memory:
+/// the panel redraws often and must not decode a photo each time.
+struct NotificationPicture: View {
+    let entry: NotificationHistory.Entry
+    let size: CGFloat
+
+    @Environment(\.displayScale) private var scale
+    @State private var image: CGImage?
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: size * 0.18, style: .continuous)
+        ZStack {
+            shape.fill(Color.secondary.opacity(0.12))
+            if let image {
+                Image(decorative: image, scale: scale)
+                    .resizable()
+                    .scaledToFill()
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(shape)
+        .task(id: entry.id) { image = await Self.load(entry, pixels: size * scale) }
+        .accessibilityHidden(true)
+    }
+
+    @MainActor private static let cache = NSCache<NSString, CGImage>()
+
+    @MainActor
+    private static func load(_ entry: NotificationHistory.Entry, pixels: CGFloat) async -> CGImage? {
+        guard let name = entry.image else { return nil }
+        let key = "\(name)@\(Int(pixels))" as NSString
+        if let hit = cache.object(forKey: key) { return hit }
+        let image: CGImage?
+        if DemoMode.isOn {
+            image = DemoMode.picture(named: name)
+        } else if let url = NotificationHistory.shared.imageURL(for: entry) {
+            // Twice the edge: the longer side is what the limit bounds, and a fill crops to the shorter.
+            image = await Task.detached { thumbnail(url, maxPixels: pixels * 2) }.value
+        } else {
+            image = nil
+        }
+        if let image { cache.setObject(image, forKey: key) }
+        return image
+    }
+
+    private nonisolated static func thumbnail(_ url: URL, maxPixels: CGFloat) -> CGImage? {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixels,
+        ]
+        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
     }
 }

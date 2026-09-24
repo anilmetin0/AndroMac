@@ -60,8 +60,9 @@ struct SettingsList: View {
 
     // MARK: sections
 
+    // A section repeats no page title: the toolbar already names the page, as in System Settings.
     private var general: some View {
-        Section("General") {
+        Section {
             Toggle("Open at login", isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { _, v in
                     // Prevents a retry on the rollback pass (below we set the toggle back to
@@ -104,7 +105,7 @@ struct SettingsList: View {
                 }
             }
             if language != initialLanguage {
-                QuietButton(String(localized: "Restart")) { SettingsList.relaunch() }
+                Button("Restart") { SettingsList.relaunch() }
             }
         }
     }
@@ -168,8 +169,6 @@ struct SettingsList: View {
             Toggle("Ask the phone for its clipboard when the panel opens", isOn: $clipboardPull)
                 .disabled(!syncClipboard)
                 .onChange(of: clipboardPull) { _, v in Store.shared.clipboardPull = v }
-        } header: {
-            Text("Clipboard")
         } footer: {
             // Being straight about the asymmetry is better than a symmetric-looking setting that
             // silently does nothing in one direction.
@@ -178,7 +177,7 @@ struct SettingsList: View {
     }
 
     private var notifications: some View {
-        Section("Notifications") {
+        Section {
             Toggle("Play a sound for mirrored notifications", isOn: $notificationSound)
                 .onChange(of: notificationSound) { _, v in Store.shared.notificationSound = v }
             LabeledContent("History",
@@ -193,8 +192,6 @@ struct SettingsList: View {
             Toggle("Accept files automatically", isOn: $fileAutoAccept)
                 .disabled(!fileTransfer)
                 .onChange(of: fileAutoAccept) { _, v in Store.shared.fileAutoAccept = v }
-        } header: {
-            Text("Files")
         } footer: {
             Text("Files are saved to Downloads. Auto-accept applies to every paired phone.").formNote()
         }
@@ -217,8 +214,6 @@ struct SettingsList: View {
             .pickerStyle(.segmented)
             .onChange(of: mirrorMaxSize) { _, v in Store.shared.mirrorMaxSize = v }
             LabeledContent("scrcpy", value: mirrorTools)
-        } header: {
-            Text("Screen mirroring")
         } footer: {
             Text("Uses Wireless debugging or a USB cable. Turn Wireless debugging off on the phone when you no longer need it.").formNote()
         }
@@ -250,10 +245,7 @@ struct SettingsList: View {
             Toggle("Beta updates", isOn: $updateBeta)
                 .onChange(of: updateBeta) { _, v in
                     Store.shared.updateBeta = v
-                    // A beta prepared on the old channel is not installed on this one.
-                    updater.cancelWaiting()
-                    // Another channel, another answer. Only with the check on: a switch is not a click on Check now.
-                    if updateCheck { Task { await updates.checkNow() } }
+                    updates.channelChanged()
                 }
             LabeledContent("Status", value: updateStatus)
             HStack {
@@ -264,6 +256,13 @@ struct SettingsList: View {
                         Button(String(localized: "Open the release page")) {
                             NSWorkspace.shared.open(release.url)
                         }
+                    } else if updater.readyLabel == release.label || installFailed {
+                        // Downloaded and verified already, or stopped on the way: straight to it.
+                        Button(installFailed ? String(localized: "Try again") : String(localized: "Install now")) {
+                            Task { await updater.install(release) }
+                        }
+                        .keyboardShortcut(.defaultAction)
+                        .disabled(updater.phase.busy)
                     } else {
                         // The window shows the notes first; Install now is its default button.
                         Button(String(localized: "Install \(release.label)")) {
@@ -273,6 +272,9 @@ struct SettingsList: View {
                         .disabled(updater.phase.busy)
                     }
                 }
+            }
+            if case .downloading(let percent) = updater.phase {
+                ProgressView(value: Double(percent), total: 100)
             }
             if let installStatus {
                 Text(installStatus)
@@ -301,11 +303,14 @@ struct SettingsList: View {
         }
     }
 
+    @ViewBuilder
     private var devices: some View {
-        Section("Devices") {
+        Section {
             LabeledContent("This Mac", value: Store.shared.deviceName)
             LabeledContent("Version", value: Self.version)
+        }
 
+        Section {
             // One row per pairing, so several phones are as visible here as in the panel.
             // Trust is per device, so removing it is per device too; "Forget all" is the old
             // single-phone Unpair, kept for the case where you are handing the Mac on.
@@ -318,15 +323,14 @@ struct SettingsList: View {
                         Text(AppState.displayName(device.name) ?? String(localized: "Phone"))
                         Text(deviceDetail(device))
                             .font(Theme.Font.label)
-                            .foregroundStyle(.tertiary)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
 
             if Store.shared.pairedDevices.isEmpty {
                 Text("Open AndroMac on the phone to pair it.")
-                    .font(Theme.Font.label)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             } else if Store.shared.pairedDevices.count > 1 {
                 Button("Forget all devices", role: .destructive) { unpair(nil) }
@@ -372,8 +376,6 @@ struct SettingsList: View {
                     }
                 }
             }
-        } header: {
-            Text("Permissions")
         } footer: {
             Text("Android permissions are listed on the phone, in AndroMac → Permissions.").formNote()
         }
@@ -385,8 +387,6 @@ struct SettingsList: View {
             LabeledContent("This Mac's address", value: NetworkInfo.localIPv4() ?? String(localized: "no local network"))
             LabeledContent("Bonjour service", value: "_andromac._tcp")
             Button("Open Local Network settings") { Self.open(Self.localNetworkSettings) }
-        } header: {
-            Text("Network")
         } footer: {
             Text("Both devices must be on the same subnet.").formNote()
         }
@@ -395,7 +395,7 @@ struct SettingsList: View {
     private var metrics: some View { MetricsSection() }
 
     private var privacy: some View {
-        Section("Privacy") {
+        Section {
             // Said once, here, next to the one setting that can send anything off the machine.
             // It used to appear on the panel, in the footer and twice in this section, which is
             // three times more often than anyone needs to read it.
@@ -403,15 +403,10 @@ struct SettingsList: View {
                 Text("Everything stays on your local network, end-to-end encrypted. The optional update check is the only exception.")
                     .fixedSize(horizontal: false, vertical: true)
             } icon: {
-                Image(systemName: "lock.shield")
+                Image(systemName: "lock.shield").foregroundStyle(.secondary)
             }
-            .font(Theme.Font.label)
-            .foregroundStyle(.secondary)
-
-            Text("Stored only on this Mac. Cleared when you forget all devices.")
-                .font(Theme.Font.label)
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
+        } footer: {
+            Text("Stored only on this Mac. Cleared when you forget all devices.").formNote()
         }
     }
 
@@ -495,8 +490,10 @@ struct SettingsList: View {
     /// What the installer is doing, or why it stopped. Nil while it has nothing to say.
     private var installStatus: String? {
         switch updater.phase {
-        case .idle: return nil
-        case .downloading: return String(localized: "Downloading…")
+        case .idle:
+            guard updater.readyLabel != nil else { return nil }
+            return String(localized: "Ready to install. AndroMac restarts into it when it is not in use.")
+        case .downloading(let percent): return String(localized: "Downloading… \(percent)%")
         case .verifying: return String(localized: "Checking the download against the release checksum…")
         case .installing: return String(localized: "Installing. AndroMac will restart itself.")
         case .failed(let reason): return reason
@@ -605,7 +602,7 @@ private struct PermissionRow<Action: View>: View {
                 Text(title)
                 Text(detail)
                     .font(Theme.Font.label)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -634,8 +631,6 @@ private struct MetricsSection: View {
                 )
             }
             Button("Reset counters") { stats.reset() }
-        } header: {
-            Text("Metrics")
         } footer: {
             Text("Idle baseline is about 30 messages per hour for each connected phone.").formNote()
         }

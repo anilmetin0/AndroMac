@@ -154,8 +154,9 @@
 "Connect" = "Bağlan";
 "Disconnect" = "Bağlantıyı kes";
 "Disconnected" = "Bağlantı kesildi";
-"Downloading AndroMac %@…" = "AndroMac %@ indiriliyor…";
-"Downloading…" = "İndiriliyor…";
+"Downloading AndroMac %@… %lld%%" = "AndroMac %@ indiriliyor… %%%lld";
+"Downloading… %lld%%" = "İndiriliyor… %%%lld";
+"Ready to install. AndroMac restarts into it when it is not in use." = "Kurulmaya hazır. AndroMac kullanılmadığında yeniden başlayıp güncellenir.";
 "Install %@" = "%@ sürümünü kur";
 "Install now" = "Şimdi kur";
 "Install this update and restart" = "Bu güncellemeyi kur ve yeniden başlat";
@@ -267,3 +268,4 @@
 
 "AndroMac can't update itself in this folder. Move it to Applications and try again." = "AndroMac bu klasörde kendini güncelleyemiyor. Uygulamalar klasörüne taşıyıp yeniden dene.";
 "The download is not signed like this copy of AndroMac." = "İndirilen dosya, bu AndroMac kopyasıyla aynı imzayı taşımıyor.";
+

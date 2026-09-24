@@ -16,8 +16,7 @@ struct PanelCard<Content: View>: View {
         VStack(alignment: .leading, spacing: Theme.Space.small) {
             content
         }
-        .padding(.horizontal, Theme.Space.medium)
-        .padding(.vertical, Theme.Space.small + Theme.Space.hair)
+        .padding(Theme.Space.medium)
         .frame(maxWidth: .infinity, alignment: .leading)
         .panelCard(Color.primary.opacity(0.06))
     }
@@ -74,8 +73,8 @@ struct OnboardingStep: View {
                     .fixedSize(horizontal: false, vertical: true)
                 if let detail {
                     Text(detail)
-                        .font(Theme.Font.caption)
-                        .foregroundStyle(.tertiary)
+                        .font(Theme.Font.label)
+                        .foregroundStyle(.secondary)
                 }
             }
             Spacer(minLength: 0)
@@ -102,8 +101,13 @@ struct QuietButton: View {
 }
 
 struct NotificationRow: View {
-    /// The panel height is computed from this row (MenuPanel), so the constant is not duplicated in two places.
-    static let height: CGFloat = 34
+    /// The panel list's height is the sum of these (MenuPanel), so the numbers live in one place.
+    /// A row with a picture is taller by what the thumbnail needs.
+    static func height(_ entry: NotificationHistory.Entry) -> CGFloat {
+        entry.image == nil ? 36 : pictureSize + Theme.Space.small
+    }
+
+    static let pictureSize: CGFloat = 40
 
     let entry: NotificationHistory.Entry
 
@@ -128,8 +132,8 @@ struct NotificationRow: View {
     @State private var copied = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 8) {
-            AppIcon(pkg: entry.pkg, fallback: entry.app, size: 20)
+        HStack(alignment: .center, spacing: Theme.Space.small) {
+            AppIcon(pkg: entry.pkg, fallback: entry.app, size: 24)
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 4) {
                     Text(entry.app)
@@ -149,8 +153,9 @@ struct NotificationRow: View {
                     .truncationMode(.tail)
             }
             if let code { copyCode(code) }
+            if entry.image != nil { NotificationPicture(entry: entry, size: Self.pictureSize) }
         }
-        .frame(height: Self.height)
+        .frame(height: Self.height(entry))
         .contextMenu {
             if let code {
                 Button(String(localized: "Copy code \(code)")) { put(code) }
@@ -167,7 +172,7 @@ struct NotificationRow: View {
         Button {
             put(code)
         } label: {
-            HStack(spacing: 3) {
+            HStack(spacing: Theme.Space.hair) {
                 Image(systemName: copied ? "checkmark" : "doc.on.doc")
                     .font(Theme.Font.caption)
                 Text(code)
@@ -208,20 +213,15 @@ struct MediaRow: View {
     let deviceID: String
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Theme.Space.small) {
             AppIcon(pkg: media.pkg, fallback: media.app, size: 24)
             VStack(alignment: .leading, spacing: 0) {
                 Text(media.title)
                     .font(Theme.Font.body)
                     .lineLimit(1)
-                if !media.artist.isEmpty {
-                    Text(media.artist)
-                        .font(Theme.Font.label)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
+                byline
             }
-            Spacer(minLength: 4)
+            Spacer(minLength: Theme.Space.tight)
             control("backward.fill", label: String(localized: "Previous"), cmd: "previous")
             control(media.playing ? "pause.fill" : "play.fill",
                     label: media.playing
@@ -230,6 +230,39 @@ struct MediaRow: View {
             control("forward.fill", label: String(localized: "Next"), cmd: "next")
         }
         .frame(height: 30)
+    }
+
+    /// Players pad the artist field ("SELIN • Recommended for you"); the part before the first
+    /// bullet is the artist.
+    private var artist: String {
+        let name = media.artist.components(separatedBy: " • ").first ?? ""
+        return name.trimmingCharacters(in: .whitespaces)
+    }
+
+    /// The artist on its own line, whole; the app after it only while both fit, dropped before the
+    /// artist would be cut.
+    @ViewBuilder
+    private var byline: some View {
+        let artistText = Text(artist)
+            .font(Theme.Font.label)
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+        let app = media.app == artist ? "" : media.app
+        if artist.isEmpty {
+            if !app.isEmpty { Text(app).font(Theme.Font.label).foregroundStyle(.secondary).lineLimit(1) }
+        } else if app.isEmpty {
+            artistText
+        } else {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: Theme.Space.tight) {
+                    artistText
+                    Text(verbatim: "·").font(Theme.Font.caption).foregroundStyle(.tertiary)
+                    Text(app).font(Theme.Font.caption).foregroundStyle(.secondary)
+                }
+                .fixedSize()
+                artistText
+            }
+        }
     }
 
     private func control(_ symbol: String, label: String, cmd: String) -> some View {

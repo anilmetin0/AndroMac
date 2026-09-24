@@ -75,8 +75,8 @@
 "Disconnect" = "Disconnect";
 "Disconnected" = "Disconnected";
 "Dismiss" = "Dismiss";
-"Downloading AndroMac %@…" = "Downloading AndroMac %@…";
-"Downloading…" = "Downloading…";
+"Downloading AndroMac %@… %lld%%" = "Downloading AndroMac %@… %lld%%";
+"Downloading… %lld%%" = "Downloading… %lld%%";
 "Everything stays on your local network, end-to-end encrypted. The optional update check is the only exception." = "Everything stays on your local network, end-to-end encrypted. The optional update check is the only exception.";
 "File received" = "File received";
 "Files" = "Files";
@@ -173,6 +173,7 @@
 "Privacy" = "Privacy";
 "Put both devices on the same Wi-Fi network" = "Put both devices on the same Wi-Fi network";
 "Quit AndroMac" = "Quit AndroMac";
+"Ready to install. AndroMac restarts into it when it is not in use." = "Ready to install. AndroMac restarts into it when it is not in use.";
 "Receive files" = "Receive files";
 "Received from phone" = "Received from phone";
 "Reconnects" = "Reconnects";

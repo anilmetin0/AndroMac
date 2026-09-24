@@ -55,7 +55,7 @@ private struct HistoryRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: Theme.Space.small) {
-            AppIcon(pkg: entry.pkg, fallback: entry.app, size: 24)
+            AppIcon(pkg: entry.pkg, fallback: entry.app, size: 28)
             VStack(alignment: .leading, spacing: Theme.Space.hair) {
                 HStack(spacing: Theme.Space.tight) {
                     Text(entry.app)
@@ -76,6 +76,9 @@ private struct HistoryRow: View {
                         .foregroundStyle(.secondary)
                         .textSelection(.enabled)
                 }
+            }
+            if entry.image != nil {
+                NotificationPicture(entry: entry, size: 60)
             }
         }
     }
