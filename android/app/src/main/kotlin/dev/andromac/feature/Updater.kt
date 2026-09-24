@@ -114,6 +114,11 @@ object Updater {
                 publish(Step.Verifying)
                 val expected = checksum(sums, apk.name) ?: throw Mismatch()
                 if (!expected.equals(sha256(downloaded), ignoreCase = true)) throw Mismatch()
+                // A build for another app id cannot replace this one, and the system says only
+                // "invalid APK". The first 1.1.0 builds were io.github.anilmetin0.andromac.
+                if (app.packageManager.getPackageArchiveInfo(downloaded.path, 0)?.packageName != app.packageName) {
+                    throw OtherApp()
+                }
 
                 file = null                          // commitAndDelete deletes it
                 if (whenAway) {
@@ -130,7 +135,12 @@ object Updater {
                 }
             } catch (e: Exception) {
                 Log.i(Link.TAG, "update failed: $e")
-                publish(Step.Failed(if (e is Mismatch) Problem.CHECKSUM else if (e is IOException) Problem.NETWORK else Problem.INSTALL))
+                publish(Step.Failed(when (e) {
+                    is Mismatch -> Problem.CHECKSUM
+                    is OtherApp -> Problem.CONFLICT
+                    is IOException -> Problem.NETWORK
+                    else -> Problem.INSTALL
+                }))
             } finally {
                 // Nothing verified to keep: a failed download is of no use to anyone.
                 file?.delete()
@@ -140,6 +150,9 @@ object Updater {
 
     /** The download does not match the release's checksum file, or the file does not list it. */
     private class Mismatch : IOException("checksum mismatch")
+
+    /** The verified download is another package, which Android will not install over this one. */
+    private class OtherApp : Exception("another package")
 
     private fun commitAndDelete(ctx: Context, file: File) {
         try {

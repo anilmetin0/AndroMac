@@ -20,7 +20,8 @@ derlemeler bunun yerine commit'lerini listeler.
   için açabilir. Mac'te zaten adb kuruluysa AndroMac onu kullanır. Ayarlar → Ekran yansıtma'da ses,
   ekranı kapatma, uyanık tutma ve çözünürlük sınırı var.
 - **Okunabilen ve kendi kendine kurulan güncellemeler.** Bir güncelleme kurulmadan önce neyin
-  değiştiğini gösteren bir pencere açılıyor. **Güncellemeleri otomatik kur** açıkken (varsayılan)
+  değiştiğini gösteren bir pencere açılıyor; notlar sen açana kadar birkaç satıra katlı duruyor.
+  **Güncellemeleri otomatik kur** açıkken (varsayılan)
   Mac hiçbir şey açık ya da çalışır değilken, telefon ise uygulamadan çıktığında ve yalnızca
   Wi-Fi'dayken kuruyor. Telefon kendiliğinden kurmayı Android 12 ve sonrasında yapıyor; daha eski
   telefonlar önce soruyor. Homebrew ile kurulan Mac `brew upgrade` ile güncelleniyor. **Beta

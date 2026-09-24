@@ -20,8 +20,9 @@ raised. Betas list their commits instead.
   the phone for you. If adb is already installed on the Mac, AndroMac uses that one. Settings →
   Screen mirroring has sound, screen off, stay awake and a resolution cap.
 - **Updates you can read, and that install themselves.** Before an update installs, a window
-  shows what changed. With **Install updates automatically** on (the default), the Mac installs
-  once nothing is open or running, and the phone once you leave the app, on Wi-Fi only. The
+  shows what changed, folded to a few lines until you open it. With **Install updates
+  automatically** on (the default), the Mac installs once nothing is open or running, and the
+  phone once you leave the app, on Wi-Fi only. The
   phone installs on its own on Android 12 and later; older phones ask first. A Mac
   installed with Homebrew updates through `brew upgrade`. **Beta updates** follows the test
   builds published between releases.

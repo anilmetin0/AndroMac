@@ -48,6 +48,7 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
         findViewById<View>(R.id.scrollRoot).padForSystemBars()
         store = Store(this)
+        fakeUpdateIfAsked()
 
         findViewById<View>(R.id.actionHelp).setOnClickListener { open(HelpActivity::class.java) }
         findViewById<View>(R.id.actionSettings).setOnClickListener { open(SettingsActivity::class.java) }

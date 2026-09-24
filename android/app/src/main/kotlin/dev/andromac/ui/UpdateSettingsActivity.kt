@@ -12,6 +12,8 @@ import android.os.Build
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.style.BulletSpan
+import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
 import android.view.View
 import android.widget.Button
@@ -63,7 +65,7 @@ class UpdateSettingsActivity : Activity() {
         }
         findViewById<Button>(R.id.download).setOnClickListener { primary() }
 
-        if (isDebuggable() && intent.getBooleanExtra(EXTRA_FAKE_UPDATE, false)) fakeUpdate()
+        fakeUpdateIfAsked()
         when {
             // Install now in the dialog of the main screen: this screen shows the progress.
             savedInstanceState == null && intent.getBooleanExtra(EXTRA_INSTALL, false) -> installWhenFound()
@@ -164,11 +166,7 @@ class UpdateSettingsActivity : Activity() {
             if (percent != null) progress = percent
         }
 
-        val notes = newer?.let { releaseNotes(it) }
-        findViewById<TextView>(R.id.notes).apply {
-            visibility = if (notes.isNullOrEmpty()) View.GONE else View.VISIBLE
-            text = notes
-        }
+        showNotes(findViewById(R.id.notes), findViewById(R.id.notesToggle), newer?.let { releaseNotes(it) })
         findViewById<Button>(R.id.download).apply {
             isEnabled = action != UpdateCheck.Action.WAIT
             text = when (action) {
@@ -183,39 +181,38 @@ class UpdateSettingsActivity : Activity() {
         }
     }
 
-    /**
-     * Debug builds only, for checking the screen's states without a newer signed APK: a release
-     * 99.0.0 whose APK is the real v1.1.0 download under a name its checksum file does not list.
-     * It downloads with progress, verifies, and stops at the checksum error with Retry; nothing
-     * is ever handed to the installer.
-     * `adb shell am start -n dev.andromac.debug/dev.andromac.ui.UpdateSettingsActivity --ez fake_update true`
-     * (as root: the screen is not exported).
-     */
-    private fun fakeUpdate() {
-        val base = "https://github.com/${UpdateCheck.REPO}/releases/download/v1.1.0/"
-        lastFound = UpdateCheck.Release(
-            Version(99, 0, 0), "0000000", "https://github.com/${UpdateCheck.REPO}/releases/latest",
-            listOf(
-                UpdateCheck.Asset("AndroMac-99.0.0-android.apk", base + "AndroMac-1.1.0-android.apk", 288_062),
-                UpdateCheck.Asset("SHA256SUMS.txt", base + "SHA256SUMS.txt", 190),
-            ),
-            build = 999_999, body = "## Debug\n\n- A made-up release for checking this screen.",
-        )
-        lastFoundBeta = betaUpdates
-        checkedThisProcess = true
-    }
-
-    private fun isDebuggable() = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
-
     companion object {
         /** Start the download and install as soon as the screen opens. */
         const val EXTRA_INSTALL = "install"
-        private const val EXTRA_FAKE_UPDATE = "fake_update"
         private const val KEY_AWAITING = "awaiting_permission"
     }
 }
 
 // ---------------------------------------------------------------- shared with MainActivity
+
+/**
+ * Debug builds only, for checking the update screens without a newer signed APK: a release
+ * 99.0.0 with long notes whose APK is the real v1.1.0 download under a name its checksum file
+ * does not list. It downloads with progress, verifies, and stops at the checksum error with
+ * Retry; nothing is ever handed to the installer. The main screen offers it in the update dialog
+ * (with automatic install off), the Updates screen shows it:
+ * `adb shell am start -n dev.andromac.debug/dev.andromac.ui.MainActivity --ez fake_update true`
+ */
+fun Activity.fakeUpdateIfAsked() {
+    if (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE == 0 || !intent.getBooleanExtra("fake_update", false)) return
+    val base = "https://github.com/${UpdateCheck.REPO}/releases/download/v1.1.0/"
+    val items = (1..14).joinToString("\n") { "- Item $it of a made-up release, long enough to wrap onto a second line on a phone." }
+    lastFound = UpdateCheck.Release(
+        Version(99, 0, 0), "0000000", "https://github.com/${UpdateCheck.REPO}/releases/latest",
+        listOf(
+            UpdateCheck.Asset("AndroMac-99.0.0-android.apk", base + "AndroMac-1.1.0-android.apk", 288_062),
+            UpdateCheck.Asset("SHA256SUMS.txt", base + "SHA256SUMS.txt", 190),
+        ),
+        build = 999_999, body = "## What's new\n\n### Added\n\n$items\n\n### Fixed\n\n$items",
+    )
+    lastFoundBeta = betaUpdates
+    checkedThisProcess = true
+}
 
 /** The version this build reports, or 0.0.0 if the package info is somehow unreadable. */
 fun Activity.currentVersion(): Version = Version.find(versionLabel()) ?: Version(0, 0, 0)
@@ -384,47 +381,98 @@ fun Activity.offerOrInstallUpdate(store: Store, onDialog: (AlertDialog) -> Unit 
         Updater.install(this, release, whenAway = true)
         return true
     }
-    val notes = releaseNotes(release)
-    AlertDialog.Builder(this)
-        .setTitle(getString(R.string.update_available_title, release.label))
-        .setMessage(
-            when {
-                release.apk == null -> getString(R.string.update_available_page)
-                notes.isNotEmpty() -> notes
-                else -> getString(R.string.update_available_body)
-            }
-        )
-        .setPositiveButton(if (release.apk == null) R.string.update_open_page else R.string.update_install_now) { _, _ ->
+    val view = layoutInflater.inflate(R.layout.dialog_update, null)
+    val dialog = AlertDialog.Builder(this).setView(view).create()
+    view.findViewById<TextView>(R.id.updateVersion).text = getString(R.string.update_dialog_version, release.label)
+    showNotes(
+        view.findViewById(R.id.notes), view.findViewById(R.id.notesToggle),
+        if (release.apk == null) getString(R.string.update_available_page)
+        else releaseNotes(release).ifEmpty { getString(R.string.update_available_body) },
+    )
+    view.findViewById<Button>(R.id.updateInstall).apply {
+        setText(if (release.apk == null) R.string.update_open_page else R.string.update_install_now)
+        setOnClickListener {
+            dialog.dismiss()
             if (release.apk == null) openReleasePage(release.url) else startUpdateInstall()
         }
-        .setNegativeButton(R.string.update_later, null)
-        .setNeutralButton(R.string.update_skip) { _, _ -> store.updateSkipped = release.label }
-        .show()
-        .also(onDialog)
+    }
+    view.findViewById<Button>(R.id.updateLater).setOnClickListener { dialog.dismiss() }
+    view.findViewById<Button>(R.id.updateSkip).setOnClickListener {
+        store.updateSkipped = release.label
+        dialog.dismiss()
+    }
+    dialog.show()
+    onDialog(dialog)
     return true
 }
 
 /**
- * The release notes as text: headings bold, bullets as dots, inline Markdown reduced to its text.
- * The Turkish block when the app runs in Turkish, the English notes otherwise.
+ * The release notes as text: headings bold, bullets with a hanging indent, inline Markdown reduced
+ * to its text, a blank line as half a line. The "What's new" heading goes: the dialog and the
+ * card already say it. The Turkish block when the app runs in Turkish and the release has one,
+ * the English notes otherwise.
  */
 fun Activity.releaseNotes(release: UpdateCheck.Release): CharSequence {
     val turkish = resources.configuration.locales[0].language == "tr"
+    val bullet = obtainStyledAttributes(intArrayOf(android.R.attr.textColorSecondary))
+        .run { getColor(0, 0).also { recycle() } }
     val out = SpannableStringBuilder()
+    fun span(what: Any, start: Int) = out.setSpan(what, start, out.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     for (line in UpdateCheck.notes(release.body, turkish).lines()) {
         val t = line.trim()
+        if (out.isEmpty() && (t.isEmpty() || t == "## What's new" || t == "## Yenilikler")) continue
         if (out.isNotEmpty()) out.append('\n')
+        val start = out.length
         when {
+            t.isEmpty() -> { out.append(' '); span(RelativeSizeSpan(0.5f), start) }
             t.startsWith("#") -> {
-                val start = out.length
                 out.append(UpdateCheck.inline(t.trimStart('#').trim()))
-                out.setSpan(StyleSpan(Typeface.BOLD), start, out.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                span(StyleSpan(Typeface.BOLD), start)
             }
-            t.startsWith("- ") || t.startsWith("* ") -> out.append("•  ").append(UpdateCheck.inline(t.substring(2)))
+            t.startsWith("- ") || t.startsWith("* ") -> {
+                out.append(UpdateCheck.inline(t.substring(2)))
+                span(BulletSpan(dp(10), bullet, dp(2)), start)
+            }
             else -> out.append(UpdateCheck.inline(t))
         }
     }
     return out
+}
+
+private fun Activity.dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+
+/** Long notes show this many lines until Show all. */
+private const val NOTES_FOLDED = 6
+
+/**
+ * The notes, folded to [NOTES_FOLDED] lines with Show all / Show less under them when they are
+ * longer; short notes show whole and the toggle stays hidden. The same text again (a refresh on
+ * download progress) keeps whatever the user opened.
+ */
+fun showNotes(notes: TextView, toggle: Button, text: CharSequence?) {
+    if (text.isNullOrEmpty()) {
+        notes.visibility = View.GONE
+        toggle.visibility = View.GONE
+        notes.text = null
+        return
+    }
+    if (notes.visibility == View.VISIBLE && notes.text.toString() == text.toString()) return
+    notes.visibility = View.VISIBLE
+    notes.text = text
+    var folded = true
+    fun apply() {
+        notes.maxLines = if (folded) NOTES_FOLDED else Int.MAX_VALUE
+        toggle.setText(if (folded) R.string.update_notes_more else R.string.update_notes_less)
+    }
+    apply()
+    toggle.visibility = View.GONE
+    toggle.setOnClickListener { folded = !folded; apply() }
+    // Only a folded text that was cut short needs the toggle; the layout knows after measuring.
+    notes.post {
+        val layout = notes.layout ?: return@post
+        val cut = layout.lineCount >= NOTES_FOLDED && layout.getEllipsisCount(layout.lineCount - 1) > 0
+        toggle.visibility = if (cut || !folded) View.VISIBLE else View.GONE
+    }
 }
 
 /** The release page, never anything else: [UpdateCheck.parse] already pinned the host. */

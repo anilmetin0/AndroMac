@@ -84,22 +84,44 @@
                 android:max="100"
                 android:visibility="gone" />
 
-            <!-- The notes of the newer build, English or Turkish, from the release body. -->
+            <!-- The notes of the newer build, folded to a few lines until Show all. -->
             <TextView
                 android:id="@+id/notes"
                 style="@style/RowSubtitle"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:paddingTop="8dp"
-                android:textIsSelectable="true"
+                android:ellipsize="end"
+                android:lineSpacingExtra="2dp"
                 android:visibility="gone" />
 
-            <!-- The one button: Check for updates, Download and install, Install now or Retry (UpdateCheck.action). -->
-            <Button
-                android:id="@+id/download"
-                style="@style/PrimaryButton"
+            <!-- Show all on the start, the one button on the end: Check for updates, Download and
+                 install, Install now or Retry (UpdateCheck.action). -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:layout_marginBottom="-4dp" />
+                android:layout_marginBottom="-4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/notesToggle"
+                    style="@style/Widget.AM.DialogButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:visibility="gone" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:id="@+id/download"
+                    style="@style/PrimaryButton" />
+            </LinearLayout>
         </LinearLayout>
 
         </LinearLayout>

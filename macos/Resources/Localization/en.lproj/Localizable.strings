@@ -88,8 +88,8 @@
 "Forget" = "Forget";
 "Forget all devices" = "Forget all devices";
 "Forget all devices?" = "Forget all devices?";
-"full" = "full";
 "Full" = "Full";
+"full" = "full";
 "General" = "General";
 "Get the app on the phone" = "Get the app on the phone";
 "History" = "History";
@@ -212,8 +212,10 @@
 "Sent to phone" = "Sent to phone";
 "Settings" = "Settings";
 "Settings…" = "Settings…";
+"Show all" = "Show all";
 "Show all (%lld)" = "Show all (%lld)";
 "Show battery percentage in the menu bar" = "Show battery percentage in the menu bar";
+"Show less" = "Show less";
 "Silent" = "Silent";
 "Skip this version" = "Skip this version";
 "Status" = "Status";

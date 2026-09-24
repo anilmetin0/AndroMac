@@ -118,13 +118,14 @@
     <string name="update_downloading">İndiriliyor…</string>
     <string name="update_verifying">İndirilen dosya doğrulanıyor…</string>
     <string name="update_installing">Kuruluyor…</string>
-    <string name="update_available_title">AndroMac %1$s yayınlandı</string>
     <string name="update_available_body">AndroMac bunu şimdi indirip kurabilir.</string>
     <string name="update_available_page">İndirme, sürüm sayfasında.</string>
     <string name="update_install_now">Şimdi kur</string>
     <string name="update_open_page">Sürüm sayfasını aç</string>
     <string name="update_later">Sonra</string>
-    <string name="update_skip">Bu sürümü atla</string>
+    <string name="update_skip">Atla</string>
+    <string name="update_notes_more">Tümünü göster</string>
+    <string name="update_notes_less">Daha az göster</string>
     <!-- updates -->
     <string name="update_auto">Güncellemeleri otomatik kur</string>
     <string name="update_ready">Uygulamadan çıkınca kurulur</string>
@@ -139,7 +140,7 @@
     <string name="update_failed_checksum">İndirilen dosya sürümün sağlama toplamıyla eşleşmiyor.</string>
     <string name="update_failed_no_asset">Bu sürümde Android için indirme yok.</string>
     <string name="update_failed_cancelled">Kurulum iptal edildi.</string>
-    <string name="update_failed_conflict">Farklı bir anahtarla imzalanmış. Sürüm sayfasından kur.</string>
+    <string name="update_failed_conflict">Bu derleme kurulu uygulamanın yerine geçemez. Sürüm sayfasından kur.</string>
     <string name="update_failed_storage">Kurmak için yeterli depolama alanı yok.</string>
     <string name="update_failed_install">Android güncellemeyi kuramadı.</string>
     <string name="language_system">Sistem</string>

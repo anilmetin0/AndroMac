@@ -18,6 +18,8 @@ enum UpdateWindow {
         window.titlebarAppearsTransparent = true
         window.isReleasedWhenClosed = false
         let host = NSHostingController(rootView: UpdateView(release: release) { close() })
+        // The window follows the view, so Show all makes it taller.
+        host.sizingOptions = .preferredContentSize
         window.contentViewController = host
         // Sized from the view now: left to the hosting controller, the window sometimes came up
         // zero points wide.
@@ -43,21 +45,20 @@ enum UpdateWindow {
         - **Settings** has its own window, with every section in the sidebar.
         - The clipboard history keeps the last 20 items, and one click copies an item back.
         - The phone's name shows while it connects.
+        - Pictures in notifications, sealed on disk like the histories.
+        - Updates show what changed and install themselves.
 
-        <details>
-        <summary><b>Türkçe</b></summary>
+        ## Changes in this release
 
-        ## Yenilikler
+        ### New
 
-        - **Ayarlar** artık kendi penceresinde, her bölüm kenar çubuğunda.
-        - Pano geçmişi son 20 öğeyi tutar; tek tıkla geri kopyalanır.
-        - Telefonun adı bağlanırken görünür.
-        </details>
+        - **Mac:** Reset AndroMac in Settings → General (0fd351c)
+        - **Android:** Material 3 look with wallpaper colours (a67af19)
 
-        ## Changes in this build
+        ### Fixed
 
-        - fix(macos): run one copy at a time (d6125ce)
-        - docs: new screenshots, guide and changelog for the UI changes (dfd821c)
+        - **Mac:** Run one copy at a time (1e8edd0)
+        - **Mac:** Clearing a history no longer crashes (5c0ffee)
 
         <sub>Build 212 · commit fd7d47a · APK signing: release · checksums in SHA256SUMS.txt</sub>
         """
@@ -77,6 +78,8 @@ struct UpdateView: View {
     let release: Release
     let dismiss: @MainActor () -> Void
     @ObservedObject private var updater = Updater.shared
+    /// Long notes start folded, so the buttons are in view without scrolling.
+    @State private var showAll = false
 
     /// The Turkish notes when the app runs in Turkish, the English ones otherwise.
     private var notes: String {
@@ -94,11 +97,14 @@ struct UpdateView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(Theme.Space.medium)
                 }
-                .frame(height: 300)
+                .frame(height: showAll ? 480 : 180)
                 .background(
                     RoundedRectangle(cornerRadius: Theme.Radius.medium)
                         .fill(Color.secondary.opacity(0.08))
                 )
+                Button(showAll ? "Show less" : "Show all") { showAll.toggle() }
+                    .buttonStyle(.link)
+                    .font(Theme.Font.label)
             }
 
             // The automatic download may already be under way; Install now then waits for it.

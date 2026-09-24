@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The update offer. The notes start folded to a few lines, so the actions stay in reach; Show
+    all opens them, and the list scrolls inside the dialog when it is taller than the screen.
+    Actions sit at the end in one row, the install as the one filled button.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="24dp"
+    android:paddingBottom="16dp">
+
+    <TextView
+        android:id="@+id/updateTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:text="@string/update_card_title"
+        android:textAppearance="@style/TextAppearance.AM.HeadlineSmall"
+        android:textColor="?android:attr/textColorPrimary" />
+
+    <TextView
+        android:id="@+id/updateVersion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:textAppearance="@style/TextAppearance.AM.BodyMedium"
+        android:textColor="?android:attr/textColorSecondary" />
+
+    <!-- 0dp with weight: when the open notes are taller than the dialog may be, this is what shrinks. -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="16dp"
+        android:fadeScrollbars="false"
+        android:scrollbarStyle="outsideOverlay">
+
+        <TextView
+            android:id="@+id/notes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:ellipsize="end"
+            android:lineSpacingExtra="2dp"
+            android:textAppearance="@style/TextAppearance.AM.BodyMedium"
+            android:textColor="?android:attr/textColorSecondary" />
+    </ScrollView>
+
+    <Button
+        android:id="@+id/notesToggle"
+        style="@style/Widget.AM.DialogButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="24dp"
+        android:gravity="end|center_vertical"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/updateSkip"
+            style="@style/Widget.AM.DialogButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/update_skip" />
+
+        <Button
+            android:id="@+id/updateLater"
+            style="@style/Widget.AM.DialogButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/update_later" />
+
+        <Button
+            android:id="@+id/updateInstall"
+            style="@style/PrimaryButton"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="0dp"
+            android:singleLine="true" />
+    </LinearLayout>
+</LinearLayout>

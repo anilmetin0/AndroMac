@@ -126,13 +126,15 @@
     <string name="update_downloading">Downloading…</string>
     <string name="update_verifying">Checking the download…</string>
     <string name="update_installing">Installing…</string>
-    <string name="update_available_title">AndroMac %1$s is available</string>
     <string name="update_available_body">AndroMac can download and install it now.</string>
     <string name="update_available_page">The release page has the download.</string>
     <string name="update_install_now">Install now</string>
     <string name="update_open_page">Open the release page</string>
     <string name="update_later">Later</string>
-    <string name="update_skip">Skip this version</string>
+    <string name="update_skip">Skip</string>
+    <string name="update_notes_more">Show all</string>
+    <string name="update_notes_less">Show less</string>
+    <string name="update_dialog_version" translatable="false">AndroMac %1$s</string>
     <!-- updates -->
     <string name="update_auto">Install updates automatically</string>
     <string name="update_ready">Installs once you leave the app</string>
@@ -147,7 +149,7 @@
     <string name="update_failed_checksum">The download does not match the release checksum.</string>
     <string name="update_failed_no_asset">This release has no Android download.</string>
     <string name="update_failed_cancelled">Install cancelled.</string>
-    <string name="update_failed_conflict">Signed with a different key. Install it from the release page.</string>
+    <string name="update_failed_conflict">This build cannot replace the installed app. Install it from the release page.</string>
     <string name="update_failed_storage">Not enough storage to install.</string>
     <string name="update_failed_install">Android could not install the update.</string>
     <string name="language_system">System</string>
