@@ -75,7 +75,8 @@ derlemeler bunun yerine commit'lerini listeler.
 
 - Bir uygulamanın iki adımda yayınladığı bildirim (önce yazı, sonra gönderenin fotoğrafı) önce
   yarım görünmek yerine tek seferde, tam haliyle geliyor. Yeniden bağlanınca gelen tekrar,
-  bildirimi yerinde güncelliyor ve saatini koruyor.
+  bildirimi yerinde güncelliyor ve saatini koruyor; metni uzayan bir geçmiş satırı da artık
+  kaydırılana kadar yarım görünmüyor.
 - Mac'te bildirim ya da pano geçmişini temizlemek artık uygulamayı çökertmiyor.
 - Birden fazla telefon bağlıyken dosyalar, bildirim yanıtları, kapatmalar ve medya denetimleri
   doğru telefon yerine hepsine gidiyordu. İkinci bir telefon ilkinin adını da değiştirebiliyordu,

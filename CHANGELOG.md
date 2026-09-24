@@ -74,7 +74,8 @@ raised. Betas list their commits instead.
 
 - A notification an app posts in two steps, the text and then the sender's photo, arrives once
   and whole instead of showing half of it first. The replay after a reconnect updates a
-  notification in place and keeps its time.
+  notification in place and keeps its time, and a history row whose text grew no longer shows
+  half a line until it is scrolled.
 - Clearing the notification or clipboard history on the Mac no longer crashes the app.
 - With several phones connected, files, notification replies, dismissals and media controls went
   to every phone instead of the right one. A second phone could also rename the first, and a

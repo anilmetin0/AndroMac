@@ -20,8 +20,11 @@ struct HistoryList: View {
     }
 
     var body: some View {
-        // Straight under the toolbar, so it scrolls beneath it like any Mac list.
-        List(filtered) { entry in
+        // Straight under the toolbar, so it scrolls beneath it like any Mac list. Rows are keyed by
+        // their whole content, not the notification key: the list keeps a row's measured height
+        // for as long as its identity lasts, so a notification updated in place (short text, then
+        // the long one) stayed at the old height and showed half a line until it was scrolled.
+        List(filtered, id: \.self) { entry in
             HistoryRow(entry: entry)
                 .listRowInsets(EdgeInsets(
                     top: Theme.Space.tight, leading: Theme.Space.small,

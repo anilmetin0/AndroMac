@@ -17,7 +17,7 @@ final class NotificationHistory: ObservableObject {
 
     static let shared = NotificationHistory()
 
-    struct Entry: Identifiable, Codable, Equatable {
+    struct Entry: Identifiable, Codable, Hashable {
         let id: String          // StatusBarNotification.key
         let app: String
         let pkg: String
