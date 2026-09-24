@@ -24,6 +24,10 @@ raised. Betas list their commits instead.
   once nothing is open or running, and the phone once you leave the app, on Wi-Fi only. A Mac
   installed with Homebrew updates through `brew upgrade`. **Beta updates** follows the test
   builds published between releases.
+- **Pictures in notifications.** A photo in a chat message, a notification's big picture or the
+  sender's avatar comes along with the notification and shows as its thumbnail on the Mac, next
+  to the app's own icon. Only for apps set to Full, only when the picture changes, and at most
+  96 KB.
 - **Pick your Mac.** With several Macs running AndroMac on the same network, Pair asks which one.
 - **Ready for Android 17.** Android 17 asks before an app may talk to devices on your network.
   AndroMac now asks for that permission and lists it as required on the Permissions card.
@@ -34,6 +38,8 @@ raised. Betas list their commits instead.
   tighter, and the controls sit in one row of buttons with a menu for the rest. On macOS 26 and
   later the panel, buttons and window use Liquid Glass. The window has a single sidebar for the
   histories and every settings page, and ⌘, opens Settings.
+- **A Material 3 phone app.** New colours, cards, switches, buttons and dialogs, following your
+  wallpaper's colours on Android 12 and later.
 - **A simpler phone app.** Settings has its own screen behind the button in the top bar. The
   connection guide disappears once you are paired and stays one tap away under the info button.
   The status names the Mac you are connected or connecting to, and pairing shows the Macs the

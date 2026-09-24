@@ -24,6 +24,10 @@ derlemeler bunun yerine commit'lerini listeler.
   Mac hiçbir şey açık ya da çalışır değilken, telefon ise uygulamadan çıktığında ve yalnızca
   Wi-Fi'dayken kuruyor. Homebrew ile kurulan Mac `brew upgrade` ile güncelleniyor. **Beta
   güncellemeleri**, sürümler arasında yayınlanan test derlemelerini izliyor.
+- **Bildirimlerde görseller.** Sohbet mesajındaki fotoğraf, bildirimin büyük resmi ya da gönderenin
+  profil fotoğrafı bildirimle birlikte geliyor ve Mac'te uygulamanın ikonunun yanında küçük resim
+  olarak görünüyor. Yalnızca Tam ayarlı uygulamalar için, yalnızca görsel değiştiğinde ve en fazla
+  96 KB.
 - **Mac'ini seç.** Aynı ağda AndroMac çalıştıran birden fazla Mac varsa Eşleştir hangisi olduğunu
   soruyor.
 - **Android 17'ye hazır.** Android 17, bir uygulama ağındaki cihazlarla konuşmadan önce izin
@@ -35,6 +39,8 @@ derlemeler bunun yerine commit'lerini listeler.
   daha sıkı, denetimler de geri kalanı bir menüde toplayan tek sıra düğmede. macOS 26 ve sonrasında
   panel, düğmeler ve pencere Liquid Glass kullanıyor. Pencerede geçmişler ve bütün ayar sayfaları
   için tek bir kenar çubuğu var, ⌘, Ayarlar'ı açıyor.
+- **Material 3 bir telefon uygulaması.** Yeni renkler, kartlar, anahtarlar, düğmeler ve
+  diyaloglar; Android 12 ve sonrasında duvar kağıdının renklerini izliyor.
 - **Daha sade bir telefon uygulaması.** Ayarlar'ın üst çubuktaki düğmenin arkasında kendi ekranı
   var. Bağlantı rehberi eşleşince kayboluyor ve bilgi düğmesinin altında bir dokunuş uzakta kalıyor.
   Durum, bağlı olunan ya da bağlanılan Mac'in adını söylüyor; eşleştirme de telefonun gördüğü

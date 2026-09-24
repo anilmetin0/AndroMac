@@ -19,8 +19,8 @@
 
 <table>
 <tr>
-<td width="60%" align="center"><img src="docs/images/macos-panel.png" alt="macOS'ta AndroMac menü çubuğu paneli" width="100%"></td>
-<td width="40%" align="center"><img src="docs/images/android-home.png" alt="Android'de AndroMac ana ekranı" width="100%"></td>
+<td align="center" valign="top"><img src="docs/images/macos-panel.png" alt="macOS'ta AndroMac menü çubuğu paneli" width="360"></td>
+<td align="center" valign="top"><img src="docs/images/android-home.png" alt="Android'de AndroMac ana ekranı" width="276"></td>
 </tr>
 </table>
 

@@ -19,8 +19,8 @@
 
 <table>
 <tr>
-<td width="60%" align="center"><img src="docs/images/macos-panel.png" alt="The AndroMac menu bar panel on macOS" width="100%"></td>
-<td width="40%" align="center"><img src="docs/images/android-home.png" alt="The AndroMac main screen on Android" width="100%"></td>
+<td align="center" valign="top"><img src="docs/images/macos-panel.png" alt="The AndroMac menu bar panel on macOS" width="360"></td>
+<td align="center" valign="top"><img src="docs/images/android-home.png" alt="The AndroMac main screen on Android" width="276"></td>
 </tr>
 </table>
 
