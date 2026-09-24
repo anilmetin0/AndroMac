@@ -171,9 +171,13 @@ class Store(context: Context) {
         get() = prefs.getBoolean(K_CLIP_AUTO, true)
         set(v) = prefs.edit().putBoolean(K_CLIP_AUTO, v).apply()
 
-    /** Show a notification when the Mac's clipboard arrives. If auto-paste is blocked, this is the only route left. */
+    /**
+     * Show a notification when the Mac's clipboard arrives. Off by default: the text is already on
+     * the clipboard, and a notification for every copy is noise. If auto-paste is off, the
+     * notification is the only route left, so it is shown then whatever this says.
+     */
     var clipboardNotify: Boolean
-        get() = prefs.getBoolean(K_CLIP_NOTIFY, true)
+        get() = prefs.getBoolean(K_CLIP_NOTIFY, false)
         set(v) = prefs.edit().putBoolean(K_CLIP_NOTIFY, v).apply()
 
     /**

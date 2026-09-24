@@ -48,11 +48,13 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
         lastFromMac = text
         ClipHistory.add(text, fromMac = true)
 
-        if (store.clipboardAutoPaste) {
+        val written = store.clipboardAutoPaste &&
             runCatching { cm.setPrimaryClip(ClipData.newPlainText("AndroMac", text)) }
                 .onFailure { Log.i(Link.TAG, "direct clipboard write denied: ${it.message}") }
-        }
-        if (store.clipboardNotify || !store.clipboardAutoPaste) {
+                .isSuccess
+        // The notification is opt-in; it still comes when the text did not reach the clipboard,
+        // since then it is the only way to paste it.
+        if (store.clipboardNotify || !written) {
             notifyPastable(text)
         }
     }
