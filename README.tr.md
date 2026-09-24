@@ -17,12 +17,11 @@
   <a href="README.md">🇬🇧 English</a>
 </p>
 
-<table>
-<tr>
-<td align="center" valign="top"><img src="docs/images/macos-panel.png" alt="macOS'ta AndroMac menü çubuğu paneli" width="360"></td>
-<td align="center" valign="top"><img src="docs/images/android-home.png" alt="Android'de AndroMac ana ekranı" width="276"></td>
-</tr>
-</table>
+<p align="center">
+  <img src="docs/images/macos-panel.png" alt="macOS'ta AndroMac menü çubuğu paneli" width="360">
+  &nbsp;&nbsp;
+  <img src="docs/images/android-home.png" alt="Android'de AndroMac ana ekranı" width="276">
+</p>
 
 # AndroMac nedir?
 
@@ -48,7 +47,7 @@ telefonun pili bunu neredeyse fark etmez.
 
 ### Gizlilik
 - Yalnızca yerel ağ; ağdan çıkan tek istek günlük güncelleme denetimidir ve tek anahtarla kapanır
-- P-256 üzerinde Noise-KK el sıkışması ve AES-256-GCM, iki ekranda 6 haneli kodla onaylanır
+- P-256 üzerinde Noise-KK tarzı bir el sıkışma ve AES-256-GCM, iki ekranda 6 haneli kodla onaylanır
 - Kripto iki kez yazıldı (CryptoKit ve JCE); iki betik ikisinin uyuştuğunu kanıtlar
 - Telemetri yok, analiz yok, iki uygulamada da üçüncü parti kütüphane yok
 

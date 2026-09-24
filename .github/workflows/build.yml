@@ -65,6 +65,8 @@ jobs:
       - id: v
         env:
           REQUESTED: ${{ inputs.channel }}
+          # "[stable]" in the pushed commit's message re-publishes the stable release from it.
+          HEAD_MESSAGE: ${{ github.event.head_commit.message }}
           ON_MAIN: ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' }}
         run: |
           version="$(tr -d '[:space:]' < VERSION)"
@@ -73,7 +75,7 @@ jobs:
           current="$(git rev-parse -q --verify "refs/tags/v$version^{commit}" 2>/dev/null || true)"
           if [[ "$ON_MAIN" != "true" ]]; then
             channel=none
-          elif [[ -z "$current" || "$REQUESTED" == "stable" ]]; then
+          elif [[ -z "$current" || "$REQUESTED" == "stable" || "$HEAD_MESSAGE" == *"[stable]"* ]]; then
             channel=stable
           else
             channel=beta

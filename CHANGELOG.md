@@ -28,6 +28,7 @@ raised. Betas list their commits instead.
   sender's avatar comes along with the notification and shows as its thumbnail on the Mac, next
   to the app's own icon. Only for apps set to Full, only when the picture changes, and at most
   96 KB.
+- **Reset AndroMac.** Settings on both apps can erase everything the app keeps and start over.
 - **Pick your Mac.** With several Macs running AndroMac on the same network, Pair asks which one.
 - **Ready for Android 17.** Android 17 asks before an app may talk to devices on your network.
   AndroMac now asks for that permission and lists it as required on the Permissions card.

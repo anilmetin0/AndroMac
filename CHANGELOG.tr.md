@@ -28,6 +28,7 @@ derlemeler bunun yerine commit'lerini listeler.
   profil fotoğrafı bildirimle birlikte geliyor ve Mac'te uygulamanın ikonunun yanında küçük resim
   olarak görünüyor. Yalnızca Tam ayarlı uygulamalar için, yalnızca görsel değiştiğinde ve en fazla
   96 KB.
+- **AndroMac'i sıfırla.** İki uygulamada da Ayarlar, uygulamanın tuttuğu her şeyi silip baştan başlatabiliyor.
 - **Mac'ini seç.** Aynı ağda AndroMac çalıştıran birden fazla Mac varsa Eşleştir hangisi olduğunu
   soruyor.
 - **Android 17'ye hazır.** Android 17, bir uygulama ağındaki cihazlarla konuşmadan önce izin

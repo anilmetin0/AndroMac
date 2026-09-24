@@ -52,8 +52,9 @@ section. The header may carry a date (`## 1.2.0 - 2026-10-01`); only the version
 5. Watch the run with `gh run watch`, then check
    `https://github.com/anilmetin0/AndroMac/releases/latest`.
 
-To rebuild a stable release in place, for example after a broken asset, run the workflow on
-`main` from the Actions tab with channel `stable`.
+To rebuild a stable release in place, for example after a broken asset, put `[stable]` in the
+commit message of the push, or run the workflow on `main` from the Actions tab with channel
+`stable`.
 
 ## Homebrew and Obtainium
 

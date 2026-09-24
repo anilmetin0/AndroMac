@@ -367,7 +367,7 @@ sequenceDiagram
 
 ### Güven modeli
 
-El sıkışma, NIST P-256 üzerinde bir Noise-KK deseni. Her cihazın uzun ömürlü bir anahtar çifti
+El sıkışma Noise KK desenini izler; standart bir Noise paketi yerine NIST P-256 üzerine kurulu. Her cihazın uzun ömürlü bir anahtar çifti
 var; her oturumda ayrıca yeni bir geçici çift üretiliyor. Bugün kaydedilen bir oturum, yarın
 cihazlardan biri ele geçse bile çözülemez. Açıkta yalnızca geçici anahtarlar gider. Mac'in uzun
 ömürlü anahtarı geçici sırla şifrelenmiş olarak gelir. Telefon kendi anahtarını ancak Mac'inkini

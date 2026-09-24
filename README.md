@@ -17,12 +17,11 @@
   <a href="README.tr.md">🇹🇷 Türkçe</a>
 </p>
 
-<table>
-<tr>
-<td align="center" valign="top"><img src="docs/images/macos-panel.png" alt="The AndroMac menu bar panel on macOS" width="360"></td>
-<td align="center" valign="top"><img src="docs/images/android-home.png" alt="The AndroMac main screen on Android" width="276"></td>
-</tr>
-</table>
+<p align="center">
+  <img src="docs/images/macos-panel.png" alt="The AndroMac menu bar panel on macOS" width="360">
+  &nbsp;&nbsp;
+  <img src="docs/images/android-home.png" alt="The AndroMac main screen on Android" width="276">
+</p>
 
 # What is AndroMac?
 
@@ -48,7 +47,7 @@ the phone's battery barely notices.
 
 ### Privacy
 - Local network only; the daily update check is the one request that leaves it, and one switch turns it off
-- Noise-KK handshake over P-256 and AES-256-GCM, confirmed with a 6-digit code on both screens
+- A Noise-KK-style handshake over P-256 and AES-256-GCM, confirmed with a 6-digit code on both screens
 - The crypto is written twice (CryptoKit and JCE), and two scripts prove the two agree
 - No telemetry, no analytics, no third-party library in either app
 

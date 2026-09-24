@@ -371,7 +371,7 @@ sequenceDiagram
 
 ### The trust model
 
-The handshake is a Noise-KK pattern over NIST P-256. Each device has one long-term key pair and
+The handshake follows the Noise KK pattern, built on NIST P-256 rather than a standard Noise suite. Each device has one long-term key pair and
 generates a fresh ephemeral pair per session, so a session recorded today cannot be decrypted
 later even if a device is compromised. Only the ephemeral keys are ever sent in the clear. The
 Mac's long-term key travels encrypted under the ephemeral secret. The phone sends its own only
