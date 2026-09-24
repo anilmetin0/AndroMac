@@ -1,73 +1,64 @@
 # Contributing
 
-Thanks for looking. AndroMac is a small project with a narrow scope and a few rules that are not
-negotiable, so read this before writing code.
+AndroMac is a small project with a narrow scope and a few fixed rules. This page covers reporting
+a bug, suggesting a feature, and sending a change.
 
 The repository language is English: code, comments, commit messages, issues and documentation.
 Turkish exists as a translation, in `README.tr.md`, `docs/GUIDE.tr.md`, `CHANGELOG.tr.md` and
 the app resources. The README is the short front page; detail belongs in `docs/GUIDE.md`, and each
-English file and its Turkish twin keep the same structure.
-Issues and pull request descriptions in Turkish are fine.
+English file and its Turkish twin keep the same structure. Issues and pull request descriptions
+in Turkish are fine.
+
+## Reporting a bug
+
+Open a [GitHub issue](https://github.com/anilmetin0/AndroMac/issues/new/choose) with the Bug
+report template. Include:
+
+- Both app versions, copied exactly as the apps show them, for example `1.1.0 (42 · e105e58)`.
+  The phone shows it in Settings → About, the Mac in Settings → Devices.
+- The phone model and Android version, and the macOS version.
+- The steps that lead to the problem, what you expected, and what happened instead.
+- Logs, if you can get them. On the phone run `adb logcat -s AndroMac`, on the Mac
+  `log stream --predicate 'senderImagePath CONTAINS "AndroMac"'`. Neither log carries message
+  content or key material.
+- For a connection problem, the phone's **I can't connect** screen or the Mac's Settings →
+  Network page.
+
+Do not report a security vulnerability in an issue. Follow [SECURITY.md](SECURITY.md) instead.
+
+## Suggesting a feature
+
+Open an issue with the Feature request template. Before you do, check the [scope](#scope) and the
+energy contract in [docs/ENERGY.md](docs/ENERGY.md): a feature that needs a periodic timer,
+polling or a wakelock on the phone will not fit. To talk an idea through first, use
+[Discussions](https://github.com/anilmetin0/AndroMac/discussions).
+
+## Making a change
+
+1. Fork the repository and create a branch from `main`.
+2. Install the tools listed under [Toolchain](#toolchain).
+3. Build both apps and run the unit tests as described under [Build](#build).
+4. If you touch crypto, the handshake, framing or the message set, run
+   `scripts/verify-crypto.sh` and `scripts/verify-handshake.sh`
+   ([what they check](#the-two-verification-scripts)).
+5. If you add or change a user-visible string, run `macos/scripts/update-strings.sh --check`
+   (see the string rule under [Rules](#rules)).
+6. If users will notice the change, add an entry under `## Unreleased` in both `CHANGELOG.md` and
+   `CHANGELOG.tr.md`.
+7. Write commit messages as [Conventional Commits](https://www.conventionalcommits.org): `feat:`,
+   `fix:`, `docs:`, `ci:`, `build:`, `refactor:`, `perf:` or `chore:`, with an optional scope
+   such as `fix(macos):`.
+8. Open a pull request against `main` and fill in the template. CI must be green before it is
+   merged.
+
+After the merge, the push to `main` publishes a beta build. A stable release is published only
+when `VERSION` is raised; [docs/RELEASING.md](docs/RELEASING.md) describes the pipeline.
 
 ## Scope
 
 Out of scope: SMS, call control, more than one Mac, and any access over the internet. The design
 is any number of phones and one Mac on one local network. A pull request that adds one of those
 will be closed however good the code is.
-
-## Repository layout
-
-```
-README.md, README.tr.md            the short front page
-CHANGELOG.md, CHANGELOG.tr.md      release notes, read by the release job
-VERSION                            the released version; raising it publishes the next stable release
-THIRD-PARTY-NOTICES.md             what the Mac package bundles for screen mirroring, and the licenses
-Casks/andromac.rb                  Homebrew cask; its version follows VERSION, CI checks it
-
-docs/
-  GUIDE.md, GUIDE.tr.md            the user guide: install, pairing, features, settings, trust model
-  PROTOCOL.md                      the wire protocol both sides are written against
-  ENERGY.md                        the energy rules, where each lives, and how to measure them
-  RELEASING.md                     the release checklist and what the pipeline does with it
-  images/                          screenshots and the icon the READMEs show
-
-scripts/
-  verify-crypto.sh                 proves the two crypto implementations agree, vector by vector
-  verify-handshake.sh              runs the real Swift and Kotlin session code over loopback
-  setup-android-signing.sh         creates the APK signing key and uploads it as secrets
-
-.github/
-  workflows/build.yml              verify, test, build both apps, publish the release
-  workflows/codeql.yml             CodeQL on the workflow files
-  dependabot.yml                   weekly updates for the actions and the Gradle plugins
-  ISSUE_TEMPLATE/, PULL_REQUEST_TEMPLATE.md
-
-android/                           AGP 9.4.1, Gradle 9.7.1, minSdk 29, no dependencies
-  app/src/main/kotlin/dev/andromac/
-    core/                          platform-free: Crypto, Session, Protocol, Store, Link, Version,
-                                   FileNames, NetworkInfo
-    net/                           LinkService (connect loop, backoff, dispatch), Discovery (mDNS
-                                   only while there is no connection), BootReceiver
-    feature/                       one file per synced thing: NotificationRelay, ClipboardBridge,
-                                   BatteryReporter, MediaBridge, SystemBridge, FileTransfer,
-                                   FindPhone, UpdateCheck, Updater, and their helpers
-    ui/                            the activities and the Permissions model
-  app/src/main/res/                values/ is English, the base language; values-tr/ is Turkish
-  vectors/                         runs Crypto, Session and Protocol on a plain JVM for the scripts
-    src/test/                      JVM unit tests
-
-macos/                             Swift package, swift-tools 6.2, macOS 14+, no dependencies
-  build.sh                         builds and packages the .app, sets the version, signs it
-  scripts/fetch-scrcpy.sh          fetches and verifies the bundled scrcpy and adb into vendor/
-  scripts/update-strings.sh        extracts the localization keys and rewrites the .strings files
-  Resources/                       Info.plist, en.lproj and tr.lproj, make-icon.swift
-  Sources/AndroMacKit/             platform-free: Crypto, Session, Wire, Version, FileNames,
-                                   PairedDevice, SealedFile, AdbOutput, ReleaseInfo, VerificationCode
-  Sources/AndroMac/                the app: Server (Bonjour, handshake limits, dispatch), AppState,
-                                   Store, ScreenMirror, FileTransfer, the updater and the SwiftUI views
-  Sources/SelfTest/                the vector printer and handshake responder the scripts use
-  Tests/AndroMacKitTests/          Swift Testing unit tests
-```
 
 ## Toolchain
 
@@ -156,16 +147,16 @@ needs a new wakeup on the phone, say why in the pull request description.
 No third-party dependencies. Neither shipped app has one, and neither should. Network framework,
 CryptoKit, AppKit, UserNotifications, `NsdManager`, `javax.crypto` and `org.json` all ship with
 the platforms. The one exception is the `vectors` module, which runs on a plain JVM where
-`org.json` is not part of the runtime, so it declares that one dependency. Screen mirroring is
-not a dependency either: the Mac package carries the scrcpy release as separate programs, started
+`org.json` is not part of the runtime, so it declares that one dependency. Screen mirroring adds
+no dependency either: the Mac package carries the scrcpy release as separate programs, started
 as child processes, pinned by version and SHA-256 in `macos/scripts/fetch-scrcpy.sh`. To move
 to a new scrcpy release, change `VERSION` and `SHA256` there together and update
 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). Before adding anything, check what the platform
 already gives you.
 
-One source of truth for the wire. [docs/PROTOCOL.md](docs/PROTOCOL.md) describes the format both
-sides are written against. If you change the wire format or the message set, update it in the
-same pull request.
+Keep the protocol document current. [docs/PROTOCOL.md](docs/PROTOCOL.md) describes the format
+both sides are written against. If you change the wire format or the message set, update it in
+the same pull request.
 
 Never hardcode a user-visible string. On Android use resource ids, `@string/settings_language`
 and `getString(R.string.…)`, and add the English text to `values/strings.xml` first. On macOS the
@@ -213,22 +204,67 @@ The in-app language picker lists whatever it finds in the bundle, so no further 
 
 ## Pull requests
 
-- Keep the change small and focused. One subject per pull request.
-- Use the checklist in the pull request template, and say which devices and OS versions you tested
-  on.
-- Add an entry under `## Unreleased` in `CHANGELOG.md` and `CHANGELOG.tr.md`, if the change is
-  user-visible. That section becomes the next stable release's notes.
+- Keep the change small, with one subject per pull request.
+- In the template, say which devices and OS versions you tested on.
 - Do not bump the `VERSION` file in a feature pull request. Raising it publishes a stable
-  release, and that is its own commit.
-
-## Reporting security problems
-
-Do not open a public issue. Use private vulnerability reporting, described in
-[SECURITY.md](SECURITY.md).
+  release, so it gets its own commit.
 
 ## Releases and the Homebrew cask
 
-`docs/RELEASING.md` is the checklist. Every push to `main` publishes a beta; the push that
-raises `VERSION` publishes the stable release. To release, rename `## Unreleased` in both
-changelogs to the version, set it in `VERSION` and `Casks/andromac.rb`, and push. CI fails when the cask and
-`VERSION` disagree, and anything in `Casks/` must pass `brew style Casks/*.rb`.
+[docs/RELEASING.md](docs/RELEASING.md) is the release checklist. To release, rename `## Unreleased`
+in both changelogs to the version, set it in `VERSION` and `Casks/andromac.rb`, and push. CI fails
+when the cask and `VERSION` disagree, and anything in `Casks/` must pass `brew style Casks/*.rb`.
+
+## Repository layout
+
+```
+README.md, README.tr.md            the short front page
+CHANGELOG.md, CHANGELOG.tr.md      release notes, read by the release job
+VERSION                            the released version; raising it publishes the next stable release
+THIRD-PARTY-NOTICES.md             what the Mac package bundles for screen mirroring, and the licenses
+Casks/andromac.rb                  Homebrew cask; its version follows VERSION, CI checks it
+
+docs/
+  GUIDE.md, GUIDE.tr.md            the user guide: install, pairing, features, settings, trust model
+  PROTOCOL.md                      the wire protocol both sides are written against
+  ENERGY.md                        the energy rules, where each lives, and how to measure them
+  RELEASING.md                     the release checklist and what the pipeline does with it
+  images/                          screenshots and the icon the READMEs show
+
+scripts/
+  verify-crypto.sh                 proves the two crypto implementations agree, vector by vector
+  verify-handshake.sh              runs the real Swift and Kotlin session code over loopback
+  setup-android-signing.sh         creates the APK signing key and uploads it as secrets
+
+.github/
+  workflows/build.yml              verify, test, build both apps, publish the release
+  workflows/codeql.yml             CodeQL on the workflow files
+  dependabot.yml                   weekly updates for the actions and the Gradle plugins
+  ISSUE_TEMPLATE/, PULL_REQUEST_TEMPLATE.md
+
+android/                           AGP 9.4.1, Gradle 9.7.1, minSdk 29, no dependencies
+  app/src/main/kotlin/dev/andromac/
+    core/                          platform-free: Crypto, Session, Protocol, Store, Link, Version,
+                                   FileNames, NetworkInfo
+    net/                           LinkService (connect loop, backoff, dispatch), Discovery (mDNS
+                                   only while there is no connection), BootReceiver
+    feature/                       one file per synced thing: NotificationRelay, ClipboardBridge,
+                                   BatteryReporter, MediaBridge, SystemBridge, FileTransfer,
+                                   FindPhone, UpdateCheck, Updater, and their helpers
+    ui/                            the activities and the Permissions model
+  app/src/main/res/                values/ is English, the base language; values-tr/ is Turkish
+  vectors/                         runs Crypto, Session and Protocol on a plain JVM for the scripts
+    src/test/                      JVM unit tests
+
+macos/                             Swift package, swift-tools 6.2, macOS 14+, no dependencies
+  build.sh                         builds and packages the .app, sets the version, signs it
+  scripts/fetch-scrcpy.sh          fetches and verifies the bundled scrcpy and adb into vendor/
+  scripts/update-strings.sh        extracts the localization keys and rewrites the .strings files
+  Resources/                       Info.plist, en.lproj and tr.lproj, make-icon.swift
+  Sources/AndroMacKit/             platform-free: Crypto, Session, Wire, Version, FileNames,
+                                   PairedDevice, SealedFile, AdbOutput, ReleaseInfo, VerificationCode
+  Sources/AndroMac/                the app: Server (Bonjour, handshake limits, dispatch), AppState,
+                                   Store, ScreenMirror, FileTransfer, the updater and the SwiftUI views
+  Sources/SelfTest/                the vector printer and handshake responder the scripts use
+  Tests/AndroMacKitTests/          Swift Testing unit tests
+```

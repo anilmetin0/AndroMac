@@ -122,8 +122,8 @@ is stuck:
 
 If it still will not connect, **I can't connect** at the bottom of that guide opens live
 diagnostics. They show the phone's address and subnet, whether the Mac was seen, the pairing and
-connection state, and the app version, followed by a list of fixes per symptom. Settings → Network on the Mac
-shows the same information and links to the Local Network permission.
+connection state, and the app version, followed by a list of fixes per symptom. Settings →
+Network on the Mac shows the same information and links to the Local Network permission.
 
 The Mac's pairing dialog and the phone's both show the digits in large groups. On the phone, a key
 that has changed since the last pairing defaults to **Reject**. On the Mac the first phone defaults
@@ -148,7 +148,7 @@ suspicious case.
 | Files | Both ways | Share from the phone's share sheet, or **Send file…** and drag-and-drop on the Mac panel. The receiver is asked first, unless you turn on auto-accept, which then applies to every paired phone. Files land in Downloads, are checked against a SHA-256 hash, and are never opened for you. See [how it compares](#compared-with-other-tools). |
 | Several phones | Mac | More than one Android can be paired and connected at once. With two or more, the panel's device card shows them as tabs across the top, and clicking a tab switches to that phone. Each one can be disconnected and connected on its own. Disconnect hangs up and refuses the next attempt, and each phone has its own clipboard switch. Forgetting a device is in Settings → Devices. |
 | Verification codes | Mac | When a mirrored notification carries a one-time code, the panel puts the code itself on a copy button. Copying it does not send it back to the phone and does not enter the clipboard history. |
-| Connection guide | Both | Neither app says "cannot connect". Both show which step is stuck, and the phone has a live diagnostics screen. |
+| Connection guide | Both | Both apps show which step is stuck, and the phone also has a live diagnostics screen. |
 | Metrics | Mac | Messages per hour, traffic, reconnect count and the most frequent message types, so you can check the energy claim yourself. |
 | Screen mirroring | Phone to Mac | The phone's screen in a window, with mouse, keyboard and sound, through the bundled scrcpy over Wireless debugging or USB. See [Screen mirroring](#screen-mirroring). |
 | Updates | Both | Each app checks once a day, offers what it finds at launch, and installs it itself. The download is verified against the checksum published with the release before anything is replaced. One switch turns the check off. |
@@ -160,8 +160,8 @@ any number of phones and one Mac on one local network.
 
 The Mac can show the phone's screen in a window and pass the mouse, the keyboard and the sound
 through. That part is [scrcpy](https://github.com/Genymobile/scrcpy), which ships inside the Mac
-package together with adb. It does not ride the AndroMac connection. It uses Android's own
-debugging channel, so the phone needs one switch that no app can flip for you:
+package together with adb. It uses Android's own debugging channel instead of the AndroMac
+connection, so the phone needs one switch that no app can flip for you:
 
 1. On the phone, unlock Developer options by tapping **Build number** seven times, then turn on
    **Wireless debugging**. A USB cable with USB debugging on works too.
@@ -184,9 +184,9 @@ bundled, and under which licenses, is in [THIRD-PARTY-NOTICES.md](../THIRD-PARTY
 ### Why the clipboard is asked for in one direction
 
 Since Android 10 an app cannot read the clipboard unless it is in the foreground. That is a
-privacy rule with no supported way around it, so the phone never pushes a copy by itself. It
-answers a question. Opening the Mac panel asks the phone for its clipboard, and the phone reads
-it through an invisible activity that holds focus for a moment. The phone also sends its
+privacy rule with no supported way around it, so the phone sends its clipboard only when asked.
+Opening the Mac panel asks the phone for its clipboard, and the phone reads it through an
+invisible activity that holds focus for a moment. The phone also sends its
 clipboard whenever you bring the AndroMac app to the foreground, since it may read it then.
 
 That activity needs one permission on the phone, **Display over other apps**, the one exemption
@@ -280,7 +280,7 @@ which the phone shows while it is unpaired.
 
 ## Privacy and security
 
-**Nothing leaves the local network.** There is no server to reach and no account to create, and
+Nothing leaves the local network. There is no server to reach and no account to create, and
 the apps collect no telemetry or analytics. The apps open no socket to the internet, with one
 exception: the update check in Settings → Updates, on by default. It asks `api.github.com` for
 the newest release at most once a day and sends only the app's version in the `User-Agent`
@@ -382,7 +382,7 @@ hash through HKDF-SHA256 into one AES-256-GCM key per direction. Both sides then
 transcript and check what the other sent. A mismatch closes the connection before any
 application message is read.
 
-The handshake alone does not prove *which* devices are talking, only that nobody is in the
+The handshake alone does not prove which devices are talking, only that nobody is in the
 middle of this particular exchange. The 6-digit code covers that. It is derived from the whole
 handshake transcript plus one random nonce from each side, and the Mac commits to its nonce
 with a hash before the phone reveals its own. A device in the middle has to fix its half of each
@@ -432,7 +432,7 @@ per-transfer code would add taps without adding security.
 
 What the network still sees: the Mac's name in its Bonjour record, and the fact that a phone
 connected to it. Both long-term keys are encrypted in the handshake, so a passive listener
-cannot tell *which* phone. An active one learns the Mac's key, because the Mac is the
+cannot tell which phone. An active one learns the Mac's key, because the Mac is the
 discoverable side. That key is random and carries no name or account.
 
 ## Energy

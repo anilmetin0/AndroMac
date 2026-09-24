@@ -9,7 +9,7 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ## Unreleased
 
-## 1.1.0 — 2026-09-23
+## 1.1.0 - 2026-09-23
 
 ### Eklenenler
 
@@ -98,7 +98,7 @@ derlemeler bunun yerine commit'lerini listeler.
   tutması gerekiyor; Android'de yükleyici de yalnızca bu uygulamayı kabul ediyor.
 - Uygulama ikonları artık yalnızca bildirimi gönderen telefondan isteniyor ve kabul ediliyor.
 
-## 1.0.0 — 2026-09-07
+## 1.0.0 - 2026-09-07
 
 İlk genel sürüm. Android telefonun ve Mac'in doğrudan kendi ağın üzerinden konuşur: sunucu yok,
 hesap yok, iki tarafta da üçüncü parti kütüphane yok.

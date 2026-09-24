@@ -31,21 +31,22 @@ bildirimlerini, panosunu ve müziğini gösterir, iki yönde dosya gönderir ve 
 pencerede gösterebilir. İki uygulama birbirini Bonjour ile bulur, bir kez bir anahtar üzerinde
 anlaşır ve o andan sonra yalnızca birbiriyle konuşur. Arada sunucu yoktur.
 
-Telefona neredeyse hiçbir maliyet getirmeyecek şekilde tasarlandı: telefon kendi zamanlayıcısını
-çalıştırmaz, bir yerde yapılması gereken işi Mac yapar.
+Telefon kendi zamanlayıcısını çalıştırmaz. Bağlantıyı Mac denetler ve ağır işi o yapar, bu yüzden
+telefonun pili bunu neredeyse fark etmez.
 
 # Özellikler
 
 ### Günlük kullanım
 - Pil seviyesi, şarj durumu ve menü çubuğunda düşük pil uyarısı
 - İki yönde pano, Mac'te aranabilir bir geçmişle
-- Bildirim Merkezi'nde bildirimler, eylemler ve satır içi yanıtla, uygulama başına kademe
+- Bildirim Merkezi'nde bildirimler; uygulamanın ikonu, taşıdıkları görsel, eylemler, satır içi yanıt ve uygulama başına kademeyle
 - Medya denetimleri, zil ve ses düzeyi, kaybolan telefonu çaldıran bir düğme
 - İki yönde dosya, saklanmadan önce SHA-256 ile doğrulanır
 - Fare, klavye ve sesle ekran yansıtma, pakette gelen [scrcpy](https://github.com/Genymobile/scrcpy) ile
 - Tek Mac'te birden fazla telefon, her biri kendi ayarlarıyla
+- Kendi kendine kurulan güncellemeler; uygulamayı Homebrew kurduysa onun üzerinden, isteğe bağlı beta kanalıyla
 
-### Tasarımdan gizli
+### Gizlilik
 - Yalnızca yerel ağ; ağdan çıkan tek istek günlük güncelleme denetimidir ve tek anahtarla kapanır
 - P-256 üzerinde Noise-KK el sıkışması ve AES-256-GCM, iki ekranda 6 haneli kodla onaylanır
 - Kripto iki kez yazıldı (CryptoKit ve JCE); iki betik ikisinin uyuştuğunu kanıtlar
@@ -56,7 +57,9 @@ Quick Share ile karşılaştırmasını anlatır.
 
 # Kurulum
 
-### Mac · Apple Silicon, macOS 14+
+### Mac, Homebrew ile
+
+Apple Silicon, macOS 14 ve üstü. Terminal'e yapıştır:
 
 ```bash
 brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
@@ -65,14 +68,22 @@ brew install --cask andromac
 xattr -dr com.apple.quarantine /Applications/AndroMac.app
 ```
 
-Homebrew yok mu? DMG'yi
-[yayınlardan](https://github.com/anilmetin0/AndroMac/releases/latest) indir, AndroMac'i
-Uygulamalar'a sürükle, sonra son satırı çalıştır. Uygulama noter onaylı olmadığı için bu bir kez gerekir.
+`xattr` satırı indirme işaretini bir kez kaldırır, çünkü uygulama noter onaylı değil. Bundan sonra
+uygulama kendini günceller; `brew upgrade --cask andromac` da çalışır.
 
-### Android · 10+
+### Mac, Homebrew olmadan
 
-Telefonda [yayınları](https://github.com/anilmetin0/AndroMac/releases/latest) aç ve
-APK'ya dokun. Ya da telefon adb ile bağlıyken:
+[Yayınlardan](https://github.com/anilmetin0/AndroMac/releases/latest) `AndroMac-<sürüm>-macOS-arm64.dmg` dosyasını indir, AndroMac'i
+Uygulamalar'a sürükle, sonra çalıştır:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/AndroMac.app
+```
+
+### Android
+
+Android 10 ve üstü. Telefonda [yayınları](https://github.com/anilmetin0/AndroMac/releases/latest) aç ve `AndroMac-<sürüm>-android.apk`
+dosyasına dokun. Ya da telefon adb ile bağlıyken Mac'ten kur:
 
 ```bash
 gh release download --repo anilmetin0/AndroMac --pattern '*-android.apk'
@@ -82,11 +93,10 @@ adb install AndroMac-*-android.apk
 ### Eşleştir
 
 1. İki cihazda da AndroMac'i aç, ikisi aynı Wi-Fi'da olsun.
-2. Telefonda **İzinler** kartının listelediklerini ver, sonra **Eşleştir**'e dokun.
+2. Telefonda İzinler kartının listelediklerini ver, sonra Eşleştir'e dokun.
 3. İki ekranda aynı altı hanenin çıktığını kontrol et ve ikisinde de onayla.
 
-Uygulamalar bundan sonra kendilerini günceller. Her adımın ayrıntısı ve sorun giderme
-[rehberde](docs/GUIDE.tr.md#kurulum).
+Her adımın ayrıntısı ve sorun giderme [rehberde](docs/GUIDE.tr.md#kurulum).
 
 # Derleme
 
@@ -110,23 +120,31 @@ listelenir:
 - Android Açık Kaynak Projesi'nin [adb](https://android.googlesource.com/platform/packages/modules/adb/)'si, Apache Lisansı 2.0 ile
 - scrcpy'nin içindeki [FFmpeg](https://ffmpeg.org/legal.html) ve [libusb](https://github.com/libusb/libusb), LGPL 2.1 ile; [SDL](https://github.com/libsdl-org/SDL), zlib Lisansı ile
 
-# Katkıda bulunanlar
+# Katkıda bulunma
 
 <a href="https://github.com/anilmetin0/AndroMac/graphs/contributors"><img src="https://contrib.rocks/image?repo=anilmetin0/AndroMac" alt="Katkıda bulunanlar"></a>
 
-Issue ve pull request'ler memnuniyetle karşılanır; [CONTRIBUTING.md](CONTRIBUTING.md) ile başla.
-Güvenlik açıklarını [SECURITY.md](SECURITY.md)'de anlatıldığı gibi gizli olarak bildir.
+- Bir hata mı buldun? Hata bildirimi formuyla bir
+  [issue](https://github.com/anilmetin0/AndroMac/issues/new/choose) aç. İki uygulamanın sürüm
+  satırını da uygulamada göründüğü gibi yaz, örneğin `1.1.0 (42 · e105e58)`.
+- Bir fikrin mi var? Özellik isteği formunu kullan. Neyin uygun olduğunu
+  [CONTRIBUTING.md](CONTRIBUTING.md)'deki kapsam ve enerji kuralları belirler.
+- Kodu mu değiştirmek istiyorsun? Fork'la, `main`'den bir dal aç,
+  [CONTRIBUTING.md](CONTRIBUTING.md#making-a-change)'deki kontrolleri çalıştır ve pull request aç.
+  CI'ın geçmesi gerekir.
+- Bir güvenlik açığı mı buldun? Issue'da değil, [SECURITY.md](SECURITY.md)'de anlatıldığı gibi
+  gizli olarak bildir.
 
 # Teşekkürler
 
 Bu projelere, belirli bir sıra olmadan teşekkürler:
 
-- **[scrcpy](https://github.com/Genymobile/scrcpy)**, Genymobile ve Romain Vimont; ekran yansıtmanın tamamını o yapar
-- **[Android Açık Kaynak Projesi](https://source.android.com/)**, adb ve kablosuz eşleştirmesi için
-- **[KDE Connect](https://invent.kde.org/network/kdeconnect-kde)**; telefon ile bilgisayar arasında neler yapılabileceğini gösterdi, 2025 eşleştirme güvenlik bildirimi de AndroMac'in eşleştirme kodunu şekillendirdi
-- **[LocalSend](https://github.com/localsend/localsend)**, önce teklif sonra kabul eden dosya akışı için
-- **[Syncthing](https://github.com/syncthing/syncthing)**, anahtardan cihaz kimliği fikri ve parça-özet disiplini için
-- **[Noise Protokol Çerçevesi](https://noiseprotocol.org/)**, Trevor Perrin; el sıkışmanın izlediği desen
-- **[Shizuku](https://github.com/RikkaApps/Shizuku)**, Android'in Kablosuz hata ayıklama anahtarını doğrudan açmanın yolunu gösterdiği için
-- **[Obtainium](https://github.com/ImranR98/Obtainium)** ve **[Homebrew](https://brew.sh)**, mağaza dışında kurmayı ve güncellemeyi kolaylaştırdıkları için
-- *AndroMac'i deneyen, sorun bildiren ve kullanan herkese ❤️*
+- [scrcpy](https://github.com/Genymobile/scrcpy), Genymobile ve Romain Vimont; ekran yansıtmanın tamamını o yapar
+- [Android Açık Kaynak Projesi](https://source.android.com/), adb ve kablosuz eşleştirmesi için
+- [KDE Connect](https://invent.kde.org/network/kdeconnect-kde), özellikleriyle çıtayı koyduğu ve 2025 eşleştirme güvenlik bildirimi AndroMac'in eşleştirme kodunu şekillendirdiği için
+- [LocalSend](https://github.com/localsend/localsend), önce teklif sonra kabul eden dosya akışı için
+- [Syncthing](https://github.com/syncthing/syncthing), anahtardan cihaz kimliği fikri ve parça-özet disiplini için
+- [Noise Protokol Çerçevesi](https://noiseprotocol.org/), Trevor Perrin; el sıkışmanın izlediği desen
+- [Shizuku](https://github.com/RikkaApps/Shizuku), Android'in Kablosuz hata ayıklama anahtarını doğrudan açmanın yolunu gösterdiği için
+- [Obtainium](https://github.com/ImranR98/Obtainium) ve [Homebrew](https://brew.sh), mağaza dışında kurmayı ve güncellemeyi kolaylaştırdıkları için
+- AndroMac'i deneyen, sorun bildiren ve kullanan herkese

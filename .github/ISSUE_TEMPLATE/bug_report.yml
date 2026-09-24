@@ -5,14 +5,25 @@ body:
   - type: markdown
     attributes:
       value: |
-        Do not report a security vulnerability here. Use private reporting instead: [Security Advisories](https://github.com/anilmetin0/AndroMac/security/advisories/new). See [SECURITY.md](https://github.com/anilmetin0/AndroMac/blob/main/SECURITY.md).
+        Do not report a security vulnerability here. Report it privately through [Security Advisories](https://github.com/anilmetin0/AndroMac/security/advisories/new), as described in [SECURITY.md](https://github.com/anilmetin0/AndroMac/blob/main/SECURITY.md).
+
+        [CONTRIBUTING.md](https://github.com/anilmetin0/AndroMac/blob/main/CONTRIBUTING.md#reporting-a-bug) lists what a useful report contains.
 
   - type: input
-    id: version
+    id: android-version
     attributes:
-      label: AndroMac version
-      description: Shown at the bottom of the phone's main screen and in Settings → Devices on the Mac. Paste the whole string, commit included.
-      placeholder: 1.0.0 (42 · abc1234)
+      label: AndroMac version on the phone
+      description: Settings → About on the phone. Copy the whole string, build and commit included.
+      placeholder: 1.1.0 (42 · e105e58)
+    validations:
+      required: true
+
+  - type: input
+    id: mac-version
+    attributes:
+      label: AndroMac version on the Mac
+      description: Settings → Devices on the Mac. Copy the whole string, build and commit included.
+      placeholder: 1.1.0 (42 · e105e58)
     validations:
       required: true
 
@@ -29,26 +40,18 @@ body:
       required: true
 
   - type: input
+    id: android
+    attributes:
+      label: Phone model and Android version
+      placeholder: Pixel 9, Android 15
+    validations:
+      required: true
+
+  - type: input
     id: macos
     attributes:
       label: macOS version and Mac model
       placeholder: macOS 15.6, MacBook Air M2
-    validations:
-      required: false
-
-  - type: input
-    id: android
-    attributes:
-      label: Android version and phone model
-      placeholder: Android 15, Pixel 9
-    validations:
-      required: false
-
-  - type: textarea
-    id: what
-    attributes:
-      label: What happened
-      description: What you expected, and what happened instead.
     validations:
       required: true
 
@@ -64,14 +67,11 @@ body:
       required: true
 
   - type: textarea
-    id: diagnostics
+    id: what
     attributes:
-      label: Connection diagnostics
-      description: |
-        For connection problems, paste the phone's **Can't connect** screen, or the Mac's Settings → Network panel. Redact anything you do not want public.
-      render: text
+      label: What you expected, and what happened instead
     validations:
-      required: false
+      required: true
 
   - type: textarea
     id: logs
@@ -79,6 +79,16 @@ body:
       label: Logs
       description: |
         `adb logcat -s AndroMac` on the phone, `log stream --predicate 'senderImagePath CONTAINS "AndroMac"'` on the Mac. The logs carry no message content.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Connection diagnostics
+      description: |
+        For a connection problem, paste the phone's **I can't connect** screen or the Mac's Settings → Network page. Redact anything you do not want public.
       render: text
     validations:
       required: false

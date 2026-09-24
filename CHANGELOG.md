@@ -3,13 +3,13 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The The `## <version>` section matching the `VERSION` file is the notes of that stable release.
+The `## <version>` section matching the `VERSION` file is the notes of that stable release.
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Betas list their commits instead.
 
 ## Unreleased
 
-## 1.1.0 — 2026-09-23
+## 1.1.0 - 2026-09-23
 
 ### Added
 
@@ -95,7 +95,7 @@ raised. Betas list their commits instead.
   name, and on Android the installer accepts only this app.
 - App icons are requested from, and accepted from, only the phone that sent the notification.
 
-## 1.0.0 — 2026-09-07
+## 1.0.0 - 2026-09-07
 
 The first public release. Your Android phone and your Mac talk directly over your own network:
 no server, no account, and no third-party libraries on either side.

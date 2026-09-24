@@ -5,9 +5,21 @@ body:
   - type: markdown
     attributes:
       value: |
-        Deliberately out of scope: SMS, call control, more than one Mac, and access over the internet. Requests for those will be closed.
+        Out of scope: SMS, call control, more than one Mac, and access over the internet. Requests for those will be closed.
 
-        The energy contract in [docs/ENERGY.md](https://github.com/anilmetin0/AndroMac/blob/main/docs/ENERGY.md) also constrains what can be added: nothing may introduce a periodic timer, polling or a wakelock on the phone.
+        A feature must also fit the energy contract in [docs/ENERGY.md](https://github.com/anilmetin0/AndroMac/blob/main/docs/ENERGY.md): no periodic timer, polling or wakelock on the phone.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: The feature is not in the out-of-scope list above.
+          required: true
+        - label: I read the energy contract.
+          required: true
+        - label: I searched the existing issues.
+          required: true
 
   - type: textarea
     id: problem

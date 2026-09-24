@@ -157,7 +157,7 @@ telefon, tek Mac, tek yerel ağ.
 
 Mac, telefonun ekranını bir pencerede gösterip fareyi, klavyeyi ve sesi telefona aktarabilir. Bu
 işi [scrcpy](https://github.com/Genymobile/scrcpy) yapar; adb ile birlikte Mac paketinin içinde
-gelir. AndroMac bağlantısını kullanmaz, Android'in kendi hata ayıklama kanalından geçer. Bu yüzden
+gelir. AndroMac bağlantısı yerine Android'in kendi hata ayıklama kanalından geçer. Bu yüzden
 telefonda hiçbir uygulamanın senin yerine açamayacağı bir anahtar gerekir:
 
 1. Telefonda **Derleme numarası**na yedi kez dokunarak Geliştirici seçeneklerini aç, sonra
@@ -181,7 +181,7 @@ scrcpy` ile kurulanı kullanır. Pakete nelerin hangi lisansla girdiği
 ### Pano neden tek yönde istenerek çalışıyor
 
 Android 10'dan beri bir uygulama ön planda değilse panoyu okuyamıyor. Bu kasıtlı bir gizlilik
-kararı ve desteklenen bir baypası yok. Bu yüzden telefon her kopyayı kendiliğinden göndermez.
+kararı ve desteklenen bir baypası yok. Bu yüzden telefon panosunu yalnızca istendiğinde gönderir.
 Mac panelini açmak telefondan panosunu ister; telefon da bir anlığına odağı alan görünmez bir
 etkinlikle panoyu okuyup yanıtlar. AndroMac'i telefonda öne getirdiğinde de pano gider, çünkü o
 anda uygulama zaten ön plandadır.
@@ -278,7 +278,7 @@ telefon o rehberi yalnızca eşleştirilmemişken gösterir.
 
 ## Gizlilik ve güvenlik
 
-**Yerel ağdan hiçbir şey çıkmaz.** Ulaşılacak bir sunucu, açılacak bir hesap, telemetri ya da
+Yerel ağdan hiçbir şey çıkmaz. Ulaşılacak bir sunucu, açılacak bir hesap, telemetri ya da
 analitik yok. Uygulamalar internete soket açmaz; tek istisna Ayarlar → Güncellemeler'deki,
 varsayılan olarak açık güncelleme denetimi. O da `api.github.com`'a günde en fazla bir kez en yeni
 sürümü sorar ve `User-Agent` başlığındaki uygulama sürümünden başka bir şey göndermez.

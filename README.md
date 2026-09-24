@@ -31,21 +31,22 @@ phone's battery, notifications, clipboard and music, sends files both ways, and 
 phone's screen in a window. The two apps find each other over Bonjour, agree on a key once, and
 from then on talk only to each other. There is no server in between.
 
-It is built to cost the phone next to nothing: the phone runs no timer of its own, and the Mac
-does the work that has to happen somewhere.
+The phone runs no timer of its own. The Mac checks the connection and does the heavier work, so
+the phone's battery barely notices.
 
 # Features
 
 ### Everyday
 - Battery level, charging state and a low-battery warning in the menu bar
 - Clipboard in both directions, with a searchable history on the Mac
-- Notifications in Notification Center, with actions and inline reply, and a tier per app
+- Notifications in Notification Center with the app's icon and any picture they carry, actions, inline reply and a tier per app
 - Media controls, ringer and volume, and a button that makes a lost phone ring
 - Files in both directions, checked against SHA-256 before they are kept
 - Screen mirroring with mouse, keyboard and sound, through the bundled [scrcpy](https://github.com/Genymobile/scrcpy)
 - Several phones on one Mac, each with its own settings
+- Updates that install themselves, through Homebrew when it installed the app, with an optional beta channel
 
-### Private by design
+### Privacy
 - Local network only; the daily update check is the one request that leaves it, and one switch turns it off
 - Noise-KK handshake over P-256 and AES-256-GCM, confirmed with a 6-digit code on both screens
 - The crypto is written twice (CryptoKit and JCE), and two scripts prove the two agree
@@ -56,7 +57,9 @@ KDE Connect, LocalSend and Quick Share.
 
 # Install
 
-### Mac · Apple Silicon, macOS 14+
+### Mac, with Homebrew
+
+Apple Silicon, macOS 14 or later. Paste this into Terminal:
 
 ```bash
 brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
@@ -65,14 +68,22 @@ brew install --cask andromac
 xattr -dr com.apple.quarantine /Applications/AndroMac.app
 ```
 
-No Homebrew? Download the DMG from
-[releases](https://github.com/anilmetin0/AndroMac/releases/latest), drag AndroMac to
-Applications, then run the last line. It is needed once, because the app is not notarized.
+The `xattr` line clears the download flag once, because the app is not notarized. After that the
+app updates itself, and `brew upgrade --cask andromac` works too.
 
-### Android · 10+
+### Mac, without Homebrew
 
-Open [releases](https://github.com/anilmetin0/AndroMac/releases/latest) on the phone and tap
-the APK. Or, with the phone connected over adb:
+Download `AndroMac-<version>-macOS-arm64.dmg` from [releases](https://github.com/anilmetin0/AndroMac/releases/latest), drag AndroMac to
+Applications, then run:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/AndroMac.app
+```
+
+### Android
+
+Android 10 or later. On the phone, open [releases](https://github.com/anilmetin0/AndroMac/releases/latest) and tap
+`AndroMac-<version>-android.apk`. Or install it from a Mac with the phone connected over adb:
 
 ```bash
 gh release download --repo anilmetin0/AndroMac --pattern '*-android.apk'
@@ -82,11 +93,10 @@ adb install AndroMac-*-android.apk
 ### Pair
 
 1. Open AndroMac on both devices, on the same Wi-Fi.
-2. On the phone, grant what the **Permissions** card lists, then tap **Pair**.
+2. On the phone, grant what the Permissions card lists, then tap Pair.
 3. Check that both screens show the same six digits, and confirm on both.
 
-Both apps update themselves from then on. Every step in detail, and troubleshooting, is in the
-[guide](docs/GUIDE.md#install).
+Every step in detail, and troubleshooting, is in the [guide](docs/GUIDE.md#install).
 
 # Building
 
@@ -110,23 +120,30 @@ distributed under their own licenses, listed with their sources in
 - [adb](https://android.googlesource.com/platform/packages/modules/adb/) from the Android Open Source Project, licensed under the Apache License 2.0
 - [FFmpeg](https://ffmpeg.org/legal.html) and [libusb](https://github.com/libusb/libusb) inside scrcpy, licensed under the LGPL 2.1, and [SDL](https://github.com/libsdl-org/SDL), licensed under the zlib License
 
-# Contributors
+# Contributing
 
 <a href="https://github.com/anilmetin0/AndroMac/graphs/contributors"><img src="https://contrib.rocks/image?repo=anilmetin0/AndroMac" alt="Contributors"></a>
 
-Issues and pull requests are welcome; start with [CONTRIBUTING.md](CONTRIBUTING.md). Report a
-security issue privately, as described in [SECURITY.md](SECURITY.md).
+- Found a bug? Open an [issue](https://github.com/anilmetin0/AndroMac/issues/new/choose) with the
+  bug report form. Include both version lines exactly as the apps show them, for example
+  `1.1.0 (42 · e105e58)`.
+- Have an idea? Use the feature request form. The scope and the energy rules in
+  [CONTRIBUTING.md](CONTRIBUTING.md) decide what fits.
+- Want to change code? Fork, branch from `main`, run the checks in
+  [CONTRIBUTING.md](CONTRIBUTING.md#making-a-change), and open a pull request. CI has to pass.
+- Found a security problem? Report it privately, as described in [SECURITY.md](SECURITY.md), not
+  in an issue.
 
 # Credits
 
 Thanks to these projects, in no particular order:
 
-- **[scrcpy](https://github.com/Genymobile/scrcpy)** by Genymobile and Romain Vimont, which does all of the screen mirroring
-- **[Android Open Source Project](https://source.android.com/)** for adb and its wireless pairing
-- **[KDE Connect](https://invent.kde.org/network/kdeconnect-kde)**, which showed what phone-to-computer integration can be, and whose 2025 pairing advisory shaped AndroMac's pairing code
-- **[LocalSend](https://github.com/localsend/localsend)** for the offer-then-accept file flow
-- **[Syncthing](https://github.com/syncthing/syncthing)** for the device-ID-from-key idea and its chunk-and-hash discipline
-- **[The Noise Protocol Framework](https://noiseprotocol.org/)** by Trevor Perrin, the pattern the handshake follows
-- **[Shizuku](https://github.com/RikkaApps/Shizuku)** for showing how to open Android's Wireless debugging switch directly
-- **[Obtainium](https://github.com/ImranR98/Obtainium)** and **[Homebrew](https://brew.sh)**, which make installing and updating outside the stores easy
-- *Everyone who tests, reports and uses AndroMac ❤️*
+- [scrcpy](https://github.com/Genymobile/scrcpy) by Genymobile and Romain Vimont, which does all of the screen mirroring
+- [Android Open Source Project](https://source.android.com/) for adb and its wireless pairing
+- [KDE Connect](https://invent.kde.org/network/kdeconnect-kde), whose features set the bar and whose 2025 pairing advisory shaped AndroMac's pairing code
+- [LocalSend](https://github.com/localsend/localsend) for the offer-then-accept file flow
+- [Syncthing](https://github.com/syncthing/syncthing) for the device-ID-from-key idea and its chunk-and-hash discipline
+- [The Noise Protocol Framework](https://noiseprotocol.org/) by Trevor Perrin, the pattern the handshake follows
+- [Shizuku](https://github.com/RikkaApps/Shizuku) for showing how to open Android's Wireless debugging switch directly
+- [Obtainium](https://github.com/ImranR98/Obtainium) and [Homebrew](https://brew.sh), which make installing and updating outside the stores easy
+- Everyone who tests AndroMac, reports problems and uses it

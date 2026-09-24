@@ -16,7 +16,7 @@ Fixes land in the next build of the current version. There are no backports to o
 ## Reporting a vulnerability
 
 Use GitHub's private vulnerability reporting:
-**[Report a vulnerability](https://github.com/anilmetin0/AndroMac/security/advisories/new)**
+[Report a vulnerability](https://github.com/anilmetin0/AndroMac/security/advisories/new)
 (Security → Advisories → Report a vulnerability on the repository).
 
 There is no email address for this on purpose. Private advisories keep the report, the discussion

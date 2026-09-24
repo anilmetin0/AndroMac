@@ -1,7 +1,7 @@
 # Releasing
 
-Everything here is done by `.github/workflows/build.yml`. A human does two things: keeps the
-changelogs current, and raises `VERSION` when a version is ready. The pipeline is the same on
+`.github/workflows/build.yml` does everything described here. A maintainer keeps the changelogs
+current and raises `VERSION` when a version is ready. The pipeline is the same on
 every push and pull request; only a push to `main` publishes at the end.
 
 ## What every run does
@@ -30,8 +30,8 @@ release job, on one of two channels.
 | Kept | Forever | The newest five |
 
 A stable release does not move once it is out. `/releases/latest`, the Homebrew cask and
-Obtainium's default settings see only stable releases. The apps follow stable unless **Beta
-updates** is on in Settings → Updates.
+Obtainium's default settings see only stable releases. The apps follow stable releases unless
+**Beta updates** is on in Settings → Updates.
 
 Every release body ends with `Build <N> · commit <sha>`. The build number is the workflow run
 number, which is also the Android `versionCode`, so a newer build always installs over an older
@@ -39,13 +39,13 @@ one. Inside the apps the version reads `<VERSION> (build · commit)`; a beta aft
 `1.1.0 (57 · abc1234)`. Local builds show build 1, commit `local`.
 
 A stable release fails, and publishes nothing, if either changelog lacks a `## <VERSION>`
-section. The header may carry a date (`## 1.2.0 — 2026-10-01`); only the version is matched.
+section. The header may carry a date (`## 1.2.0 - 2026-10-01`); only the version is matched.
 
 ## Releasing a version
 
 1. Pick the version. Patch for fixes, minor for features, major for a protocol break that makes
    old and new builds refuse each other.
-2. Rename `## Unreleased` to `## <version> — <date>` in `CHANGELOG.md` and `CHANGELOG.tr.md`.
+2. Rename `## Unreleased` to `## <version> - <date>` in `CHANGELOG.md` and `CHANGELOG.tr.md`.
 3. Write the version into `VERSION` (one line, no `v`) and into `Casks/andromac.rb`.
 4. Commit as `chore(release): <version>` and push to `main`. That push publishes the stable
    release; the pushes after it publish betas until the next version.
@@ -67,11 +67,11 @@ To rebuild a stable release in place, for example after a broken asset, run the 
 
 ## Signing
 
-- **Android.** The APK is signed with the keystore in the `ANDROID_*` repository secrets, created
+- Android: the APK is signed with the keystore in the `ANDROID_*` repository secrets, created
   by `scripts/setup-android-signing.sh`. Without the secrets the APK is signed with a debug key
   that changes every run, and Android refuses to upgrade an installation signed with a
   different key.
-- **macOS.** The bundle is signed with the self-signed certificate in the `MACOS_SIGNING_*`
+- macOS: the bundle is signed with the self-signed certificate in the `MACOS_SIGNING_*`
   secrets, created by `scripts/setup-macos-signing.sh`. The same certificate on every build keeps
   the app's identity, so the Keychain's "Always Allow" carries over to updates. Without the
   secrets the build is signed ad-hoc and the Keychain asks after every update. Neither makes the
@@ -83,9 +83,9 @@ a new Mac certificate means one more Keychain prompt for every user.
 
 ## If something goes wrong
 
-- **Release job failed.** A stable re-publish deletes the old release before creating the new
+- If the release job failed: a stable re-publish deletes the old release before creating the new
   one, so a failure after that point leaves no release for the version until the next
   successful run. Fix the cause, then re-run the workflow.
-- **Missing changelog section.** The stable job stops before touching the release; add the
+- If a changelog section is missing, the stable job stops before touching the release; add the
   section and run it again.
-- **Wrong notes.** Edit the release on GitHub, or fix the changelog and re-publish.
+- If the notes are wrong, edit the release on GitHub, or fix the changelog and re-publish.
