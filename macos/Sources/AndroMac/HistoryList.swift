@@ -20,28 +20,24 @@ struct HistoryList: View {
     }
 
     var body: some View {
-        Group {
-            if filtered.isEmpty {
-                EmptyState(
-                    symbol: history.entries.isEmpty ? "bell.slash" : "magnifyingglass",
-                    message: history.entries.isEmpty
-                        ? String(localized: "Notifications from your phone appear here.")
-                        : String(localized: "No notifications match your search.")
-                )
-            } else {
-                // Straight under the toolbar, so it scrolls beneath it like any Mac list.
-                List(filtered) { entry in
-                    HistoryRow(entry: entry)
-                        .listRowInsets(EdgeInsets(
-                            top: Theme.Space.tight, leading: Theme.Space.small,
-                            bottom: Theme.Space.tight, trailing: Theme.Space.small
-                        ))
-                }
-                .listStyle(.inset)
-                .scrollContentBackground(.hidden)
-                .softScrollEdges()
-            }
+        // Straight under the toolbar, so it scrolls beneath it like any Mac list.
+        List(filtered) { entry in
+            HistoryRow(entry: entry)
+                .listRowInsets(EdgeInsets(
+                    top: Theme.Space.tight, leading: Theme.Space.small,
+                    bottom: Theme.Space.tight, trailing: Theme.Space.small
+                ))
         }
+        .listStyle(.inset)
+        .scrollContentBackground(.hidden)
+        .softScrollEdges()
+        .emptyState(
+            filtered.isEmpty,
+            symbol: history.entries.isEmpty ? "bell.slash" : "magnifyingglass",
+            message: history.entries.isEmpty
+                ? String(localized: "Notifications from your phone appear here.")
+                : String(localized: "No notifications match your search.")
+        )
         .searchable(text: $query, prompt: "Search app, title or text")
         // A count says something only while a search narrows the list.
         .navigationSubtitle(query.isEmpty ? Text(verbatim: "") : Text("\(filtered.count) / \(history.entries.count)"))

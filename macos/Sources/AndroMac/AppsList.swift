@@ -21,23 +21,23 @@ struct AppsList: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if filtered.isEmpty {
-                EmptyState(
-                    symbol: "square.grid.2x2",
-                    message: modes.apps.isEmpty
-                        ? String(localized: "Apps appear here after their first notification.")
-                        : String(localized: "No apps match your search.")
-                )
-            } else {
-                List(filtered) { app in
-                    AppRow(app: app)
-                        .listRowInsets(EdgeInsets(top: Theme.Space.tight, leading: Theme.Space.small,
-                                              bottom: Theme.Space.tight, trailing: Theme.Space.small))
-                }
-                .listStyle(.inset)
-                .scrollContentBackground(.hidden)
-                .softScrollEdges()
+            List(filtered) { app in
+                AppRow(app: app)
+                    .listRowInsets(EdgeInsets(top: Theme.Space.tight, leading: Theme.Space.small,
+                                          bottom: Theme.Space.tight, trailing: Theme.Space.small))
+            }
+            .listStyle(.inset)
+            .scrollContentBackground(.hidden)
+            .softScrollEdges()
+            .emptyState(
+                filtered.isEmpty,
+                symbol: "square.grid.2x2",
+                message: modes.apps.isEmpty
+                    ? String(localized: "Apps appear here after their first notification.")
+                    : String(localized: "No apps match your search.")
+            )
 
+            if !filtered.isEmpty {
                 Text("Title only leaves the content on the phone.")
                     .font(Theme.Font.label)
                     .foregroundStyle(.secondary)

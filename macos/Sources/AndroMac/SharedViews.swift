@@ -58,21 +58,15 @@ struct QRCode: View {
 
 /// Empty state: it says what to do, not what is missing.
 ///
-/// Inside a scroll view on purpose, even with nothing to scroll. A detail page with no scroll view
-/// changes how the window lays out its toolbar on macOS 26+, and the sidebar next to it moved by
-/// 28 pt every time an empty list was opened: the "jump" on clicking Apps, or an empty Clipboard.
+/// Laid over the list, which stays in place even when empty. A detail page with no scroll view
+/// changes how the window lays out its toolbar on macOS 26+ (the sidebar moved by 28 pt whenever an
+/// empty list opened), and swapping the list for another view while a confirmation sheet closes
+/// threw AppKit's "too many Update Constraints passes" exception: the crash on Clear.
 struct EmptyState: View {
     let symbol: String
     let message: String
 
     var body: some View {
-        ScrollView {
-            content.containerRelativeFrame([.horizontal, .vertical])
-        }
-        .scrollBounceBehavior(.basedOnSize)
-    }
-
-    private var content: some View {
         VStack(spacing: 8) {
             Image(systemName: symbol)
                 .font(.system(size: 26))
@@ -83,6 +77,13 @@ struct EmptyState: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: 320)
         }
+        .allowsHitTesting(false)
+    }
+}
+
+extension View {
+    func emptyState(_ isEmpty: Bool, symbol: String, message: @autoclosure () -> String) -> some View {
+        overlay { if isEmpty { EmptyState(symbol: symbol, message: message()) } }
     }
 }
 

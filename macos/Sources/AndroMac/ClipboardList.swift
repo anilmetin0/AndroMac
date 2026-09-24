@@ -19,40 +19,38 @@ struct ClipboardList: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if filtered.isEmpty {
-                EmptyState(
-                    symbol: "doc.on.clipboard",
-                    message: history.entries.isEmpty
-                        ? String(localized: "Text you copy on either device appears here.")
-                        : String(localized: "No entries match your search.")
-                )
-            } else {
-                List(filtered) { entry in
-                    ClipboardRow(entry: entry, justCopied: copied == entry.id) {
-                        Task {
-                            await ClipboardWatcher.shared.restore(entry.text)
-                            copied = entry.id
-                            try? await Task.sleep(for: .seconds(1.4))
-                            if copied == entry.id { copied = nil }
-                        }
-                    }
-                    .listRowInsets(EdgeInsets(top: Theme.Space.tight, leading: Theme.Space.small,
-                                              bottom: Theme.Space.tight, trailing: Theme.Space.small))
-                    .contextMenu {
-                        Button("Copy to clipboard") {
-                            Task { await ClipboardWatcher.shared.restore(entry.text) }
-                        }
-                        Button("Send to phone") {
-                            Task { await ClipboardWatcher.shared.sendManually(entry.text) }
-                        }
-                        Divider()
-                        Button("Delete", role: .destructive) { history.remove(entry) }
+            List(filtered) { entry in
+                ClipboardRow(entry: entry, justCopied: copied == entry.id) {
+                    Task {
+                        await ClipboardWatcher.shared.restore(entry.text)
+                        copied = entry.id
+                        try? await Task.sleep(for: .seconds(1.4))
+                        if copied == entry.id { copied = nil }
                     }
                 }
-                .listStyle(.inset)
-                .scrollContentBackground(.hidden)
-                .softScrollEdges()
+                .listRowInsets(EdgeInsets(top: Theme.Space.tight, leading: Theme.Space.small,
+                                          bottom: Theme.Space.tight, trailing: Theme.Space.small))
+                .contextMenu {
+                    Button("Copy to clipboard") {
+                        Task { await ClipboardWatcher.shared.restore(entry.text) }
+                    }
+                    Button("Send to phone") {
+                        Task { await ClipboardWatcher.shared.sendManually(entry.text) }
+                    }
+                    Divider()
+                    Button("Delete", role: .destructive) { history.remove(entry) }
+                }
             }
+            .listStyle(.inset)
+            .scrollContentBackground(.hidden)
+            .softScrollEdges()
+            .emptyState(
+                filtered.isEmpty,
+                symbol: "doc.on.clipboard",
+                message: history.entries.isEmpty
+                    ? String(localized: "Text you copy on either device appears here.")
+                    : String(localized: "No entries match your search.")
+            )
 
             Divider()
 
