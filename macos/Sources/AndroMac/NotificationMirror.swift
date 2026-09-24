@@ -39,7 +39,9 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
     /// that posted it.
     private static func identifier(_ id: String, peer: String) -> String { "\(peer)/\(id)" }
 
-    func show(_ msg: [String: Any], from peer: String) {
+    /// `image` is the message's `img`, already validated and re-encoded off the main thread
+    /// (Server); nil when there was none, or when the phone sent none because it already did.
+    func show(_ msg: [String: Any], image: NotificationImage.Clean?, from peer: String) {
         // Incoming fields are untrusted: we do not assume the sender clipped them (PROTOCOL,
         // incoming data limits). A notification with an empty `id` cannot be correlated, so the
         // message is dropped.
@@ -57,7 +59,9 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         // Every reconnect (and so every wake of the Mac) replays the phone's current
         // notifications, silently. One this Mac already shows, unchanged, is skipped before the
         // icon copy, the Notification Center request and the history rewrite.
-        if silent, NotificationHistory.shared.contains(id: id, title: title, text: text) { return }
+        // A replay that brings a picture is new, however: the phone sends one only when it changed.
+        let history = NotificationHistory.shared
+        if silent, image == nil, history.contains(id: id, title: title, text: text) { return }
 
         let content = UNMutableNotificationContent()
         content.title = redacted ? app : title
@@ -71,29 +75,33 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         // A category is ALWAYS registered: even with no actions we still offer "Mute".
         content.categoryIdentifier = registerCategory(for: NotificationAction.parse(msg["actions"]))
 
-        // Attach the app icon as a badge; if it is missing, ask the phone for it (once).
-        // The temporary copy is handed to UserNotifications and deleted after `add` completes (or
-        // right away if the attachment cannot be built) — otherwise every notification would leave
-        // a file behind in /tmp.
-        var temporaryIcon: URL?
-        if !pkg.isEmpty {
-            if let icon = IconCache.shared.temporaryCopy(for: pkg) {
-                if let attachment = try? UNNotificationAttachment(identifier: "icon", url: icon) {
-                    content.attachments = [attachment]
-                    temporaryIcon = icon
-                } else {
-                    try? FileManager.default.removeItem(at: icon)
-                }
+        // Every package without an icon on disk is asked for once per session, whatever this
+        // notification attaches: the panel and the lists draw the icon too.
+        if !pkg.isEmpty { IconCache.shared.requestIfMissing(pkg, from: peer) }
+
+        // The picture: a new one, else the one this notification already had (a text-only update
+        // brings none). Never on a redacted notification, and a stale one is deleted with the entry.
+        let imageName = redacted ? nil : (image.flatMap(history.saveImage) ?? history.image(forID: id))
+
+        // Attach the picture or avatar if there is one, the app icon otherwise. The temporary copy
+        // is handed to UserNotifications and deleted after `add` completes (or right away if the
+        // attachment cannot be built) — otherwise every notification would leave a file in /tmp.
+        var temporaryFile: URL?
+        let sources = [imageName.flatMap(history.imageURL(named:)), pkg.isEmpty ? nil : IconCache.shared.cachedURL(for: pkg)]
+        if let copy = sources.lazy.compactMap({ $0 }).compactMap(Self.temporaryCopy(of:)).first {
+            if let attachment = try? UNNotificationAttachment(identifier: "image", url: copy) {
+                content.attachments = [attachment]
+                temporaryFile = copy
             } else {
-                IconCache.shared.requestIfMissing(pkg, from: peer)
+                try? FileManager.default.removeItem(at: copy)
             }
         }
 
-        NotificationHistory.shared.add(
-            .init(id: id, app: app, pkg: pkg, title: title, text: text, date: Date())
+        history.add(
+            .init(id: id, app: app, pkg: pkg, title: title, text: text, date: Date(), image: imageName)
         )
 
-        let iconToRemove = temporaryIcon
+        let iconToRemove = temporaryFile
         center.add(UNNotificationRequest(identifier: Self.identifier(id, peer: peer), content: content, trigger: nil)) { error in
             if let error { NSLog("AndroMac: could not present the notification — \(error.localizedDescription)") }
             if let iconToRemove { try? FileManager.default.removeItem(at: iconToRemove) }
@@ -125,6 +133,14 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         let identifier = Self.identifier(id, peer: peer)
         center.removeDeliveredNotifications(withIdentifiers: [identifier])
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
+    }
+
+    /// UserNotifications MOVES the attachment file into its own store, so it gets a fresh copy
+    /// each time; the extension stays, since that is how it tells a JPEG from a PNG.
+    private static func temporaryCopy(of source: URL) -> URL? {
+        let destination = FileManager.default.temporaryDirectory
+            .appendingPathComponent("andromac-\(UUID().uuidString).\(source.pathExtension)")
+        return (try? FileManager.default.copyItem(at: source, to: destination)) == nil ? nil : destination
     }
 
     private func clip(_ value: Any?, _ limit: Int) -> String {

@@ -40,6 +40,7 @@ Every design decision was therefore made against the question "who wakes up, and
 | 23 | **Screen-on dials only on the Mac's network**, and the cached address is only tried there. | `LinkService` screen receiver, `dial` |
 | 24 | **Only a volume or Wireless debugging setting wakes `SystemBridge`**, and a position-only media update schedules nothing. | `SystemBridge.settingsWatcher`, `MediaBridge.callback` |
 | 25 | **A replayed notification the Mac already shows is dropped on the Mac** before the icon copy and the history write, so a reconnect costs the Mac almost nothing. The histories are written at most once a second. | `NotificationMirror.show`, `ClipboardHistory.record` |
+| 26 | **A notification's picture goes only on the full tier, only when it changed, and never above 96 KiB.** One picture per notification (big picture, else the last chat photo, else the large icon), scaled to 512 px (128 px for an avatar) and JPEG-encoded on the relay thread inside the 50 ms window. A digest of the scaled pixels per key means an identical re-post, a text-only update or a reconnect sends no picture again. Title-only and off never send one. | `NotificationRelay.newPicture`, `NotificationImage.kt` |
 
 ## Costs deliberately pushed onto the Mac
 

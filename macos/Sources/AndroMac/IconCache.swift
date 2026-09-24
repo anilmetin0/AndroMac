@@ -6,8 +6,11 @@ import Foundation
 /// An icon is requested ONCE PER PACKAGE FOR ITS LIFETIME (`icon_request`), and read from disk
 /// after that. Embedding it in every notification would mean ~10 KB of extra radio per
 /// notification (PROTOCOL §6).
+///
+/// Observable because an icon usually lands a moment AFTER the first notification of a package
+/// was drawn: without a change signal that row kept its letter placeholder.
 @MainActor
-final class IconCache {
+final class IconCache: ObservableObject {
 
     static let shared = IconCache()
 
@@ -78,6 +81,16 @@ final class IconCache {
         if !DemoMode.isOn { try? data.write(to: url(for: pkg), options: .atomic) }
         missing.remove(pkg)
         images[pkg] = NSImage(data: data)      // make the new icon appear immediately
+        objectWillChange.send()
+        // The panel and the history list observe the history, not this cache, so they are told
+        // too. ponytail: drop this once `AppIcon` observes IconCache.shared itself.
+        NotificationHistory.shared.objectWillChange.send()
+    }
+
+    /// A session ended: a request that phone never answered may be asked again next session
+    /// (PROTOCOL §5 `icon_request`), instead of never until the app restarts.
+    func forgetRequests(from peer: String) {
+        requested = requested.filter { $0.value != peer }
     }
 
     /// Unpairing: the icons belong to the phone that sent them, and the next phone must not
@@ -89,19 +102,5 @@ final class IconCache {
         guard !DemoMode.isOn else { return }
         let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
         for file in files where file.pathExtension == "png" { try? FileManager.default.removeItem(at: file) }
-    }
-
-    /// UserNotifications MOVES the attachment file into its OWN store; so we hand it a fresh
-    /// temporary copy every time in order not to lose the cached one.
-    func temporaryCopy(for pkg: String) -> URL? {
-        guard let source = cachedURL(for: pkg) else { return nil }
-        let destination = FileManager.default.temporaryDirectory
-            .appendingPathComponent("andromac-\(UUID().uuidString).png")
-        do {
-            try FileManager.default.copyItem(at: source, to: destination)
-            return destination
-        } catch {
-            return nil
-        }
     }
 }

@@ -6,20 +6,36 @@ import android.app.KeyguardManager
 import android.app.RemoteInput
 import android.content.ComponentName
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.ImageDecoder
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Icon
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper
+import android.os.HandlerThread
+import android.os.Parcelable
+import android.util.Base64
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
 import dev.andromac.core.Link
+import dev.andromac.core.NotificationImage
 import dev.andromac.core.Protocol
 import dev.andromac.core.Store
+import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
 
 /**
  * The notification mirror. Fully event-driven — no polling (PROTOCOL §6.3).
  * The system already wakes this service when a notification arrives, so the extra battery
  * cost is close to zero.
+ *
+ * Everything past the system callbacks runs on one relay thread ([handler]): reading a picture
+ * can touch a content provider and decode an image, which does not belong on the main thread.
  */
 class NotificationRelay : NotificationListenerService() {
 
@@ -36,6 +52,12 @@ class NotificationRelay : NotificationListenerService() {
         pushExisting()
     }
 
+    override fun onDestroy() {
+        if (instance === this) instance = null
+        worker.quitSafely()
+        super.onDestroy()
+    }
+
     override fun onListenerDisconnected() {
         if (instance === this) instance = null
         // After an app update, or after an OEM kills the service, the system does not rebind
@@ -45,16 +67,19 @@ class NotificationRelay : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         if (!store.syncNotifications) return
-        schedule(sbn)
+        handler.post { schedule(sbn) }
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
         if (!store.syncNotifications) return
-        cancelPending(sbn.key)
-        // Do not send a removal for a notification we never sent (app turned off, silent,
-        // lock filter): the Mac has no counterpart for it and it would wake the radio for nothing.
-        if (lastSent.remove(sbn.key) == null) return
-        Link.send(Protocol.notificationRemove(sbn.key))
+        handler.post {
+            cancelPending(sbn.key)
+            sentImages.forget(sbn.key)
+            // Do not send a removal for a notification we never sent (app turned off, silent,
+            // lock filter): the Mac has no counterpart for it and it would wake the radio for nothing.
+            if (lastSent.remove(sbn.key) == null) return@post
+            Link.send(Protocol.notificationRemove(sbn.key))
+        }
     }
 
     /**
@@ -116,12 +141,16 @@ class NotificationRelay : NotificationListenerService() {
             )
         }
 
+        // Full tier only, and only when it differs from what the Mac already has (ENERGY rule 26).
+        val image = if (mode == Store.MODE_FULL) quietly { newPicture(sbn) } else null
+
         // The same content posted again (apps re-post to bump a timestamp, a progress tick that
         // did not change the text, a "seen" state): the Mac already shows exactly this, so the
-        // radio is not woken for it. Only the reconnect push sends it again, silently.
+        // radio is not woken for it. Only the reconnect push sends it again, silently. A picture
+        // that arrived late (a contact photo loaded after the first post) goes out, silently.
         val signature = "$mode\u0000$title\u0000$text\u0000" + actions.joinToString("\u0000") { it.title }
         val unchanged = lastSent.put(sbn.key, signature) == signature
-        if (unchanged && !forceSilent) return
+        if (unchanged && !forceSilent && image == null) return
 
         // TITLE_ONLY: the content NEVER LEAVES the phone. The redaction happens here, not on the Mac.
         val redacted = mode == Store.MODE_TITLE_ONLY
@@ -133,12 +162,105 @@ class NotificationRelay : NotificationListenerService() {
                 pkg = sbn.packageName,
                 title = if (redacted) "" else title,
                 text = if (redacted) "" else text,
-                silent = forceSilent ||
+                silent = forceSilent || unchanged ||
                     importanceOf(sbn) < NotificationManager.IMPORTANCE_DEFAULT,
                 redacted = redacted,
                 actions = if (redacted) emptyList() else actions,
+                image = image,
             )
         )
+    }
+
+    // --- the notification's picture (PROTOCOL §5 `img`) ---
+
+    /** The picture to send with this post, or null when there is none or the Mac already has it. */
+    private fun newPicture(sbn: StatusBarNotification): Protocol.Image? {
+        val (bitmap, kind) = extractPicture(sbn.notification) ?: return null
+        val pixels = ByteBuffer.allocate(bitmap.byteCount).also(bitmap::copyPixelsToBuffer).array()
+        // Recorded before encoding: a picture too big to send is not re-encoded on every update.
+        if (!sentImages.isNew(sbn.key, NotificationImage.fingerprint(kind, bitmap.width, pixels))) return null
+        val flat by lazy { bitmap.onWhite() }
+        val bytes = NotificationImage.encode(
+            bitmap.hasAlpha(),
+            png = { bitmap.encoded(Bitmap.CompressFormat.PNG, 100) },
+            jpeg = { quality -> flat.encoded(Bitmap.CompressFormat.JPEG, quality) },
+        ) ?: return null
+        return Protocol.Image(Base64.encodeToString(bytes, Base64.NO_WRAP), kind)
+    }
+
+    /**
+     * BigPictureStyle, else the photo in the last MessagingStyle message, else the large icon as
+     * an avatar. Scaled already. Each source fails quietly on its own and the next one is tried.
+     */
+    private fun extractPicture(n: Notification): Pair<Bitmap, String>? {
+        val extras = n.extras
+        val picture = quietly { extras.parcel<Bitmap>(Notification.EXTRA_PICTURE)?.let { scaled(it, PICTURE_EDGE) } }
+            ?: quietly {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    extras.parcel<Icon>(Notification.EXTRA_PICTURE_ICON)?.let { render(it, PICTURE_EDGE) }
+                } else null
+            }
+            ?: quietly { lastMessagePhoto(extras) }
+        if (picture != null) return picture to NotificationImage.PICTURE
+        // getLargeIcon also covers a large icon set as a Bitmap (EXTRA_LARGE_ICON).
+        val avatar = quietly { n.getLargeIcon()?.let { render(it, AVATAR_EDGE) } }
+        return avatar?.let { it to NotificationImage.AVATAR }
+    }
+
+    /** A chat photo is a content URI; most apps grant the listener no access, and then there is none. */
+    private fun lastMessagePhoto(extras: Bundle): Bitmap? {
+        @Suppress("DEPRECATION")
+        val last = extras.getParcelableArray(Notification.EXTRA_MESSAGES)?.lastOrNull() as? Bundle ?: return null
+        if (last.getString("type")?.startsWith("image/") != true) return null
+        val uri = last.parcel<Uri>("uri") ?: return null
+        return ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri)) { decoder, info, _ ->
+            val (w, h) = NotificationImage.fit(info.size.width, info.size.height, PICTURE_EDGE)
+            decoder.setTargetSize(w, h)
+            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE      // pixels are read back below
+        }
+    }
+
+    private fun render(icon: Icon, edge: Int): Bitmap? {
+        val drawable = icon.loadDrawable(this) ?: return null
+        (drawable as? BitmapDrawable)?.bitmap?.let { return scaled(it, edge) }
+        val (w, h) = NotificationImage.fit(
+            drawable.intrinsicWidth.takeIf { it > 0 } ?: edge,
+            drawable.intrinsicHeight.takeIf { it > 0 } ?: edge,
+            edge,
+        )
+        return Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).also {
+            drawable.setBounds(0, 0, w, h)
+            drawable.draw(Canvas(it))
+        }
+    }
+
+    private fun scaled(source: Bitmap, edge: Int): Bitmap? {
+        if (source.isRecycled) return null
+        val soft = if (source.config == Bitmap.Config.HARDWARE) source.copy(Bitmap.Config.ARGB_8888, false) else source
+        val (w, h) = NotificationImage.fit(soft.width, soft.height, edge)
+        return if (w == soft.width && h == soft.height) soft else Bitmap.createScaledBitmap(soft, w, h, true)
+    }
+
+    /** JPEG has no alpha: transparent pixels would turn black. */
+    private fun Bitmap.onWhite(): Bitmap {
+        if (!hasAlpha()) return this
+        return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
+            Canvas(it).apply { drawColor(Color.WHITE); drawBitmap(this@onWhite, 0f, 0f, null) }
+        }
+    }
+
+    private fun Bitmap.encoded(format: Bitmap.CompressFormat, quality: Int): ByteArray =
+        ByteArrayOutputStream().use { compress(format, quality, it); it.toByteArray() }
+
+    // The typed getParcelable(key, Class) is unreliable on API 33, so the untyped one is used.
+    @Suppress("DEPRECATION")
+    private inline fun <reified T : Parcelable> Bundle.parcel(key: String): T? = getParcelable<Parcelable>(key) as? T
+
+    private inline fun <T> quietly(block: () -> T?): T? = try {
+        block()
+    } catch (e: Exception) {
+        Log.i(Link.TAG, "notification picture skipped (${e.javaClass.simpleName})")
+        null
     }
 
     /** Structural filter: this notification is never mirrored under any setting. */
@@ -174,12 +296,16 @@ class NotificationRelay : NotificationListenerService() {
         else NotificationManager.IMPORTANCE_DEFAULT
     }
 
-    private val handler = Handler(Looper.getMainLooper())
+    private val worker = HandlerThread("notification-relay").apply { start() }
+    private val handler = Handler(worker.looper)
     private val pending = HashMap<String, Runnable>()
     private val lastSent = HashMap<String, String>()
+    private val sentImages = NotificationImage.Sent()
 
     companion object {
         private const val COALESCE_MS = 50L
+        private const val PICTURE_EDGE = NotificationImage.PICTURE_EDGE
+        private const val AVATAR_EDGE = NotificationImage.AVATAR_EDGE
 
         /**
          * Packages that are off by default. The user can enable them from the filter screen.
@@ -200,8 +326,8 @@ class NotificationRelay : NotificationListenerService() {
         fun pushExisting() {
             val self = instance ?: return
             if (!Link.isConnected || !self.store.syncNotifications) return
-            // Called from the link thread. [lastSent] and [pending] must only be touched from
-            // the main thread, otherwise the HashMap corrupts under concurrent modification.
+            // Called from the link thread. [lastSent], [pending] and [sentImages] must only be
+            // touched from the relay thread, otherwise the HashMap corrupts under concurrent modification.
             self.handler.post {
                 if (!Link.isConnected) return@post
                 AppModeSync.push(self.store)

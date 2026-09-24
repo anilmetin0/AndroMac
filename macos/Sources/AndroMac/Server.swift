@@ -470,6 +470,7 @@ actor Server {
         await MainActor.run {
             LinkStats.shared.sessionEnded()
             FileTransfer.shared.sessionEnded(deviceID)
+            IconCache.shared.forgetRequests(from: deviceID)
             guard updateUI else { return }
             AppState.shared.removeDevice(id: deviceID)
             if !stillConnected { AppState.shared.status = .listening }
@@ -575,7 +576,11 @@ actor Server {
 
         case "notification":
             guard Store.shared.syncNotifications else { break }
-            await NotificationMirror.shared.show(msg, from: deviceID)
+            // The picture is checked and re-encoded here, on this actor, not on the main thread.
+            // A redacted notification never keeps one, whatever the phone sent.
+            let image = msg["redacted"] as? Bool == true
+                ? nil : NotificationImage.sanitize(base64: msg["img"], kind: msg["img_kind"])
+            await NotificationMirror.shared.show(msg, image: image, from: deviceID)
 
         case "app_modes":
             let raw = msg["apps"] as? [[String: Any]] ?? []

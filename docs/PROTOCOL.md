@@ -268,6 +268,26 @@ history and in Notification Center. `redacted=true` → the app is on the "title
 case `title`, `text` and `actions` are **sent empty**: the content never leaves the phone, it is
 not trimmed on macOS.
 
+Optional picture, only for apps on the **full** tier:
+```json
+{"t":"notification", ..., "img":"<base64 JPEG or PNG>","img_kind":"picture"}
+```
+- Source, first match wins: the BigPictureStyle picture (`EXTRA_PICTURE`, `EXTRA_PICTURE_ICON`),
+  then the image of the **last** MessagingStyle message (`EXTRA_MESSAGES`, a `uri` with an
+  `image/*` `type`, read only when the app lets the listener open it), then the large icon
+  (`getLargeIcon`, usually the contact photo). The first two are `img_kind:"picture"`, scaled to
+  at most 512 px on the long edge; the large icon is `"avatar"`, at most 128 px.
+- JPEG at quality 70, retried once at 40 when over the cap; PNG only for a transparent image of at
+  most 32 KiB. At most **96 KiB encoded**; a picture still over that after the retry is not sent.
+- **Sent only when it changed** for that `id`: the phone keeps a digest of the scaled pixels per
+  key. An identical re-post, a text-only update and the reconnect push carry no `img`, and the Mac
+  keeps the picture it already has for that `id`. A picture that arrives without a text change
+  (a contact photo loaded late) is sent `silent`.
+- Never with `redacted:true`, never for the off tier. The Mac drops one anyway if it comes with
+  `redacted:true`.
+- macOS attaches it to the Notification Center entry (the thumbnail) in place of the app icon, and
+  keeps it next to the history entry, deleted with that entry.
+
 ### `notification_remove` — Android → macOS (the notification was dismissed on the phone)
 ```json
 {"t":"notification_remove","id":"0|com.whatsapp|1234|null|10123"}
@@ -310,7 +330,11 @@ answer, it may be asked again in the next session.
 
 The sender's truncation (clipboard 64 KiB) is **not assumed** by the receiver. The receiver
 enforces its own limits: frame 1 MiB; `app_icon` 512 KiB plus a PNG signature check;
-`notification` fields `id` ≤ 256, `app`/`pkg` ≤ 256, `title`/`text` ≤ 2 KiB; `media` fields ≤ 200;
+`notification` fields `id` ≤ 256, `app`/`pkg` ≤ 256, `title`/`text` ≤ 2 KiB; `notification.img`
+≤ 96 KiB decoded with `img_kind` `picture` or `avatar`, a JPEG or PNG signature that ImageIO agrees
+with, at most 1024 px per side (checked before decoding), and re-encoded from its pixels so no
+metadata is kept; a picture that fails any check is dropped and the notification still shown;
+`media` fields ≤ 200;
 `hello.name` ≤ 64. A field over the limit is truncated; a message with an empty `id` is dropped.
 `file_offer.size` ≤ 4 GiB and ≤ free space, `file_offer.name` ≤ 255 bytes after sanitization,
 `file_chunk.data` ≤ 512 KiB decoded; a `file_chunk` for an id that was not accepted is dropped.
@@ -476,7 +500,9 @@ These rules are part of the protocol, not an implementation detail:
    package list) → app tier → channel importance < DEFAULT (if the silent switch is off) → is
    there a connection → "only while the phone is locked" → empty title and text.
    `notification_remove` is sent only for notifications that were sent earlier.
-7. App icons are sent once per package for their lifetime (`icon_request` / `app_icon`).
+7. App icons are sent once per package for their lifetime (`icon_request` / `app_icon`). A
+   notification's picture (`img`) goes only for the full tier, only when it changed for that
+   notification, and never above 96 KiB.
 8. **Notification sending is delayed by 50 ms.** Apps can update a notification several times per
    second (download percentage, a "typing" indicator). Repeats inside that window collapse into a
    single send, and anything deleted before the window closes is never sent.

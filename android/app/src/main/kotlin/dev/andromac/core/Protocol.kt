@@ -96,7 +96,7 @@ object Protocol {
 
     fun notification(
         id: String, app: String, pkg: String, title: String, text: String,
-        silent: Boolean, redacted: Boolean, actions: List<Action>,
+        silent: Boolean, redacted: Boolean, actions: List<Action>, image: Image? = null,
     ) = JSONObject()
         .put("t", T_NOTIFICATION)
         .put("id", id.take(MAX_NOTIFICATION_ID))
@@ -108,10 +108,24 @@ object Protocol {
         .put("redacted", redacted)
         .put("actions", JSONArray(actions.map { it.json() }))
         .put("ts", System.currentTimeMillis())
+        .apply {
+            // A redacted notification never carries a picture, and one over the cap is not sent.
+            if (image != null && !redacted && image.valid) {
+                put("img", image.base64)
+                put("img_kind", image.kind)
+            }
+        }
 
     /** One notification action. When [reply] is true the Mac may show a text field. */
     data class Action(val title: String, val reply: Boolean) {
         fun json(): JSONObject = JSONObject().put("title", title).put("reply", reply)
+    }
+
+    /** The notification's picture or avatar, already encoded (PROTOCOL §5 `img`, `img_kind`). */
+    data class Image(val base64: String, val kind: String) {
+        val valid: Boolean
+            get() = base64.isNotEmpty() && base64.length <= NotificationImage.MAX_BASE64 &&
+                (kind == NotificationImage.PICTURE || kind == NotificationImage.AVATAR)
     }
 
     fun notificationRemove(id: String) = JSONObject()
