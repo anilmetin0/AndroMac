@@ -2,7 +2,7 @@
 <!-- The dismiss cross on the permission banner. Drawn, like every other icon here, so the app
      carries no bitmap and looks the same at every density. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="22dp" android:height="22dp"
+    android:width="24dp" android:height="24dp"
     android:viewportWidth="24" android:viewportHeight="24"
     android:tint="?android:attr/textColorSecondary">
     <path android:fillColor="@android:color/white"

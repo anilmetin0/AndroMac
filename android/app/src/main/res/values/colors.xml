@@ -1,22 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Light theme, the static fallback palette.
-
-    On Android 12+ devices values-v31 overrides this with the Material You system colours, so
-    the app picks up the user's wallpaper palette. AndroidX is not needed — the platform has
-    exposed the `@android:color/system_*` resources directly since API 31.
+    Material 3 colour roles, light scheme. This is the static fallback (Android 10 and 11),
+    the baseline scheme for a blue seed. values-v31 maps the same roles onto the wallpaper
+    palette (Material You) and values-v34 onto the system's own surface tokens. Layouts and
+    styles only ever read these roles, never a hex value.
 -->
 <resources>
-    <color name="am_background">#FFF7F8FA</color>
-    <color name="am_surface">#FFFFFFFF</color>
-    <color name="am_accent">#FF2C5F9E</color>
-    <color name="am_on_accent">#FFFFFFFF</color>
-    <color name="am_on_surface">#FF14181F</color>
-    <color name="am_on_surface_variant">#FF515A66</color>
+    <color name="am_primary">#FF415F91</color>
+    <color name="am_on_primary">#FFFFFFFF</color>
+    <color name="am_primary_container">#FFD6E3FF</color>
+    <color name="am_on_primary_container">#FF284777</color>
+    <color name="am_secondary_container">#FFDAE2F9</color>
+    <color name="am_on_secondary_container">#FF3E4759</color>
 
-    <!-- The status colours are semantic and do not change with the theme; only their brightness is adapted. -->
-    <color name="am_state_ok">#FF1E9E4A</color>
-    <color name="am_state_pending">#FFB8730A</color>
-    <color name="am_state_alert">#FFC4322B</color>
+    <color name="am_surface">#FFF9F9FF</color>
+    <color name="am_surface_container_low">#FFF3F3FA</color>
+    <color name="am_surface_container">#FFEDEDF4</color>
+    <color name="am_surface_container_high">#FFE7E8EE</color>
+    <color name="am_surface_container_highest">#FFE2E2E9</color>
+    <color name="am_on_surface">#FF191C20</color>
+    <color name="am_on_surface_variant">#FF44474E</color>
+    <color name="am_outline">#FF74777F</color>
+    <color name="am_outline_variant">#FFC4C6D0</color>
+
+    <color name="am_error">#FFBA1A1A</color>
+
+    <!-- The status colours are semantic and do not follow the wallpaper; only their brightness is adapted. -->
+    <color name="am_state_ok">#FF1E8E45</color>
+    <color name="am_state_pending">#FFB0680A</color>
+    <color name="am_state_alert">#FFBA1A1A</color>
     <color name="am_state_idle">#FF8A929E</color>
 </resources>

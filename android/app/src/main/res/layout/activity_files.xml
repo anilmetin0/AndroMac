@@ -29,7 +29,7 @@
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:paddingBottom="16dp"
-            android:textSize="13sp"
+            android:textAppearance="@style/TextAppearance.AM.BodyMedium"
             android:lineSpacingMultiplier="1.3"
             android:textColor="?android:attr/textColorSecondary"
             android:text="@string/file_intro" />

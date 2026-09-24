@@ -25,14 +25,14 @@
 
         <TextView style="@style/SectionLabel" android:text="@string/help_section_state" />
 
-        <LinearLayout style="@style/Card" android:paddingTop="14dp" android:paddingBottom="14dp">
+        <LinearLayout style="@style/Card" android:paddingTop="16dp" android:paddingBottom="16dp">
             <TextView
                 android:id="@+id/diagnostics"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="18dp"
-                android:paddingEnd="18dp"
-                android:textSize="14sp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textAppearance="@style/TextAppearance.AM.BodyMedium"
                 android:lineSpacingMultiplier="1.5"
                 android:fontFamily="monospace"
                 android:textColor="?android:attr/textColorPrimary" />
@@ -40,13 +40,13 @@
 
         <TextView style="@style/SectionLabel" android:text="@string/help_section_common" />
 
-        <LinearLayout style="@style/Card" android:paddingTop="14dp" android:paddingBottom="14dp">
+        <LinearLayout style="@style/Card" android:paddingTop="16dp" android:paddingBottom="16dp">
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="18dp"
-                android:paddingEnd="18dp"
-                android:textSize="14sp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textAppearance="@style/TextAppearance.AM.BodyMedium"
                 android:lineSpacingMultiplier="1.45"
                 android:textColor="?android:attr/textColorPrimary"
                 android:text="@string/help_troubleshooting" />
@@ -54,13 +54,13 @@
 
         <TextView style="@style/SectionLabel" android:text="@string/help_section_how" />
 
-        <LinearLayout style="@style/Card" android:paddingTop="14dp" android:paddingBottom="14dp">
+        <LinearLayout style="@style/Card" android:paddingTop="16dp" android:paddingBottom="16dp">
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="18dp"
-                android:paddingEnd="18dp"
-                android:textSize="14sp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textAppearance="@style/TextAppearance.AM.BodyMedium"
                 android:lineSpacingMultiplier="1.45"
                 android:textColor="?android:attr/textColorPrimary"
                 android:text="@string/help_how_it_works" />

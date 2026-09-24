@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Material You, dark theme — Android 12+. The surface is one tone lighter than the background. -->
+<!-- Material You, dark scheme (Android 12+). Same tone map as values-v31, dark side. -->
 <resources>
-    <color name="am_background">@android:color/system_neutral1_900</color>
-    <color name="am_surface">@android:color/system_neutral1_800</color>
-    <color name="am_accent">@android:color/system_accent1_200</color>
-    <color name="am_on_accent">@android:color/system_accent1_900</color>
-    <color name="am_on_surface">@android:color/system_neutral1_50</color>
+    <color name="am_primary">@android:color/system_accent1_200</color>
+    <color name="am_on_primary">@android:color/system_accent1_800</color>
+    <color name="am_primary_container">@android:color/system_accent1_700</color>
+    <color name="am_on_primary_container">@android:color/system_accent1_100</color>
+    <color name="am_secondary_container">@android:color/system_accent2_700</color>
+    <color name="am_on_secondary_container">@android:color/system_accent2_100</color>
+
+    <color name="am_surface">@android:color/system_neutral1_900</color>
+    <color name="am_surface_container_low">@android:color/system_neutral1_900</color>
+    <color name="am_surface_container">@android:color/system_neutral1_800</color>
+    <color name="am_surface_container_high">@android:color/system_neutral1_800</color>
+    <color name="am_surface_container_highest">@android:color/system_neutral1_700</color>
+    <color name="am_on_surface">@android:color/system_neutral1_100</color>
     <color name="am_on_surface_variant">@android:color/system_neutral2_200</color>
+    <color name="am_outline">@android:color/system_neutral2_400</color>
+    <color name="am_outline_variant">@android:color/system_neutral2_700</color>
 </resources>

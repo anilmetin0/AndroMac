@@ -29,7 +29,7 @@
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:paddingBottom="16dp"
-            android:textSize="13sp"
+            android:textAppearance="@style/TextAppearance.AM.BodyMedium"
             android:lineSpacingMultiplier="1.3"
             android:textColor="?android:attr/textColorSecondary"
             android:text="@string/notif_intro" />
@@ -47,12 +47,7 @@
                     <TextView style="@style/RowTitle" android:text="@string/apps_button" />
                     <TextView android:id="@+id/appFilterSummary" style="@style/RowSubtitle" />
                 </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
         </LinearLayout>
 
@@ -90,7 +85,7 @@
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textSize="12sp"
+            android:textAppearance="@style/TextAppearance.AM.BodySmall"
             android:lineSpacingMultiplier="1.3"
             android:textColor="?android:attr/textColorSecondary"
             android:text="@string/notif_always_filtered" />

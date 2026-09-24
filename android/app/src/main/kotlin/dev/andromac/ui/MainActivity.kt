@@ -18,6 +18,8 @@ import dev.andromac.feature.ClipHistory
 import dev.andromac.feature.ClipboardBridge
 import dev.andromac.feature.FindPhone
 import dev.andromac.feature.MediaBridge
+import dev.andromac.feature.UpdateCheck
+import dev.andromac.feature.Updater
 import dev.andromac.net.LinkService
 
 /**
@@ -38,6 +40,8 @@ class MainActivity : Activity() {
 
     private val listener: (Link.State) -> Unit = { state -> runOnUiThread { render(state) } }
     private val historyChanged: () -> Unit = { runOnUiThread { renderClipboard() } }
+    /** The update card follows the install's progress; Updater calls this on the main thread. */
+    private val installChanged: (UpdateCheck.Step) -> Unit = { renderUpdate() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,6 +103,7 @@ class MainActivity : Activity() {
         super.onStart()
         Link.addListener(listener)
         ClipHistory.addListener(historyChanged)
+        Updater.addListener(installChanged)
     }
 
     override fun onRequestPermissionsResult(
@@ -143,6 +148,7 @@ class MainActivity : Activity() {
     override fun onStop() {
         Link.removeListener(listener)
         ClipHistory.removeListener(historyChanged)
+        Updater.removeListener(installChanged)
         // On rotation the dialog stayed attached to the old activity and leaked its window.
         pairingDialog?.dismiss()
         pairingDialog = null
@@ -330,7 +336,7 @@ class MainActivity : Activity() {
         val newer = newerRelease(store)
         findViewById<View>(R.id.updateCard).visibility = if (newer == null) View.GONE else View.VISIBLE
         if (newer != null) {
-            findViewById<TextView>(R.id.updateBody).text = getString(R.string.update_card_body, newer.label)
+            findViewById<TextView>(R.id.updateBody).text = updateCardBody(newer)
         }
     }
 

@@ -1,12 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Section heading: sentence case, Material "title small" in the accent colour. More room
-         above it (the card margin plus paddingTop) than below it, so it reads with its card. -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!--
+        Material 3 type scale. Sizes in sp so text follows the system font size; tracking is the
+        Material value converted to em. The family stays the device's own (DeviceDefault), the
+        weight is set with textFontWeight so a Pixel keeps Google Sans and AOSP keeps Roboto.
+        No colour here: the view styles below pick the colour role.
+    -->
+    <style name="TextAppearance.AM" parent="@android:style/TextAppearance.DeviceDefault" />
+    <style name="TextAppearance.AM.HeadlineSmall">
+        <item name="android:textSize">24sp</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textFontWeight">400</item>
+    </style>
+    <style name="TextAppearance.AM.TitleLarge">
+        <item name="android:textSize">22sp</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textFontWeight">400</item>
+    </style>
+    <style name="TextAppearance.AM.TitleMedium">
+        <item name="android:textSize">16sp</item>
+        <item name="android:letterSpacing">0.009</item>
+        <item name="android:textFontWeight">500</item>
+    </style>
+    <style name="TextAppearance.AM.TitleSmall">
+        <item name="android:textSize">14sp</item>
+        <item name="android:letterSpacing">0.007</item>
+        <item name="android:textFontWeight">500</item>
+    </style>
+    <style name="TextAppearance.AM.BodyLarge">
+        <item name="android:textSize">16sp</item>
+        <item name="android:letterSpacing">0.031</item>
+        <item name="android:textFontWeight">400</item>
+    </style>
+    <style name="TextAppearance.AM.BodyMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:letterSpacing">0.018</item>
+        <item name="android:textFontWeight">400</item>
+    </style>
+    <style name="TextAppearance.AM.BodySmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:letterSpacing">0.033</item>
+        <item name="android:textFontWeight">400</item>
+    </style>
+    <style name="TextAppearance.AM.LabelLarge">
+        <item name="android:textSize">14sp</item>
+        <item name="android:letterSpacing">0.007</item>
+        <item name="android:textFontWeight">500</item>
+    </style>
+    <style name="TextAppearance.AM.LabelMedium">
+        <item name="android:textSize">12sp</item>
+        <item name="android:letterSpacing">0.042</item>
+        <item name="android:textFontWeight">500</item>
+    </style>
+    <style name="TextAppearance.AM.LabelSmall">
+        <item name="android:textSize">11sp</item>
+        <item name="android:letterSpacing">0.045</item>
+        <item name="android:textFontWeight">500</item>
+    </style>
+
+    <!-- Top app bar title: title-large, one line. view_header.xml and the main screen. -->
+    <style name="AppBarTitle">
+        <item name="android:textAppearance">@style/TextAppearance.AM.TitleLarge</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <!-- Section heading: title-small in primary. More room above it (the card margin plus
+         paddingTop) than below it, so it reads with its card. -->
     <style name="SectionLabel">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textAppearance">@style/TextAppearance.AM.TitleSmall</item>
         <item name="android:textColor">?android:attr/colorAccent</item>
         <item name="android:paddingStart">16dp</item>
         <item name="android:paddingEnd">16dp</item>
@@ -14,17 +79,20 @@
         <item name="android:paddingBottom">8dp</item>
     </style>
 
+    <!-- Material 3 filled card holding a list. clipToOutline (Android 12+) keeps the row
+         ripples inside the 12dp corners. -->
     <style name="Card">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:background">@drawable/bg_card</item>
+        <item name="android:clipToOutline" tools:targetApi="31">true</item>
         <item name="android:orientation">vertical</item>
         <item name="android:paddingTop">4dp</item>
         <item name="android:paddingBottom">4dp</item>
         <item name="android:layout_marginBottom">16dp</item>
     </style>
 
-    <!-- 56dp touch target: the platform minimum is 48dp, 56 makes it comfortable. -->
+    <!-- Material 3 list item: 56dp minimum, 16dp side padding, ripple on the whole row. -->
     <style name="Row">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -33,30 +101,25 @@
         <item name="android:orientation">horizontal</item>
         <item name="android:paddingStart">16dp</item>
         <item name="android:paddingEnd">16dp</item>
-        <item name="android:paddingTop">10dp</item>
-        <item name="android:paddingBottom">10dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
         <item name="android:background">?android:attr/selectableItemBackground</item>
     </style>
 
+    <!-- List item headline: body-large, on-surface. -->
     <style name="RowTitle">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">16sp</item>
+        <item name="android:textAppearance">@style/TextAppearance.AM.BodyLarge</item>
         <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
 
-    <!-- Primary action: filled accent. The default DeviceDefault button renders as a flat
-         grey slab and does not read as the one primary action on the screen. -->
-    <style name="PrimaryButton">
+    <!-- List item supporting text: body-medium, on-surface-variant. -->
+    <style name="RowSubtitle">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:minHeight">52dp</item>
-        <item name="android:background">@drawable/bg_button_primary</item>
-        <item name="android:textColor">@color/am_on_accent</item>
-        <item name="android:textSize">16sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:letterSpacing">0.01</item>
-        <item name="android:stateListAnimator">@null</item>
+        <item name="android:textAppearance">@style/TextAppearance.AM.BodyMedium</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
     </style>
 
     <!-- A read-only value on the right of a row: "Connected", an address, a name. -->
@@ -64,21 +127,53 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginStart">16dp</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textAppearance">@style/TextAppearance.AM.BodyMedium</item>
         <item name="android:textColor">?android:attr/textColorSecondary</item>
         <item name="android:maxLines">1</item>
         <item name="android:ellipsize">end</item>
     </style>
 
-    <style name="RowSubtitle">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textColor">?android:attr/textColorSecondary</item>
-        <item name="android:paddingTop">2dp</item>
+    <!-- Trailing 24dp icon of a list row (chevron, status). -->
+    <style name="RowIcon">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:contentDescription">@null</item>
     </style>
 
-    <!-- The whole row is clickable; the switch must not steal the click. -->
+    <!-- Leading 24dp icon of a list row. -->
+    <style name="RowLeadingIcon">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:contentDescription">@null</item>
+    </style>
+
+
+    <!-- Material 3 filled button, the one primary action on a screen. 48dp touch target, 40dp pill. -->
+    <style name="PrimaryButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">24dp</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+        <item name="android:background">@drawable/bg_button_primary</item>
+        <item name="android:textAppearance">@style/TextAppearance.AM.LabelLarge</item>
+        <item name="android:textColor">@color/am_on_primary</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <!-- Material 3 tonal button: a secondary action that still needs weight. -->
+    <style name="TonalButton" parent="PrimaryButton">
+        <item name="android:background">@drawable/bg_button_tonal</item>
+        <item name="android:textColor">@color/am_on_secondary_container</item>
+    </style>
+
+    <!-- The whole row is clickable; the switch must not steal the click. Track and thumb come
+         from the theme's switchStyle. -->
     <style name="RowSwitch">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -87,11 +182,32 @@
         <item name="android:focusable">false</item>
     </style>
 
-    <!-- 48dp icon button for the app bar and list rows. -->
+    <!-- Material 3 switch for every Switch in the app (theme switchStyle). -->
+    <style name="Widget.AM.Switch" parent="@android:style/Widget.Material.CompoundButton.Switch">
+        <item name="android:track">@drawable/switch_track</item>
+        <item name="android:thumb">@drawable/switch_thumb</item>
+        <item name="android:thumbTint">@color/switch_thumb</item>
+        <item name="android:switchMinWidth">52dp</item>
+        <item name="android:background">@null</item>
+    </style>
+
+    <!-- 48dp icon button for the app bar and list rows; the icon is 24dp. -->
     <style name="IconButton">
         <item name="android:layout_width">48dp</item>
         <item name="android:layout_height">48dp</item>
         <item name="android:scaleType">center</item>
         <item name="android:background">?android:attr/selectableItemBackgroundBorderless</item>
+    </style>
+
+    <!-- Dialog title (AlertDialog.setTitle and dialog_pairing): headline-small. -->
+    <style name="Widget.AM.DialogTitle" parent="">
+        <item name="android:textAppearance">@style/TextAppearance.AM.HeadlineSmall</item>
+    </style>
+
+    <!-- Dialog actions: Material 3 text buttons, sentence case, in primary. -->
+    <style name="Widget.AM.DialogButton" parent="@android:style/Widget.DeviceDefault.Button.Borderless.Colored">
+        <item name="android:textAppearance">@style/TextAppearance.AM.LabelLarge</item>
+        <item name="android:textColor">@color/am_primary</item>
+        <item name="android:textAllCaps">false</item>
     </style>
 </resources>

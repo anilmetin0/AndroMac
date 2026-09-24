@@ -15,20 +15,19 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="16dp"
         android:orientation="vertical"
         android:gravity="end">
         <TextView
             android:id="@+id/permState"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="13sp"
-            android:textStyle="bold" />
+            android:textAppearance="@style/TextAppearance.AM.LabelLarge" />
         <TextView
             android:id="@+id/permKind"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="11sp"
+            android:textAppearance="@style/TextAppearance.AM.LabelSmall"
             android:textColor="?android:attr/textColorSecondary" />
     </LinearLayout>
 </LinearLayout>

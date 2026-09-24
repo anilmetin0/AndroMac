@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 14+, dark: the exact Material 3 surface roles. See values-v34. -->
+<resources>
+    <color name="am_surface">@android:color/system_surface_dark</color>
+    <color name="am_surface_container_low">@android:color/system_surface_container_low_dark</color>
+    <color name="am_surface_container">@android:color/system_surface_container_dark</color>
+    <color name="am_surface_container_high">@android:color/system_surface_container_high_dark</color>
+    <color name="am_surface_container_highest">@android:color/system_surface_container_highest_dark</color>
+    <color name="am_on_surface">@android:color/system_on_surface_dark</color>
+    <color name="am_on_surface_variant">@android:color/system_on_surface_variant_dark</color>
+    <color name="am_outline">@android:color/system_outline_dark</color>
+</resources>

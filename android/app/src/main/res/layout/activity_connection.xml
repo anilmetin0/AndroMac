@@ -61,19 +61,14 @@
                 <LinearLayout android:id="@+id/rowConnectNow" style="@style/Row">
                     <TextView style="@style/RowTitle" android:layout_width="0dp" android:layout_weight="1"
                         android:text="@string/connection_now" />
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_marginStart="12dp"
-                        android:src="@drawable/ic_chevron"
-                        android:contentDescription="@null" />
+                    <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
                 </LinearLayout>
             </LinearLayout>
 
             <LinearLayout style="@style/Card">
                 <LinearLayout android:id="@+id/rowUnpair" style="@style/Row">
                     <TextView style="@style/RowTitle" android:layout_width="0dp" android:layout_weight="1"
-                        android:textColor="@color/am_state_alert"
+                        android:textColor="@color/am_error"
                         android:text="@string/unpair" />
                 </LinearLayout>
             </LinearLayout>

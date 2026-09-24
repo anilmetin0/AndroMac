@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:paddingTop="48dp"
                 android:gravity="center"
-                android:textSize="16sp"
+                android:textAppearance="@style/TextAppearance.AM.BodyLarge"
                 android:textColor="?android:attr/textColorSecondary"
                 android:text="@string/history_empty" />
 
@@ -44,7 +44,7 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:textSize="14sp"
+                android:textAppearance="@style/TextAppearance.AM.BodySmall"
                 android:textColor="?android:attr/textColorSecondary"
                 android:text="@string/history_note" />
         </LinearLayout>

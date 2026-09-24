@@ -35,12 +35,7 @@
                     <TextView style="@style/RowTitle" android:text="@string/settings_connection" />
                     <TextView android:id="@+id/connectionSummary" style="@style/RowSubtitle" />
                 </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
         </LinearLayout>
 
@@ -57,12 +52,7 @@
                     <TextView style="@style/RowTitle" android:text="@string/settings_notifications" />
                     <TextView android:id="@+id/notifSummary" style="@style/RowSubtitle" />
                 </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowClipSettings" style="@style/Row">
@@ -74,12 +64,7 @@
                     <TextView style="@style/RowTitle" android:text="@string/settings_clipboard" />
                     <TextView android:id="@+id/clipSummary" style="@style/RowSubtitle" />
                 </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowFiles" style="@style/Row">
@@ -91,12 +76,7 @@
                     <TextView style="@style/RowTitle" android:text="@string/settings_files" />
                     <TextView android:id="@+id/fileSummary" style="@style/RowSubtitle" />
                 </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
         </LinearLayout>
 
@@ -113,12 +93,7 @@
                     <TextView style="@style/RowTitle" android:text="@string/permissions_title" />
                     <TextView android:id="@+id/permissionsSummary" style="@style/RowSubtitle" />
                 </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
 
             <!-- Hidden below API 33: in-app language selection arrived there. -->
@@ -131,12 +106,7 @@
                     <TextView style="@style/RowTitle" android:text="@string/settings_language" />
                     <TextView android:id="@+id/languageSummary" style="@style/RowSubtitle" />
                 </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowUpdates" style="@style/Row">
@@ -148,12 +118,7 @@
                     <TextView style="@style/RowTitle" android:text="@string/settings_updates" />
                     <TextView android:id="@+id/updatesSummary" style="@style/RowSubtitle" />
                 </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
 
             <!-- The version is the first thing asked for in a bug report. -->

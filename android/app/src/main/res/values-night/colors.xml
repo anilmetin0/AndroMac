@@ -1,17 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Dark theme, the static fallback. Not an inversion: the surface is LIGHTER than the
-     background, so card elevation is expressed through tone (Material's tonal elevation)
-     rather than through a shadow. -->
+<!-- Material 3 colour roles, dark scheme, static fallback. Elevation is tone: a container is
+     lighter than the surface under it, never a shadow. -->
 <resources>
-    <color name="am_background">#FF101317</color>
-    <color name="am_surface">#FF1B1F26</color>
-    <color name="am_accent">#FF9EC6F5</color>
-    <color name="am_on_accent">#FF10151C</color>
-    <color name="am_on_surface">#FFE6E9EE</color>
-    <color name="am_on_surface_variant">#FFA3AAB6</color>
+    <color name="am_primary">#FFAAC7FF</color>
+    <color name="am_on_primary">#FF0A305F</color>
+    <color name="am_primary_container">#FF284777</color>
+    <color name="am_on_primary_container">#FFD6E3FF</color>
+    <color name="am_secondary_container">#FF3E4759</color>
+    <color name="am_on_secondary_container">#FFDAE2F9</color>
+
+    <color name="am_surface">#FF111318</color>
+    <color name="am_surface_container_low">#FF191C20</color>
+    <color name="am_surface_container">#FF1D2024</color>
+    <color name="am_surface_container_high">#FF282A2F</color>
+    <color name="am_surface_container_highest">#FF33353A</color>
+    <color name="am_on_surface">#FFE2E2E9</color>
+    <color name="am_on_surface_variant">#FFC4C6D0</color>
+    <color name="am_outline">#FF8E9099</color>
+    <color name="am_outline_variant">#FF44474E</color>
+
+    <color name="am_error">#FFFFB4AB</color>
 
     <color name="am_state_ok">#FF4ADE80</color>
     <color name="am_state_pending">#FFFBBF4A</color>
-    <color name="am_state_alert">#FFFF6B61</color>
-    <color name="am_state_idle">#FF7C8590</color>
+    <color name="am_state_alert">#FFFFB4AB</color>
+    <color name="am_state_idle">#FF8E9099</color>
 </resources>

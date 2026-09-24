@@ -23,13 +23,10 @@
             android:paddingEnd="4dp">
 
             <TextView
+                style="@style/AppBarTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="22sp"
-                android:textColor="?android:attr/textColorPrimary"
-                android:ellipsize="end"
-                android:maxLines="1"
                 android:text="@string/app_name" />
 
             <ImageButton
@@ -58,8 +55,8 @@
         <LinearLayout
             android:id="@+id/statusCard"
             style="@style/Card"
-            android:paddingTop="20dp"
-            android:paddingBottom="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
             android:foreground="?android:attr/selectableItemBackground">
 
             <LinearLayout
@@ -67,14 +64,14 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp">
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
 
                 <View
                     android:id="@+id/statusDot"
-                    android:layout_width="10dp"
-                    android:layout_height="10dp"
-                    android:layout_marginEnd="14dp"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_marginEnd="16dp"
                     android:background="@drawable/dot_status" />
 
                 <LinearLayout
@@ -87,7 +84,7 @@
                         android:id="@+id/status"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="22sp"
+                        android:textAppearance="@style/TextAppearance.AM.TitleLarge"
                         android:textColor="?android:attr/textColorPrimary"
                         android:text="@string/app_name" />
 
@@ -96,7 +93,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:textSize="14sp"
+                        android:textAppearance="@style/TextAppearance.AM.BodyMedium"
                         android:textColor="?android:attr/textColorSecondary" />
                 </LinearLayout>
             </LinearLayout>
@@ -104,9 +101,9 @@
             <Button
                 android:id="@+id/pair"
                 style="@style/PrimaryButton"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="12dp"
                 android:text="@string/pair" />
         </LinearLayout>
 
@@ -125,12 +122,7 @@
                     <TextView style="@style/RowTitle" android:text="@string/update_card_title" />
                     <TextView android:id="@+id/updateBody" style="@style/RowSubtitle" />
                 </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
         </LinearLayout>
 
@@ -149,17 +141,12 @@
                 android:minHeight="56dp"
                 android:paddingStart="16dp"
                 android:paddingEnd="4dp">
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:layout_marginEnd="12dp"
-                    android:src="@drawable/ic_warning"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowLeadingIcon" android:src="@drawable/ic_warning" android:contentDescription="@null" />
                 <TextView
                     style="@style/RowTitle"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:fontFamily="sans-serif-medium"
+                    android:textAppearance="@style/TextAppearance.AM.TitleMedium"
                     android:text="@string/permission_banner_title" />
                 <ImageButton
                     android:id="@+id/permissionDismiss"
@@ -177,12 +164,7 @@
                     <TextView style="@style/RowTitle" android:text="@string/setup_local_network_title" />
                     <TextView style="@style/RowSubtitle" android:text="@string/setup_local_network_note" />
                 </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowPostNotif" style="@style/Row">
@@ -194,12 +176,7 @@
                     <TextView style="@style/RowTitle" android:text="@string/setup_post_notif_title" />
                     <TextView style="@style/RowSubtitle" android:text="@string/setup_post_notif_note" />
                 </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowNotifAccess" style="@style/Row">
@@ -211,12 +188,7 @@
                     <TextView style="@style/RowTitle" android:text="@string/setup_notif_title" />
                     <TextView style="@style/RowSubtitle" android:text="@string/setup_notif_note" />
                 </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
         </LinearLayout>
 
@@ -293,21 +265,15 @@
                         android:maxLines="1"
                         android:ellipsize="end" />
                 </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
 
-            <TextView
+            <Button
                 android:id="@+id/rowSendClip"
-                style="@style/Row"
-                android:textSize="16sp"
-                android:textColor="?android:attr/textColorPrimary"
-                android:drawableEnd="@drawable/ic_send"
-                android:drawablePadding="12dp"
+                style="@style/TonalButton"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
                 android:text="@string/clip_send_now" />
         </LinearLayout>
         </LinearLayout>

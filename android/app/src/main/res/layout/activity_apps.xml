@@ -19,7 +19,7 @@
         android:paddingEnd="16dp"
         android:paddingTop="18dp"
         android:paddingBottom="12dp"
-        android:textSize="13sp"
+        android:textAppearance="@style/TextAppearance.AM.BodyMedium"
         android:lineSpacingMultiplier="1.25"
         android:textColor="?android:attr/textColorSecondary" />
 

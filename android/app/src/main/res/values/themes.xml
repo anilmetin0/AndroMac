@@ -1,25 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--
-        The colours come from colors.xml; on Android 12+ devices values-v31 overrides them
-        with the Material You system palette. Because everything is read through theme
-        attributes there is not a single hex value in the layouts — light/dark and dynamic
-        colour come for free.
+        Material 3 on platform views. The colour roles come from colors.xml (Material You on
+        Android 12+), the type scale and components from styles.xml. Layouts read roles and
+        styles only, so light/dark and dynamic colour need nothing per screen.
+        values-night overrides only what cannot be a colour: the bar icons and the dialog base.
     -->
     <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.DayNight">
-        <item name="android:colorAccent">@color/am_accent</item>
-        <item name="android:colorBackground">@color/am_background</item>
-        <item name="android:colorBackgroundFloating">@color/am_surface</item>
+        <item name="android:colorPrimary">@color/am_primary</item>
+        <item name="android:colorAccent">@color/am_primary</item>
+        <item name="android:colorError">@color/am_error</item>
+        <item name="android:colorBackground">@color/am_surface</item>
+        <item name="android:windowBackground">@color/am_surface</item>
+        <item name="android:colorBackgroundFloating">@color/am_surface_container_high</item>
         <item name="android:textColorPrimary">@color/am_on_surface</item>
         <item name="android:textColorSecondary">@color/am_on_surface_variant</item>
         <item name="android:textColorHint">@color/am_on_surface_variant</item>
+        <item name="android:colorControlNormal">@color/am_on_surface_variant</item>
+        <item name="android:listDivider">@color/am_outline_variant</item>
+
+        <item name="android:switchStyle">@style/Widget.AM.Switch</item>
+        <item name="android:alertDialogTheme">@style/AppDialog</item>
+        <item name="android:dialogCornerRadius">28dp</item>
 
         <!-- targetSdk 35+ already forces edge-to-edge; we make the bars transparent and
              apply the window insets in code (ui/Insets.kt). -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowLightStatusBar">@bool/am_light_bars</item>
+        <item name="android:windowLightNavigationBar">@bool/am_light_bars</item>
 
         <!-- The framework ActionBar is disabled: under edge-to-edge it does not push itself
              below the status bar and overlapped the content. view_header.xml draws the header. -->
@@ -28,6 +37,26 @@
 
         <!-- Detail screens slide in from the right and back out; the screen behind recedes. -->
         <item name="android:windowAnimationStyle">@style/WindowAnimations</item>
+    </style>
+
+    <bool name="am_light_bars">true</bool>
+
+    <!-- Material 3 basic dialog: 28dp corners on surface-container-high, headline-small title,
+         sentence-case text buttons in primary. Only the base differs in dark (values-night). -->
+    <style name="AppDialogBase" parent="@android:style/Theme.DeviceDefault.Light.Dialog.Alert" />
+
+    <style name="AppDialog" parent="AppDialogBase">
+        <item name="android:windowBackground">@drawable/bg_dialog</item>
+        <item name="android:colorBackground">@color/am_surface_container_high</item>
+        <item name="android:colorPrimary">@color/am_primary</item>
+        <item name="android:colorAccent">@color/am_primary</item>
+        <item name="android:textColorPrimary">@color/am_on_surface</item>
+        <item name="android:textColorSecondary">@color/am_on_surface_variant</item>
+        <item name="android:textColorAlertDialogListItem">@color/am_on_surface</item>
+        <item name="android:colorControlNormal">@color/am_on_surface_variant</item>
+        <item name="android:dialogCornerRadius">28dp</item>
+        <item name="android:windowTitleStyle">@style/Widget.AM.DialogTitle</item>
+        <item name="android:buttonBarButtonStyle">@style/Widget.AM.DialogButton</item>
     </style>
 
     <style name="WindowAnimations" parent="@android:style/Animation.Activity">

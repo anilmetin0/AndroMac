@@ -19,6 +19,8 @@ kotlin {
         // For the handshake test. These three files deliberately use no Android API.
         "dev/andromac/core/Session.kt",
         "dev/andromac/core/Protocol.kt",
+        // Notification picture rules: size, format choice, change detection.
+        "dev/andromac/core/NotificationImage.kt",
         // Receiver-side file name rules (PROTOCOL §5), pure Kotlin.
         "dev/andromac/core/FileNames.kt",
         // Unit-tested here: version ordering and the release lookup, both Android-free.

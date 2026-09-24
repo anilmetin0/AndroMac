@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Material You (Dynamic Color), light theme — Android 12+.
-
-    The system derives a palette from the wallpaper and publishes it as `@android:color/
-    system_*`. Using those directly makes the app match the device's own colour without
-    pulling in AndroidX; adopting the user's theme beats looking "branded".
-
-    The tone choices follow the Material 3 scheme: surface neutral-0 (white), background
-    neutral-10, text neutral-900, accent accent1-600.
+    Material You, light scheme (Android 12+). The system publishes the wallpaper palette as
+    @android:color/system_* tonal palettes; the suffix is the tone: 0 = T100, 10 = T99,
+    50 = T95, 100 = T90 ... 900 = T10, 1000 = T0. Roles follow the Material 3 tone map.
+    Error has no system palette and stays static.
 -->
 <resources>
-    <color name="am_background">@android:color/system_neutral1_10</color>
-    <color name="am_surface">@android:color/system_neutral1_0</color>
-    <color name="am_accent">@android:color/system_accent1_600</color>
-    <color name="am_on_accent">@android:color/system_accent1_0</color>
+    <color name="am_primary">@android:color/system_accent1_600</color>
+    <color name="am_on_primary">@android:color/system_accent1_0</color>
+    <color name="am_primary_container">@android:color/system_accent1_100</color>
+    <color name="am_on_primary_container">@android:color/system_accent1_900</color>
+    <color name="am_secondary_container">@android:color/system_accent2_100</color>
+    <color name="am_on_secondary_container">@android:color/system_accent2_900</color>
+
+    <color name="am_surface">@android:color/system_neutral1_10</color>
+    <color name="am_surface_container_low">@android:color/system_neutral1_50</color>
+    <color name="am_surface_container">@android:color/system_neutral2_50</color>
+    <color name="am_surface_container_high">@android:color/system_neutral2_100</color>
+    <color name="am_surface_container_highest">@android:color/system_neutral2_100</color>
     <color name="am_on_surface">@android:color/system_neutral1_900</color>
     <color name="am_on_surface_variant">@android:color/system_neutral2_700</color>
+    <color name="am_outline">@android:color/system_neutral2_500</color>
+    <color name="am_outline_variant">@android:color/system_neutral2_200</color>
 </resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 14+ publishes the exact Material 3 surface roles (the tonal palettes of values-v31
+     only have 10-step tones, too coarse for the container ladder). Everything else comes from
+     values-v31. -->
+<resources>
+    <color name="am_surface">@android:color/system_surface_light</color>
+    <color name="am_surface_container_low">@android:color/system_surface_container_low_light</color>
+    <color name="am_surface_container">@android:color/system_surface_container_light</color>
+    <color name="am_surface_container_high">@android:color/system_surface_container_high_light</color>
+    <color name="am_surface_container_highest">@android:color/system_surface_container_highest_light</color>
+    <color name="am_on_surface">@android:color/system_on_surface_light</color>
+    <color name="am_on_surface_variant">@android:color/system_on_surface_variant_light</color>
+    <color name="am_outline">@android:color/system_outline_light</color>
+</resources>

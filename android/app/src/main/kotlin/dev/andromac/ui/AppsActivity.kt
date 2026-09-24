@@ -161,7 +161,7 @@ class AppsActivity : Activity() {
             // A real color rather than alpha: alpha makes the contrast ratio impossible to measure.
             holder.mode.text = modeLabels[mode]
             holder.mode.setTextColor(
-                if (mode == Store.MODE_FULL) secondaryTextColor else getColor(R.color.am_accent)
+                if (mode == Store.MODE_FULL) secondaryTextColor else getColor(R.color.am_primary)
             )
             return view
         }

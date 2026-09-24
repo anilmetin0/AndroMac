@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Material 3 filled button: a 40dp pill in primary inside a 48dp touch target, with the
+<!-- Material 3 tonal button: a 40dp pill in secondary-container inside a 48dp touch target, with the
      ripple clipped to the pill. The radius is clamped to half the height, so it stays a pill
      at any font scale. -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
@@ -7,7 +7,7 @@
     <item>
         <inset android:insetTop="4dp" android:insetBottom="4dp">
             <shape android:shape="rectangle">
-                <solid android:color="@color/am_primary" />
+                <solid android:color="@color/am_secondary_container" />
                 <corners android:radius="100dp" />
             </shape>
         </inset>

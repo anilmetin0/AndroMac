@@ -5,7 +5,7 @@
     android:minHeight="68dp"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingStart="20dp"
+    android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:paddingTop="8dp"
     android:paddingBottom="8dp">
@@ -28,7 +28,7 @@
             android:id="@+id/appLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
+            android:textAppearance="@style/TextAppearance.AM.BodyLarge"
             android:textColor="?android:attr/textColorPrimary"
             android:maxLines="1"
             android:ellipsize="end" />
@@ -37,7 +37,7 @@
             android:id="@+id/appPackage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="12sp"
+            android:textAppearance="@style/TextAppearance.AM.BodySmall"
             android:textColor="?android:attr/textColorSecondary"
             android:maxLines="1"
             android:ellipsize="middle" />
@@ -47,7 +47,7 @@
         android:id="@+id/appMode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="13sp"
+        android:textAppearance="@style/TextAppearance.AM.LabelLarge"
         android:textColor="?android:attr/textColorPrimary"
         android:gravity="end"
         android:minWidth="100dp"
