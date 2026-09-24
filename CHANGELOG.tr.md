@@ -9,6 +9,27 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ## Unreleased
 
+### Eklenenler
+
+- **Kodu kopyala, göründüğü her yerde.** Tek kullanımlık kodlar Android'in kendi kurallarıyla
+  bulunuyor (AOSP'nin bildirim OTP algılayıcısı, Türkçe bağlam sözcükleri eklenmiş hâliyle); bir
+  kodun yanında kod, OTP, şifre ya da code gibi bir sözcük olmalı, tarihler ve telefon numaraları
+  hiç sayılmıyor. Mac bildiriminde de panel satırında da Kodu kopyala düğmesi var.
+- **Paneldeki bildirimi aç.** Birine tıklayınca metnin tamamı açılıyor, seçilebiliyor; altında
+  Metni kopyala, Kodu kopyala ve Bağlantıyı aç duruyor.
+
+### Değişenler
+
+- **Panelin pano satırında tek düğme var: Kopyala.** Mac panosu kendiliğinden (ya da pano
+  geçmişinden) gönderiliyor, dosyalar panele bırakılıyor.
+- **Her kopyada telefonda bildirim yok.** Mac'ten gelen metin için telefondaki Bildirim göster
+  ayarı artık varsayılan olarak kapalı; metin panoya yazılamadığında bildirim yine geliyor.
+
+### Düzeltilenler
+
+- Boş satırlarla dolu bildirimler (örneğin bir e-postanınki) geçmişte artık uzun, boş bir satır
+  bırakmıyor.
+
 ## 1.1.0 - 2026-09-24
 
 ### Eklenenler

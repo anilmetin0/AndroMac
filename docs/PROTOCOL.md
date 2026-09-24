@@ -480,8 +480,8 @@ Receiver rules (both platforms, enforced regardless of what the sender claims):
 - Files land in `~/Downloads` (macOS) and `Downloads/` (Android). The Mac shows one
   notification per received file; clicking it reveals the file in Finder.
 
-Sender rules: the Android share sheet (`ACTION_SEND` / `ACTION_SEND_MULTIPLE`) and the Mac
-panel's **Send file…** button (or dropping files onto the panel) are the only entry points.
+Sender rules: the Android share sheet (`ACTION_SEND` / `ACTION_SEND_MULTIPLE`) and dropping
+files onto the Mac panel are the only entry points.
 Sharing plain text from the Android share sheet sends a `clipboard` message instead of a file.
 
 `hello.caps` from the phone in this version:

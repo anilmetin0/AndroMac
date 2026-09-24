@@ -9,6 +9,28 @@ raised. Betas list their commits instead.
 
 ## Unreleased
 
+### Added
+
+- **Copy code, everywhere it shows.** One-time codes are found with the rules Android itself
+  uses (AOSP's notification OTP detector, with Turkish context words added), so a code needs a
+  word such as code, OTP, şifre or kod near it, and dates and phone numbers never count. The Mac
+  notification gets a Copy code button, as does the panel row.
+- **Open a notification in the panel.** Click one to unfold its whole text, which you can select,
+  with Copy text, Copy code and Open link under it.
+
+### Changed
+
+- **The panel's clipboard row has one button, Copy.** Sending the Mac clipboard happens on its
+  own (or from the clipboard history), and files are dropped onto the panel.
+- **No phone notification for every copy.** The phone's Show a notification setting for text
+  from the Mac is now off by default; the notification still comes when the text could not be
+  written to the clipboard.
+
+### Fixed
+
+- Notifications padded with blank lines, a mail's for one, no longer leave a tall empty row in the
+  history.
+
 ## 1.1.0 - 2026-09-24
 
 ### Added
