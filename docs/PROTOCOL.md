@@ -286,7 +286,7 @@ Optional picture, only for apps on the **full** tier:
 - Never with `redacted:true`, never for the off tier. The Mac drops one anyway if it comes with
   `redacted:true`.
 - macOS attaches it to the Notification Center entry (the thumbnail) in place of the app icon, and
-  keeps it next to the history entry, deleted with that entry.
+  keeps it next to the history entry, sealed with the history key and deleted with that entry.
 
 ### `notification_remove` — Android → macOS (the notification was dismissed on the phone)
 ```json

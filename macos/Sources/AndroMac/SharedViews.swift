@@ -156,9 +156,9 @@ struct NotificationPicture: View {
         let image: CGImage?
         if DemoMode.isOn {
             image = DemoMode.picture(named: name)
-        } else if let url = NotificationHistory.shared.imageURL(for: entry) {
+        } else if let data = NotificationHistory.shared.imageData(for: entry) {
             // Twice the edge: the longer side is what the limit bounds, and a fill crops to the shorter.
-            image = await Task.detached { thumbnail(url, maxPixels: pixels * 2) }.value
+            image = await Task.detached { thumbnail(data, maxPixels: pixels * 2) }.value
         } else {
             image = nil
         }
@@ -166,8 +166,8 @@ struct NotificationPicture: View {
         return image
     }
 
-    private nonisolated static func thumbnail(_ url: URL, maxPixels: CGFloat) -> CGImage? {
-        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+    private nonisolated static func thumbnail(_ data: Data, maxPixels: CGFloat) -> CGImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true,

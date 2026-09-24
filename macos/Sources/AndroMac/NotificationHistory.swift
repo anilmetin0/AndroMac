@@ -10,8 +10,8 @@ import SwiftUI
 /// The history is deleted when the pairing is removed.
 ///
 /// A notification's picture (PROTOCOL §5 `img`) sits next to it in `images/`: re-encoded without
-/// metadata, owner-only (0600 in a 0700 folder), and deleted with its entry when the entry is
-/// replaced, pruned past [limit] or cleared. Not sealed, so the views can load it by URL.
+/// metadata, sealed with the same key as the history, owner-only (0600 in a 0700 folder), and
+/// deleted with its entry when the entry is replaced, pruned past [limit] or cleared.
 @MainActor
 final class NotificationHistory: ObservableObject {
 
@@ -63,26 +63,35 @@ final class NotificationHistory: ObservableObject {
         entries.first { $0.id == id }?.image
     }
 
-    /// Where an entry's picture is, or nil when it has none. The file may be gone (cleared).
-    func imageURL(for entry: Entry) -> URL? {
-        entry.image.flatMap(imageURL(named:))
+    /// An entry's picture, decrypted, or nil when it has none, the file is gone or the key is not
+    /// loaded yet. A picture is at most 96 KiB, so reading and opening it here costs well under a
+    /// millisecond; decoding happens elsewhere, off the main thread.
+    func imageData(for entry: Entry) -> Data? {
+        imageData(named: entry.image)
     }
 
-    func imageURL(named name: String) -> URL? {
+    func imageData(named name: String?) -> Data? {
+        guard let url = name.flatMap(imageURL(named:)), let key = Store.shared.historyKey else { return nil }
+        return (try? Data(contentsOf: url)).flatMap { SealedFile.openSealed($0, key: key) }
+    }
+
+    private func imageURL(named name: String) -> URL? {
         // The name comes from our own sealed file, but a path must never climb out of `images/`.
         guard !name.isEmpty, !name.contains("/"), !name.hasPrefix(".") else { return nil }
         return imagesURL.appendingPathComponent(name)
     }
 
-    /// Writes a validated picture and returns its file name, or nil (demo, disk error).
+    /// Writes a validated picture, sealed, and returns its file name, or nil (demo, key not loaded,
+    /// disk error).
     func saveImage(_ image: NotificationImage.Clean) -> String? {
-        guard !DemoMode.isOn else { return nil }
+        guard !DemoMode.isOn, let key = Store.shared.historyKey,
+              let sealed = SealedFile.seal(image.data, key: key) else { return nil }
         let name = UUID().uuidString + "." + image.fileExtension
         let fm = FileManager.default
         try? fm.createDirectory(at: imagesURL, withIntermediateDirectories: true,
                                 attributes: [.posixPermissions: 0o700])
         let ok = fm.createFile(
-            atPath: imagesURL.appendingPathComponent(name).path, contents: image.data,
+            atPath: imagesURL.appendingPathComponent(name).path, contents: sealed,
             attributes: [.posixPermissions: 0o600, .protectionKey: FileProtectionType.complete]
         )
         return ok ? name : nil

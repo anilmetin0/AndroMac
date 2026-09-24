@@ -302,7 +302,7 @@ Where things are stored:
 | The Mac's identity key | The macOS Keychain |
 | The phone's identity key | Wrapped with an AES-256-GCM key that lives in the Android Keystore and cannot be exported. It is unwrapped into memory during the key exchange, which is the ceiling of doing P-256 in software |
 | The pinned peer key, the device name and settings | Locally on each device |
-| Notification and clipboard history | Only on the Mac, under Application Support. Deleted when you unpair |
+| Notification and clipboard history, and notification pictures | Only on the Mac, under Application Support, encrypted with a key derived from the Mac's identity in the Keychain. Deleted when you unpair |
 
 Files are the one thing that is written to disk on purpose. A transfer starts only after the
 receiver accepted it, or after you turned on auto-accept, which applies to every paired phone.

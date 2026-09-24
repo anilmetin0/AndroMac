@@ -20,6 +20,12 @@ public enum SealedFile {
         try? AES.GCM.seal(plaintext, using: key).combined
     }
 
+    /// The plaintext of a sealed file with no plaintext fallback (the notification pictures were
+    /// never written unsealed), or nil.
+    public static func openSealed(_ data: Data, key: SymmetricKey) -> Data? {
+        (try? AES.GCM.SealedBox(combined: data)).flatMap { try? AES.GCM.open($0, using: key) }
+    }
+
     /// The plaintext, or nil when the file is neither ours nor a plain JSON file from before
     /// encryption (the next save rewrites that one sealed).
     public static func open(_ data: Data, key: SymmetricKey) -> Data? {

@@ -86,9 +86,15 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         // Attach the picture or avatar if there is one, the app icon otherwise. The temporary copy
         // is handed to UserNotifications and deleted after `add` completes (or right away if the
         // attachment cannot be built) — otherwise every notification would leave a file in /tmp.
+        // The picture is decrypted into that temporary file only; UserNotifications needs a file.
         var temporaryFile: URL?
-        let sources = [imageName.flatMap(history.imageURL(named:)), pkg.isEmpty ? nil : IconCache.shared.cachedURL(for: pkg)]
-        if let copy = sources.lazy.compactMap({ $0 }).compactMap(Self.temporaryCopy(of:)).first {
+        let pictureData = image?.data ?? history.imageData(named: imageName)
+        let picture = pictureData.flatMap { data in
+            imageName.flatMap { Self.temporaryFile(data, extension: ($0 as NSString).pathExtension) }
+        }
+        let icon = pkg.isEmpty ? nil : IconCache.shared.cachedURL(for: pkg).flatMap(Self.temporaryCopy(of:))
+        if let picture, let icon { try? FileManager.default.removeItem(at: icon) }
+        if let copy = picture ?? icon {
             if let attachment = try? UNNotificationAttachment(identifier: "image", url: copy) {
                 content.attachments = [attachment]
                 temporaryFile = copy
@@ -137,6 +143,13 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
 
     /// UserNotifications MOVES the attachment file into its own store, so it gets a fresh copy
     /// each time; the extension stays, since that is how it tells a JPEG from a PNG.
+    private static func temporaryFile(_ data: Data, extension ext: String) -> URL? {
+        let destination = FileManager.default.temporaryDirectory
+            .appendingPathComponent("andromac-\(UUID().uuidString).\(ext)")
+        return FileManager.default.createFile(atPath: destination.path, contents: data,
+                                              attributes: [.posixPermissions: 0o600]) ? destination : nil
+    }
+
     private static func temporaryCopy(of source: URL) -> URL? {
         let destination = FileManager.default.temporaryDirectory
             .appendingPathComponent("andromac-\(UUID().uuidString).\(source.pathExtension)")

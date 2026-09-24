@@ -300,7 +300,7 @@ Ne nerede duruyor:
 | Mac'in kimlik anahtarı | macOS Keychain |
 | Telefonun kimlik anahtarı | Android Keystore'da duran ve dışarı çıkarılamayan bir AES-256-GCM anahtarıyla sarmalanmış. Anahtar değişimi sırasında belleğe açılır; P-256'yı yazılımda yapmanın tavanı bu |
 | Sabitlenen karşı anahtar, cihaz adı ve ayarlar | Her cihazda yerel olarak |
-| Bildirim ve pano geçmişi | Yalnızca Mac'te, Application Support altında. Eşleştirmeyi kaldırınca silinir |
+| Bildirim ve pano geçmişi, bildirim görselleri | Yalnızca Mac'te, Application Support altında; Anahtar Zinciri'ndeki Mac kimliğinden türetilen bir anahtarla şifreli. Eşleştirmeyi kaldırınca silinir |
 
 Diske yazılan tek şey dosyalar. Bir transfer ancak alıcı kabul ettikten sonra ya da eşleşmiş
 cihazlar için otomatik kabulü açtıysan başlar; ondan önce hiçbir şey yazılmaz. Dosya, son adını
