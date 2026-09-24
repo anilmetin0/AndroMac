@@ -78,6 +78,7 @@ private struct HistoryRow: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            if let link = NotificationHistory.link(entry) { OpenLinkButton(url: link) }
             if entry.image != nil {
                 NotificationPicture(entry: entry, size: 48)
             }

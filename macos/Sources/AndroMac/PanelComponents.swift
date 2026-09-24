@@ -150,6 +150,7 @@ struct NotificationRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityElement(children: .combine)
             if let code { copyCode(code) }
+            else if let link = NotificationHistory.link(entry) { OpenLinkButton(url: link) }
             if entry.image != nil { NotificationPicture(entry: entry, size: Self.pictureSize) }
         }
         .frame(height: Self.height(entry))

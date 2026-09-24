@@ -30,6 +30,8 @@ raised. Betas list their commits instead.
   sender's avatar comes along with the notification and shows as its thumbnail on the Mac, next
   to the app's own icon. Only for apps set to Full, only when the picture changes, and at most
   96 KB.
+- **Links open from the notification.** When a notification carries a web address, the Mac
+  notification has an Open link button, and the history and the panel show one next to it.
 - **Reset AndroMac.** Settings on both apps can erase everything the app keeps and start over.
 - **Pick your Mac.** With several Macs running AndroMac on the same network, Pair asks which one.
 - **Ready for Android 17.** Android 17 asks before an app may talk to devices on your network.
@@ -68,6 +70,10 @@ raised. Betas list their commits instead.
 
 ### Fixed
 
+- A notification an app posts in two steps, the text and then the sender's photo, arrives once
+  and whole instead of showing half of it first. The replay after a reconnect updates a
+  notification in place and keeps its time.
+- Clearing the notification or clipboard history on the Mac no longer crashes the app.
 - With several phones connected, files, notification replies, dismissals and media controls went
   to every phone instead of the right one. A second phone could also rename the first, and a
   stranger's pairing prompt could show a paired phone's name.

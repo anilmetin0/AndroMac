@@ -10,6 +10,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
 
     static let shared = NotificationMirror()
     fileprivate static let muteIdentifier = "andromac.mute"
+    fileprivate static let linkIdentifier = "andromac.link"
 
     private let center = UNUserNotificationCenter.current()
     private var categories: [String: UNNotificationCategory] = [:]
@@ -71,9 +72,12 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         // `silent` is needed at presentation time too: willPresent is the only place that suppresses the banner.
         content.userInfo = ["id": id, "pkg": pkg, "silent": silent, "peer": peer]
         if silent { content.interruptionLevel = .passive }
+        // A web address in the text gets an Open link button; never on a redacted notification.
+        let link = redacted ? nil : WebLink.find(in: title + "\n" + text)
+        if let link { content.userInfo["link"] = link.absoluteString }
 
         // A category is ALWAYS registered: even with no actions we still offer "Mute".
-        content.categoryIdentifier = registerCategory(for: NotificationAction.parse(msg["actions"]))
+        content.categoryIdentifier = registerCategory(for: NotificationAction.parse(msg["actions"]), link: link != nil)
 
         // Every package without an icon on disk is asked for once per session, whatever this
         // notification attaches: the panel and the lists draw the icon too.
@@ -104,7 +108,8 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         }
 
         history.add(
-            .init(id: id, app: app, pkg: pkg, title: title, text: text, date: Date(), image: imageName)
+            .init(id: id, app: app, pkg: pkg, title: title, text: text, date: Date(), image: imageName),
+            silent: silent
         )
 
         let iconToRemove = temporaryFile
@@ -164,8 +169,9 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
 
     /// A UNNotificationCategory has to be registered in advance. Since the action list differs per
     /// app, we use an identifier derived from its signature and register it on demand.
-    private func registerCategory(for actions: [NotificationAction]) -> String {
-        let signature = (actions.map { ($0.reply ? "r\($0.index):" : "n\($0.index):") + $0.title } + ["mute"])
+    private func registerCategory(for actions: [NotificationAction], link: Bool) -> String {
+        let signature = (actions.map { ($0.reply ? "r\($0.index):" : "n\($0.index):") + $0.title }
+            + (link ? ["link"] : []) + ["mute"])
             .joined(separator: "|")
         let id = "am." + SHA256.hash(data: Data(signature.utf8))
             .prefix(8).map { String(format: "%02x", $0) }.joined()
@@ -180,6 +186,10 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
                     identifier: "a\(a.index)", title: a.title, options: [],
                     textInputButtonTitle: String(localized: "Send"), textInputPlaceholder: "")
                 : UNNotificationAction(identifier: "a\(a.index)", title: a.title, options: [])
+        }
+        if link {
+            unActions.append(UNNotificationAction(identifier: Self.linkIdentifier,
+                                                  title: String(localized: "Open link"), options: []))
         }
         // Muting straight from the notification: the most used action, without leaving the keyboard.
         unActions.append(
@@ -227,6 +237,11 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         }
 
         switch response.actionIdentifier {
+        case Self.linkIdentifier:
+            // Checked again here: userInfo comes back from the system, and only the web is opened.
+            guard let string = userInfo["link"] as? String, let url = URL(string: string), WebLink.isWeb(url) else { return }
+            await MainActor.run { _ = NSWorkspace.shared.open(url) }
+
         case Self.muteIdentifier:
             guard !pkg.isEmpty else { return }
             await AppModes.shared.set(.off, for: pkg, on: peer)

@@ -87,6 +87,23 @@ extension View {
     }
 }
 
+/// Opens the web address a notification carries, in the default browser. The address is in the
+/// tooltip, so what opens is visible before the click.
+struct OpenLinkButton: View {
+    let url: URL
+
+    var body: some View {
+        Button {
+            NSWorkspace.shared.open(url)
+        } label: {
+            Image(systemName: "arrow.up.right.square")
+        }
+        .buttonStyle(.borderless)
+        .help(url.absoluteString)
+        .accessibilityLabel(Text("Open link"))
+    }
+}
+
 /// "7 min. ago", redrawn once a minute, with the full date and time on hover.
 ///
 /// `Text(date, style: .relative)` ticks every second ("7 min, 3 sec") and kept redrawing the panel;

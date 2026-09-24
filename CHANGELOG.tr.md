@@ -30,6 +30,8 @@ derlemeler bunun yerine commit'lerini listeler.
   profil fotoğrafı bildirimle birlikte geliyor ve Mac'te uygulamanın ikonunun yanında küçük resim
   olarak görünüyor. Yalnızca Tam ayarlı uygulamalar için, yalnızca görsel değiştiğinde ve en fazla
   96 KB.
+- **Bağlantılar bildirimden açılıyor.** Bildirimde bir web adresi varsa Mac bildiriminde Bağlantıyı
+  aç düğmesi çıkıyor, geçmişte ve panelde de yanında bir düğme duruyor.
 - **AndroMac'i sıfırla.** İki uygulamada da Ayarlar, uygulamanın tuttuğu her şeyi silip baştan başlatabiliyor.
 - **Mac'ini seç.** Aynı ağda AndroMac çalıştıran birden fazla Mac varsa Eşleştir hangisi olduğunu
   soruyor.
@@ -69,6 +71,10 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ### Düzeltilenler
 
+- Bir uygulamanın iki adımda yayınladığı bildirim (önce yazı, sonra gönderenin fotoğrafı) önce
+  yarım görünmek yerine tek seferde, tam haliyle geliyor. Yeniden bağlanınca gelen tekrar,
+  bildirimi yerinde güncelliyor ve saatini koruyor.
+- Mac'te bildirim ya da pano geçmişini temizlemek artık uygulamayı çökertmiyor.
 - Birden fazla telefon bağlıyken dosyalar, bildirim yanıtları, kapatmalar ve medya denetimleri
   doğru telefon yerine hepsine gidiyordu. İkinci bir telefon ilkinin adını da değiştirebiliyordu,
   tanımadığın bir telefonun eşleştirme sorusu da eşleşmiş bir telefonun adını gösterebiliyordu.
