@@ -478,6 +478,10 @@ final class Updater: ObservableObject {
     /// The old bundle is moved aside rather than deleted, and only removed after the new one is in
     /// place — if the copy fails, the script puts the old app back and starts that instead, so a
     /// failed update cannot leave the user without an app.
+    ///
+    /// The copy goes next to the app under a name that is not a bundle, and a rename puts it in
+    /// place: a half-copied bundle at the app's own path was registered as an app without an
+    /// icon, and Notification Center kept showing that blank icon after the update.
     private nonisolated static func swap(into current: URL, from new: URL, staging: URL?) throws {
         // Every path is passed as an argument and quoted; the script interpolates nothing.
         let script = """
@@ -488,13 +492,18 @@ final class Updater: ObservableObject {
         staging="$4"
         pid="$5"
         scratch="$6"
+        incoming="$current.incoming"
         while kill -0 "$pid" 2>/dev/null; do sleep 0.2; done
-        if mv "$current" "$backup" && ditto "$new" "$current"; then
-            /bin/rm -r -f "$backup"
-        elif [ -d "$backup" ]; then
-            mv "$backup" "$current"
+        /bin/rm -r -f "$incoming"
+        if ditto "$new" "$incoming" && mv "$current" "$backup"; then
+            if mv "$incoming" "$current"; then
+                /bin/rm -r -f "$backup"
+            else
+                mv "$backup" "$current"
+            fi
         fi
-        /bin/rm -r -f "$staging"
+        /bin/rm -r -f "$incoming" "$staging"
+        /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$current"
         open "$current"
         /bin/rm -r -f "$scratch"
         """

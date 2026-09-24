@@ -192,14 +192,20 @@ private struct DeviceCard: View {
                 // Paired but not here: almost every connection problem is one of these two things.
                 // The Mac only listens (PROTOCOL §1), so there is nothing to click for it: the
                 // phone dials in as soon as both are true.
-                Text("Open AndroMac on the phone, on the same Wi‑Fi.")
-                    .font(Theme.Font.label)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                // Offline there is nothing to act on but More, so it sits on this line instead of
+                // taking a row of its own.
+                HStack(spacing: Theme.Space.small) {
+                    Text("Open AndroMac on the phone, on the same Wi‑Fi.")
+                        .font(Theme.Font.label)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    more.glassGroup()
+                }
             }
 
             Spacer(minLength: 0)
-            actions
+            if connected || device.paused { actions }
         }
     }
 

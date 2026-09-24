@@ -50,6 +50,29 @@ if [[ ! -f "$ICNS" || Resources/make-icon.swift -nt "$ICNS" ]]; then
 fi
 cp "$ICNS" "$APP/Contents/Resources/AppIcon.icns"
 
+# The same icon as an asset catalog (CFBundleIconName). Notification Center looks the icon up by
+# bundle identifier, and on macOS 26 that lookup finds only Assets.car: with the .icns alone every
+# banner showed the blank app template. The .icns stays for older systems and for Finder.
+CATALOG="build/Assets.xcassets/AppIcon.appiconset"
+rm -rf build/Assets.xcassets && mkdir -p "$CATALOG"
+cp build/AppIcon.iconset/*.png "$CATALOG/"
+images=()
+for size in 16 32 128 256 512; do
+    images+=("{\"idiom\":\"mac\",\"size\":\"${size}x${size}\",\"scale\":\"1x\",\"filename\":\"icon_${size}x${size}.png\"}")
+    images+=("{\"idiom\":\"mac\",\"size\":\"${size}x${size}\",\"scale\":\"2x\",\"filename\":\"icon_${size}x${size}@2x.png\"}")
+done
+(IFS=,; echo "{\"images\":[${images[*]}],\"info\":{\"version\":1,\"author\":\"xcode\"}}") > "$CATALOG/Contents.json"
+# The GitHub mark beside the version, a template image: it takes the text colour it sits in.
+MARK="build/Assets.xcassets/GitHubMark.imageset"
+mkdir -p "$MARK" && cp Resources/GitHubMark.svg "$MARK/"
+echo '{"images":[{"idiom":"universal","filename":"GitHubMark.svg"}],"info":{"version":1,"author":"xcode"},"properties":{"preserves-vector-representation":true,"template-rendering-intent":"template"}}' \
+    > "$MARK/Contents.json"
+xcrun actool build/Assets.xcassets --compile "$APP/Contents/Resources" --platform macosx \
+    --minimum-deployment-target 14.0 --app-icon AppIcon \
+    --output-partial-info-plist build/assets-info.plist >/dev/null
+/usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$PLIST" 2>/dev/null \
+    || /usr/libexec/PlistBuddy -c "Set :CFBundleIconName AppIcon" "$PLIST"
+
 # Languages: English is the base language — the literals in the source code are the keys, so
 # en.lproj maps every key to itself and tr.lproj holds the Turkish translations.
 # Loaded through Bundle.main; the SwiftPM resource bundle (Bundle.module) is not used.

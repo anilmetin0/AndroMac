@@ -175,10 +175,10 @@ struct NotificationPicture: View {
     @Environment(\.displayScale) private var scale
     @State private var image: CGImage?
 
+    /// The picture alone, no plate behind it: an avatar the phone already cut round stays round,
+    /// instead of sitting on a grey square.
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: size * 0.18, style: .continuous)
         ZStack {
-            shape.fill(Color.secondary.opacity(0.12))
             if let image {
                 Image(decorative: image, scale: scale)
                     .resizable()
@@ -186,7 +186,7 @@ struct NotificationPicture: View {
             }
         }
         .frame(width: size, height: size)
-        .clipShape(shape)
+        .clipShape(RoundedRectangle(cornerRadius: size * 0.18, style: .continuous))
         .task(id: entry.id) { image = await Self.load(entry, pixels: size * scale) }
         .accessibilityHidden(true)
     }
