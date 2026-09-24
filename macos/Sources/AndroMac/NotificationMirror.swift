@@ -11,6 +11,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationMirror()
     fileprivate static let muteIdentifier = "andromac.mute"
     fileprivate static let linkIdentifier = "andromac.link"
+    fileprivate static let codeIdentifier = "andromac.code"
 
     private let center = UNUserNotificationCenter.current()
     private var categories: [String: UNNotificationCategory] = [:]
@@ -50,8 +51,8 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         guard !id.isEmpty else { return }
         let app = clip(msg["app"], 256)
         let pkg = clip(msg["pkg"], 256)
-        let title = clip(msg["title"], 2048)
-        let text = clip(msg["text"], 2048)
+        let title = Self.tidy(clip(msg["title"], 2048))
+        let text = Self.tidy(clip(msg["text"], 2048))
         let silent = msg["silent"] as? Bool == true
 
         // The TITLE_ONLY tier: the content never left the phone, and we do not invent it here either.
@@ -75,9 +76,14 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         // A web address in the text gets an Open link button; never on a redacted notification.
         let link = redacted ? nil : WebLink.find(in: title + "\n" + text)
         if let link { content.userInfo["link"] = link.absoluteString }
+        // A one-time code gets Copy code, the same code the panel row offers.
+        let code = redacted ? nil : VerificationCode.find(in: title + "\n" + text)
+        if let code { content.userInfo["code"] = code }
 
         // A category is ALWAYS registered: even with no actions we still offer "Mute".
-        content.categoryIdentifier = registerCategory(for: NotificationAction.parse(msg["actions"]), link: link != nil)
+        content.categoryIdentifier = registerCategory(
+            for: NotificationAction.parse(msg["actions"]), link: link != nil, code: code != nil
+        )
 
         // Every package without an icon on disk is asked for once per session, whatever this
         // notification attaches: the panel and the lists draw the icon too.
@@ -117,6 +123,19 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
             if let error { NSLog("AndroMac: could not present the notification — \(error.localizedDescription)") }
             if let iconToRemove { try? FileManager.default.removeItem(at: iconToRemove) }
         }
+    }
+
+    /// Without the blank lines apps pad their text with: a mail's big text ending in empty lines
+    /// was drawn as a tall row with nothing in its lower half.
+    static func tidy(_ text: String) -> String {
+        var lines: [Substring] = []
+        for line in text.trimmingCharacters(in: .whitespacesAndNewlines).split(separator: "\n", omittingEmptySubsequences: false) {
+            let blank = line.allSatisfy(\.isWhitespace)
+            // One blank line is a paragraph break; a run of them is padding.
+            if blank, lines.last?.allSatisfy(\.isWhitespace) == true { continue }
+            lines.append(blank ? "" : line)
+        }
+        return lines.joined(separator: "\n")
     }
 
     /// A single warning so the phone's battery does not die while it is out of reach.
@@ -169,9 +188,9 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
 
     /// A UNNotificationCategory has to be registered in advance. Since the action list differs per
     /// app, we use an identifier derived from its signature and register it on demand.
-    private func registerCategory(for actions: [NotificationAction], link: Bool) -> String {
+    private func registerCategory(for actions: [NotificationAction], link: Bool, code: Bool) -> String {
         let signature = (actions.map { ($0.reply ? "r\($0.index):" : "n\($0.index):") + $0.title }
-            + (link ? ["link"] : []) + ["mute"])
+            + (code ? ["code"] : []) + (link ? ["link"] : []) + ["mute"])
             .joined(separator: "|")
         let id = "am." + SHA256.hash(data: Data(signature.utf8))
             .prefix(8).map { String(format: "%02x", $0) }.joined()
@@ -180,7 +199,10 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         // A notification still on screen with a dropped category loses only its buttons.
         if categories.count >= 64 { categories.removeAll() }
 
-        var unActions: [UNNotificationAction] = actions.map { a in
+        var unActions: [UNNotificationAction] = code
+            ? [UNNotificationAction(identifier: Self.codeIdentifier, title: String(localized: "Copy code"), options: [])]
+            : []
+        unActions += actions.map { a in
             a.reply
                 ? UNTextInputNotificationAction(
                     identifier: "a\(a.index)", title: a.title, options: [],
@@ -237,6 +259,12 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         }
 
         switch response.actionIdentifier {
+        case Self.codeIdentifier:
+            // Onto the Mac clipboard only: restore keeps it from going back to the phone and out of
+            // the clipboard history.
+            guard let code = userInfo["code"] as? String, !code.isEmpty else { return }
+            await ClipboardWatcher.shared.restore(code)
+
         case Self.linkIdentifier:
             // Checked again here: userInfo comes back from the system, and only the web is opened.
             guard let string = userInfo["link"] as? String, let url = URL(string: string), WebLink.isWeb(url) else { return }
