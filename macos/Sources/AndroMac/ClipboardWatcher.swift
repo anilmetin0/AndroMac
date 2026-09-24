@@ -110,11 +110,10 @@ actor ClipboardWatcher {
     /// Only the phone the panel is showing is asked; every other phone would wake its radio and
     /// launch an activity for an answer nobody looks at. Throttled: opening and closing the panel
     /// a few times in a row is one request, not five. The phone itself ignores a request while
-    /// its screen is off. `force` is the button in the panel: an explicit click is consent, so it
-    /// ignores the setting and the throttle.
-    func requestFromPhones(force: Bool = false) async {
-        guard Store.shared.syncClipboard, force || Store.shared.clipboardPull else { return }
-        if !force, let lastRequest, Date().timeIntervalSince(lastRequest) < 10 { return }
+    /// its screen is off.
+    func requestFromPhones() async {
+        guard Store.shared.syncClipboard, Store.shared.clipboardPull else { return }
+        if let lastRequest, Date().timeIntervalSince(lastRequest) < 10 { return }
         lastRequest = Date()
         guard let peer = await MainActor.run(body: { AppState.shared.focusedDevice?.id }) else { return }
         await Server.shared.send(["t": "clipboard_request"], to: peer)
@@ -124,33 +123,6 @@ actor ClipboardWatcher {
     static let maxText = 64 * 1024
 
     private var lastRequest: Date?
-
-    /// Send whatever is on the Mac clipboard right now, because the user asked for it.
-    ///
-    /// The mirror image of the phone's "Send clipboard to Mac" tile. It ignores `clipboardAutoSend`
-    /// — that toggle decides whether copying *by itself* sends, not whether the user may send on
-    /// purpose — but it still honours the master switch and the concealed-content rule.
-    /// Returns what happened so the panel can say something other than nothing.
-    @discardableResult
-    func sendCurrent() async -> ManualSendResult {
-        guard Store.shared.syncClipboard else { return .clipboardOff }
-        let pb = NSPasteboard.general
-        guard let types = pb.types, !types.isEmpty else { return .empty }
-        guard !Self.isConcealed(types) else { return .concealed }
-        guard let text = pb.string(forType: .string), !text.isEmpty else { return .empty }
-
-        // Auto-send must not fire for the same copy a moment later.
-        lastChangeCount = pb.changeCount
-        await sendManually(text)
-        return .sent
-    }
-
-    enum ManualSendResult: Sendable, Equatable {
-        case sent
-        case empty
-        case concealed
-        case clipboardOff
-    }
 
     /// Send a text from the history to the phone manually (works even when auto-send is off).
     func sendManually(_ text: String) async {

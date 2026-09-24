@@ -16,10 +16,10 @@ struct MenuPanel: View {
     @ObservedObject private var updates = UpdateCheck.shared
     @ObservedObject private var updater = Updater.shared
     @ObservedObject private var transfer = FileTransfer.shared
-    /// Non-nil for a moment after the manual clipboard send, to say how it went.
-    @State private var clipSend: ClipboardWatcher.ManualSendResult?
     /// True for a moment after ⌘C copied the phone's last clipboard.
     @State private var copiedLast = false
+    /// The notification row unfolded to its whole text; one at a time.
+    @State private var openRow: String?
 
     private let recentCount = 4
 
@@ -44,8 +44,8 @@ struct MenuPanel: View {
                 DeviceList()
 
                 // Nothing to show is one quiet line on the panel, not a card around a sentence.
-                // The clipboard row keeps its card while it has buttons in it.
-                if clipboardIsEmpty && !canSendClipboard && !canSendFiles && transfer.progress == nil {
+                // The clipboard row keeps its card while it has a text or a transfer in it.
+                if clipboardIsEmpty && transfer.progress == nil {
                     clipboard.padding(.horizontal, Theme.Space.medium)
                 } else {
                     PanelCard {
@@ -95,7 +95,7 @@ struct MenuPanel: View {
         }
         // Dropping files onto the panel is the second way to send (PROTOCOL §5, sender rules).
         .onDrop(of: [.fileURL], isTargeted: nil) { providers in
-            // The phone whose tab is open, the same one the Send file… button talks to.
+            // The phone whose tab is open.
             guard canSendFiles, let peer = state.focusedDevice?.id else { return false }
             for provider in providers {
                 _ = provider.loadObject(ofClass: URL.self) { url, _ in
@@ -127,20 +127,6 @@ struct MenuPanel: View {
                 .font(Theme.Font.label.monospacedDigit())
                 .foregroundStyle(.secondary)
             QuietButton(String(localized: "Cancel")) { transfer.cancel() }
-        }
-    }
-
-    private func chooseFiles() {
-        let panel = NSOpenPanel()
-        panel.canChooseDirectories = false
-        panel.canChooseFiles = true
-        panel.allowsMultipleSelection = true
-        panel.prompt = String(localized: "Send")
-        guard let peer = state.focusedDevice?.id else { return }
-        NSApp.activate(ignoringOtherApps: true)
-        panel.begin { response in
-            guard response == .OK else { return }
-            FileTransfer.shared.send(urls: panel.urls, to: peer)
         }
     }
 
@@ -283,17 +269,17 @@ struct MenuPanel: View {
 
     // MARK: clipboard
 
-    /// The phone's last clipboard, then what can be sent from here: the clipboard either way and
-    /// files. Hover shows the whole text, ⌘C puts it back on the Mac clipboard.
+    /// The phone's last clipboard and one button, Copy. Clicking the text copies too; hover shows
+    /// the whole text, ⌘C copies, and the menu opens the history. Sending goes by itself (auto-send,
+    /// the history's Send to phone) and files are dropped onto the panel, so the row carries no
+    /// buttons for those.
     private var clipboard: some View {
         HStack(spacing: Theme.Space.small) {
-            Button {
-                state.showMainWindow(.clipboard)
-            } label: {
+            Button(action: copyLast) {
                 HStack(spacing: Theme.Space.small) {
-                    Image(systemName: copiedLast ? "checkmark" : "doc.on.clipboard")
+                    Image(systemName: "doc.on.clipboard")
                         .font(Theme.Font.label)
-                        .foregroundStyle(copiedLast ? Color.green : Color.secondary)
+                        .foregroundStyle(.secondary)
                         .frame(width: 14)
                     Text(clipboardIsEmpty
                          ? String(localized: "Nothing copied yet")
@@ -307,6 +293,7 @@ struct MenuPanel: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .disabled(clipboardIsEmpty)
             .help(state.lastClipboard.isEmpty
                   ? String(localized: "Open clipboard history")
                   : String(state.lastClipboard.prefix(600)))
@@ -325,19 +312,11 @@ struct MenuPanel: View {
                     .accessibilityHidden(true)
             }
 
-            HStack(spacing: Theme.Space.tight) {
-                if canSendClipboard {
-                    pullClipboardButton
-                    sendClipboardButton
-                }
-                // The button exists only while the phone advertises the capability (PROTOCOL §5).
-                if canSendFiles, transfer.progress == nil {
-                    IconButton(symbol: "arrow.up.doc",
-                               label: String(localized: "Send files to the phone, or drop them onto this panel"),
-                               action: chooseFiles)
-                }
+            if !clipboardIsEmpty {
+                IconButton(symbol: copiedLast ? "checkmark" : "doc.on.doc",
+                           label: String(localized: "Copy to the Mac clipboard"),
+                           active: copiedLast, action: copyLast)
             }
-            .glassGroup(spacing: Theme.Space.tight)
         }
     }
 
@@ -352,42 +331,6 @@ struct MenuPanel: View {
             copiedLast = true
             try? await Task.sleep(for: .milliseconds(1200))
             copiedLast = false
-        }
-    }
-
-    /// Ask the phone for what it has copied. The panel does this by itself when it opens; the
-    /// button is for the second look, when something was copied while the panel was already open.
-    private var pullClipboardButton: some View {
-        IconButton(symbol: "arrow.down.circle", label: String(localized: "Ask the phone for its clipboard")) {
-            Task { await ClipboardWatcher.shared.requestFromPhones(force: true) }
-        }
-    }
-
-    /// The Mac's answer to the phone's "Send clipboard" tile. The phone has always had a manual
-    /// path because Android forbids background clipboard reads; the Mac only ever had the automatic
-    /// one, so with auto-send off there was no way to push a copy across on purpose.
-    private var canSendClipboard: Bool {
-        state.isConnected && state.peerCaps.contains("clipboard") && Store.shared.syncClipboard
-    }
-
-    private var sendClipboardButton: some View {
-        IconButton(symbol: clipSendSymbol, label: String(localized: "Send the Mac clipboard"),
-                   active: clipSend == .sent) {
-            Task {
-                let result = await ClipboardWatcher.shared.sendCurrent()
-                clipSend = result
-                try? await Task.sleep(for: .milliseconds(1400))
-                clipSend = nil
-            }
-        }
-    }
-
-    private var clipSendSymbol: String {
-        switch clipSend {
-        case .sent: return "checkmark"
-        case .concealed: return "eye.slash"
-        case .empty, .clipboardOff: return "exclamationmark.triangle"
-        case nil: return "paperplane"
         }
     }
 
@@ -409,9 +352,16 @@ struct MenuPanel: View {
             // Fixed height: inside `.menuBarExtraStyle(.window)` a list with a flexible height
             // collapses the second time the panel is opened.
             VStack(alignment: .leading, spacing: 0) {
-                ForEach(recent) { NotificationRow(entry: $0) }
+                ForEach(recent) { entry in
+                    NotificationRow(entry: entry, open: openRow == entry.id) {
+                        withAnimation(.easeOut(duration: 0.18)) {
+                            openRow = openRow == entry.id ? nil : entry.id
+                        }
+                    }
+                }
             }
-            .frame(height: recent.map(NotificationRow.height).reduce(0, +), alignment: .top)
+            .frame(height: recent.map { NotificationRow.height($0, open: openRow == $0.id) }.reduce(0, +),
+                   alignment: .top)
 
             if history.entries.count > recent.count {
                 QuietButton(String(localized: "Show all (\(history.entries.count))")) {

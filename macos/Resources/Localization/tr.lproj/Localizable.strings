@@ -141,12 +141,10 @@
 "Local network only" = "Yalnızca yerel ağ";
 "Scan to open the releases page and download the APK." = "Sürüm sayfasını açmak ve APK'yı indirmek için okut.";
 "Send automatically" = "Otomatik gönder";
-"Send the Mac clipboard" = "Mac panosunu gönder";
 "Stored only on this Mac. Cleared when you forget all devices." = "Yalnızca bu Mac'te saklanır. Bütün cihazları unutunca silinir.";
 
 
 "Allow Do Not Disturb access on the phone to silence it" = "Sessize almak için telefonda Rahatsız Etmeyin erişimi ver";
-"Ask the phone for its clipboard" = "Telefondan panosunu iste";
 "Ask the phone for its clipboard when the panel opens" = "Panel açıldığında telefondan panosunu iste";
 "Checking the download against the release checksum…" = "İndirilen dosya sürüm sağlama toplamına göre doğrulanıyor…";
 "Checking the download…" = "İndirilen dosya doğrulanıyor…";
@@ -249,7 +247,6 @@
 "Pair only if this code matches the one on the phone." = "Yalnızca bu kod telefondakiyle aynıysa eşleştirin.";
 "Pair only if you are adding a phone and the code matches. A reinstalled app arrives as a new phone." = "Yalnızca bir telefon ekliyorsanız ve kod aynıysa eşleştirin. Yeniden yüklenen uygulama yeni bir telefon olarak gelir.";
 "Ringer" = "Zil modu";
-"Send files to the phone, or drop them onto this panel" = "Telefona dosya gönderin ya da bu panele bırakın";
 "Text you copy on either device appears here." = "İki cihazdan birinde kopyaladığınız metin burada görünür.";
 "Title only leaves the content on the phone." = "Sadece başlık, içeriği telefonda bırakır.";
 "Send a test notification from this phone" = "Bu telefondan test bildirimi gönder";
@@ -283,6 +280,9 @@
 "Show less" = "Daha az göster";
 
 "Open link" = "Bağlantıyı aç";
+"Copy code" = "Kodu kopyala";
 
 "AndroMac on GitHub" = "GitHub'da AndroMac";
 "Report a Problem" = "Sorun bildir";
+"Copy text" = "Metni kopyala";
+"Shows the whole notification" = "Bildirimin tamamını gösterir";

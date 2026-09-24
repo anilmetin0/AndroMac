@@ -74,8 +74,9 @@ private struct HistoryRow: View {
                 if !entry.title.isEmpty {
                     Text(entry.title).font(Theme.Font.heading)
                 }
+                // Tidied here too, for entries saved before the Mac trimmed on arrival.
                 if !entry.text.isEmpty {
-                    Text(entry.text)
+                    Text(NotificationMirror.tidy(entry.text))
                         .font(Theme.Font.body)
                         .textSelection(.enabled)
                 }

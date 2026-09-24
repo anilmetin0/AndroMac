@@ -33,7 +33,6 @@
 "Another phone wants to pair" = "Another phone wants to pair";
 "Apps" = "Apps";
 "Apps appear here after their first notification." = "Apps appear here after their first notification.";
-"Ask the phone for its clipboard" = "Ask the phone for its clipboard";
 "Ask the phone for its clipboard when the panel opens" = "Ask the phone for its clipboard when the panel opens";
 "Asks api.github.com once a day, sending only the app version." = "Asks api.github.com once a day, sending only the app version.";
 "Automatically, when I copy" = "Automatically, when I copy";
@@ -62,8 +61,10 @@
 "Connecting to %@…" = "Connecting to %@…";
 "Content hidden" = "Content hidden";
 "Copy" = "Copy";
+"Copy code" = "Copy code";
 "Copy code %@" = "Copy code %@";
 "Copy notification text" = "Copy notification text";
+"Copy text" = "Copy text";
 "Copy this code to the Mac clipboard" = "Copy this code to the Mac clipboard";
 "Copy to clipboard" = "Copy to clipboard";
 "Copy to the Mac clipboard" = "Copy to the Mac clipboard";
@@ -207,9 +208,7 @@
 "Send" = "Send";
 "Send a test notification from this phone" = "Send a test notification from this phone";
 "Send automatically" = "Send automatically";
-"Send files to the phone, or drop them onto this panel" = "Send files to the phone, or drop them onto this panel";
 "Send my clipboard here" = "Send my clipboard here";
-"Send the Mac clipboard" = "Send the Mac clipboard";
 "Send to phone" = "Send to phone";
 "Send to the phone automatically when I copy on the Mac" = "Send to the phone automatically when I copy on the Mac";
 "Sent to phone" = "Sent to phone";
@@ -219,6 +218,7 @@
 "Show all (%lld)" = "Show all (%lld)";
 "Show battery percentage in the menu bar" = "Show battery percentage in the menu bar";
 "Show less" = "Show less";
+"Shows the whole notification" = "Shows the whole notification";
 "Silent" = "Silent";
 "Skip this version" = "Skip this version";
 "Status" = "Status";

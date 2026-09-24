@@ -100,16 +100,50 @@ struct QuietButton: View {
     }
 }
 
+/// One notification in the panel. Folded, it is one line of text with the code to copy, a link or
+/// the picture beside it; a click on it unfolds the whole text, selectable, with Copy text, Copy
+/// code and Open link under it. One row is open at a time (MenuPanel).
 struct NotificationRow: View {
     /// The panel list's height is the sum of these (MenuPanel), so the numbers live in one place.
-    /// A row with a picture is taller by what the thumbnail needs.
-    static func height(_ entry: NotificationHistory.Entry) -> CGFloat {
-        entry.image == nil ? 36 : pictureSize + Theme.Space.small
+    /// A row with a picture is taller by what the thumbnail needs; an open row by its text, which
+    /// scrolls inside the row past `openTextMax`.
+    static func height(_ entry: NotificationHistory.Entry, open: Bool = false) -> CGFloat {
+        if open { return iconSize + textHeight(entry) + actionsHeight + 2 * Theme.Space.tight + Theme.Space.small }
+        return entry.image == nil ? 36 : pictureSize + Theme.Space.small
     }
 
     static let pictureSize: CGFloat = 40
+    private static let iconSize: CGFloat = 24
+    private static let actionsHeight: CGFloat = 22
+    private static let openTextMax: CGFloat = 180
+    /// The open text starts under the app name: the icon and the gap after it.
+    private static let textIndent = iconSize + Theme.Space.small
+    /// The panel, less its inset and the card's padding on both sides, less the indent.
+    private static let textWidth = Theme.panelWidth - 2 * Theme.panelInset - 2 * Theme.Space.medium - textIndent
+
+    /// Measured with the font the text is drawn in, so the row is as tall as the text needs.
+    private static func textHeight(_ entry: NotificationHistory.Entry) -> CGFloat {
+        let font = NSFont.systemFont(ofSize: 11)
+        let bounds = (fullText(entry) as NSString).boundingRect(
+            with: CGSize(width: textWidth, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: [.font: font]
+        )
+        return min(ceil(bounds.height) + 2, openTextMax)
+    }
+
+    /// Title and text as the open row shows them, blank lines folded away.
+    private static func fullText(_ entry: NotificationHistory.Entry) -> String {
+        [entry.title, entry.text]
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .map(NotificationMirror.tidy)
+            .joined(separator: "\n")
+    }
 
     let entry: NotificationHistory.Entry
+    var open = false
+    var onToggle: () -> Void = {}
 
     private var summary: String {
         [entry.title, entry.text]
@@ -121,82 +155,151 @@ struct NotificationRow: View {
     /// The one-time code in this notification, when there is one worth offering.
     private var code: String? { VerificationCode.find(in: summary) }
 
-    @State private var copied = false
+    @State private var copied: String?
 
-    /// App and time on the first line, the text on the second, and a trailing slot of its own for
-    /// the code to copy or the picture. The time used to sit at the text column's trailing edge,
-    /// where a code button beside it squeezed both and left "now" floating mid-row.
     var body: some View {
-        HStack(alignment: .center, spacing: Theme.Space.small) {
-            AppIcon(pkg: entry.pkg, fallback: entry.app, size: 24)
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: Theme.Space.tight) {
-                    Text(entry.app)
-                        .font(Theme.Font.label.weight(.medium))
-                        .lineLimit(1)
-                    Text(verbatim: "·").foregroundStyle(.secondary)
-                    // Never cut: the app name gives way first.
-                    RelativeTime(date: entry.date)
-                        .foregroundStyle(.secondary)
-                        .fixedSize()
-                }
-                .font(Theme.Font.label)
-                Text(summary.isEmpty ? String(localized: "Content hidden") : summary)
-                    .font(Theme.Font.label)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityElement(children: .combine)
-            if let code { copyCode(code) }
-            else if let link = NotificationHistory.link(entry) { OpenLinkButton(url: link) }
-            if entry.image != nil { NotificationPicture(entry: entry, size: Self.pictureSize) }
+        Group {
+            if open { openBody } else { foldedBody }
         }
-        .frame(height: Self.height(entry))
+        .frame(height: Self.height(entry, open: open), alignment: .top)
         .contextMenu {
             if let code {
                 Button(String(localized: "Copy code \(code)")) { put(code) }
             }
             if !summary.isEmpty {
-                Button("Copy notification text") { put(summary) }
+                Button("Copy notification text") { put(Self.fullText(entry)) }
             }
         }
+    }
+
+    /// App and time on the first line, the text on the second, and a trailing slot of its own for
+    /// the code to copy or the picture. The time used to sit at the text column's trailing edge,
+    /// where a code button beside it squeezed both and left "now" floating mid-row.
+    private var foldedBody: some View {
+        HStack(alignment: .center, spacing: Theme.Space.small) {
+            HStack(spacing: Theme.Space.small) {
+                AppIcon(pkg: entry.pkg, fallback: entry.app, size: Self.iconSize)
+                VStack(alignment: .leading, spacing: 0) {
+                    header
+                    Text(summary.isEmpty ? String(localized: "Content hidden") : summary)
+                        .font(Theme.Font.label)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture(perform: onToggle)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityHint(Text("Shows the whole notification"))
+            if let code { copyCode(code) }
+            else if let link = NotificationHistory.link(entry) { OpenLinkButton(url: link) }
+            if entry.image != nil { NotificationPicture(entry: entry, size: Self.pictureSize) }
+        }
+        .frame(maxHeight: .infinity)
+    }
+
+    private var openBody: some View {
+        VStack(alignment: .leading, spacing: Theme.Space.tight) {
+            HStack(spacing: Theme.Space.small) {
+                AppIcon(pkg: entry.pkg, fallback: entry.app, size: Self.iconSize)
+                header
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.up")
+                    .font(Theme.Font.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture(perform: onToggle)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
+
+            ScrollView {
+                Text(Self.fullText(entry))
+                    .font(Theme.Font.label)
+                    .foregroundStyle(.primary)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .scrollIndicators(.automatic)
+            .frame(height: Self.textHeight(entry))
+            .padding(.leading, Self.textIndent)
+
+            HStack(spacing: Theme.Space.tight) {
+                if let code { copyCode(code) }
+                copyButton(String(localized: "Copy text"), value: Self.fullText(entry), symbol: "doc.on.doc")
+                if let link = NotificationHistory.link(entry) {
+                    Button {
+                        NSWorkspace.shared.open(link)
+                    } label: {
+                        Label("Open link", systemImage: "arrow.up.right.square")
+                    }
+                    .help(link.absoluteString)
+                    .buttonBorderShape(.capsule)
+                    .secondaryAction()
+                    .controlSize(.small)
+                }
+                Spacer(minLength: 0)
+            }
+            .font(Theme.Font.label)
+            .frame(height: Self.actionsHeight)
+            .padding(.leading, Self.textIndent)
+        }
+    }
+
+    private var header: some View {
+        HStack(spacing: Theme.Space.tight) {
+            Text(entry.app)
+                .font(Theme.Font.label.weight(.medium))
+                .lineLimit(1)
+            Text(verbatim: "·").foregroundStyle(.secondary)
+            // Never cut: the app name gives way first.
+            RelativeTime(date: entry.date)
+                .foregroundStyle(.secondary)
+                .fixedSize()
+        }
+        .font(Theme.Font.label)
     }
 
     /// The code itself on a small glass button: readable without opening anything, one click
     /// saves retyping it. Fixed at its own size, so the text column is what gives way.
     private func copyCode(_ code: String) -> some View {
+        copyButton(code, value: code, symbol: "doc.on.doc", monospaced: true)
+            .help("Copy this code to the Mac clipboard")
+            .accessibilityLabel("Copy code \(code)")
+    }
+
+    private func copyButton(_ title: String, value: String, symbol: String, monospaced: Bool = false) -> some View {
         Button {
-            put(code)
+            put(value)
         } label: {
             HStack(spacing: Theme.Space.tight) {
-                Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                Text(verbatim: code).monospacedDigit()
+                Image(systemName: copied == value ? "checkmark" : symbol)
+                if monospaced { Text(verbatim: title).monospacedDigit() } else { Text(verbatim: title) }
             }
             .font(Theme.Font.label)
-            .foregroundStyle(copied ? Color.green : Color.primary)
+            .foregroundStyle(copied == value ? Color.green : Color.primary)
         }
         .buttonBorderShape(.capsule)
         .secondaryAction()
         .controlSize(.small)
         .fixedSize()
-        .help("Copy this code to the Mac clipboard")
-        .accessibilityLabel("Copy code \(code)")
     }
 
     /// Put it on the Mac clipboard WITHOUT sending it back to the phone.
     ///
-    /// `restore` arms the echo breaker, which matters twice here: the code came from the phone in
+    /// `restore` arms the echo breaker, which matters twice here: the text came from the phone in
     /// the first place, so returning it is pointless traffic, and a one-time code is exactly the
     /// kind of value that should not travel further than it has to. It also stays out of the
     /// clipboard history for the same reason.
     private func put(_ text: String) {
         Task {
             await ClipboardWatcher.shared.restore(text)
-            copied = true
+            copied = text
             try? await Task.sleep(for: .milliseconds(1200))
-            copied = false
+            if copied == text { copied = nil }
         }
     }
 }
