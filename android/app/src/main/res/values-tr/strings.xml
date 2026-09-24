@@ -302,6 +302,10 @@
     <string name="settings_title">Ayarlar</string>
     <string name="section_app">Uygulama</string>
     <string name="settings_about">Hakkında</string>
+    <string name="reset_title">AndroMac\'i sıfırla</string>
+    <string name="reset_summary">Eşleşmeyi ve tüm ayarları sil</string>
+    <string name="reset_confirm">Mac ile eşleşme, bu telefonun kimlik anahtarı, tüm ayarlar, uygulama filtresi kademeleri, pano geçmişi ve bekleyen güncelleme silinir. Mac\'in yeniden eşleşmesi gerekir.</string>
+    <string name="reset_action">Sıfırla</string>
 
     <!-- main screen: status with the Mac\'s name -->
     <string name="state_connected_to">%1$s ile bağlı</string>

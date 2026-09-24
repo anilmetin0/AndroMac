@@ -166,6 +166,21 @@ object Updater {
         if (ctx.packageManager.packageInstaller.getSessionInfo(id) == null) publish(Step.Failed(Problem.CANCELLED))
     }
 
+    /**
+     * Reset: drop whatever is under way. Every installer session of this app is abandoned, so a
+     * committed or half-written update cannot land afterwards. A download still running is not
+     * stopped here; it dies with the process ([dev.andromac.core.Store.resetEverything]).
+     */
+    fun cancel(ctx: Context) {
+        pendingCommit = null
+        confirm = null
+        ctx.getSystemService(NotificationManager::class.java).cancel(NOTIF_CONFIRM)
+        val installer = ctx.packageManager.packageInstaller
+        installer.mySessions.forEach { runCatching { installer.abandonSession(it.sessionId) } }
+        sessionId = -1
+        publish(Step.Idle)
+    }
+
     /** Activities of this app that are started; the automatic install waits for zero. Main thread only. */
     private var started = 0
     private var watching = false

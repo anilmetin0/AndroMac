@@ -1,6 +1,7 @@
 package dev.andromac.ui
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.LocaleManager
 import android.content.Intent
 import android.net.Uri
@@ -40,6 +41,14 @@ class SettingsActivity : Activity() {
             findViewById<View>(R.id.rowLanguage).visibility = View.GONE
         }
         findViewById<TextView>(R.id.versionSummary).text = getString(R.string.version_footer, versionLabel())
+        bindNavRow(R.id.rowReset) {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.reset_title)
+                .setMessage(R.string.reset_confirm)
+                .setPositiveButton(R.string.reset_action) { _, _ -> Store.resetEverything(this) }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        }
     }
 
     /** Summaries are re-read on return: a detail screen may have changed them. */

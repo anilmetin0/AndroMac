@@ -1,11 +1,20 @@
 package dev.andromac.core
 
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import android.util.Log
+import dev.andromac.feature.ClipHistory
+import dev.andromac.feature.FindPhone
 import dev.andromac.feature.UpdateCheck
+import dev.andromac.feature.Updater
+import dev.andromac.net.LinkService
+import dev.andromac.ui.MainActivity
+import java.io.File
 import java.security.KeyStore
 import java.security.PrivateKey
 import javax.crypto.Cipher
@@ -464,6 +473,38 @@ class Store(context: Context) {
             var index = entry.indexOf(SEP)
             if (index < 0) index = entry.indexOf(LEGACY_SEP)
             return if (index <= 0) null else entry.substring(0, index) to entry.substring(index + 1)
+        }
+
+        /**
+         * Settings > Reset AndroMac: back to a fresh install. Stops the link, drops the clipboard
+         * history and any update under way, deletes the identity key with its Keystore wrapping
+         * key, every preferences file (pairing, settings, app tiers, update state) and the app's
+         * cache and files, then starts the main screen as a new task and ends this process, so
+         * nothing held in memory (the tier cache, the last update found, the link state) survives.
+         * The Mac keeps its side of the pairing until the user forgets the phone there.
+         * Main thread; does not return.
+         */
+        @SuppressLint("ApplySharedPref")    // commit(): the process ends before apply() would write
+        fun resetEverything(activity: Activity) {
+            val app = activity.applicationContext
+            app.stopService(Intent(app, LinkService::class.java))
+            FindPhone.restoreAlarmVolume(app)    // before its record goes with the prefs
+            ClipHistory.clear()
+            Updater.cancel(app)
+            runCatching { KeyStore.getInstance(KEYSTORE).apply { load(null) }.deleteEntry(WRAP_ALIAS) }
+                .onFailure { Log.w(Link.TAG, "could not delete the wrapping key", it) }
+            // Every file, not only "andromac".
+            File(app.dataDir, "shared_prefs").list().orEmpty().map { it.removeSuffix(".xml") }.forEach {
+                app.getSharedPreferences(it, Context.MODE_PRIVATE).edit().clear().commit()
+                app.deleteSharedPreferences(it)
+            }
+            modeCache = null
+            listOf(app.cacheDir, app.filesDir).forEach { dir -> dir.listFiles()?.forEach { it.deleteRecursively() } }
+            activity.startActivity(
+                Intent(app, MainActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
+            Runtime.getRuntime().exit(0)
         }
 
         /** At most [max] code points: `take` counts UTF-16 units and can split an emoji's surrogate pair. */

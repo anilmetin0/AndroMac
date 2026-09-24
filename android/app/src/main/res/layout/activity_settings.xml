@@ -133,6 +133,19 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
+
+        <LinearLayout style="@style/Card">
+            <LinearLayout android:id="@+id/rowReset" style="@style/Row" android:baselineAligned="false">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:textColor="@color/am_error" android:text="@string/reset_title" />
+                    <TextView style="@style/RowSubtitle" android:text="@string/reset_summary" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>
