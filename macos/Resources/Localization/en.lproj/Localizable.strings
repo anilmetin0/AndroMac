@@ -78,6 +78,8 @@
 "Dismiss" = "Dismiss";
 "Downloading AndroMac %@… %lld%%" = "Downloading AndroMac %@… %lld%%";
 "Downloading… %lld%%" = "Downloading… %lld%%";
+"Erases everything AndroMac keeps on this Mac, then restarts it." = "Erases everything AndroMac keeps on this Mac, then restarts it.";
+"Erases the paired phones, the notification and clipboard histories, their pictures, the app icons, all settings and this Mac's identity key. Every phone has to pair again." = "Erases the paired phones, the notification and clipboard histories, their pictures, the app icons, all settings and this Mac's identity key. Every phone has to pair again.";
 "Every phone has to pair again. The notification and clipboard histories are cleared." = "Every phone has to pair again. The notification and clipboard histories are cleared.";
 "Everything stays on your local network, end-to-end encrypted. The optional update check is the only exception." = "Everything stays on your local network, end-to-end encrypted. The optional update check is the only exception.";
 "File received" = "File received";
@@ -181,6 +183,9 @@
 "Received from phone" = "Received from phone";
 "Reconnects" = "Reconnects";
 "Reject" = "Reject";
+"Reset AndroMac" = "Reset AndroMac";
+"Reset AndroMac?" = "Reset AndroMac?";
+"Reset AndroMac…" = "Reset AndroMac…";
 "Reset counters" = "Reset counters";
 "Resolution" = "Resolution";
 "Restart" = "Restart";

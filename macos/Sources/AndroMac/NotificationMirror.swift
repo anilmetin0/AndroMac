@@ -93,7 +93,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
             imageName.flatMap { Self.temporaryFile(data, extension: ($0 as NSString).pathExtension) }
         }
         let icon = pkg.isEmpty ? nil : IconCache.shared.cachedURL(for: pkg).flatMap(Self.temporaryCopy(of:))
-        if let picture, let icon { try? FileManager.default.removeItem(at: icon) }
+        if picture != nil, let icon { try? FileManager.default.removeItem(at: icon) }
         if let copy = picture ?? icon {
             if let attachment = try? UNNotificationAttachment(identifier: "image", url: copy) {
                 content.attachments = [attachment]

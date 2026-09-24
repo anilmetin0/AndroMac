@@ -272,3 +272,9 @@
 "Clear the notification history?" = "Bildirim geçmişi temizlensin mi?";
 "Every phone has to pair again. The notification and clipboard histories are cleared." = "Her telefonun yeniden eşleşmesi gerekir. Bildirim ve pano geçmişi temizlenir.";
 "Forget all devices?" = "Bütün cihazlar unutulsun mu?";
+
+"Erases everything AndroMac keeps on this Mac, then restarts it." = "AndroMac'in bu Mac'te tuttuğu her şeyi siler, ardından uygulamayı yeniden başlatır.";
+"Erases the paired phones, the notification and clipboard histories, their pictures, the app icons, all settings and this Mac's identity key. Every phone has to pair again." = "Eşleşmiş telefonlar, bildirim ve pano geçmişi, bunlardaki resimler, uygulama simgeleri, tüm ayarlar ve bu Mac'in kimlik anahtarı silinir. Her telefonun yeniden eşleşmesi gerekir.";
+"Reset AndroMac" = "AndroMac'i sıfırla";
+"Reset AndroMac?" = "AndroMac sıfırlansın mı?";
+"Reset AndroMac…" = "AndroMac'i sıfırla…";

@@ -451,6 +451,50 @@ final class Store: @unchecked Sendable {
         set { write(newValue, "deviceName") }
     }
 
+    // MARK: reset
+
+    /// Settings → General → Reset AndroMac. Erases the paired phones, both histories and the
+    /// pictures, the app icons, every setting, launch at login and the identity key; the caller
+    /// relaunches. The Server goes first so nothing writes behind the wipe, and the key is gone
+    /// before quitting, so the flush on quit (`historyKey` nil) writes nothing back.
+    /// A demo shares the real preferences domain, Keychain and Application Support: in-memory only.
+    @MainActor
+    func resetEverything() async {
+        await Server.shared.stop()
+        ScreenMirror.shared.stopAll()
+        Updater.shared.cancelWaiting()
+        unpairAll()
+        NotificationHistory.shared.clear()
+        ClipboardHistory.shared.clear()
+        IconCache.shared.clear()
+        AppModes.shared.clear()
+        guard !DemoMode.isOn else { return }
+
+        try? FileManager.default.removeItem(at: FileManager.default
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("AndroMac", isDirectory: true))
+        forgetIdentity()
+        if [.enabled, .requiresApproval].contains(SMAppService.mainApp.status) {
+            try? await SMAppService.mainApp.unregister()
+        }
+        // The legacy domain too, or the next launch would carry its pairings over again (init).
+        for domain in Set([Bundle.main.bundleIdentifier, "dev.andromac"].compactMap { $0 }) {
+            defaults.removePersistentDomain(forName: domain)
+        }
+    }
+
+    /// Deletes the identity key from the Keychain and forgets the cached one. The next
+    /// `identity()` generates a new key, which every phone sees as a new Mac.
+    func forgetIdentity() {
+        guard !DemoMode.isOn else { flags { cachedKey = nil }; return }
+        keychainLock.lock(); defer { keychainLock.unlock() }
+        let status = SecItemDelete(baseQuery() as CFDictionary)   // every matching item
+        if status != errSecSuccess && status != errSecItemNotFound {
+            NSLog("AndroMac: Keychain delete failed (\(status))")
+        }
+        flags { cachedKey = nil; deniedFlag = false; lockedFlag = false }
+    }
+
     // MARK: Keychain
 
     private func baseQuery() -> [String: Any] {

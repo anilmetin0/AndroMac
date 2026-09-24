@@ -36,6 +36,7 @@ struct SettingsList: View {
     @State private var mirrorStayAwake = Store.shared.mirrorStayAwake
     @State private var mirrorMaxSize = Store.shared.mirrorMaxSize
     @State private var confirmForgetAll = false
+    @State private var confirmReset = false
 
     var body: some View {
         Form {
@@ -62,6 +63,7 @@ struct SettingsList: View {
     // MARK: sections
 
     // A section repeats no page title: the toolbar already names the page, as in System Settings.
+    @ViewBuilder
     private var general: some View {
         Section {
             Toggle("Open at login", isOn: $launchAtLogin)
@@ -108,6 +110,23 @@ struct SettingsList: View {
             if language != initialLanguage {
                 Button("Restart") { SettingsList.relaunch() }
             }
+        }
+
+        Section {
+            Button("Reset AndroMac…", role: .destructive) { confirmReset = true }
+                .confirmationDialog("Reset AndroMac?", isPresented: $confirmReset) {
+                    Button("Reset AndroMac", role: .destructive) {
+                        Task {
+                            await Store.shared.resetEverything()
+                            // A demo relaunch would start the real app; it only resets in memory.
+                            if !DemoMode.isOn { SettingsList.relaunch() }
+                        }
+                    }
+                } message: {
+                    Text("Erases the paired phones, the notification and clipboard histories, their pictures, the app icons, all settings and this Mac's identity key. Every phone has to pair again.")
+                }
+        } footer: {
+            Text("Erases everything AndroMac keeps on this Mac, then restarts it.").formNote()
         }
     }
 
