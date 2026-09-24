@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.graphics.Typeface
 import android.net.ConnectivityManager
 import android.net.Uri
@@ -15,6 +16,7 @@ import android.text.format.DateUtils
 import android.text.style.StyleSpan
 import android.view.View
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import dev.andromac.R
@@ -23,17 +25,28 @@ import dev.andromac.core.Version
 import dev.andromac.feature.UpdateCheck
 import dev.andromac.feature.Updater
 
-/** The update check: on/off, automatic install, beta, check now, and the notes and install button when one is due. */
+/**
+ * The update check: on/off, automatic install, beta, and one button that does what the moment
+ * needs ([UpdateCheck.action]): check, download and install with its progress, install what is
+ * ready, or retry what failed. The release notes show while a newer build is known.
+ */
 class UpdateSettingsActivity : Activity() {
 
     private lateinit var store: Store
     private var checking = false
-    private val installChanged: (Updater.State) -> Unit = { if (!isFinishing) refresh() }
+    /** The "install unknown apps" screen is open for us; back from it, the install goes on. */
+    private var awaitingPermission = false
+    private var permissionRefused = false
+    /** Download and install once the running check has found the release with its assets. */
+    private var installAfterCheck = false
+    private val installChanged: (UpdateCheck.Step) -> Unit = { if (!isFinishing) refresh() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupDetailScreen(R.layout.activity_updates, R.string.update_title)
         store = Store(this)
+        // The permission screen can cost the process its life; the intent to install survives.
+        awaitingPermission = savedInstanceState?.getBoolean(KEY_AWAITING) == true
 
         bindSwitchRow(R.id.rowCheck, R.id.swCheck, store.updateCheck) {
             store.updateCheck = it
@@ -43,14 +56,20 @@ class UpdateSettingsActivity : Activity() {
         bindSwitchRow(R.id.rowBeta, R.id.swBeta, betaUpdates) {
             betaUpdates = it
             forgetFoundUpdate(store)
-            // Another channel, another answer. Only with the check on: a switch is not a tap on Check now.
-            // A check still running for the old channel re-runs by itself ([runUpdateCheck]).
-            if (store.updateCheck) check() else refresh()
+            // Turning Beta on asks the beta channel at once: the switch is the consent. Off, only
+            // with the check on; stable never offers a lower build than the one running, so
+            // switching back is never a downgrade. A check still running for the old channel
+            // re-runs by itself ([runUpdateCheck]).
+            if (it || store.updateCheck) check() else refresh()
         }
-        bindNavRow(R.id.rowCheckNow) { check() }
-        findViewById<Button>(R.id.download).setOnClickListener {
-            startUpdateInstall(store)
-            refresh()
+        findViewById<Button>(R.id.download).setOnClickListener { primary() }
+
+        if (isDebuggable() && intent.getBooleanExtra(EXTRA_FAKE_UPDATE, false)) fakeUpdate()
+        when {
+            // Install now in the dialog of the main screen: this screen shows the progress.
+            savedInstanceState == null && intent.getBooleanExtra(EXTRA_INSTALL, false) -> installWhenFound()
+            // A release restored from disk has no asset list; one request lets the button install it.
+            !checkedThisProcess && store.updateFound != null -> check()
         }
         refresh()
     }
@@ -65,6 +84,22 @@ class UpdateSettingsActivity : Activity() {
         super.onStop()
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(KEY_AWAITING, awaitingPermission)
+    }
+
+    /** Back from the permission screen or the system installer (a cancel may reach no receiver). */
+    override fun onResume() {
+        super.onResume()
+        Updater.recheck(this)
+        if (awaitingPermission) {
+            awaitingPermission = false
+            if (Updater.canInstall(this)) installWhenFound() else permissionRefused = true
+        }
+        refresh()
+    }
+
     /** "Check now" works even while the automatic check is off: an explicit tap is consent. */
     private fun check() {
         if (checking) return
@@ -72,52 +107,112 @@ class UpdateSettingsActivity : Activity() {
         refresh()
         runUpdateCheck(store) {
             checking = false
+            if (installAfterCheck) {
+                installAfterCheck = false
+                newerRelease(store)?.takeIf { it.apk != null && it.checksums != null }?.let(::install)
+            }
             refresh()
         }
     }
 
-    /** Back from the system installer, which reports a cancel only to [Updater.InstallReceiver]. */
-    override fun onResume() {
-        super.onResume()
+    /** The one button. */
+    private fun primary() {
+        val newer = newerRelease(store)
+        when (UpdateCheck.action(checking, newer, Updater.state)) {
+            UpdateCheck.Action.CHECK -> check()
+            UpdateCheck.Action.WAIT -> Unit
+            UpdateCheck.Action.OPEN_PAGE -> newer?.let { openReleasePage(it.url) }
+            UpdateCheck.Action.DOWNLOAD, UpdateCheck.Action.INSTALL, UpdateCheck.Action.RETRY -> newer?.let(::install)
+        }
         refresh()
     }
 
+    private fun installWhenFound() {
+        val newer = newerRelease(store)
+        if (!checking && newer?.apk != null && newer.checksums != null) install(newer)
+        else { installAfterCheck = true; check() }
+    }
+
+    /**
+     * Download, verify and install now, the app in front: the system shows its confirmation if
+     * it wants one. Without the "install unknown apps" permission there is nothing to hand the
+     * APK to, so that screen opens first and [onResume] carries on.
+     */
+    private fun install(release: UpdateCheck.Release) {
+        permissionRefused = false
+        if (!Updater.canInstall(this)) {
+            awaitingPermission = true
+            startActivity(Updater.installPermissionIntent(this))
+            return
+        }
+        Updater.install(this, release)
+    }
+
     private fun refresh() {
-        setRowEnabled(R.id.rowCheckNow, !checking)
+        val step = Updater.state
+        val newer = newerRelease(store)
+        val action = UpdateCheck.action(checking, newer, step)
 
         findViewById<TextView>(R.id.checkSummary).text = when {
             checking -> getString(R.string.update_status_checking)
-            else -> installStatus() ?: updateStatus(store)
+            permissionRefused && step !is UpdateCheck.Step.Downloading -> getString(R.string.update_permission)
+            else -> updateStatus(store)
+        }
+        findViewById<ProgressBar>(R.id.progress).apply {
+            val percent = (step as? UpdateCheck.Step.Downloading)?.percent
+            visibility = if (step is UpdateCheck.Step.Downloading) View.VISIBLE else View.GONE
+            isIndeterminate = percent == null
+            if (percent != null) progress = percent
         }
 
-        val newer = newerRelease(store)
         val notes = newer?.let { releaseNotes(it) }
         findViewById<TextView>(R.id.notes).apply {
             visibility = if (notes.isNullOrEmpty()) View.GONE else View.VISIBLE
             text = notes
         }
         findViewById<Button>(R.id.download).apply {
-            visibility = if (newer == null) View.GONE else View.VISIBLE
-            isEnabled = Updater.state == Updater.State.Idle || Updater.state == Updater.State.Ready ||
-                Updater.state == Updater.State.Confirm || Updater.state is Updater.State.Failed
-            if (newer != null) {
-                text = getString(
-                    if (newer.apk == null) R.string.update_download else R.string.update_install,
-                    newer.label,
-                )
+            isEnabled = action != UpdateCheck.Action.WAIT
+            text = when (action) {
+                UpdateCheck.Action.CHECK ->
+                    getString(if (lastUpdateError != null) R.string.update_retry else R.string.update_check)
+                UpdateCheck.Action.WAIT -> if (checking) getString(R.string.update_status_checking) else installLine() ?: ""
+                UpdateCheck.Action.OPEN_PAGE -> getString(R.string.update_open_page)
+                UpdateCheck.Action.DOWNLOAD -> getString(R.string.update_download_install)
+                UpdateCheck.Action.INSTALL -> getString(R.string.update_install_now)
+                UpdateCheck.Action.RETRY -> getString(R.string.update_retry)
             }
         }
     }
 
-    /** What the installer is doing, or why it stopped. Null while it has nothing to say. */
-    private fun installStatus(): String? = when (val s = Updater.state) {
-        Updater.State.Idle -> null
-        Updater.State.Downloading -> getString(R.string.update_downloading)
-        Updater.State.Verifying -> getString(R.string.update_verifying)
-        Updater.State.Ready -> getString(R.string.update_ready)
-        Updater.State.Installing -> getString(R.string.update_installing)
-        Updater.State.Confirm -> getString(R.string.update_confirm)
-        is Updater.State.Failed -> getString(R.string.update_install_failed, s.reason)
+    /**
+     * Debug builds only, for checking the screen's states without a newer signed APK: a release
+     * 99.0.0 whose APK is the real v1.1.0 download under a name its checksum file does not list.
+     * It downloads with progress, verifies, and stops at the checksum error with Retry; nothing
+     * is ever handed to the installer.
+     * `adb shell am start -n dev.andromac.debug/dev.andromac.ui.UpdateSettingsActivity --ez fake_update true`
+     * (as root: the screen is not exported).
+     */
+    private fun fakeUpdate() {
+        val base = "https://github.com/${UpdateCheck.REPO}/releases/download/v1.1.0/"
+        lastFound = UpdateCheck.Release(
+            Version(99, 0, 0), "0000000", "https://github.com/${UpdateCheck.REPO}/releases/latest",
+            listOf(
+                UpdateCheck.Asset("AndroMac-99.0.0-android.apk", base + "AndroMac-1.1.0-android.apk", 288_062),
+                UpdateCheck.Asset("SHA256SUMS.txt", base + "SHA256SUMS.txt", 190),
+            ),
+            build = 999_999, body = "## Debug\n\n- A made-up release for checking this screen.",
+        )
+        lastFoundBeta = betaUpdates
+        checkedThisProcess = true
+    }
+
+    private fun isDebuggable() = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+
+    companion object {
+        /** Start the download and install as soon as the screen opens. */
+        const val EXTRA_INSTALL = "install"
+        private const val EXTRA_FAKE_UPDATE = "fake_update"
+        private const val KEY_AWAITING = "awaiting_permission"
     }
 }
 
@@ -220,8 +315,10 @@ fun Activity.runUpdateCheckIfDue(store: Store, done: () -> Unit): Boolean {
     return true
 }
 
+/** One line: what the install is doing or why it stopped, else what the last check found. */
 fun Activity.updateStatus(store: Store): String {
-    lastUpdateError?.let { return getString(R.string.update_status_error, it) }
+    installLine()?.let { return it }
+    if (lastUpdateError != null) return getString(R.string.update_status_error)
     val last = store.updateLastCheck
     if (last == 0L) return getString(R.string.update_status_never)
     val ago = DateUtils.getRelativeTimeSpanString(last, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS)
@@ -230,20 +327,33 @@ fun Activity.updateStatus(store: Store): String {
     else getString(R.string.update_status_available, newer.label, ago)
 }
 
-/**
- * Install the release the last check found: download it, check it against the release's own
- * checksum file and hand it to the system installer ([Updater]). Without the "install unknown
- * apps" permission there is no dialog to hand it to, so that settings screen is opened instead.
- */
-fun Activity.startUpdateInstall(store: Store) {
-    val release = newerRelease(store) ?: return
-    val apk = release.apk
-    if (apk == null) { openReleasePage(release.url); return }
-    if (!Updater.canInstall(this)) {
-        startActivity(Updater.installPermissionIntent(this))
-        return
-    }
-    Updater.install(this, release)
+/** What the installer is doing, or why it stopped, in one line. Null while it has nothing to say. */
+fun Activity.installLine(): String? = when (val s = Updater.state) {
+    UpdateCheck.Step.Idle -> null
+    is UpdateCheck.Step.Downloading ->
+        s.percent?.let { getString(R.string.update_downloading_percent, it) } ?: getString(R.string.update_downloading)
+    UpdateCheck.Step.Verifying -> getString(R.string.update_verifying)
+    UpdateCheck.Step.Ready -> getString(R.string.update_ready)
+    UpdateCheck.Step.Installing -> getString(R.string.update_installing)
+    UpdateCheck.Step.Confirm -> getString(R.string.update_confirm)
+    is UpdateCheck.Step.Failed -> getString(when (s.problem) {
+        UpdateCheck.Problem.NETWORK -> R.string.update_failed_network
+        UpdateCheck.Problem.CHECKSUM -> R.string.update_failed_checksum
+        UpdateCheck.Problem.NO_ASSET -> R.string.update_failed_no_asset
+        UpdateCheck.Problem.CANCELLED -> R.string.update_failed_cancelled
+        UpdateCheck.Problem.CONFLICT -> R.string.update_failed_conflict
+        UpdateCheck.Problem.STORAGE -> R.string.update_failed_storage
+        UpdateCheck.Problem.INSTALL -> R.string.update_failed_install
+    })
+}
+
+/** The main screen's update card: the install's progress while there is any, else the offer. */
+fun Activity.updateCardBody(release: UpdateCheck.Release): String =
+    installLine() ?: getString(R.string.update_card_body, release.label)
+
+/** The Updates screen, starting the download and install at once. */
+fun Activity.startUpdateInstall() {
+    startActivity(Intent(this, UpdateSettingsActivity::class.java).putExtra(UpdateSettingsActivity.EXTRA_INSTALL, true))
 }
 
 /** The first open of a different build than last time says so, once. */
@@ -270,7 +380,7 @@ fun Activity.offerOrInstallUpdate(store: Store, onDialog: (AlertDialog) -> Unit 
     // A metered network is the user's data plan: the download waits for a tap on Install now.
     val metered = getSystemService(ConnectivityManager::class.java).isActiveNetworkMetered
     if (autoInstallUpdates && !metered && Build.VERSION.SDK_INT >= 31 && release.apk != null &&
-        release.checksums != null && Updater.canInstall(this) && Updater.state !is Updater.State.Failed
+        release.checksums != null && Updater.canInstall(this) && Updater.state !is UpdateCheck.Step.Failed
     ) {
         Updater.install(this, release, whenAway = true)
         return true
@@ -286,7 +396,7 @@ fun Activity.offerOrInstallUpdate(store: Store, onDialog: (AlertDialog) -> Unit 
             }
         )
         .setPositiveButton(if (release.apk == null) R.string.update_open_page else R.string.update_install_now) { _, _ ->
-            if (release.apk == null) openReleasePage(release.url) else startUpdateInstall(store)
+            if (release.apk == null) openReleasePage(release.url) else startUpdateInstall()
         }
         .setNegativeButton(R.string.update_later, null)
         .setNeutralButton(R.string.update_skip) { _, _ -> store.updateSkipped = release.label }

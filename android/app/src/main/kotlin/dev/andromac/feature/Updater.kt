@@ -17,6 +17,8 @@ import android.provider.Settings
 import android.util.Log
 import dev.andromac.R
 import dev.andromac.core.Link
+import dev.andromac.feature.UpdateCheck.Problem
+import dev.andromac.feature.UpdateCheck.Step
 import java.io.File
 import java.io.IOException
 import java.net.URL
@@ -35,6 +37,10 @@ import javax.net.ssl.HttpsURLConnection
  * does not, the system's own install dialog comes up as before. The automatic install
  * ([install] with `whenAway`) commits only once none of the app's screens is on display.
  *
+ * Every way out of the work ends in [Step.Idle] or [Step.Failed], never in a state nothing
+ * leaves: a dropped connection times out, a short or altered download fails its checksum, and a
+ * confirmation dismissed without a result is caught by [recheck] when a screen comes back.
+ *
  * What it will not do:
  *  - download anything but a `browser_download_url` of this repository's releases ([UpdateCheck]);
  *  - install a file whose checksum is absent from `SHA256SUMS.txt` or does not match it;
@@ -45,32 +51,23 @@ import javax.net.ssl.HttpsURLConnection
  */
 object Updater {
 
-    sealed interface State {
-        data object Idle : State
-        data object Downloading : State
-        data object Verifying : State
-        /** Downloaded and verified; installs once the user leaves the app. */
-        data object Ready : State
-        /** Waiting for the user in the system installer dialog. */
-        data object Installing : State
-        /** The system wants a confirmation while no screen was open: Install or the notification shows it. */
-        data object Confirm : State
-        data class Failed(val reason: String) : State
-    }
-
     @Volatile
-    var state: State = State.Idle
+    var state: Step = Step.Idle
         private set
+
+    /** The session last committed, so [recheck] can tell whether it is still open. */
+    @Volatile
+    private var sessionId = -1
 
     private val main = Handler(Looper.getMainLooper())
 
     /** Screens that follow the install; called on the main thread for every state change. */
-    private val listeners = CopyOnWriteArrayList<(State) -> Unit>()
+    private val listeners = CopyOnWriteArrayList<(Step) -> Unit>()
 
-    fun addListener(l: (State) -> Unit) { listeners += l }
-    fun removeListener(l: (State) -> Unit) { listeners -= l }
+    fun addListener(l: (Step) -> Unit) { listeners += l }
+    fun removeListener(l: (Step) -> Unit) { listeners -= l }
 
-    /** The system's confirmation, held while no screen was open to show it ([State.Confirm]). */
+    /** The system's confirmation, held while no screen was open to show it ([Step.Confirm]). */
     private var confirm: Intent? = null
 
     /** The system needs this before it may show an install dialog for our download. */
@@ -83,79 +80,90 @@ object Updater {
      * Download, verify and start the install. Every step reaches the [addListener] listeners on
      * the main thread, so a screen can follow along; the work happens on a daemon thread of its own.
      *
-     * With [whenAway] the verified APK waits in [State.Ready] until none of the app's activities
+     * With [whenAway] the verified APK waits in [Step.Ready] until none of the app's activities
      * is started, so an update never closes the screen the user is looking at. Main thread only.
      */
     fun install(ctx: Context, release: UpdateCheck.Release, whenAway: Boolean = false) {
         if (!whenAway) {
             // Asked to install now while a download waits for the user to leave: now it is.
-            if (state == State.Ready) { pendingCommit?.let { pendingCommit = null; it() }; return }
+            if (state == Step.Ready) { pendingCommit?.let { pendingCommit = null; it() }; return }
             // The confirmation the system asked for while the app was away: a screen is open now.
-            if (state == State.Confirm) {
-                val intent = confirm ?: return
+            if (state == Step.Confirm) {
+                val intent = confirm ?: return publish(Step.Failed(Problem.INSTALL))
                 confirm = null
                 ctx.getSystemService(NotificationManager::class.java).cancel(NOTIF_CONFIRM)
-                publish(State.Installing)
-                if (runCatching { ctx.startActivity(intent) }.isFailure) publish(State.Failed("confirm_blocked"))
+                publish(Step.Installing)
+                if (runCatching { ctx.startActivity(intent) }.isFailure) publish(Step.Failed(Problem.INSTALL))
                 return
             }
         }
-        if (state != State.Idle && state !is State.Failed) return
+        if (state != Step.Idle && state !is Step.Failed) return
         val app = ctx.applicationContext
         val apk = release.apk
         val sums = release.checksums
         if (apk == null || sums == null) {
-            publish(State.Failed("no_asset"))
+            publish(Step.Failed(Problem.NO_ASSET))
             return
         }
+        publish(Step.Downloading(null))
         Thread({
             var file: File? = null
             try {
-                publish(State.Downloading)
                 val downloaded = download(app, apk).also { file = it }
 
-                publish(State.Verifying)
-                val expected = checksum(sums, apk.name)
-                val actual = sha256(downloaded)
-                if (expected == null || !expected.equals(actual, ignoreCase = true)) {
-                    throw IOException("checksum mismatch")
-                }
+                publish(Step.Verifying)
+                val expected = checksum(sums, apk.name) ?: throw Mismatch()
+                if (!expected.equals(sha256(downloaded), ignoreCase = true)) throw Mismatch()
 
+                file = null                          // commitAndDelete deletes it
                 if (whenAway) {
-                    val verified = downloaded
-                    file = null                      // the commit below deletes it
-                    publish(State.Ready)
+                    publish(Step.Ready)
                     main.post {
                         val commitNow = {
-                            Thread({ commitAndDelete(app, verified) }, "andromac-updater")
+                            Thread({ commitAndDelete(app, downloaded) }, "andromac-updater")
                                 .apply { isDaemon = true }.start()
                         }
                         if (started <= 0) commitNow() else pendingCommit = commitNow
                     }
                 } else {
-                    publish(State.Installing)
-                    commit(app, downloaded)
+                    commitAndDelete(app, downloaded)
                 }
             } catch (e: Exception) {
-                Log.i(Link.TAG, "update failed: ${e.message}")
-                publish(State.Failed(e.javaClass.simpleName))
+                Log.i(Link.TAG, "update failed: $e")
+                publish(Step.Failed(if (e is Mismatch) Problem.CHECKSUM else if (e is IOException) Problem.NETWORK else Problem.INSTALL))
             } finally {
-                // The session copied the bytes it needs; ours are of no use to anyone afterwards.
+                // Nothing verified to keep: a failed download is of no use to anyone.
                 file?.delete()
             }
         }, "andromac-updater").apply { isDaemon = true }.start()
     }
 
+    /** The download does not match the release's checksum file, or the file does not list it. */
+    private class Mismatch : IOException("checksum mismatch")
+
     private fun commitAndDelete(ctx: Context, file: File) {
         try {
-            publish(State.Installing)
+            publish(Step.Installing)
             commit(ctx, file)
         } catch (e: Exception) {
-            Log.i(Link.TAG, "update failed: ${e.message}")
-            publish(State.Failed(e.javaClass.simpleName))
+            Log.i(Link.TAG, "update failed: $e")
+            publish(Step.Failed(Problem.INSTALL))
         } finally {
+            // The session copied the bytes it needs; ours are of no use to anyone afterwards.
             file.delete()
         }
+    }
+
+    /**
+     * A screen came back while [Step.Installing]: if the session is gone, the confirmation was
+     * dismissed and no result reached [InstallReceiver] (not every build sends one), so the
+     * button turns into Retry instead of waiting for ever. An update that went through would
+     * have ended this process.
+     */
+    fun recheck(ctx: Context) {
+        val id = sessionId
+        if (state != Step.Installing || id < 0) return
+        if (ctx.packageManager.packageInstaller.getSessionInfo(id) == null) publish(Step.Failed(Problem.CANCELLED))
     }
 
     /** Activities of this app that are started; the automatic install waits for zero. Main thread only. */
@@ -188,7 +196,7 @@ object Updater {
 
     // ---------------------------------------------------------------- steps
 
-    private fun publish(next: State) {
+    private fun publish(next: Step) {
         state = next
         main.post { listeners.forEach { it(next) } }
     }
@@ -199,7 +207,7 @@ object Updater {
      */
     private fun awaitConfirm(ctx: Context, intent: Intent) {
         confirm = intent
-        publish(State.Confirm)
+        publish(Step.Confirm)
         val nm = ctx.getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(
             NotificationChannel(CHANNEL, ctx.getString(R.string.settings_updates), NotificationManager.IMPORTANCE_DEFAULT)
@@ -225,7 +233,10 @@ object Updater {
         val conn = open(asset.url)
         try {
             if (conn.responseCode != 200) throw IOException("HTTP ${conn.responseCode}")
+            // The final response's length, after GitHub's redirect; the API's size otherwise.
+            val size = conn.contentLengthLong.takeIf { it > 0 } ?: asset.size
             var total = 0L
+            var shown: Int? = null
             conn.inputStream.use { input ->
                 file.outputStream().use { output ->
                     val buf = ByteArray(64 * 1024)
@@ -235,28 +246,26 @@ object Updater {
                         total += n
                         if (total > MAX_APK) throw IOException("download too large")
                         output.write(buf, 0, n)
+                        val percent = UpdateCheck.percent(total, size)
+                        if (percent != shown) { shown = percent; publish(Step.Downloading(percent)) }
                     }
                 }
             }
+            // A connection that closed early is a network problem, not a checksum one.
+            if (size > 0 && total < size) throw IOException("download ended at $total of $size bytes")
             return file
         } finally {
             conn.disconnect()
         }
     }
 
-    /** The `sha256  filename` line for [name] in the release's checksum file. */
+    /** The hash for [name] in the release's checksum file ([UpdateCheck.checksum]). */
     private fun checksum(asset: UpdateCheck.Asset, name: String): String? {
         val conn = open(asset.url)
         try {
             if (conn.responseCode != 200) throw IOException("HTTP ${conn.responseCode}")
             val text = conn.inputStream.bufferedReader().use { it.readBounded(MAX_SUMS) }
-            for (line in text.lineSequence()) {
-                val parts = line.trim().split(Regex("\\s+"))
-                // `sha256sum` marks binary mode with a leading `*`. The name must match exactly: a
-                // suffix match would let `evil-AndroMac-1.0.0-android.apk` stand in for ours.
-                if (parts.size >= 2 && parts.last().removePrefix("*") == name) return parts[0]
-            }
-            return null
+            return UpdateCheck.checksum(text, name)
         } finally {
             conn.disconnect()
         }
@@ -279,16 +288,23 @@ object Updater {
             params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
         }
         val id = installer.createSession(params)
-        installer.openSession(id).use { session ->
-            session.openWrite("andromac", 0, file.length()).use { output ->
-                file.inputStream().use { it.copyTo(output) }
-                session.fsync(output)
+        sessionId = id
+        try {
+            installer.openSession(id).use { session ->
+                session.openWrite("andromac", 0, file.length()).use { output ->
+                    file.inputStream().use { it.copyTo(output) }
+                    session.fsync(output)
+                }
+                val intent = PendingIntent.getBroadcast(
+                    ctx, 8, Intent(ACTION_INSTALLED).setPackage(ctx.packageName),
+                    PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+                )
+                session.commit(intent.intentSender)
             }
-            val intent = PendingIntent.getBroadcast(
-                ctx, 8, Intent(ACTION_INSTALLED).setPackage(ctx.packageName),
-                PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-            )
-            session.commit(intent.intentSender)
+        } catch (e: Exception) {
+            // A half-written session would sit in the installer until the next reboot.
+            runCatching { installer.abandonSession(id) }
+            throw e
         }
     }
 
@@ -341,18 +357,24 @@ object Updater {
                         intent.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)
                     }
                         ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    if (confirm == null) { publish(State.Failed("install_failed")); return }
+                    if (confirm == null) { publish(Step.Failed(Problem.INSTALL)); return }
                     // A screen is open: the dialog comes up over it. Otherwise it waits for one.
                     if (started > 0 && runCatching { ctx.startActivity(confirm) }.isSuccess) return
                     awaitConfirm(ctx, confirm)
                 }
-                PackageInstaller.STATUS_SUCCESS -> publish(State.Idle)
+                PackageInstaller.STATUS_SUCCESS -> publish(Step.Idle)
                 else -> {
-                    val message = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
-                    Log.i(Link.TAG, "install did not complete: $message")
+                    val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)
+                    Log.i(Link.TAG, "install did not complete: $status ${intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)}")
                     Updater.confirm = null
                     ctx.getSystemService(NotificationManager::class.java).cancel(NOTIF_CONFIRM)
-                    publish(State.Failed(message ?: "install_failed"))
+                    publish(Step.Failed(when (status) {
+                        PackageInstaller.STATUS_FAILURE_ABORTED -> Problem.CANCELLED
+                        // Signed with another key, or another package: the system will not replace the app with it.
+                        PackageInstaller.STATUS_FAILURE_CONFLICT -> Problem.CONFLICT
+                        PackageInstaller.STATUS_FAILURE_STORAGE -> Problem.STORAGE
+                        else -> Problem.INSTALL
+                    }))
                 }
             }
         }

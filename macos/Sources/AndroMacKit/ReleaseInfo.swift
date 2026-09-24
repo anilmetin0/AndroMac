@@ -141,6 +141,19 @@ public struct Release: Equatable, Sendable {
         return release.version > version || (release.version == version && theirs > build)
     }
 
+    /// The SHA-256 that `SHA256SUMS.txt` lists for `name`, lowercased; nil when the file has no
+    /// line for it or the line is not a hash. `*name` is sha256sum's binary-mode marker. The name
+    /// must match exactly: a suffix match would take the hash of `evil-AndroMac-….dmg` for ours.
+    public static func checksum(for name: String, in sums: String) -> String? {
+        for line in sums.split(whereSeparator: \.isNewline) {
+            let parts = line.split(separator: " ", omittingEmptySubsequences: true)
+            guard parts.count >= 2, String(parts[parts.count - 1].drop { $0 == "*" }) == name else { continue }
+            let hash = parts[0].lowercased()
+            return hash.count == 64 && hash.allSatisfy(\.isHexDigit) ? hash : nil
+        }
+        return nil
+    }
+
     /// Whether an unpacked app's Info.plist is this release: the same version and, when the
     /// release names a build, the same `CFBundleVersion`.
     public func matches(shortVersion: String, bundleVersion: String) -> Bool {

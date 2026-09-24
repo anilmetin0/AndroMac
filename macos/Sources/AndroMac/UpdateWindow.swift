@@ -101,6 +101,11 @@ struct UpdateView: View {
                 )
             }
 
+            // The automatic download may already be under way; Install now then waits for it.
+            if case .downloading(let percent) = updater.phase {
+                ProgressView(value: Double(percent), total: 100)
+            }
+
             if case .failed(let reason) = updater.phase {
                 Text(reason)
                     .font(Theme.Font.label)

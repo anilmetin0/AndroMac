@@ -61,22 +61,29 @@
                 <Switch android:id="@+id/swBeta" style="@style/RowSwitch" />
             </LinearLayout>
 
-            <LinearLayout android:id="@+id/rowCheckNow" style="@style/Row">
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-                    <TextView style="@style/RowTitle" android:text="@string/update_check_now" />
-                    <TextView android:id="@+id/checkSummary" style="@style/RowSubtitle" />
-                </LinearLayout>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_chevron"
-                    android:contentDescription="@null" />
-            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout style="@style/Card">
+
+            <!-- One line: what the install is doing or why it stopped, else what the last check found. -->
+            <TextView
+                android:id="@+id/checkSummary"
+                style="@style/RowSubtitle"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:paddingTop="12dp"
+                android:accessibilityLiveRegion="polite" />
+
+            <ProgressBar
+                android:id="@+id/progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:layout_marginEnd="18dp"
+                android:layout_marginTop="8dp"
+                android:max="100"
+                android:visibility="gone" />
 
             <!-- The notes of the newer build, English or Turkish, from the release body. -->
             <TextView
@@ -88,15 +95,14 @@
                 android:textIsSelectable="true"
                 android:visibility="gone" />
 
-            <!-- Only while a newer build is known: the one action that matters gets the one filled button. -->
+            <!-- The one button: Check for updates, Download and install, Install now or Retry (UpdateCheck.action). -->
             <Button
                 android:id="@+id/download"
                 style="@style/PrimaryButton"
                 android:layout_marginStart="18dp"
                 android:layout_marginEnd="18dp"
-                android:layout_marginTop="6dp"
-                android:layout_marginBottom="12dp"
-                android:visibility="gone" />
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp" />
         </LinearLayout>
 
         </LinearLayout>

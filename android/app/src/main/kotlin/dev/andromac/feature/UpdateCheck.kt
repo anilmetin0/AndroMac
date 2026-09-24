@@ -75,6 +75,60 @@ object UpdateCheck {
         val checksums: Asset? get() = assets.firstOrNull { it.name == "SHA256SUMS.txt" }
     }
 
+    /** Where the install stands, as [Updater] publishes it. Plain data, so [action] can be tested. */
+    sealed interface Step {
+        data object Idle : Step
+        /** Whole percent received; null while the size is unknown. */
+        data class Downloading(val percent: Int?) : Step
+        data object Verifying : Step
+        /** Downloaded and verified; installs once the user leaves the app. */
+        data object Ready : Step
+        /** Committed: installing, or the system's confirmation is on screen. */
+        data object Installing : Step
+        /** The system wants a confirmation while no screen was open: Install or the notification shows it. */
+        data object Confirm : Step
+        data class Failed(val problem: Problem) : Step
+    }
+
+    /** Why an install stopped, each with its own one-line message. */
+    enum class Problem { NETWORK, CHECKSUM, NO_ASSET, CANCELLED, CONFLICT, STORAGE, INSTALL }
+
+    /** What the one button of the Updates screen does. */
+    enum class Action { CHECK, WAIT, OPEN_PAGE, DOWNLOAD, INSTALL, RETRY }
+
+    /**
+     * The button for this moment: check while nothing newer is known, download and install once
+     * something is, install what is downloaded, retry what failed, and nothing while work runs.
+     * A release without an APK or checksum file can only be opened in the browser.
+     */
+    fun action(checking: Boolean, newer: Release?, step: Step): Action = when {
+        checking -> Action.WAIT
+        newer == null -> Action.CHECK
+        newer.apk == null || newer.checksums == null -> Action.OPEN_PAGE
+        step == Step.Ready || step == Step.Confirm -> Action.INSTALL
+        step is Step.Failed -> Action.RETRY
+        step == Step.Idle -> Action.DOWNLOAD
+        else -> Action.WAIT
+    }
+
+    /** Whole percent of [total] bytes, null when the size is unknown. */
+    fun percent(read: Long, total: Long): Int? = if (total <= 0) null else (read * 100 / total).toInt().coerceIn(0, 100)
+
+    /**
+     * The SHA-256 that `SHA256SUMS.txt` lists for [name], lowercased; null when there is no line
+     * for it or the line is not a hash. `sha256sum` marks binary mode with a leading `*`. The name
+     * must match exactly: a suffix match would let `evil-AndroMac-1.0.0-android.apk` stand in for ours.
+     */
+    fun checksum(sums: String, name: String): String? {
+        for (line in sums.lineSequence()) {
+            val parts = line.trim().split(Regex("\\s+"))
+            if (parts.size < 2 || parts.last().removePrefix("*") != name) continue
+            val hash = parts[0].lowercase()
+            return hash.takeIf { it.length == 64 && it.all { c -> c in '0'..'9' || c in 'a'..'f' } }
+        }
+        return null
+    }
+
     /** Returns the response body, null for 404, throws for anything else. */
     fun interface Fetch { fun get(url: String): String? }
 

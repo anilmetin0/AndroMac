@@ -221,4 +221,94 @@ class UpdateCheckTest {
         assertTrue(release.assets.isEmpty())
         assertNull(release.apk)
     }
+
+    // ------------------------------------------------ the real GitHub API
+
+    /**
+     * Responses saved from api.github.com on 2026-09-24 (`releases/latest`, `releases?per_page=10`)
+     * and the v1.1.0 `SHA256SUMS.txt`, whose hashes match the published APK and DMG.
+     */
+    private fun fixture(name: String) = javaClass.getResource("/github/$name")!!.readText()
+
+    @Test
+    fun realLatestReleaseHasWhatTheUpdaterNeeds() {
+        val r = UpdateCheck.parse(fixture("releases-latest.json"))!!
+        assertEquals(Version(1, 1, 0), r.version)
+        assertEquals(42, r.build)
+        assertEquals("e105e58", r.commit)
+        assertFalse(r.prerelease)
+        assertEquals("AndroMac-1.1.0-android.apk", r.apk?.name)
+        assertEquals("https://github.com/anilmetin0/AndroMac/releases/download/v1.1.0/AndroMac-1.1.0-android.apk", r.apk?.url)
+        assertEquals(288_062L, r.apk?.size)
+        assertEquals("SHA256SUMS.txt", r.checksums?.name)
+        assertEquals(
+            "ddc17c4dee8d59743a8cc6f200aa9cee3c18bbed5bf5601b38a1907505fe9fbf",
+            UpdateCheck.checksum(fixture("SHA256SUMS-v1.1.0.txt"), r.apk!!.name),
+        )
+    }
+
+    /**
+     * Both channels on the real list, through [UpdateCheck.newest] as the app calls it: a 1.0.0
+     * copy is offered 1.1.0, the 1.1.0 copy nothing, and a beta after 1.1.0 that turns Beta off
+     * is not "updated" back to the stable build.
+     */
+    @Test
+    fun realReleasesPerChannel() {
+        val fetch = UpdateCheck.Fetch { url ->
+            if (url.endsWith("/latest")) fixture("releases-latest.json") else fixture("releases-per_page-10.json")
+        }
+        assertEquals(listOf("1.1.0 (e105e58)", "1.0.0 (db1e492)"), UpdateCheck.parseList(fixture("releases-per_page-10.json")).map { it.label })
+        for (beta in listOf(false, true)) {
+            assertEquals(42, UpdateCheck.newest(Version(1, 0, 0), 27, "db1e492", beta, fetch)?.build)
+            assertNull(UpdateCheck.newest(Version(1, 1, 0), 42, "e105e58", beta, fetch))
+            assertNull(UpdateCheck.newest(Version(1, 1, 0), 57, "abc1234", beta, fetch))
+        }
+    }
+
+    @Test
+    fun checksumLineMatchesTheExactName() {
+        val hash = "ab".repeat(32)
+        val name = "AndroMac-1.1.0-android.apk"
+        assertEquals(hash, UpdateCheck.checksum("${hash.uppercase()}  $name\n", name))
+        assertEquals(hash, UpdateCheck.checksum("$hash *$name\r\n", name))
+        assertNull(UpdateCheck.checksum("$hash  evil-$name\n", name))
+        assertNull(UpdateCheck.checksum("abc123  $name\n", name))
+        assertNull(UpdateCheck.checksum("", name))
+    }
+
+    // ------------------------------------------------ the one button
+
+    private val installable = Release(
+        Version(1, 2, 0), "fd7d47a", url,
+        listOf(UpdateCheck.Asset("AndroMac-1.2.0-android.apk", "$url/a.apk", 1), UpdateCheck.Asset("SHA256SUMS.txt", "$url/s", 1)),
+    )
+
+    @Test
+    fun buttonFollowsTheInstall() {
+        val s = UpdateCheck.Step.Idle
+        assertEquals(UpdateCheck.Action.WAIT, UpdateCheck.action(true, installable, s))
+        assertEquals(UpdateCheck.Action.CHECK, UpdateCheck.action(false, null, s))
+        assertEquals(UpdateCheck.Action.OPEN_PAGE, UpdateCheck.action(false, installable.copy(assets = emptyList()), s))
+        assertEquals(UpdateCheck.Action.OPEN_PAGE, UpdateCheck.action(false, installable.copy(assets = installable.assets.take(1)), s))
+        assertEquals(UpdateCheck.Action.DOWNLOAD, UpdateCheck.action(false, installable, s))
+        for (busy in listOf(UpdateCheck.Step.Downloading(null), UpdateCheck.Step.Downloading(40), UpdateCheck.Step.Verifying, UpdateCheck.Step.Installing)) {
+            assertEquals(UpdateCheck.Action.WAIT, UpdateCheck.action(false, installable, busy))
+        }
+        assertEquals(UpdateCheck.Action.INSTALL, UpdateCheck.action(false, installable, UpdateCheck.Step.Ready))
+        assertEquals(UpdateCheck.Action.INSTALL, UpdateCheck.action(false, installable, UpdateCheck.Step.Confirm))
+        // Every failure, the user's own cancel included, leaves a way forward.
+        for (problem in UpdateCheck.Problem.entries) {
+            assertEquals(UpdateCheck.Action.RETRY, UpdateCheck.action(false, installable, UpdateCheck.Step.Failed(problem)))
+        }
+    }
+
+    @Test
+    fun percentIsWholeAndBounded() {
+        assertNull(UpdateCheck.percent(10, 0))
+        assertNull(UpdateCheck.percent(10, -1))
+        assertEquals(0, UpdateCheck.percent(0, 288_062))
+        assertEquals(49, UpdateCheck.percent(144_000, 288_062))
+        assertEquals(100, UpdateCheck.percent(288_062, 288_062))
+        assertEquals(100, UpdateCheck.percent(300_000, 288_062))
+    }
 }

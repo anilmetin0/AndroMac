@@ -87,14 +87,42 @@ final class UpdateCheck: ObservableObject {
     /// Asked once per launch, whatever else opens the panel afterwards.
     private var offered = false
 
+    /// The Beta switch moved. On, the beta channel is asked at once, the switch being the
+    /// consent: a newer beta is downloaded to install when idle, or offered in the update window.
+    /// Off, stable answers again, and never with a lower build than the one running (`isNewer`),
+    /// so switching back is never a downgrade.
+    func channelChanged() {
+        // What was found or prepared on the old channel is no answer for this one.
+        Updater.shared.cancelWaiting()
+        available = nil
+        Store.shared.updateFound = nil
+        guard Store.shared.updateBeta || Store.shared.updateCheck, !DemoMode.isOn else { return }
+        offered = false
+        offerAfterCheck = true
+        Task { await checkNow() }
+    }
+
+    /// Set by `channelChanged`: the check that is running, or the next one, ends with the offer.
+    private var offerAfterCheck = false
+
     /// "Check now" works even while the automatic check is off: an explicit click is consent.
     func checkNow() async {
         // A demo sends nothing beyond this Mac; its update window has its own invented release.
         guard !checking, !DemoMode.isOn else { return }
         checking = true
-        defer { checking = false }
+        defer {
+            checking = false
+            if offerAfterCheck { offerAfterCheck = false; offerIfAvailable() }
+        }
         do {
-            let release = try await Self.newest(beta: Store.shared.updateBeta)
+            // The Beta switch may move while the request is out: then the answer is for the
+            // other channel, and the one now selected is asked instead.
+            var beta: Bool
+            var release: Release?
+            repeat {
+                beta = Store.shared.updateBeta
+                release = try await Self.newest(beta: beta)
+            } while beta != Store.shared.updateBeta
             available = release
             lastError = nil
             lastChecked = Date()

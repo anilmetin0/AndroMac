@@ -237,4 +237,55 @@ struct ReleaseTests {
         #expect(unnumbered.matches(shortVersion: "1.0.0", bundleVersion: "1"))
         #expect(!unnumbered.matches(shortVersion: "0.9.0", bundleVersion: "1"))
     }
+
+    // MARK: the real GitHub API
+
+    /// Responses saved from api.github.com on 2026-09-24 (`releases/latest`, `releases?per_page=10`)
+    /// and the v1.1.0 `SHA256SUMS.txt`, whose hashes match the published DMG and APK.
+    private func fixture(_ name: String) throws -> Data {
+        try Data(contentsOf: URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+            .appendingPathComponent("../Fixtures/github/\(name)"))
+    }
+
+    @Test func realLatestReleaseHasWhatTheUpdaterNeeds() throws {
+        let r = try #require(Release.parse(try fixture("releases-latest.json")))
+        #expect(r.version == AppVersion(1, 1, 0))
+        #expect(r.build == 42)
+        #expect(r.commit == "e105e58")
+        #expect(!r.prerelease)
+        let image = try #require(r.macImage)
+        #expect(image.name == "AndroMac-1.1.0-macOS-arm64.dmg")
+        #expect(image.url.absoluteString == "https://github.com/anilmetin0/AndroMac/releases/download/v1.1.0/AndroMac-1.1.0-macOS-arm64.dmg")
+        #expect(r.checksums?.name == "SHA256SUMS.txt")
+        let sums = try #require(String(data: try fixture("SHA256SUMS-v1.1.0.txt"), encoding: .utf8))
+        #expect(Release.checksum(for: image.name, in: sums) == "587c9b1e49ebd95f6d144140c4cc82db07be1ee7d3e3604da192c49cfda41d76")
+        #expect(r.matches(shortVersion: "1.1.0", bundleVersion: "42"))
+    }
+
+    /// Both channels on the real list: a 1.0.0 copy is offered 1.1.0, the 1.1.0 copy nothing, and a
+    /// beta after 1.1.0 that switches Beta off is not "updated" back to the stable build.
+    @Test func realReleaseListPerChannel() throws {
+        let list = Release.parseList(try fixture("releases-per_page-10.json"))
+        #expect(list.map(\.label) == ["1.1.0 (e105e58)", "1.0.0 (db1e492)"])
+        let latest = try #require(Release.parse(try fixture("releases-latest.json")))
+        let beta = try #require(Release.newestBuild(list))
+        #expect(beta == latest)
+        let v110 = AppVersion(1, 1, 0)
+        for channel in [false, true] {
+            let pick = channel ? beta : latest
+            #expect(Release.isNewer(pick, than: v100, build: 27, commit: "db1e492", beta: channel))
+            #expect(!Release.isNewer(pick, than: v110, build: 42, commit: "e105e58", beta: channel))
+            #expect(!Release.isNewer(pick, than: v110, build: 57, commit: "abc1234", beta: channel))
+        }
+    }
+
+    @Test func checksumLineMatchesTheExactName() {
+        let hash = String(repeating: "ab", count: 32)
+        let name = "AndroMac-1.1.0-macOS-arm64.dmg"
+        #expect(Release.checksum(for: name, in: "\(hash.uppercased())  \(name)\n") == hash)
+        #expect(Release.checksum(for: name, in: "\(hash) *\(name)\r\n") == hash)
+        #expect(Release.checksum(for: name, in: "\(hash)  evil-\(name)\n") == nil)
+        #expect(Release.checksum(for: name, in: "abc123  \(name)\n") == nil)
+        #expect(Release.checksum(for: name, in: "") == nil)
+    }
 }

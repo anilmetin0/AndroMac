@@ -29,7 +29,8 @@ final class Updater: ObservableObject {
 
     enum Phase: Equatable {
         case idle
-        case downloading
+        /// Whole percent of the DMG received; 0 until the size is known.
+        case downloading(Int)
         case verifying
         case installing
         case failed(String)
@@ -45,7 +46,10 @@ final class Updater: ObservableObject {
     @Published private(set) var phase: Phase = .idle
 
     /// A downloaded, verified app waiting for its swap, and the release it came from.
-    private var prepared: (label: String, app: URL, staging: URL)?
+    @Published private var prepared: (label: String, app: URL, staging: URL)?
+
+    /// The release a verified download is waiting for its swap, so Settings can offer Install now.
+    var readyLabel: String? { prepared?.label }
     /// The release the automatic install is waiting to put in place while the Mac is busy.
     private var waiting: Release?
     /// While `waiting`: the events that end a busy spell, so the install does not have to wait
@@ -118,9 +122,13 @@ final class Updater: ObservableObject {
 
     /// The automatic install: download and verify now, in the background, and swap once nothing
     /// is running that a restart would cut short (`isIdle`).
+    ///
+    /// Called while another download runs (the Beta switch moved mid-download), the newest call
+    /// wins: that download looks at `waiting` when it ends and starts this one.
     func installWhenIdle(_ release: Release) {
-        guard !phase.busy, !DemoMode.isOn, Self.installsItself(release) else { return }
+        guard !DemoMode.isOn, Self.installsItself(release) else { return }
         waiting = release
+        if phase.busy { return }
         if Self.usesHomebrew(release) || prepared?.label == release.label {
             installIfWaiting()
             return
@@ -137,6 +145,9 @@ final class Updater: ObservableObject {
                 else { await install(asked) }
                 return
             }
+            // Cancelled meanwhile, or another release asked for while this one downloaded.
+            guard let next = waiting else { return }
+            if next.label != release.label { return installWhenIdle(next) }
             guard ready else { waiting = nil; return }
             installIfWaiting()
         }
@@ -211,7 +222,7 @@ final class Updater: ObservableObject {
         // installer script, which clears them itself once the new app is in place.
         defer { if let staging { try? FileManager.default.removeItem(at: staging) } }
         do {
-            phase = .downloading
+            phase = .downloading(0)
             let archive = try await download(image)
             staging = archive.deletingLastPathComponent()
 
@@ -332,7 +343,13 @@ final class Updater: ObservableObject {
     /// one API here that does not iterate byte by byte — a 20 MB zip through `URLSession.bytes`
     /// means twenty million awaits, which is slower than the download itself.
     private func download(_ asset: Release.Asset) async throws -> URL {
-        let (temporary, response) = try await URLSession.shared.download(from: asset.url)
+        let progress = DownloadProgress { percent in
+            Task { @MainActor in
+                // A late report must not pull the phase back from verifying.
+                if case .downloading = Updater.shared.phase { Updater.shared.phase = .downloading(percent) }
+            }
+        }
+        let (temporary, response) = try await URLSession.shared.download(from: asset.url, delegate: progress)
         guard (response as? HTTPURLResponse)?.statusCode == 200 else {
             try? FileManager.default.removeItem(at: temporary)
             throw UpdateError.message(String(localized: "The download could not be started."))
@@ -354,21 +371,17 @@ final class Updater: ObservableObject {
         return file
     }
 
-    /// The line for `name` in the release's `SHA256SUMS.txt`, in `sha256  filename` form.
+    /// The hash for `name` in the release's `SHA256SUMS.txt` (`Release.checksum`).
     private func checksum(named name: String, from asset: Release.Asset) async throws -> String {
         let (data, response) = try await URLSession.shared.data(from: asset.url)
         guard (response as? HTTPURLResponse)?.statusCode == 200, data.count < 64 * 1024,
               let text = String(data: data, encoding: .utf8) else {
             throw UpdateError.message(String(localized: "The release's checksum file could not be read."))
         }
-        for line in text.split(separator: "\n") {
-            let parts = line.split(separator: " ", omittingEmptySubsequences: true)
-            // Exact name (`*` is sha256sum's binary-mode marker): a suffix match would accept the
-            // hash of `evil-AndroMac-….dmg` for ours.
-            guard parts.count >= 2, parts.last.map({ String($0.drop { $0 == "*" }) }) == name else { continue }
-            return String(parts[0]).lowercased()
+        guard let hash = Release.checksum(for: name, in: text) else {
+            throw UpdateError.message(String(localized: "The release publishes no checksum for this download."))
         }
-        throw UpdateError.message(String(localized: "The release publishes no checksum for this download."))
+        return hash
     }
 
     /// Mount the image read-only at a private mount point, copy the app out with `ditto` (the one
@@ -522,4 +535,25 @@ final class Updater: ObservableObject {
 
     /// 500 MB: two orders of magnitude above the real archive, and still a bound.
     private nonisolated static let maxDownload: Int64 = 500 * 1024 * 1024
+}
+
+/// The download's whole percent, once per change. The task's own `Progress` follows the
+/// Content-Length of the final response, redirects included; the async `download` calls no
+/// per-chunk delegate method, so this watches that instead.
+private final class DownloadProgress: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
+    private let report: @Sendable (Int) -> Void
+    // Set once in didCreateTask; the observation fires on the session's serial delegate queue.
+    private var observation: NSKeyValueObservation?
+    private var last = -1
+
+    init(_ report: @escaping @Sendable (Int) -> Void) { self.report = report }
+
+    func urlSession(_ session: URLSession, didCreateTask task: URLSessionTask) {
+        observation = task.progress.observe(\.fractionCompleted) { [weak self] progress, _ in
+            let percent = min(100, max(0, Int(progress.fractionCompleted * 100)))
+            guard let self, percent != last else { return }
+            last = percent
+            report(percent)
+        }
+    }
 }

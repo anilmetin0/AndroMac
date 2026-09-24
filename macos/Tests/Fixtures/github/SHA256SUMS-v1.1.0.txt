@@ -1,0 +1,2 @@
+ddc17c4dee8d59743a8cc6f200aa9cee3c18bbed5bf5601b38a1907505fe9fbf  AndroMac-1.1.0-android.apk
+587c9b1e49ebd95f6d144140c4cc82db07be1ee7d3e3604da192c49cfda41d76  AndroMac-1.1.0-macOS-arm64.dmg
