@@ -11,7 +11,17 @@ public enum WebLink {
               let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
         else { return nil }
         let range = NSRange(text.startIndex..., in: text)
-        return detector.matches(in: text, range: range).lazy.compactMap(\.url).first(where: isWeb)
+        let ns = text as NSString
+        return detector.matches(in: text, range: range).lazy
+            // X and others shorten a link in the text ("x.com/i/broadcasts/1…"); what is left before
+            // the ellipsis is not the address, so it is not offered.
+            .filter { !isCutOff(ns, after: NSMaxRange($0.range)) }
+            .compactMap(\.url).first(where: isWeb)
+    }
+
+    private static func isCutOff(_ text: NSString, after end: Int) -> Bool {
+        let rest = text.substring(from: end)
+        return rest.hasPrefix("…") || rest.hasPrefix("...")
     }
 
     /// An http or https URL with a host: the only kind the Mac opens on the phone's word.

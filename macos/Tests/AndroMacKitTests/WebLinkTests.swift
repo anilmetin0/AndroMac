@@ -18,4 +18,14 @@ struct WebLinkTests {
         #expect(!WebLink.isWeb(URL(string: "javascript:alert(1)")!))
         #expect(!WebLink.isWeb(URL(string: "whatsapp://send?text=hi")!))
     }
+
+    @Test func aShortenedLinkIsNotOffered() {
+        // X's notification text: the address is cut off with an ellipsis.
+        #expect(WebLink.find(in: "Claude FM 🎵 music x.com/i/broadcasts/1… live now") == nil)
+        #expect(WebLink.find(in: "Read more at example.com/a/long/pa...") == nil)
+        // A whole link after a cut one is still found.
+        #expect(WebLink.find(in: "x.com/i/1… or https://example.com/full")?.absoluteString == "https://example.com/full")
+        // A sentence that ends after a whole link keeps it.
+        #expect(WebLink.find(in: "Details: https://example.com/p/42.")?.host == "example.com")
+    }
 }
