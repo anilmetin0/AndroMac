@@ -4,8 +4,8 @@ import Foundation
 ///
 /// Two kinds of release. A stable one per version (tag `v1.0.0`, title `AndroMac 1.0.0`), marked
 /// latest, published when the version changes. A beta on every other push (tag `beta-212-fd7d47a`,
-/// title `AndroMac 1.0.0 beta 212 (fd7d47a)`), a prerelease that is never latest. Every body ends
-/// with a `Build 212 · commit fd7d47a` footer, which is where the build number is read. Pure data,
+/// title `AndroMac 1.0.0 beta 212`), a prerelease that is never latest. Every body ends
+/// with the install line and a hidden `<!-- Build 212 · commit fd7d47a -->`, where the build number is read. Pure data,
 /// so it can be unit-tested; the network side lives in `UpdateCheck.swift` of the app.
 public struct Release: Equatable, Sendable {
 

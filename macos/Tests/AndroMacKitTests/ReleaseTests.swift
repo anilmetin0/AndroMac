@@ -61,6 +61,11 @@ struct ReleaseTests {
 
     @Test func buildComesFromTheFooterThenTheBetaTag() {
         #expect(Release.build(body: "notes\n\n<sub>Build 212 · commit fd7d47a · APK signing: release</sub>", tag: "v1.0.0") == 212)
+        // The current form: an HTML comment on the install line, hidden on the release page.
+        let hidden = "### New\n\n- A change\n\n**Install:** see the [README](https://x). <!-- Build 214 · commit fd7d47a -->"
+        #expect(Release.build(body: hidden, tag: "v1.2.0") == 214)
+        #expect(!Release(version: AppVersion(1, 2, 0), commit: nil, url: URL(string: "https://x")!, assets: [],
+                         build: 214, prerelease: true, body: hidden).notes(turkish: false).contains("Build"))
         #expect(Release.build(body: "", tag: "beta-213-fd7d47a") == 213)
         #expect(Release.build(body: "Build 1234567890 · commit x", tag: "v1.0.0") == nil)
         #expect(Release.build(body: "", tag: "v1.0.0") == nil)

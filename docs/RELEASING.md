@@ -24,10 +24,10 @@ release job, on one of two channels.
 |---|---|---|
 | When | The first push to `main` after `VERSION` changes, a push whose commit message contains `[stable]`, or a manual run with channel `stable` | Every other push to `main` |
 | Tag | `v<VERSION>` | `beta-<BUILD>-<sha>` |
-| Title | `AndroMac <VERSION>` | `AndroMac <VERSION> beta <BUILD> (<sha>)` |
+| Title | `AndroMac <VERSION>` | `AndroMac <VERSION> beta <BUILD>` |
 | Marked | Pre-release until promoted, then Latest | Pre-release, never latest |
 | Assets | `AndroMac-<VERSION>-macOS-arm64.dmg`, `AndroMac-<VERSION>-android.apk`, `SHA256SUMS.txt` | `AndroMac-beta-<BUILD>-macOS-arm64.dmg`, `AndroMac-beta-<BUILD>-android.apk`, `SHA256SUMS.txt` |
-| Notes | The `## <VERSION>` section of `CHANGELOG.md`, then the commits since the previous version's tag | A test-build notice, then the commits since `v<VERSION>` |
+| Notes | The `## <VERSION>` section of `CHANGELOG.md`, then the features and fixes since the previous version's tag | The features and fixes since `v<VERSION>` |
 | Kept | Forever | The newest five |
 
 Ordinary pushes never rebuild a stable release. A manual run with channel `stable`, or a push
@@ -46,12 +46,12 @@ it. Until then they keep offering the previous version. The Homebrew cask is the
 follows `VERSION` in the repository, so `brew install` already fetches the new DMG.
 
 The notes are in English only; `CHANGELOG.tr.md` is the Turkish changelog in the repository. The
-commit list is grouped into New (`feat`), Fixed (`fix`) and Other, with the scope shown as the
-platform (`fix(macos):` becomes **Mac:**).
+commit list has New (`feat`) and Fixed (`fix`), with the scope shown as the platform
+(`fix(macos):` becomes **Mac:**); docs, CI and other housekeeping commits are left out.
 
-Every release body ends with a line naming the build, the commit, the APK signing key and the
-checksum file: `Build <N> · commit <sha> · APK signing: release · checksums in SHA256SUMS.txt`
-(`debug` instead of `release` when the signing secrets are missing). The build number is the
+Every release body ends with the install line, which carries the build and the commit in an
+HTML comment the release page does not show: `<!-- Build <N> · commit <sha> -->`. The apps read
+the build number from it. The build number is the
 workflow run number, which is also the Android `versionCode`, so a newer build always installs
 over an older one. Inside the apps the version reads `<VERSION> (build · commit)`; a beta after
 1.1.0 reads `1.1.0 (57 · abc1234)`. Local builds show build 1, commit `local`.

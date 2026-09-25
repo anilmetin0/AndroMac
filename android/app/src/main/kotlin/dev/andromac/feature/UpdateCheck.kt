@@ -18,9 +18,9 @@ import javax.net.ssl.HttpsURLConnection
  * User-Agent and nothing else.
  *
  * A stable release per version (tag `v1.0.0`, title `AndroMac 1.0.0`) is marked latest; every
- * other push publishes a beta (tag `beta-212-fd7d47a`, title `AndroMac 1.0.0 beta 212 (fd7d47a)`),
- * a prerelease. Every body ends with a `Build 212 · commit fd7d47a` footer, which is where the
- * build number is read. What "newer" means is [isNewer].
+ * other push publishes a beta (tag `beta-212-fd7d47a`, title `AndroMac 1.0.0 beta 212`), a
+ * prerelease. Every body ends with the install line and a hidden `<!-- Build 212 · commit
+ * fd7d47a -->`, which is where the build number is read. What "newer" means is [isNewer].
  *
  * Plain JVM code (no Android API) so the vectors module can unit-test the parsing and the
  * newer-rule with a fake [Fetch].
