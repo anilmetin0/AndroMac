@@ -70,6 +70,10 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app
 `xattr` satırı indirme işaretini bir kez kaldırır, çünkü uygulama noter onaylı değil. Bundan sonra
 uygulama kendini günceller; `brew upgrade --cask andromac` da çalışır.
 
+En yeni derlemeyi istersen `andromac@nightly` kur. En son nightly sürümü indirir; ondan sonra yeni
+bir derleme çıkmadıysa bu, son kararlı sürümdür. Uygulama sonra nightly sürümleri kendisi izler.
+İki cask birbirinin yerine geçer.
+
 ### Mac, Homebrew olmadan
 
 [Yayınlardan](https://github.com/anilmetin0/AndroMac/releases/latest) `AndroMac-<sürüm>-macOS-arm64.dmg` dosyasını indir, AndroMac'i

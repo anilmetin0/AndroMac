@@ -18,7 +18,7 @@ Homebrew dışından gelen bir tap'i ancak ona güvendiğini söyledikten sonra 
 ```bash
 brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
 brew trust anilmetin0/andromac
-brew install --cask andromac
+brew install --cask andromac    # en yeni derleme için andromac@nightly
 xattr -dr com.apple.quarantine /Applications/AndroMac.app
 ```
 
@@ -78,8 +78,8 @@ Sonra AndroMac'i aç ve izinleri ver:
 günceller. Uygulama olarak `https://github.com/anilmetin0/AndroMac` adresini ekle ya da telefonda
 [obtainium://add/github.com/anilmetin0/AndroMac](obtainium://add/https://github.com/anilmetin0/AndroMac)
 bağlantısını aç. Yayın APK'sı her sürümde aynı anahtarla imzalanır, güncellemeler yerinde kurulur.
-Obtainium kararlı sürümleri izler; nightly sürümleri de almak için **ön sürümleri dahil et**
-seçeneğini aç.
+Obtainium kararlı sürümleri izler. Nightly sürümler için uygulamanın güncelleme ayarlarında
+**Nightly sürümler**'i aç.
 
 ### Güncelleme denetimi
 

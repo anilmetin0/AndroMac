@@ -12,10 +12,12 @@
 #     AndroMac-<VERSION>-android.apk, SHA256SUMS.txt, published as latest: the nightlies are where
 #     a version is tested, so raising VERSION is the decision to ship. The notes are the "## <VERSION>" section
 #     of CHANGELOG.md plus the features and fixes since the previous version.
-#   • nightly: every other push. A prerelease tagged nightly-<YYYYMMDD>-<sha>, titled
-#     "AndroMac nightly <YYYY-MM-DD> (<sha>)", assets AndroMac-nightly-<BUILD>-…; the notes list
-#     the features and fixes since v<VERSION>. Only the newest five are kept. A nightly is built
-#     after its version, so its title has none; the hidden last line carries it for the apps.
+#   • nightly: every other push. One prerelease tagged nightly, re-created on every push and
+#     titled "AndroMac nightly <YYYY-MM-DD> (<sha>)", assets AndroMac-nightly-macOS-arm64.dmg,
+#     AndroMac-nightly-android.apk, SHA256SUMS.txt; the notes list the features and fixes since
+#     v<VERSION>. The asset names never change, so the andromac@nightly cask has one URL. A stable
+#     release refreshes it with its own build, so nightly is always the newest build there is.
+#     A nightly is built after its version, so its title has none; the hidden last line has it.
 # The apps report version <VERSION>, build = run number (the Android versionCode), commit sha.
 #
 # See docs/RELEASING.md for the whole picture.
@@ -83,7 +85,7 @@ jobs:
             channel=nightly
           fi
           if [[ "$channel" == "nightly" ]]; then
-            name="AndroMac-nightly-$build"; previous="$current"
+            name="AndroMac-nightly"; previous="$current"
           else
             name="AndroMac-$version"
             # The previous version's tag, also on a re-publish: the notes list the whole version,
@@ -142,7 +144,7 @@ jobs:
 
       # The cask must stay installable; brew style catches a broken stanza before a user does, and
       # its version has to follow VERSION or the download URL points at the previous release.
-      - name: Homebrew cask
+      - name: Homebrew casks
         run: |
           brew style Casks/*.rb
           grep -q "^  version \"$(cat VERSION)\"$" Casks/andromac.rb \
@@ -384,19 +386,35 @@ jobs:
             --title "AndroMac ${VERSION}" \
             --notes-file notes.md \
             dist/*
-
-      # Nightly: a prerelease per push, never latest; the newest five stay, older ones go with their tags.
-      - name: Publish nightly
-        if: env.CHANNEL == 'nightly'
-        run: |
-          day="$(git show -s --format=%cd --date=format:%Y%m%d HEAD)"
-          gh release create "nightly-${day}-${COMMIT}" \
+          # The nightly release follows: the same build under the nightly names, so the
+          # andromac@nightly cask and the Nightly builds channel get it too.
+          mkdir nightly
+          cp "dist/AndroMac-${VERSION}-macOS-arm64.dmg" nightly/AndroMac-nightly-macOS-arm64.dmg
+          cp "dist/AndroMac-${VERSION}-android.apk" nightly/AndroMac-nightly-android.apk
+          (cd nightly && sha256sum * > SHA256SUMS.txt)
+          { echo "AndroMac ${VERSION}. The notes are on its [release page](https://github.com/${GITHUB_REPOSITORY}/releases/tag/v${VERSION})."
+            echo; tail -n 1 notes.md; } > nightly-notes.md
+          gh release delete nightly --cleanup-tag --yes 2>/dev/null || true
+          gh release create nightly \
             --target "$GITHUB_SHA" \
             --prerelease \
             --latest=false \
-            --title "AndroMac nightly ${day:0:4}-${day:4:2}-${day:6:2} (${COMMIT})" \
+            --title "AndroMac nightly $(git show -s --format=%cd --date=format:%Y-%m-%d HEAD) (${COMMIT})" \
+            --notes-file nightly-notes.md \
+            nightly/*
+
+      # Nightly: one prerelease, never latest, re-created on every push. Leftovers of the older
+      # per-commit nightly and beta releases go with it.
+      - name: Publish nightly
+        if: env.CHANNEL == 'nightly'
+        run: |
+          gh release delete nightly --cleanup-tag --yes 2>/dev/null || true
+          gh release create nightly \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --latest=false \
+            --title "AndroMac nightly $(git show -s --format=%cd --date=format:%Y-%m-%d HEAD) (${COMMIT})" \
             --notes-file notes.md \
             dist/*
-          gh release list --limit 100 --json tagName,isPrerelease,createdAt \
-            --jq '[.[] | select(.isPrerelease and ((.tagName | startswith("nightly-")) or (.tagName | startswith("beta-"))))] | sort_by(.createdAt) | reverse | .[5:] | .[].tagName' |
+          gh release list --limit 100 --json tagName --jq '.[] | select(.tagName | test("^(nightly|beta)-")) | .tagName' |
             while read -r tag; do gh release delete "$tag" --cleanup-tag --yes; done

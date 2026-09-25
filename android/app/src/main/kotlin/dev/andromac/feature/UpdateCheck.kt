@@ -18,7 +18,7 @@ import javax.net.ssl.HttpsURLConnection
  * User-Agent and nothing else.
  *
  * A stable release per version (tag `v1.0.0`, title `AndroMac 1.0.0`) is marked latest; every
- * other push publishes a nightly (tag `nightly-20260925-fd7d47a`, title `AndroMac 1.0.0 nightly 2026-09-25 (fd7d47a)`), a
+ * other push publishes a nightly (tag `nightly`, re-created each time, title `AndroMac 1.0.0 nightly 2026-09-25 (fd7d47a)`), a
  * prerelease. Every body ends with the install line and a hidden `<!-- Build 212 · commit
  * fd7d47a -->`, which is where the build number is read. What "newer" means is [isNewer].
  *
@@ -71,7 +71,7 @@ object UpdateCheck {
 
         /**
          * The Android build of this release: `AndroMac-<version>-android.apk`, or
-         * `AndroMac-nightly-<build>-android.apk` for a nightly. One APK for every ABI: there is no native code.
+         * `AndroMac-nightly-android.apk` for a nightly. One APK for every ABI: there is no native code.
          */
         val apk: Asset? get() = assets.firstOrNull { it.name.startsWith("AndroMac-") && it.name.endsWith("-android.apk") }
 

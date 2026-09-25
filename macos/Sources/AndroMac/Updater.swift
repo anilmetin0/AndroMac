@@ -79,6 +79,15 @@ final class Updater: ObservableObject {
         }.map { URL(fileURLWithPath: "\($0)/bin/brew") }
     }()
 
+    /// Installed as the `andromac@nightly` cask. That cask has no version to follow, so this copy
+    /// updates itself, and it follows the nightly channel unless the user turns that off.
+    nonisolated static let fromNightlyCask: Bool = {
+        guard Bundle.main.bundleURL.path == "/Applications/AndroMac.app" else { return false }
+        return ["/opt/homebrew", "/usr/local"].contains {
+            FileManager.default.fileExists(atPath: "\($0)/Caskroom/andromac@nightly")
+        }
+    }()
+
     /// Homebrew only sees stable releases with a new version: a new build of the same version,
     /// or a beta, keeps the cask's version and is swapped in by the app itself, which the cask
     /// allows with `auto_updates true`.

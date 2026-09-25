@@ -17,7 +17,7 @@ Homebrew 7 loads a tap from outside Homebrew only after you trust it:
 ```bash
 brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
 brew trust anilmetin0/andromac
-brew install --cask andromac
+brew install --cask andromac    # or andromac@nightly for the newest build
 xattr -dr com.apple.quarantine /Applications/AndroMac.app
 ```
 
@@ -80,8 +80,8 @@ Then open AndroMac and grant permissions:
 releases page. Add `https://github.com/anilmetin0/AndroMac` as an app, or open
 [obtainium://add/github.com/anilmetin0/AndroMac](obtainium://add/https://github.com/anilmetin0/AndroMac)
 on the phone. The release APK is signed with one key across versions, so updates install in
-place. Obtainium follows stable releases; turn on its **include prereleases** option to get the
-nightly builds too.
+place. Obtainium follows stable releases. For the nightly builds, turn on **Nightly builds** in
+the app's update settings instead.
 
 ### Update check
 

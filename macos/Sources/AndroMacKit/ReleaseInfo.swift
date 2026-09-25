@@ -3,7 +3,7 @@ import Foundation
 /// One GitHub release of AndroMac and the rules that decide whether it beats the running build.
 ///
 /// Two kinds of release. A stable one per version (tag `v1.0.0`, title `AndroMac 1.0.0`), marked
-/// latest, published when the version changes. A nightly on every other push (tag `nightly-20260925-fd7d47a`,
+/// latest, published when the version changes. A nightly on every other push (tag `nightly`, re-created each time,
 /// title `AndroMac 1.0.0 nightly 2026-09-25 (fd7d47a)`), a prerelease that is never latest. Every body ends
 /// with the install line and a hidden `<!-- Build 212 · commit fd7d47a -->`, where the build number is read. Pure data,
 /// so it can be unit-tested; the network side lives in `UpdateCheck.swift` of the app.
@@ -48,7 +48,7 @@ public struct Release: Equatable, Sendable {
     }
 
     /// The macOS build of this release: `AndroMac-<version>-macOS-arm64.dmg` for a stable one,
-    /// `AndroMac-nightly-<build>-macOS-arm64.dmg` for a nightly.
+    /// `AndroMac-nightly-macOS-arm64.dmg` for a nightly.
     public var macImage: Asset? {
         assets.first { $0.name.hasPrefix("AndroMac-") && $0.name.hasSuffix("-macOS-arm64.dmg") }
     }

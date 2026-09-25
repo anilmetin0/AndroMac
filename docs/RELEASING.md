@@ -23,12 +23,12 @@ release job, on one of two channels.
 | | Stable | Nightly |
 |---|---|---|
 | When | The first push to `main` after `VERSION` changes, a push whose commit message contains `[stable]`, or a manual run with channel `stable` | Every other push to `main` |
-| Tag | `v<VERSION>` | `nightly-<YYYYMMDD>-<sha>` |
+| Tag | `v<VERSION>` | `nightly`, moved to every new build |
 | Title | `AndroMac <VERSION>` | `AndroMac nightly <YYYY-MM-DD> (<sha>)` |
 | Marked | Latest | Pre-release, never latest |
-| Assets | `AndroMac-<VERSION>-macOS-arm64.dmg`, `AndroMac-<VERSION>-android.apk`, `SHA256SUMS.txt` | `AndroMac-nightly-<BUILD>-macOS-arm64.dmg`, `AndroMac-nightly-<BUILD>-android.apk`, `SHA256SUMS.txt` |
+| Assets | `AndroMac-<VERSION>-macOS-arm64.dmg`, `AndroMac-<VERSION>-android.apk`, `SHA256SUMS.txt` | `AndroMac-nightly-macOS-arm64.dmg`, `AndroMac-nightly-android.apk`, `SHA256SUMS.txt` |
 | Notes | The `## <VERSION>` section of `CHANGELOG.md`, then the features and fixes since the previous version's tag | The features and fixes since `v<VERSION>` |
-| Kept | Forever | The newest five |
+| Kept | Forever | Only the newest; a stable release refreshes it with its own build |
 
 Ordinary pushes never rebuild a stable release. A manual run with channel `stable`, or a push
 whose commit message contains `[stable]`, re-publishes it from that commit and moves the
@@ -38,6 +38,11 @@ A stable release is published as Latest right away: the nightly builds are where
 tested, so raising `VERSION` is the decision to ship it. `/releases/latest`, Obtainium's default
 settings, the Homebrew cask and the apps' stable channel all see it at once. The apps with
 **Nightly builds** on (Settings → Updates) follow every push.
+
+There is one nightly release, re-created on every push, and its file names never change, so
+the `andromac@nightly` cask has a single URL. A stable release refreshes it with the same build
+under the nightly names: the nightly is always the newest build there is. The cask declares no
+version (`version :latest`); the app it installs follows the nightly channel and updates itself.
 
 A nightly is built after its version, so its title has none (`AndroMac nightly 2026-09-25
 (abc1234)`); the apps read the version it builds on from the hidden last line. Apps before 1.2.0
@@ -79,7 +84,8 @@ commit message of the push, or run the workflow on `main` from the Actions tab w
   `SHA256SUMS.txt` on the release page carries it. The cask declares `auto_updates true`: the
   app updates itself, through `brew upgrade` when Homebrew installed it.
 - Obtainium keys on the tag name, which changes once per version, so it sees each stable release
-  without extra options. Its "include prereleases" option adds the nightly builds.
+  without extra options. The nightly release keeps one tag, so Obtainium may not notice a new
+  nightly; the app's own **Nightly builds** setting follows them.
 
 ## Signing
 

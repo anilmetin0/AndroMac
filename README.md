@@ -70,6 +70,10 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app
 The `xattr` line clears the download flag once, because the app is not notarized. After that the
 app updates itself, and `brew upgrade --cask andromac` works too.
 
+For the newest build instead, install `andromac@nightly`. It fetches the latest nightly, which is
+the latest stable version when nothing newer has been built since, and the app then follows the
+nightly builds on its own. The two casks replace each other.
+
 ### Mac, without Homebrew
 
 Download `AndroMac-<version>-macOS-arm64.dmg` from [releases](https://github.com/anilmetin0/AndroMac/releases/latest), drag AndroMac to

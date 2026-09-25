@@ -22,6 +22,7 @@ cask "andromac" do
   end
 
   auto_updates true
+  conflicts_with cask: "andromac@nightly"
   depends_on arch: :arm64
   depends_on macos: :sonoma
 

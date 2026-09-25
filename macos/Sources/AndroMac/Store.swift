@@ -407,9 +407,10 @@ final class Store: @unchecked Sendable {
         set { write(newValue, "updateAutoInstall") }
     }
 
-    /// Default OFF: follow every build pushed to main (the prereleases), not only stable ones.
+    /// Follow every build pushed to main (the nightlies), not only stable ones. Off by default,
+    /// on for a copy installed from the andromac@nightly cask.
     var updateBeta: Bool {
-        get { flag("updateBeta", default: false) }
+        get { flag("updateBeta", default: Updater.fromNightlyCask) }
         set { write(newValue, "updateBeta") }
     }
 
