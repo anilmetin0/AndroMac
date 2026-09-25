@@ -51,7 +51,7 @@ polling or a wakelock on the phone will not fit. To talk an idea through first, 
 8. Open a pull request against `main` and fill in the template. CI must be green before it is
    merged.
 
-After the merge, the push to `main` publishes a beta build. A stable release is published only
+After the merge, the push to `main` publishes a nightly build. A stable release is published only
 when `VERSION` is raised; [docs/RELEASING.md](docs/RELEASING.md) describes the pipeline.
 
 ## Scope

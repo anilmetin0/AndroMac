@@ -9,13 +9,13 @@
 #   • stable: the first push after VERSION changes (the tag v<VERSION> does not exist yet), a
 #     push whose message has [stable], or a manual run with channel=stable. Tag v<VERSION>, title
 #     "AndroMac <VERSION>", assets AndroMac-<VERSION>-macOS-arm64.dmg,
-#     AndroMac-<VERSION>-android.apk, SHA256SUMS.txt. It goes out as a prerelease, so beta
-#     testers get it first; `gh release edit v<VERSION> --prerelease=false --latest` makes it the
-#     one /releases/latest and the stable updaters see. The notes are the "## <VERSION>" section
+#     AndroMac-<VERSION>-android.apk, SHA256SUMS.txt, published as latest: the nightlies are where
+#     a version is tested, so raising VERSION is the decision to ship. The notes are the "## <VERSION>" section
 #     of CHANGELOG.md plus the features and fixes since the previous version.
-#   • beta: every other push. A prerelease tagged beta-<BUILD>-<sha>, titled
-#     "AndroMac <VERSION> beta <BUILD>", assets AndroMac-beta-<BUILD>-…; the notes list the
-#     features and fixes since v<VERSION>. Only the newest five betas are kept.
+#   • nightly: every other push. A prerelease tagged nightly-<YYYYMMDD>-<sha>, titled
+#     "AndroMac <VERSION> nightly <YYYY-MM-DD> (<sha>)", assets AndroMac-nightly-<BUILD>-…; the
+#     notes list the features and fixes since v<VERSION>. Only the newest five are kept. The
+#     title keeps the version: the apps read it from there.
 # The apps report version <VERSION>, build = run number (the Android versionCode), commit sha.
 #
 # See docs/RELEASING.md for the whole picture.
@@ -31,8 +31,8 @@ on:
       channel:
         description: "Publish channel for a run on main"
         type: choice
-        options: [beta, stable]
-        default: beta
+        options: [nightly, stable]
+        default: nightly
 
 # Read-only by default; only the release job may write (tags, releases).
 permissions:
@@ -61,9 +61,9 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-      # channel: stable on the first push of a new VERSION (or when asked for), beta otherwise,
+      # channel: stable on the first push of a new VERSION (or when asked for), nightly otherwise,
       # none off main. previous: where the notes' commit list starts. For stable, the previous
-      # version's tag; for beta, v<VERSION>.
+      # version's tag; for nightly, v<VERSION>.
       - id: v
         env:
           REQUESTED: ${{ inputs.channel }}
@@ -80,10 +80,10 @@ jobs:
           elif [[ -z "$current" || "$REQUESTED" == "stable" || "$HEAD_MESSAGE" == *"[stable]"* ]]; then
             channel=stable
           else
-            channel=beta
+            channel=nightly
           fi
-          if [[ "$channel" == "beta" ]]; then
-            name="AndroMac-beta-$build"; previous="$current"
+          if [[ "$channel" == "nightly" ]]; then
+            name="AndroMac-nightly-$build"; previous="$current"
           else
             name="AndroMac-$version"
             # The previous version's tag, also on a re-publish: the notes list the whole version,
@@ -321,7 +321,7 @@ jobs:
         run: sha256sum * > SHA256SUMS.txt
 
       # Stable: the "## <version>" section of CHANGELOG.md, then the commits since the previous
-      # version. Beta: the commits since v<VERSION>. English only; the Turkish changelog lives in
+      # version. Nightly: the features and fixes since v<VERSION>. English only; the Turkish changelog lives in
       # the repository.
       - name: Release notes
         run: |
@@ -373,31 +373,30 @@ jobs:
             echo "**Install:** see the [README](https://github.com/${GITHUB_REPOSITORY}#install). <!-- Build ${BUILD} · commit ${COMMIT} -->"
           } > notes.md
 
-      # Stable: one release per version, re-created on a re-publish. Always a prerelease first;
-      # promoting it to latest is a deliberate step (docs/RELEASING.md).
+      # Stable: one release per version, re-created on a re-publish, and marked latest.
       - name: Publish stable release
         if: env.CHANNEL == 'stable'
         run: |
           gh release delete "v${VERSION}" --cleanup-tag --yes 2>/dev/null || true
           gh release create "v${VERSION}" \
             --target "$GITHUB_SHA" \
-            --prerelease \
-            --latest=false \
+            --latest \
             --title "AndroMac ${VERSION}" \
             --notes-file notes.md \
             dist/*
 
-      # Beta: a prerelease per push, never latest; the newest five stay, older ones go with their tags.
-      - name: Publish beta
-        if: env.CHANNEL == 'beta'
+      # Nightly: a prerelease per push, never latest; the newest five stay, older ones go with their tags.
+      - name: Publish nightly
+        if: env.CHANNEL == 'nightly'
         run: |
-          gh release create "beta-${BUILD}-${COMMIT}" \
+          day="$(git show -s --format=%cd --date=format:%Y%m%d HEAD)"
+          gh release create "nightly-${day}-${COMMIT}" \
             --target "$GITHUB_SHA" \
             --prerelease \
             --latest=false \
-            --title "AndroMac ${VERSION} beta ${BUILD}" \
+            --title "AndroMac ${VERSION} nightly ${day:0:4}-${day:4:2}-${day:6:2} (${COMMIT})" \
             --notes-file notes.md \
             dist/*
           gh release list --limit 100 --json tagName,isPrerelease,createdAt \
-            --jq '[.[] | select(.isPrerelease and (.tagName | startswith("beta-")))] | sort_by(.createdAt) | reverse | .[5:] | .[].tagName' |
+            --jq '[.[] | select(.isPrerelease and ((.tagName | startswith("nightly-")) or (.tagName | startswith("beta-"))))] | sort_by(.createdAt) | reverse | .[5:] | .[].tagName' |
             while read -r tag; do gh release delete "$tag" --cleanup-tag --yes; done

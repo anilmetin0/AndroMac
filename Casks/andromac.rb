@@ -1,4 +1,4 @@
-# One stable release per version; the betas published in between are prereleases the cask never
+# One stable release per version; the nightly builds published in between are prereleases the cask never
 # sees. The version here must equal the VERSION file (CI checks it). A re-published stable release
 # keeps the same file name, so the checksum is not pinned and SHA256SUMS.txt on the release page
 # carries it. The app updates itself. Apple Silicon only: CI builds arm64 and there is no Intel

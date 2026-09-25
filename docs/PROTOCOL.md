@@ -17,7 +17,7 @@ against it.
 
 Sync traffic never leaves the local network: macOS rejects any peer outside the private address
 ranges (§3). The only connections that leave the LAN are the update check (one HTTPS GET to
-api.github.com, `releases/latest`, or `releases?per_page=10` on the beta channel), the update
+api.github.com, `releases/latest`, or `releases?per_page=10` on the nightly channel), the update
 download from github.com, and `brew upgrade` on a Mac that Homebrew installed, when a new version
 installs.
 

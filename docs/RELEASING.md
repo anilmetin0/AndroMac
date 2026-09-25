@@ -20,13 +20,13 @@ release job, on one of two channels.
 
 ## Two channels
 
-| | Stable | Beta |
+| | Stable | Nightly |
 |---|---|---|
 | When | The first push to `main` after `VERSION` changes, a push whose commit message contains `[stable]`, or a manual run with channel `stable` | Every other push to `main` |
-| Tag | `v<VERSION>` | `beta-<BUILD>-<sha>` |
-| Title | `AndroMac <VERSION>` | `AndroMac <VERSION> beta <BUILD>` |
-| Marked | Pre-release until promoted, then Latest | Pre-release, never latest |
-| Assets | `AndroMac-<VERSION>-macOS-arm64.dmg`, `AndroMac-<VERSION>-android.apk`, `SHA256SUMS.txt` | `AndroMac-beta-<BUILD>-macOS-arm64.dmg`, `AndroMac-beta-<BUILD>-android.apk`, `SHA256SUMS.txt` |
+| Tag | `v<VERSION>` | `nightly-<YYYYMMDD>-<sha>` |
+| Title | `AndroMac <VERSION>` | `AndroMac <VERSION> nightly <YYYY-MM-DD> (<sha>)` |
+| Marked | Latest | Pre-release, never latest |
+| Assets | `AndroMac-<VERSION>-macOS-arm64.dmg`, `AndroMac-<VERSION>-android.apk`, `SHA256SUMS.txt` | `AndroMac-nightly-<BUILD>-macOS-arm64.dmg`, `AndroMac-nightly-<BUILD>-android.apk`, `SHA256SUMS.txt` |
 | Notes | The `## <VERSION>` section of `CHANGELOG.md`, then the features and fixes since the previous version's tag | The features and fixes since `v<VERSION>` |
 | Kept | Forever | The newest five |
 
@@ -34,16 +34,13 @@ Ordinary pushes never rebuild a stable release. A manual run with channel `stabl
 whose commit message contains `[stable]`, re-publishes it from that commit and moves the
 `v<VERSION>` tag there.
 
-A stable release goes out as a pre-release, so the apps with **Beta updates** on (Settings →
-Updates) get it first. Once it holds up, promote it:
+A stable release is published as Latest right away: the nightly builds are where a version is
+tested, so raising `VERSION` is the decision to ship it. `/releases/latest`, Obtainium's default
+settings, the Homebrew cask and the apps' stable channel all see it at once. The apps with
+**Nightly builds** on (Settings → Updates) follow every push.
 
-```bash
-gh release edit v<VERSION> --prerelease=false --latest
-```
-
-From then on `/releases/latest`, Obtainium's default settings and the apps' stable channel see
-it. Until then they keep offering the previous version. The Homebrew cask is the exception: it
-follows `VERSION` in the repository, so `brew install` already fetches the new DMG.
+The nightly title keeps the version (`AndroMac 1.2.0 nightly 2026-09-25 (abc1234)`): the apps
+read the version from the title, and a nightly carries the version it builds on.
 
 The notes are in English only; `CHANGELOG.tr.md` is the Turkish changelog in the repository. The
 commit list has New (`feat`) and Fixed (`fix`), with the scope shown as the platform
@@ -53,7 +50,7 @@ Every release body ends with the install line, which carries the build and the c
 HTML comment the release page does not show: `<!-- Build <N> · commit <sha> -->`. The apps read
 the build number from it. The build number is the
 workflow run number, which is also the Android `versionCode`, so a newer build always installs
-over an older one. Inside the apps the version reads `<VERSION> (build · commit)`; a beta after
+over an older one. Inside the apps the version reads `<VERSION> (build · commit)`; a nightly after
 1.1.0 reads `1.1.0 (57 · abc1234)`. Local builds show build 1, commit `local`.
 
 A stable release fails, and publishes nothing, if `CHANGELOG.md` lacks a `## <VERSION>`
@@ -66,9 +63,8 @@ section. The header may carry a date (`## 1.2.0 - 2026-10-01`); only the version
 2. Rename `## Unreleased` to `## <version> - <date>` in `CHANGELOG.md` and `CHANGELOG.tr.md`.
 3. Write the version into `VERSION` (one line, no `v`) and into `Casks/andromac.rb`.
 4. Commit as `chore(release): <version>` and push to `main`. That push publishes the stable
-   release as a pre-release; the pushes after it publish betas until the next version.
+   release as Latest; the pushes after it publish nightly builds until the next version.
 5. Watch the run with `gh run watch`, then check the release page.
-6. Once it works on real devices, promote it with the `gh release edit` line above.
 
 To rebuild a stable release in place, for example after a broken asset, put `[stable]` in the
 commit message of the push, or run the workflow on `main` from the Actions tab with channel
@@ -82,7 +78,7 @@ commit message of the push, or run the workflow on `main` from the Actions tab w
   `SHA256SUMS.txt` on the release page carries it. The cask declares `auto_updates true`: the
   app updates itself, through `brew upgrade` when Homebrew installed it.
 - Obtainium keys on the tag name, which changes once per version, so it sees each stable release
-  without extra options. Its "include prereleases" option adds the betas.
+  without extra options. Its "include prereleases" option adds the nightly builds.
 
 ## Signing
 
