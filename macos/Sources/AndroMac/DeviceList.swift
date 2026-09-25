@@ -200,7 +200,8 @@ private struct DeviceCard: View {
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
-                    more.glassGroup()
+                    // fixedSize: beside a two-line hint the menu was squeezed to half its size.
+                    more.fixedSize().glassGroup()
                 }
             }
 
