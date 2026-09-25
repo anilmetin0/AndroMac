@@ -93,7 +93,13 @@ final class ScreenMirror: ObservableObject {
         Task {
             await ensureServer(tools.adb)
             switch await Self.resolve(host: host, adb: tools.adb) {
-            case .success(let serial): launch(deviceID: deviceID, serial: serial, title: title, tools: tools)
+            case .success(let serial):
+                // A sleeping phone renders no frames until something wakes it, and the window stays
+                // black meanwhile. WAKEUP only turns the screen on (it never locks or unlocks), and
+                // does nothing to a screen that is already on.
+                _ = await Self.run(tools.adb, ["-s", serial, "shell", "input", "keyevent", "KEYCODE_WAKEUP"],
+                                   timeout: .seconds(3))
+                launch(deviceID: deviceID, serial: serial, title: title, tools: tools)
             case .failure(let problem):
                 phases[deviceID] = problem.phase
                 releaseServer()
