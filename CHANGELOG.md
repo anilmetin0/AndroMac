@@ -9,6 +9,8 @@ raised. Betas list their commits instead.
 
 ## Unreleased
 
+## 1.2.0 - 2026-09-25
+
 ### Added
 
 - **Copy code, everywhere it shows.** One-time codes are found with the rules Android itself
@@ -20,6 +22,9 @@ raised. Betas list their commits instead.
 
 ### Changed
 
+- **Ready for macOS 27.** The settings window's sidebar names its first group History, so the
+  Clipboard and Notifications histories read apart from the settings pages of the same names,
+  and the panel's phone switcher uses interactive Liquid Glass.
 - **The panel's clipboard row has one button, Copy.** Sending the Mac clipboard happens on its
   own (or from the clipboard history), and files are dropped onto the panel.
 - **No phone notification for every copy.** The phone's Show a notification setting for text

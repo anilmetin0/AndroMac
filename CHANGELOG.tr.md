@@ -9,6 +9,8 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ## Unreleased
 
+## 1.2.0 - 2026-09-25
+
 ### Eklenenler
 
 - **Kodu kopyala, göründüğü her yerde.** Tek kullanımlık kodlar Android'in kendi kurallarıyla
@@ -20,6 +22,9 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ### Değişenler
 
+- **macOS 27'ye hazır.** Ayarlar penceresinin kenar çubuğunda ilk grubun adı artık Geçmiş; pano
+  ve bildirim geçmişleri aynı adlı ayar sayfalarıyla karışmıyor. Paneldeki telefon seçici
+  etkileşimli Liquid Glass kullanıyor.
 - **Panelin pano satırında tek düğme var: Kopyala.** Mac panosu kendiliğinden (ya da pano
   geçmişinden) gönderiliyor, dosyalar panele bırakılıyor.
 - **Her kopyada telefonda bildirim yok.** Mac'ten gelen metin için telefondaki Bildirim göster
