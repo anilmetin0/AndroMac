@@ -38,7 +38,6 @@
 "Automatically, when I copy" = "Automatically, when I copy";
 "Battery" = "Battery";
 "Battery %lld%%, %@" = "Battery %lld%%, %@";
-"Nightly builds" = "Nightly builds";
 "Blocked or no network" = "Blocked or no network";
 "Bonjour service" = "Bonjour service";
 "Both devices must be on the same subnet." = "Both devices must be on the same subnet.";
@@ -90,8 +89,8 @@
 "Forget" = "Forget";
 "Forget all devices" = "Forget all devices";
 "Forget all devices?" = "Forget all devices?";
-"Full" = "Full";
 "full" = "full";
+"Full" = "Full";
 "General" = "General";
 "Get the app on the phone" = "Get the app on the phone";
 "History" = "History";
@@ -117,7 +116,6 @@
 "Later" = "Later";
 "listener was cancelled" = "listener was cancelled";
 "Local Network" = "Local Network";
-"Local network only" = "Local network only";
 "Media" = "Media";
 "Messages" = "Messages";
 "Messages / hour" = "Messages / hour";
@@ -132,6 +130,7 @@
 "Never checked" = "Never checked";
 "Never send a concealed clipboard" = "Never send a concealed clipboard";
 "Next" = "Next";
+"Nightly builds" = "Nightly builds";
 "No apps match your search." = "No apps match your search.";
 "No entries match your search." = "No entries match your search.";
 "no local network" = "no local network";

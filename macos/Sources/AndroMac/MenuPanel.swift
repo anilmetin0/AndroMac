@@ -395,6 +395,7 @@ struct MenuPanel: View {
 
     // MARK: footer
 
+    /// Settings and Quit as the panel's other controls: a glass capsule and a glass circle.
     private var footer: some View {
         HStack(spacing: Theme.Space.small) {
             Button {
@@ -403,31 +404,19 @@ struct MenuPanel: View {
                 Label("Settings", systemImage: "gearshape")
                     .font(Theme.Font.label)
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
+            .buttonBorderShape(.capsule)
+            .secondaryAction()
+            .controlSize(.small)
             .keyboardShortcut(",", modifiers: .command)
             .help("Open Settings")
 
             Spacer(minLength: 0)
 
-            Image(systemName: "lock.shield")
-                .font(Theme.Font.caption)
-                .foregroundStyle(.tertiary)
-                .help("Local network only")
-                .accessibilityLabel("Local network only")
-
-            Button {
+            IconButton(symbol: "power", label: String(localized: "Quit AndroMac")) {
                 NSApplication.shared.terminate(nil)
-            } label: {
-                Image(systemName: "power")
-                    .font(Theme.Font.label)
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
             .keyboardShortcut("q", modifiers: .command)
-            .help("Quit AndroMac")
-            .accessibilityLabel("Quit AndroMac")
         }
-        .frame(height: 24)
+        .glassGroup()
     }
 }
