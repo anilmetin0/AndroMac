@@ -122,7 +122,7 @@ class UpdateCheckTest {
         val r = UpdateCheck.newest(v101, 40, "fd7d47a", true, fetch)
         assertEquals(41, r?.build)
         assertTrue(r!!.prerelease)
-        assertEquals("1.0.1 beta 41 (abc1234)", r.label)
+        assertEquals("1.0.1 nightly 41 (abc1234)", r.label)
         assertEquals("AndroMac-beta-41-android.apk", r.apk?.name)
         assertNull(UpdateCheck.newest(v101, 41, "abc1234", true, fetch))
         assertEquals(listOf("https://api.github.com/repos/anilmetin0/AndroMac/releases?per_page=10"), urls.distinct())

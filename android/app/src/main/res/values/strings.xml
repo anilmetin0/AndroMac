@@ -138,7 +138,7 @@
     <!-- updates -->
     <string name="update_auto">Install updates automatically</string>
     <string name="update_ready">Installs once you leave the app</string>
-    <string name="update_beta">Beta updates</string>
+    <string name="update_beta">Nightly builds</string>
     <string name="update_done">AndroMac was updated to %1$s</string>
     <string name="update_confirm">Ready to install</string>
     <string name="update_download_install">Download and install</string>

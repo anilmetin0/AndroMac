@@ -252,7 +252,7 @@
 "Send a test notification from this phone" = "Bu telefondan test bildirimi gönder";
 
 "AndroMac was updated to %@" = "AndroMac %@ sürümüne güncellendi";
-"Beta updates" = "Beta güncellemeleri";
+"Nightly builds" = "Nightly sürümler";
 "Choose a phone" = "Bir telefon seç";
 "Install updates automatically" = "Güncellemeleri otomatik kur";
 "No notifications yet" = "Henüz bildirim yok";

@@ -129,7 +129,7 @@
     <!-- updates -->
     <string name="update_auto">Güncellemeleri otomatik kur</string>
     <string name="update_ready">Uygulamadan çıkınca kurulur</string>
-    <string name="update_beta">Beta güncellemeleri</string>
+    <string name="update_beta">Nightly sürümler</string>
     <string name="update_done">AndroMac %1$s sürümüne güncellendi</string>
     <string name="update_confirm">Kurulmaya hazır</string>
     <string name="update_download_install">İndir ve kur</string>

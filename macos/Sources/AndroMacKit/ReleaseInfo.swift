@@ -3,8 +3,8 @@ import Foundation
 /// One GitHub release of AndroMac and the rules that decide whether it beats the running build.
 ///
 /// Two kinds of release. A stable one per version (tag `v1.0.0`, title `AndroMac 1.0.0`), marked
-/// latest, published when the version changes. A beta on every other push (tag `beta-212-fd7d47a`,
-/// title `AndroMac 1.0.0 beta 212`), a prerelease that is never latest. Every body ends
+/// latest, published when the version changes. A nightly on every other push (tag `nightly-20260925-fd7d47a`,
+/// title `AndroMac 1.0.0 nightly 2026-09-25 (fd7d47a)`), a prerelease that is never latest. Every body ends
 /// with the install line and a hidden `<!-- Build 212 · commit fd7d47a -->`, where the build number is read. Pure data,
 /// so it can be unit-tested; the network side lives in `UpdateCheck.swift` of the app.
 public struct Release: Equatable, Sendable {
@@ -48,7 +48,7 @@ public struct Release: Equatable, Sendable {
     }
 
     /// The macOS build of this release: `AndroMac-<version>-macOS-arm64.dmg` for a stable one,
-    /// `AndroMac-beta-<build>-macOS-arm64.dmg` for a beta.
+    /// `AndroMac-nightly-<build>-macOS-arm64.dmg` for a nightly.
     public var macImage: Asset? {
         assets.first { $0.name.hasPrefix("AndroMac-") && $0.name.hasSuffix("-macOS-arm64.dmg") }
     }
@@ -56,10 +56,10 @@ public struct Release: Equatable, Sendable {
     /// The checksum file every release publishes. The updater refuses to install without it.
     public var checksums: Asset? { assets.first { $0.name == "SHA256SUMS.txt" } }
 
-    /// `1.0.0 (fd7d47a)`, `1.0.0 beta 212 (fd7d47a)` for a beta, or just `1.0.0` when no commit is
+    /// `1.0.0 (fd7d47a)`, `1.0.0 nightly 212 (fd7d47a)` for a nightly, or just `1.0.0` when no commit is
     /// known. The words of the release title.
     public var label: String {
-        let base = prerelease ? "\(version) beta \(build.map(String.init) ?? "?")" : version.description
+        let base = prerelease ? "\(version) nightly \(build.map(String.init) ?? "?")" : version.description
         return commit.map { "\(base) (\($0))" } ?? base
     }
 
@@ -110,7 +110,7 @@ public struct Release: Equatable, Sendable {
     }
 
     /// The build number: the footer every body ends with (`Build 212 · commit fd7d47a`), else the
-    /// `beta-212-fd7d47a` tag. Only the tail of the body is searched, and at most 9 digits.
+    /// `beta-212-fd7d47a` tag of the older builds. Only the tail of the body is searched, and at most 9 digits.
     public static func build(body: String, tag: String) -> Int? {
         let footer = String(body.suffix(2000)).matches(of: /Build (\d{1,9}) · commit/).last.flatMap { Int($0.1) }
         return footer ?? tag.firstMatch(of: /^beta-(\d{1,9})-/).flatMap { Int($0.1) }

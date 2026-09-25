@@ -14,11 +14,11 @@ import javax.net.ssl.HttpsURLConnection
  * This is the ONLY code in the app that talks to anything beyond the local network, and it runs
  * solely when the user turned it on and opens the app — no timer, no background job
  * (docs/ENERGY.md rule 1). One HTTPS GET to api.github.com per check (`releases/latest`, or
- * `releases?per_page=10` on the beta channel); the request carries the app version in the
+ * `releases?per_page=10` on the nightly channel); the request carries the app version in the
  * User-Agent and nothing else.
  *
  * A stable release per version (tag `v1.0.0`, title `AndroMac 1.0.0`) is marked latest; every
- * other push publishes a beta (tag `beta-212-fd7d47a`, title `AndroMac 1.0.0 beta 212`), a
+ * other push publishes a nightly (tag `nightly-20260925-fd7d47a`, title `AndroMac 1.0.0 nightly 2026-09-25 (fd7d47a)`), a
  * prerelease. Every body ends with the install line and a hidden `<!-- Build 212 · commit
  * fd7d47a -->`, which is where the build number is read. What "newer" means is [isNewer].
  *
@@ -59,15 +59,15 @@ object UpdateCheck {
         /** The release body, at most [MAX_NOTES] characters. [notes] cleans it for display. */
         val body: String = "",
     ) {
-        /** `1.0.0 (fd7d47a)`, `1.0.0 beta 212 (fd7d47a)`, or just `1.0.0` when no commit is known. */
+        /** `1.0.0 (fd7d47a)`, `1.0.0 nightly 212 (fd7d47a)`, or just `1.0.0` when no commit is known. */
         val label: String get() {
-            val base = if (prerelease) "$version beta ${build ?: "?"}" else version.toString()
+            val base = if (prerelease) "$version nightly ${build ?: "?"}" else version.toString()
             return if (commit == null) base else "$base ($commit)"
         }
 
         /**
          * The Android build of this release: `AndroMac-<version>-android.apk`, or
-         * `AndroMac-beta-<build>-android.apk` for a beta. One APK for every ABI: there is no native code.
+         * `AndroMac-nightly-<build>-android.apk` for a nightly. One APK for every ABI: there is no native code.
          */
         val apk: Asset? get() = assets.firstOrNull { it.name.startsWith("AndroMac-") && it.name.endsWith("-android.apk") }
 

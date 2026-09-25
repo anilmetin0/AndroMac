@@ -43,7 +43,7 @@ telefonun pili bunu neredeyse fark etmez.
 - İki yönde dosya, saklanmadan önce SHA-256 ile doğrulanır
 - Fare, klavye ve sesle ekran yansıtma, pakette gelen [scrcpy](https://github.com/Genymobile/scrcpy) ile
 - Tek Mac'te birden fazla telefon, her biri kendi ayarlarıyla
-- Kendi kendine kurulan güncellemeler; uygulamayı Homebrew kurduysa onun üzerinden, isteğe bağlı beta kanalıyla
+- Kendi kendine kurulan güncellemeler; uygulamayı Homebrew kurduysa onun üzerinden, isteğe bağlı nightly kanalıyla
 
 ### Gizlilik
 - Eşitleme trafiği yerel ağdan hiç çıkmaz. GitHub'a yalnızca günlük güncelleme denetimi ve güncellemenin indirilmesi gider (Homebrew ile kurulduysa `brew upgrade` üzerinden); tek anahtar ikisini de kapatır

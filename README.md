@@ -43,7 +43,7 @@ the phone's battery barely notices.
 - Files in both directions, checked against SHA-256 before they are kept
 - Screen mirroring with mouse, keyboard and sound, through the bundled [scrcpy](https://github.com/Genymobile/scrcpy)
 - Several phones on one Mac, each with its own settings
-- Updates that install themselves, through Homebrew when it installed the app, with an optional beta channel
+- Updates that install themselves, through Homebrew when it installed the app, with an optional nightly channel
 
 ### Privacy
 - Sync traffic never leaves the local network. Only the daily update check and the update download reach GitHub (through `brew upgrade` on a Homebrew install), and one switch turns them off

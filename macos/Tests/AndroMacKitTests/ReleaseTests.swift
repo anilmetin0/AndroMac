@@ -87,7 +87,7 @@ struct ReleaseTests {
         #expect(r.version == v100)
         #expect(r.build == 213)
         #expect(r.prerelease)
-        #expect(r.label == "1.0.0 beta 213 (fd7d47a)")
+        #expect(r.label == "1.0.0 nightly 213 (fd7d47a)")
         #expect(r.macImage?.name == "AndroMac-beta-213-macOS-arm64.dmg")
     }
 

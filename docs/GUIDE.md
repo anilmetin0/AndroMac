@@ -81,12 +81,12 @@ releases page. Add `https://github.com/anilmetin0/AndroMac` as an app, or open
 [obtainium://add/github.com/anilmetin0/AndroMac](obtainium://add/https://github.com/anilmetin0/AndroMac)
 on the phone. The release APK is signed with one key across versions, so updates install in
 place. Obtainium follows stable releases; turn on its **include prereleases** option to get the
-betas too.
+nightly builds too.
 
 ### Update check
 
 Both apps check once a day, and both can install what they find. **Settings → Updates** on either
-side has the check switch, **Install updates automatically** and **Beta updates**. The Mac adds a
+side has the check switch, **Install updates automatically** and **Nightly builds**. The Mac adds a
 **Check now** button; on the phone one button checks, downloads or installs, depending on what is
 pending. The check runs at launch and when the menu bar panel is opened, never on a timer. A newer
 build is a greater version, or the same version with a higher build number. The app offers it once,
@@ -99,7 +99,7 @@ enforces the signature. A checksum that is missing or does not match stops the u
 
 Sync traffic never leaves your network. The only traffic that does is the update check and the
 update download. The check is one request to api.github.com (`releases/latest`, or
-`releases?per_page=10` with **Beta updates** on) carrying only the app version, and the download
+`releases?per_page=10` with **Nightly builds** on) carrying only the app version, and the download
 comes from github.com. A Mac installed with Homebrew runs `brew upgrade` instead when a new
 version installs. The check is on by default because an app distributed outside any store has no
 other way to tell you a fix exists. The switch turns it off, and then nothing leaves your
@@ -221,7 +221,7 @@ in a bug report.
 | App filter | The three-tier picker for every app the phone has seen, reached from Notification settings. |
 | Clipboard settings | Incoming: **Write to the clipboard**, **Show a notification**. Outgoing: **Never send sensitive content**. Plus **Send clipboard to Mac**. |
 | Connection help | Live diagnostics, common problems, and how the whole thing works. Reached through the **ⓘ** button, or **I can't connect** in the pairing guide. |
-| Updates | **Check for updates** (the daily check), **Install updates automatically**, **Beta updates**, and one button that checks, downloads or installs, depending on what is pending. The download is verified before it installs. |
+| Updates | **Check for updates** (the daily check), **Install updates automatically**, **Nightly builds**, and one button that checks, downloads or installs, depending on what is pending. The download is verified before it installs. |
 | Files | **Receive files from the Mac** and **Accept files automatically**. Received files go to Downloads; sending is done from any app's share sheet. |
 | Language | Opens the Android per-app language picker, which offers English and Turkish. |
 

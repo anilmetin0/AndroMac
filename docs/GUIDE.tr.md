@@ -78,13 +78,13 @@ Sonra AndroMac'i aç ve izinleri ver:
 günceller. Uygulama olarak `https://github.com/anilmetin0/AndroMac` adresini ekle ya da telefonda
 [obtainium://add/github.com/anilmetin0/AndroMac](obtainium://add/https://github.com/anilmetin0/AndroMac)
 bağlantısını aç. Yayın APK'sı her sürümde aynı anahtarla imzalanır, güncellemeler yerinde kurulur.
-Obtainium kararlı sürümleri izler; beta derlemeleri de almak için **ön sürümleri dahil et**
+Obtainium kararlı sürümleri izler; nightly sürümleri de almak için **ön sürümleri dahil et**
 seçeneğini aç.
 
 ### Güncelleme denetimi
 
 İki uygulama da günde bir kez denetler ve bulduğunu kendisi kurabilir. İki tarafta da **Ayarlar →
-Güncellemeler**'de denetim anahtarı, **Güncellemeleri otomatik kur** ve **Beta güncellemeleri**
+Güncellemeler**'de denetim anahtarı, **Güncellemeleri otomatik kur** ve **Nightly sürümler**
 var. Mac'te bunlara bir **Şimdi denetle** düğmesi eklenir; telefonda ise bekleyen işe göre
 denetleyen, indiren ya da kuran tek bir düğme var. Denetim yalnızca açılışta ve menü çubuğu paneli
 açıldığında çalışır; zamanlayıcı yok. Daha yeni bir paket varsa uygulama bunu bir kez
@@ -98,7 +98,7 @@ Eksik ya da uyuşmayan bir sağlama toplamı güncellemeyi durdurur.
 
 Eşitleme trafiği ağından hiç çıkmaz. Dışarı çıkan tek trafik güncelleme denetimi ve güncellemenin
 indirilmesidir. Denetim, api.github.com'a giden ve yalnızca uygulama sürümünü taşıyan tek bir
-istektir (`releases/latest`, **Beta güncellemeleri** açıksa `releases?per_page=10`); indirme
+istektir (`releases/latest`, **Nightly sürümler** açıksa `releases?per_page=10`); indirme
 github.com'dan yapılır. Homebrew ile kurulan Mac, yeni bir sürüm kurulacağı zaman bunun yerine
 `brew upgrade` çalıştırır. Denetim varsayılan olarak açık, çünkü hiçbir mağazada olmayan bir
 uygulamanın sana düzeltme çıktığını söyleyebileceği başka bir yol yok. Anahtarı kapatırsan
@@ -221,7 +221,7 @@ derlendiği commit. Telefonda Ayarlar → Hakkında'da durur. Hata bildirirken b
 | Uygulama filtresi | Telefonun gördüğü her uygulama için üç kademeli seçici; Bildirim ayarları'ndan açılır. |
 | Pano ayarları | Gelen: **Panoya otomatik yaz**, **Bildirim göster**. Giden: **Hassas içeriği gönderme**. Bir de **Panoyu Mac'e gönder**. |
 | Bağlantı yardımı | Canlı tanı, sık karşılaşılan sorunlar ve işin nasıl yürüdüğü. **ⓘ** düğmesinden ya da eşleştirme rehberindeki **Bağlanamıyorum**'dan açılır. |
-| Güncellemeler | **Güncellemeleri denetle** (günlük denetim), **Güncellemeleri otomatik kur**, **Beta güncellemeleri** ve bekleyen işe göre denetleyen, indiren ya da kuran tek bir düğme. İndirilen dosya kurulmadan önce doğrulanır. |
+| Güncellemeler | **Güncellemeleri denetle** (günlük denetim), **Güncellemeleri otomatik kur**, **Nightly sürümler** ve bekleyen işe göre denetleyen, indiren ya da kuran tek bir düğme. İndirilen dosya kurulmadan önce doğrulanır. |
 | Dosyalar | **Mac'ten dosya al** ve **Dosyaları otomatik kabul et**. Gelen dosyalar İndirilenler'e iner; gönderme herhangi bir uygulamanın paylaşım menüsünden yapılır. |
 | Dil | Android'in uygulama başına dil seçicisini açar; İngilizce ve Türkçe sunar. |
 

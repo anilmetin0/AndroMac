@@ -5,7 +5,7 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 The `## <version>` section matching the `VERSION` file is the notes of that stable release.
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
-raised. Betas list their commits instead.
+raised. Nightly builds list their commits instead.
 
 ## Unreleased
 

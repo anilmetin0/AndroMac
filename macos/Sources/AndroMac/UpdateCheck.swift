@@ -8,7 +8,7 @@ import UserNotifications
 /// This is the ONLY code in the app that talks to anything beyond the local network, and it runs
 /// solely when the user turned it on: at launch and when the panel opens, at most once a day.
 /// One HTTPS GET to api.github.com per check (`releases/latest`, or `releases?per_page=10` on the
-/// beta channel); the request carries the app version in the User-Agent and nothing else. What
+/// nightly channel); the request carries the app version in the User-Agent and nothing else. What
 /// counts as "newer" is `Release.isNewer` in AndroMacKit. Mirrors `UpdateCheck.kt` on Android.
 @MainActor
 final class UpdateCheck: ObservableObject {

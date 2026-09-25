@@ -280,7 +280,7 @@ struct SettingsList: View {
                 Store.shared.updateAutoInstall = v
                 if !v { updater.cancelWaiting() }
             }
-            Toggle("Beta updates", isOn: $updateBeta)
+            Toggle("Nightly builds", isOn: $updateBeta)
                 .onChange(of: updateBeta) { _, v in
                     Store.shared.updateBeta = v
                     updates.channelChanged()
