@@ -6,7 +6,6 @@ build/
 local.properties
 *.iml
 .idea/
-.claude/
 .swiftpm/
 
 # Signing material never enters the repository
