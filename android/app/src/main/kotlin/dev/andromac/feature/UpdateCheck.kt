@@ -42,6 +42,7 @@ object UpdateCheck {
     const val MAX_NOTES = 20_000
     private val COMMIT = Regex("""\(([0-9a-fA-F]{7,40})\)""")
     private val FOOTER_BUILD = Regex("""Build (\d{1,9}) · commit""")
+    private val BASE_VERSION = Regex("""· version (\d{1,6}\.\d{1,6}\.\d{1,6}) -->""")
     private val BETA_TAG = Regex("""^beta-(\d{1,9})-""")
 
     /** One published file of a release: what the in-app updater downloads. */
@@ -59,9 +60,12 @@ object UpdateCheck {
         /** The release body, at most [MAX_NOTES] characters. [notes] cleans it for display. */
         val body: String = "",
     ) {
-        /** `1.0.0 (fd7d47a)`, `1.0.0 nightly 212 (fd7d47a)`, or just `1.0.0` when no commit is known. */
+        /**
+         * `1.0.0 (fd7d47a)`, `nightly 212 (fd7d47a)`, or just `1.0.0` when no commit is known. A
+         * nightly is built after its version, so the version is not part of its name.
+         */
         val label: String get() {
-            val base = if (prerelease) "$version nightly ${build ?: "?"}" else version.toString()
+            val base = if (prerelease) "nightly ${build ?: "?"}" else version.toString()
             return if (commit == null) base else "$base ($commit)"
         }
 
@@ -176,13 +180,19 @@ object UpdateCheck {
         if (!url.startsWith("https://github.com/$REPO/")) return null
         val name = o.optString("name")
         val tag = o.optString("tag_name")
-        val version = Version.find(tag) ?: Version.find(name) ?: return null
         val body = o.optString("body")
+        // A nightly's title has no version; the hidden line at the end of its body carries the
+        // version it builds on (`<!-- Build 67 · commit 0964ea0 · version 1.2.0 -->`).
+        val version = Version.find(tag) ?: Version.find(name) ?: baseVersion(body) ?: return null
         return Release(
             version, commitOf(o.optString("target_commitish")) ?: COMMIT.find(name)?.groupValues?.get(1), url,
             assets(o), build(body, tag), o.optBoolean("prerelease", false), body.take(MAX_NOTES),
         )
     }
+
+    /** The version a nightly builds on, from the hidden line its body ends with. */
+    fun baseVersion(body: String): Version? =
+        BASE_VERSION.findAll(body.takeLast(2000)).lastOrNull()?.groupValues?.get(1)?.let(Version::find)
 
     /** The footer every body ends with (`Build 212 · commit fd7d47a`), else a `beta-212-sha` tag. */
     fun build(body: String, tag: String): Int? =

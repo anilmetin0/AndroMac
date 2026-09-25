@@ -112,6 +112,21 @@ class UpdateCheckTest {
     }
 
     @Test
+    fun aNightlyTakesItsVersionFromTheHiddenLine() {
+        val nightly = """{"tag_name":"nightly-20260925-0964ea0","name":"AndroMac nightly 2026-09-25 (0964ea0)",
+            "prerelease":true,"html_url":"https://github.com/anilmetin0/AndroMac/releases/tag/nightly-20260925-0964ea0",
+            "body":"### New\n\n- A change\n\n**Install:** see the README. <!-- Build 67 · commit 0964ea0 · version 1.2.0 -->",
+            "assets":[{"name":"AndroMac-nightly-67-android.apk","size":1,
+              "browser_download_url":"https://github.com/anilmetin0/AndroMac/releases/download/nightly-20260925-0964ea0/AndroMac-nightly-67-android.apk"}]}"""
+        val r = UpdateCheck.parseList("[$nightly]").single()
+        assertEquals(Version(1, 2, 0), r.version)
+        assertEquals(67, r.build)
+        assertEquals("nightly 67 (0964ea0)", r.label)
+        assertEquals("AndroMac-nightly-67-android.apk", r.apk?.name)
+        assertNull(UpdateCheck.baseVersion("<!-- Build 67 · commit 0964ea0 -->"))
+    }
+
+    @Test
     fun betaFetchesTheListAndTakesTheHighestBuild() {
         val beta = """{"tag_name":"beta-41-abc1234","name":"AndroMac 1.0.1 beta 41 (abc1234)","prerelease":true,
             "html_url":"https://github.com/anilmetin0/AndroMac/releases/tag/beta-41-abc1234",
@@ -122,7 +137,7 @@ class UpdateCheckTest {
         val r = UpdateCheck.newest(v101, 40, "fd7d47a", true, fetch)
         assertEquals(41, r?.build)
         assertTrue(r!!.prerelease)
-        assertEquals("1.0.1 nightly 41 (abc1234)", r.label)
+        assertEquals("nightly 41 (abc1234)", r.label)
         assertEquals("AndroMac-beta-41-android.apk", r.apk?.name)
         assertNull(UpdateCheck.newest(v101, 41, "abc1234", true, fetch))
         assertEquals(listOf("https://api.github.com/repos/anilmetin0/AndroMac/releases?per_page=10"), urls.distinct())

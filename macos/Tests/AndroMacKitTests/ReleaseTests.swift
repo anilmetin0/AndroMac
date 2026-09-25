@@ -87,8 +87,27 @@ struct ReleaseTests {
         #expect(r.version == v100)
         #expect(r.build == 213)
         #expect(r.prerelease)
-        #expect(r.label == "1.0.0 nightly 213 (fd7d47a)")
+        #expect(r.label == "nightly 213 (fd7d47a)")
         #expect(r.macImage?.name == "AndroMac-beta-213-macOS-arm64.dmg")
+    }
+
+    @Test func aNightlyTakesItsVersionFromTheHiddenLine() throws {
+        let json = Data("""
+        [{"tag_name":"nightly-20260925-0964ea0","name":"AndroMac nightly 2026-09-25 (0964ea0)","prerelease":true,\
+        "target_commitish":"0964ea00000000000000000000000000000000000",\
+        "html_url":"https://github.com/anilmetin0/AndroMac/releases/tag/nightly-20260925-0964ea0",\
+        "body":"### New\\n\\n- A change\\n\\n**Install:** see the README. <!-- Build 67 · commit 0964ea0 · version 1.2.0 -->",\
+        "assets":[{"name":"AndroMac-nightly-67-macOS-arm64.dmg","size":5,\
+         "browser_download_url":"https://github.com/anilmetin0/AndroMac/releases/download/nightly-20260925-0964ea0/AndroMac-nightly-67-macOS-arm64.dmg"}]}]
+        """.utf8)
+        let r = try #require(Release.parseList(json).first)
+        #expect(r.version == AppVersion(1, 2, 0))
+        #expect(r.build == 67)
+        #expect(r.label == "nightly 67 (0964ea0)")
+        #expect(r.macImage?.name == "AndroMac-nightly-67-macOS-arm64.dmg")
+        #expect(!r.notes(turkish: false).contains("version"))
+        // Without a version anywhere a release is not offered at all.
+        #expect(Release.baseVersion(body: "<!-- Build 67 · commit 0964ea0 -->") == nil)
     }
 
     private static let body = """

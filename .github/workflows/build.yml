@@ -13,9 +13,9 @@
 #     a version is tested, so raising VERSION is the decision to ship. The notes are the "## <VERSION>" section
 #     of CHANGELOG.md plus the features and fixes since the previous version.
 #   • nightly: every other push. A prerelease tagged nightly-<YYYYMMDD>-<sha>, titled
-#     "AndroMac <VERSION> nightly <YYYY-MM-DD> (<sha>)", assets AndroMac-nightly-<BUILD>-…; the
-#     notes list the features and fixes since v<VERSION>. Only the newest five are kept. The
-#     title keeps the version: the apps read it from there.
+#     "AndroMac nightly <YYYY-MM-DD> (<sha>)", assets AndroMac-nightly-<BUILD>-…; the notes list
+#     the features and fixes since v<VERSION>. Only the newest five are kept. A nightly is built
+#     after its version, so its title has none; the hidden last line carries it for the apps.
 # The apps report version <VERSION>, build = run number (the Android versionCode), commit sha.
 #
 # See docs/RELEASING.md for the whole picture.
@@ -367,10 +367,10 @@ jobs:
             else
               commits; echo
             fi
-            # The build number rides in an HTML comment on the install line: the release page does
-            # not show it, and both apps read it from the body (the updaters' footer match) while
-            # already skipping this line in the notes they show.
-            echo "**Install:** see the [README](https://github.com/${GITHUB_REPOSITORY}#install). <!-- Build ${BUILD} · commit ${COMMIT} -->"
+            # The build, the commit and the version ride in an HTML comment on the install line: the
+            # release page does not show it, both apps read them from the body, and they already
+            # skip this line in the notes they show.
+            echo "**Install:** see the [README](https://github.com/${GITHUB_REPOSITORY}#install). <!-- Build ${BUILD} · commit ${COMMIT} · version ${VERSION} -->"
           } > notes.md
 
       # Stable: one release per version, re-created on a re-publish, and marked latest.
@@ -394,7 +394,7 @@ jobs:
             --target "$GITHUB_SHA" \
             --prerelease \
             --latest=false \
-            --title "AndroMac ${VERSION} nightly ${day:0:4}-${day:4:2}-${day:6:2} (${COMMIT})" \
+            --title "AndroMac nightly ${day:0:4}-${day:4:2}-${day:6:2} (${COMMIT})" \
             --notes-file notes.md \
             dist/*
           gh release list --limit 100 --json tagName,isPrerelease,createdAt \

@@ -22,6 +22,9 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ### Değişenler
 
+- **Beta yerine nightly sürümler.** Her değişiklik, tarihi ve commit'iyle adlandırılan bir nightly
+  sürüm olarak çıkıyor (örneğin AndroMac nightly 2026-09-25 (0964ea0)). Ayarlar → Güncellemeler →
+  **Nightly sürümler** onları izliyor; kararlı sürümler doğrudan Latest olarak yayınlanıyor.
 - **macOS 27'ye hazır.** Ayarlar penceresinin kenar çubuğunda ilk grubun adı artık Geçmiş; pano
   ve bildirim geçmişleri aynı adlı ayar sayfalarıyla karışmıyor. Paneldeki telefon seçici
   etkileşimli Liquid Glass kullanıyor.

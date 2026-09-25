@@ -24,7 +24,7 @@ release job, on one of two channels.
 |---|---|---|
 | When | The first push to `main` after `VERSION` changes, a push whose commit message contains `[stable]`, or a manual run with channel `stable` | Every other push to `main` |
 | Tag | `v<VERSION>` | `nightly-<YYYYMMDD>-<sha>` |
-| Title | `AndroMac <VERSION>` | `AndroMac <VERSION> nightly <YYYY-MM-DD> (<sha>)` |
+| Title | `AndroMac <VERSION>` | `AndroMac nightly <YYYY-MM-DD> (<sha>)` |
 | Marked | Latest | Pre-release, never latest |
 | Assets | `AndroMac-<VERSION>-macOS-arm64.dmg`, `AndroMac-<VERSION>-android.apk`, `SHA256SUMS.txt` | `AndroMac-nightly-<BUILD>-macOS-arm64.dmg`, `AndroMac-nightly-<BUILD>-android.apk`, `SHA256SUMS.txt` |
 | Notes | The `## <VERSION>` section of `CHANGELOG.md`, then the features and fixes since the previous version's tag | The features and fixes since `v<VERSION>` |
@@ -39,19 +39,20 @@ tested, so raising `VERSION` is the decision to ship it. `/releases/latest`, Obt
 settings, the Homebrew cask and the apps' stable channel all see it at once. The apps with
 **Nightly builds** on (Settings → Updates) follow every push.
 
-The nightly title keeps the version (`AndroMac 1.2.0 nightly 2026-09-25 (abc1234)`): the apps
-read the version from the title, and a nightly carries the version it builds on.
+A nightly is built after its version, so its title has none (`AndroMac nightly 2026-09-25
+(abc1234)`); the apps read the version it builds on from the hidden last line. Apps before 1.2.0
+read the version from the title only, so they see the stable releases but not these nightlies.
 
 The notes are in English only; `CHANGELOG.tr.md` is the Turkish changelog in the repository. The
 commit list has New (`feat`) and Fixed (`fix`), with the scope shown as the platform
 (`fix(macos):` becomes **Mac:**); docs, CI and other housekeeping commits are left out.
 
 Every release body ends with the install line, which carries the build and the commit in an
-HTML comment the release page does not show: `<!-- Build <N> · commit <sha> -->`. The apps read
-the build number from it. The build number is the
+HTML comment the release page does not show: `<!-- Build <N> · commit <sha> · version <VERSION> -->`.
+The apps read the build number from it, and a nightly's version. The build number is the
 workflow run number, which is also the Android `versionCode`, so a newer build always installs
 over an older one. Inside the apps the version reads `<VERSION> (build · commit)`; a nightly after
-1.1.0 reads `1.1.0 (57 · abc1234)`. Local builds show build 1, commit `local`.
+1.2.0 reads `nightly 67 (abc1234)` in the update offer. Local builds show build 1, commit `local`.
 
 A stable release fails, and publishes nothing, if `CHANGELOG.md` lacks a `## <VERSION>`
 section. The header may carry a date (`## 1.2.0 - 2026-10-01`); only the version is matched.

@@ -56,10 +56,10 @@ public struct Release: Equatable, Sendable {
     /// The checksum file every release publishes. The updater refuses to install without it.
     public var checksums: Asset? { assets.first { $0.name == "SHA256SUMS.txt" } }
 
-    /// `1.0.0 (fd7d47a)`, `1.0.0 nightly 212 (fd7d47a)` for a nightly, or just `1.0.0` when no commit is
-    /// known. The words of the release title.
+    /// `1.0.0 (fd7d47a)`, `nightly 212 (fd7d47a)` for a nightly, or just `1.0.0` when no commit is
+    /// known. A nightly is built after its version, so the version is not part of its name.
     public var label: String {
-        let base = prerelease ? "\(version) nightly \(build.map(String.init) ?? "?")" : version.description
+        let base = prerelease ? "nightly \(build.map(String.init) ?? "?")" : version.description
         return commit.map { "\(base) (\($0))" } ?? base
     }
 
@@ -88,8 +88,11 @@ public struct Release: Equatable, Sendable {
               let url = URL(string: link) else { return nil }
         let name = o["name"] as? String ?? ""
         let tag = o["tag_name"] as? String ?? ""
-        guard let version = AppVersion.find(in: tag) ?? AppVersion.find(in: name) else { return nil }
         let body = o["body"] as? String ?? ""
+        // A nightly's title has no version; the hidden line at the end of its body carries the
+        // version it builds on (`<!-- Build 67 · commit 0964ea0 · version 1.2.0 -->`).
+        guard let version = AppVersion.find(in: tag) ?? AppVersion.find(in: name) ?? baseVersion(body: body)
+        else { return nil }
         return Release(
             version: version, commit: commit(target: o["target_commitish"] as? String) ?? commit(in: name),
             url: url, assets: assets(in: o), build: build(body: body, tag: tag),
@@ -114,6 +117,12 @@ public struct Release: Equatable, Sendable {
     public static func build(body: String, tag: String) -> Int? {
         let footer = String(body.suffix(2000)).matches(of: /Build (\d{1,9}) · commit/).last.flatMap { Int($0.1) }
         return footer ?? tag.firstMatch(of: /^beta-(\d{1,9})-/).flatMap { Int($0.1) }
+    }
+
+    /// The version a nightly builds on, from the hidden line its body ends with.
+    public static func baseVersion(body: String) -> AppVersion? {
+        String(body.suffix(2000)).matches(of: /· version (\d{1,6}\.\d{1,6}\.\d{1,6}) -->/).last
+            .flatMap { AppVersion.find(in: String($0.1)) }
     }
 
     /// The short form of the tag's target, when it is a commit hash rather than a branch name.

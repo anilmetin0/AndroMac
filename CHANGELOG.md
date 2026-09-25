@@ -22,6 +22,9 @@ raised. Nightly builds list their commits instead.
 
 ### Changed
 
+- **Nightly builds instead of betas.** Every change is published as a nightly build, named after
+  its date and commit (for example AndroMac nightly 2026-09-25 (0964ea0)). Settings → Updates →
+  **Nightly builds** follows them; stable versions come out as Latest straight away.
 - **Ready for macOS 27.** The settings window's sidebar names its first group History, so the
   Clipboard and Notifications histories read apart from the settings pages of the same names,
   and the panel's phone switcher uses interactive Liquid Glass.
