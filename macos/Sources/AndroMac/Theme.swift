@@ -95,14 +95,6 @@ extension View {
         }
     }
 
-    /// The same round glass control for a `Menu`. With `.menuStyle(.button)` a menu is drawn by
-    /// the button style, so it takes exactly the bezel `glassIcon` gives a button and keeps the
-    /// menu's own full-size hit area. (Painting glass around a plain menu label left only the
-    /// 16 pt glyph clickable, and the interactive glass layer on top ate the rest of the clicks.)
-    func glassMenu() -> some View {
-        self.menuStyle(.button).menuIndicator(.hidden).glassIcon()
-    }
-
     /// The panel window's shape, set on the panel's root so the cards inside can be concentric
     /// with it (`panelCard`).
     @ViewBuilder

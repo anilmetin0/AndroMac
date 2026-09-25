@@ -43,6 +43,65 @@ struct IconButton: View {
     }
 }
 
+/// A round glass button that opens a native menu. SwiftUI's `Menu` does not take the glass button
+/// style (it drew a flat disc), and glass laid over it swallowed its clicks; this is the same
+/// `IconButton` as every other panel action, with an `NSMenu` behind the click.
+struct GlassMenuButton: View {
+    let symbol: String
+    let label: String
+    let items: () -> [PanelMenu.Item]
+
+    var body: some View {
+        IconButton(symbol: symbol, label: label) { PanelMenu.show(items()) }
+    }
+}
+
+/// The native menu behind `GlassMenuButton`, opened under the pointer.
+@MainActor
+final class PanelMenu: NSObject {
+    enum Item {
+        case action(String, symbol: String? = nil, checked: Bool = false, enabled: Bool = true, run: () -> Void)
+        case separator
+        /// A line of explanation, not clickable.
+        case note(String)
+    }
+
+    /// Kept until the next menu: the items' target must outlive the menu's tracking.
+    private static var current: PanelMenu?
+    private var actions: [() -> Void] = []
+
+    static func show(_ items: [Item]) {
+        let target = PanelMenu()
+        current = target
+        let menu = NSMenu()
+        menu.autoenablesItems = false
+        for item in items {
+            switch item {
+            case .separator:
+                menu.addItem(.separator())
+            case .note(let text):
+                let row = NSMenuItem(title: text, action: nil, keyEquivalent: "")
+                row.isEnabled = false
+                menu.addItem(row)
+            case let .action(title, symbol, checked, enabled, run):
+                let row = NSMenuItem(title: title, action: #selector(run(_:)), keyEquivalent: "")
+                row.target = target
+                row.tag = target.actions.count
+                target.actions.append(run)
+                row.state = checked ? .on : .off
+                row.isEnabled = enabled
+                if let symbol { row.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil) }
+                menu.addItem(row)
+            }
+        }
+        menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
+    }
+
+    @objc private func run(_ sender: NSMenuItem) {
+        actions[sender.tag]()
+    }
+}
+
 /// A numbered setup step; completed ones turn into a check mark.
 struct OnboardingStep: View {
     let number: Int

@@ -295,30 +295,25 @@ private struct DeviceCard: View {
     /// The per-phone clipboard switch, Disconnect and Forget: reachable, but out of the way of a
     /// glance. Offered whatever the phone's state, offline included.
     private var more: some View {
-        Menu {
-            // Which phones get the Mac's clipboard is a per-device answer, so it belongs here.
-            Toggle("Send my clipboard here", isOn: Binding(
-                get: { device.receivesClipboard },
-                set: { on in Store.shared.updateDevice(id: device.id) { $0.receivesClipboard = on } }
-            ))
-            Button("Device settings…") { state.showMainWindow(.setting(.devices)) }
-            Divider()
+        GlassMenuButton(symbol: "ellipsis", label: String(localized: "More")) {
+            var items: [PanelMenu.Item] = [
+                // Which phones get the Mac's clipboard is a per-device answer, so it belongs here.
+                .action(String(localized: "Send my clipboard here"), checked: device.receivesClipboard) {
+                    Store.shared.updateDevice(id: device.id) { $0.receivesClipboard.toggle() }
+                },
+                .action(String(localized: "Device settings…")) { state.showMainWindow(.setting(.devices)) },
+                .separator,
+            ]
             if !device.paused {
-                Button("Disconnect", action: toggleConnection)
+                items.append(.action(String(localized: "Disconnect"), run: toggleConnection))
             }
             // The same as Forget in Settings: this phone only, hung up on at once.
-            Button("Forget", role: .destructive) {
+            items.append(.action(String(localized: "Forget")) {
                 Store.shared.unpair(id: device.id)
                 Task { await Server.shared.disconnect(device.id) }
-            }
-        } label: {
-            Image(systemName: "ellipsis")
-                .font(Theme.Font.label)
-                .frame(width: 16, height: 16)
+            })
+            return items
         }
-        .glassMenu()
-        .help("More")
-        .accessibilityLabel("More")
     }
 
     /// Disconnect hangs up and keeps the phone from coming back; Connect lets it in again.
@@ -471,43 +466,34 @@ private struct PhoneControls: View {
         system.volumeMax > 0 ? level * 100 / system.volumeMax : 0
     }
 
-    private static let modes: [(mode: String, symbol: String, label: LocalizedStringKey)] = [
+    private static let modes: [(mode: String, symbol: String, label: String.LocalizationValue)] = [
         ("normal", "bell", "Ring"),
         ("vibrate", "iphone.radiowaves.left.and.right", "Vibrate"),
         ("silent", "bell.slash", "Silent"),
     ]
 
-    private var current: (mode: String, symbol: String, label: LocalizedStringKey) {
+    private var current: (mode: String, symbol: String, label: String.LocalizationValue) {
         Self.modes.first { $0.mode == system.ringer } ?? Self.modes[0]
     }
 
     private var ringer: some View {
-        Menu {
-            ForEach(Self.modes, id: \.mode) { option in
-                Toggle(isOn: Binding(
-                    get: { system.ringer == option.mode },
-                    set: { if $0 { send("ringer", mode: option.mode) } }
-                )) {
-                    Label(option.label, systemImage: option.symbol)
-                }
+        GlassMenuButton(symbol: current.symbol, label: String(localized: "Ringer")) {
+            var items: [PanelMenu.Item] = Self.modes.map { option in
                 // Silencing is the one mode that needs the extra grant; the other two always work.
-                .disabled(option.mode == "silent" && !system.canSilence)
+                .action(String(localized: option.label), symbol: option.symbol,
+                        checked: system.ringer == option.mode,
+                        enabled: option.mode != "silent" || system.canSilence) {
+                    send("ringer", mode: option.mode)
+                }
             }
             if !system.canSilence {
-                Divider()
                 // Android refuses a silent ringer to an app without Do Not Disturb access, so say
                 // where the switch is instead of letting the item fail quietly.
-                Text("Allow Do Not Disturb access on the phone to silence it")
+                items += [.separator, .note(String(localized: "Allow Do Not Disturb access on the phone to silence it"))]
             }
-        } label: {
-            Image(systemName: current.symbol)
-                .font(Theme.Font.label)
-                .frame(width: 16, height: 16)
+            return items
         }
-        .glassMenu()
-        .help("Ringer")
-        .accessibilityLabel("Ringer")
-        .accessibilityValue(current.label)
+        .accessibilityValue(Text(String(localized: current.label)))
     }
 
     /// The message is built inside the task: a dictionary of `Any` cannot cross an actor boundary,
