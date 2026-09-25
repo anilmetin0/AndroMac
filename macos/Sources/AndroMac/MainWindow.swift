@@ -42,7 +42,9 @@ struct MainWindow: View {
     var body: some View {
         NavigationSplitView {
             List(selection: $state.requestedTab) {
-                Section {
+                // Named, so the Clipboard and Notifications histories read apart from the settings
+                // pages of the same names below.
+                Section("History") {
                     ForEach(Tab.lists, id: \.self) { row($0) }
                 }
                 Section("Settings") {
@@ -63,7 +65,7 @@ struct MainWindow: View {
     /// sidebar that scrolls moves its rows under the title bar when a click scrolls one into view.
     /// The minimum also overrides a shorter frame the window may have saved before.
     // ponytail: sized for the medium sidebar icon size; on "Large" the sidebar can still scroll.
-    static let minHeight: CGFloat = 540
+    static let minHeight: CGFloat = 566
 
     private func row(_ tab: Tab) -> some View {
         Label(tab.title, systemImage: tab.symbol).tag(tab)

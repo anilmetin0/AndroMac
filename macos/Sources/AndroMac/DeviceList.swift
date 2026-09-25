@@ -143,7 +143,7 @@ private struct DeviceSegment: View {
     private var pill: some View {
         if #available(macOS 26.0, *) {
             let shape = RoundedRectangle(cornerRadius: Theme.Radius.card - Theme.Space.hair, style: .continuous)
-            shape.fill(.clear).glassEffect(.regular, in: shape)
+            shape.fill(.clear).glassEffect(.regular.interactive(), in: shape)
         } else {
             Capsule().fill(Color.primary.opacity(0.12))
         }

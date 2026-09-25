@@ -617,7 +617,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .permissions: return "checkmark.shield"
         case .network: return "network"
         case .updates: return "arrow.down.circle"
-        case .metrics: return "chart.bar"
+        case .metrics: return "chart.line.uptrend.xyaxis"
         case .privacy: return "lock.shield"
         }
     }
