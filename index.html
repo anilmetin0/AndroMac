@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-site-verification" content="qmGpRQt2trjMiMI0hQGZDpzLRTLRGA_wI7VQ3P8fAZM">
+  <title>AndroMac: your Android phone on your Mac</title>
+  <meta name="description" content="Phone notifications, clipboard, battery, media, files and screen mirroring on your Mac over Wi-Fi.">
+  <link rel="canonical" href="https://anilmetin0.github.io/AndroMac/">
+  <link rel="alternate" hreflang="en" href="https://anilmetin0.github.io/AndroMac/">
+  <link rel="alternate" hreflang="tr" href="https://anilmetin0.github.io/AndroMac/tr/">
+  <link rel="alternate" hreflang="x-default" href="https://anilmetin0.github.io/AndroMac/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AndroMac">
+  <meta property="og:title" content="AndroMac: your Android phone on your Mac">
+  <meta property="og:description" content="Notifications, clipboard, files and screen mirroring over Wi-Fi.">
+  <meta property="og:url" content="https://anilmetin0.github.io/AndroMac/">
+  <meta property="og:image" content="https://anilmetin0.github.io/AndroMac/images/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The AndroMac menu-bar panel on a Mac next to the AndroMac app on an Android phone.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="tr_TR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#f5f6f4" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c1622" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="images/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="images/icon.png" sizes="256x256" type="image/png">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link rel="preload" href="fonts/schibsted-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="images/macos-panel-640.webp" as="image" type="image/webp" imagesrcset="images/macos-panel-320.webp 320w, images/macos-panel-640.webp 640w" imagesizes="(max-width: 600px) 46vw, 320px" fetchpriority="high">
+  <link rel="stylesheet" href="site.css">
+  <script>try{const t=localStorage.getItem("theme");document.documentElement.dataset.theme=t==="dark"||t==="light"?t:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch{}</script>
+  <script>if("IntersectionObserver"in window&&!matchMedia("(prefers-reduced-motion: reduce)").matches){const r=document.documentElement;r.classList.add("rv");addEventListener("load",()=>{if(!r.dataset.revealReady)r.classList.remove("rv")})}</script>
+  <script src="site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="AndroMac"><img src="images/icon-68.png" alt="" width="34" height="34"><span class="brand-name">AndroMac</span></a>
+    <nav aria-label="Main">
+      <a href="#download">Download</a>
+      <a href="#features">Features</a>
+      <a href="#faq">FAQ</a>
+      <a class="gh" href="https://github.com/anilmetin0/AndroMac" aria-label="AndroMac on GitHub"><span class="gh-name"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.65 7.65 0 0 1 8 4.58c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg><span class="gh-text">GitHub</span></span><span class="stars" hidden><svg class="star" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .8l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L.8 6.1l5-.7Z"/></svg><span data-stars></span><span class="sr"> stars</span></span></a>
+      <button class="theme" type="button" aria-label="Switch light or dark theme" title="Switch light or dark theme"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg></button>
+      <div class="lang" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="tr/" hreflang="tr" lang="tr" aria-label="Türkçe">TR</a></div>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <h1>Your Android phone, on your Mac</h1>
+        <p class="lede">A menu bar app on your Mac and a companion app on your Android phone. Notifications, clipboard, files, music and the phone's screen come to the Mac over Wi-Fi.</p>
+        <p class="reqs">Mac with Apple silicon, macOS 14 or later. Android 10 or later.</p>
+        <div class="actions">
+          <a class="btn" href="#mac">Install on Mac</a>
+          <a class="btn ghost" href="#android">Get the Android app</a>
+        </div>
+      </div>
+      <div class="stage">
+        <picture>
+          <source type="image/webp" srcset="images/macos-panel-320.webp 320w, images/macos-panel-640.webp 640w" sizes="(max-width: 600px) 46vw, 320px">
+          <img class="panel" src="images/macos-panel.png" width="640" height="1090" fetchpriority="high" alt="AndroMac menu-bar panel on the Mac: a Pixel 9 at 78% and charging, a song playing, the clipboard, and recent phone notifications including a verification code with a copy button.">
+        </picture>
+        <picture>
+          <source type="image/webp" srcset="images/android-home-270.webp 270w, images/android-home-540.webp 540w" sizes="(max-width: 600px) 36vw, 250px">
+          <img class="phone" src="images/android-home.png" width="1080" height="2000" alt="AndroMac on Android, ready to pair, with a Pair button and switches for battery, clipboard, notifications and media.">
+        </picture>
+        <div class="banner" aria-hidden="true">
+          <span class="app"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 4C6.5 4 2 7.6 2 12c0 2.2 1.1 4.2 3 5.6L4 21l4.2-2.1c1.2.4 2.5.6 3.8.6 5.5 0 10-3.6 10-8S17.5 4 12 4z"/></svg></span>
+          <span><span class="meta"><b>Messages</b><span>now</span></span><b>Bank</b><br>Your verification code is 481902</span>
+          <span class="code">Copy code</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section id="download" aria-labelledby="download-h">
+    <div class="wrap">
+      <div class="head"><h2 id="download-h">Download</h2></div>
+      <div class="downloads" data-stagger>
+        <div class="card" id="mac" data-reveal="rise">
+          <h3>Mac <span class="ver" data-version></span></h3>
+          <p class="sub">Apple silicon, macOS 14 or later</p>
+          <p class="label">Install with Homebrew in Terminal:</p>
+          <div class="term"><pre id="brew" tabindex="0">brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
+brew trust anilmetin0/andromac
+brew install --cask andromac
+xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
+          <div class="copy-row">
+            <button class="btn copy" type="button" data-copy="brew" data-label="Copy commands">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+              <svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+              <span class="lbl" aria-live="polite">Copy commands</span>
+            </button>
+          </div>
+          <p class="note">The app is not notarized, so the last line removes the quarantine flag macOS adds to downloads.</p>
+          <p class="alt">No Homebrew? <a data-asset="dmg" href="https://github.com/anilmetin0/AndroMac/releases/latest">Download the DMG</a></p>
+        </div>
+
+        <div class="card" id="android" data-reveal="rise">
+          <h3>Android <span class="ver" data-version></span></h3>
+          <p class="sub">Android 10 or later</p>
+          <div class="qr-box">
+            <img class="qr" src="images/qr-apk.svg" width="168" height="168" loading="lazy" alt="QR code that downloads the latest AndroMac APK">
+            <ol class="apk-steps"><li>Scan the code with your phone's camera</li><li>Open the downloaded APK</li><li>Allow installs from your browser if Android asks</li></ol>
+          </div>
+          <p class="note">After this, the app updates itself. Android asks you to confirm each update.</p>
+          <div class="touch-only">
+            <a class="btn" data-asset="apk" href="https://github.com/anilmetin0/AndroMac/releases/latest">Download APK</a>
+          </div>
+          <p class="alt">Or <a data-asset="apk" href="https://github.com/anilmetin0/AndroMac/releases/latest">download the APK file</a></p>
+        </div>
+      </div>
+      <details class="nightly-box">
+        <summary>Looking for nightly builds?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <div class="nightly-body">
+          <p class="nightly-intro">A nightly build is published after every change and named by its date and commit. It previews the next version, so expect rough edges. Once installed, the app follows the nightly builds on its own. <span class="nightly-name" hidden>Latest nightly: <strong data-nightly></strong></span></p>
+          <div class="downloads">
+            <div class="card">
+              <h3>Mac nightly</h3>
+              <p class="label">Install with Homebrew in Terminal:</p>
+              <div class="term"><pre id="brew-nightly" tabindex="0">brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
+brew trust anilmetin0/andromac
+brew install --cask andromac@nightly
+xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
+              <div class="copy-row">
+                <button class="btn copy" type="button" data-copy="brew-nightly" data-label="Copy commands">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+              <svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+                  <span class="lbl" aria-live="polite">Copy commands</span>
+                </button>
+              </div>
+              <p class="note">The two casks replace each other, so this also switches an existing install.</p>
+              <p class="alt">No Homebrew? <a href="https://github.com/anilmetin0/AndroMac/releases/download/nightly/AndroMac-nightly-macOS-arm64.dmg">Download the nightly DMG</a></p>
+            </div>
+            <div class="card">
+              <h3>Android nightly</h3>
+              <div class="qr-box">
+                <img class="qr" src="images/qr-apk-nightly.svg" width="168" height="168" loading="lazy" alt="QR code that downloads the nightly AndroMac APK">
+                <ol class="apk-steps"><li>Scan the code with your phone's camera</li><li>Open the downloaded APK</li><li>Allow installs from your browser if Android asks</li></ol>
+              </div>
+              <p class="note">After this, the app updates itself. Android asks you to confirm each update.</p>
+              <div class="touch-only"><a class="btn" href="https://github.com/anilmetin0/AndroMac/releases/download/nightly/AndroMac-nightly-android.apk">Download nightly APK</a></div>
+              <p class="alt">Or <a href="https://github.com/anilmetin0/AndroMac/releases/download/nightly/AndroMac-nightly-android.apk">download the nightly APK file</a> · <a href="https://github.com/anilmetin0/AndroMac/releases/tag/nightly">Nightly notes</a></p>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="features" aria-labelledby="features-h">
+    <div class="wrap">
+      <div class="head"><h2 id="features-h">What it does</h2></div>
+      <ul class="features" data-stagger>
+        <li data-reveal="lift"><h3>Notifications</h3><p>Phone notifications show up in Notification Center with the app icon, pictures and actions. Reply inline. One-time codes get a Copy code button.</p></li>
+        <li data-reveal="lift"><h3>Clipboard</h3><p>Copy on one device, paste on the other. The Mac keeps a searchable history.</p></li>
+        <li data-reveal="lift"><h3>Battery</h3><p>Battery level and charging state in the menu bar, with a warning when it runs low.</p></li>
+        <li data-reveal="lift"><h3>Media and sound</h3><p>Play, pause and skip. Set the ringer and volume. Make a lost phone ring.</p></li>
+        <li data-reveal="lift"><h3>Files</h3><p>Send files in both directions. Every transfer is checked with SHA-256.</p></li>
+        <li data-reveal="lift"><h3>Screen mirroring</h3><p>Use the phone's screen with your mouse, keyboard and sound, through the bundled scrcpy.</p></li>
+        <li data-reveal="lift"><h3>Several phones</h3><p>Pair more than one phone with a Mac. Each keeps its own settings.</p></li>
+        <li data-reveal="lift"><h3>Updates</h3><p>The apps update themselves, through Homebrew if Homebrew installed them. Nightly builds are optional.</p></li>
+        <li data-reveal="lift"><h3>Local network</h3><p>Works over your Wi-Fi without an account.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="inside" aria-labelledby="inside-h">
+    <div class="wrap">
+      <div class="head"><h2 id="inside-h">Inside the apps</h2></div>
+      <div class="gallery" data-stagger>
+        <figure class="tile wide" data-reveal="zoom">
+          <div class="fig">
+            <div class="pane"><picture>
+              <source type="image/webp" srcset="images/macos-window-720.webp 720w, images/macos-window-1440.webp 1440w" sizes="(max-width: 900px) 90vw, 620px">
+              <img src="images/macos-window.png" width="1440" height="1000" loading="lazy" alt="Notification history window on the Mac, listing notifications from Messages, Signal, Calendar, Photos and Maps, with a search field.">
+            </picture></div>
+            <figcaption>Every notification from the phone, in a history you can search by app, title or text</figcaption>
+          </div>
+        </figure>
+        <figure class="tile tall" data-reveal="zoom">
+          <div class="fig">
+            <div class="pane"><picture>
+              <source type="image/webp" srcset="images/android-sync-dark-300.webp 300w, images/android-sync-dark-600.webp 600w" sizes="(max-width: 600px) 60vw, 280px">
+              <img src="images/android-sync-dark.png" width="1080" height="1800" loading="lazy" alt="The Android app in dark mode, with switches for battery, clipboard, notifications and media.">
+            </picture></div>
+            <figcaption>Choose what the phone shares with the Mac: battery, clipboard, notifications and media</figcaption>
+          </div>
+        </figure>
+        <figure class="tile tall" data-reveal="zoom">
+          <div class="fig">
+            <div class="pane"><picture>
+              <source type="image/webp" srcset="images/android-connection-300.webp 300w, images/android-connection-600.webp 600w" sizes="(max-width: 600px) 60vw, 280px">
+              <img src="images/android-connection.png" width="1080" height="1800" loading="lazy" alt="Connection screen on Android with the paired Mac, its last address, and a Reconnect automatically switch.">
+            </picture></div>
+            <figcaption>The phone reconnects whenever the Mac is reachable on the same Wi-Fi</figcaption>
+          </div>
+        </figure>
+        <figure class="tile wide" data-reveal="zoom">
+          <div class="fig">
+            <div class="pane"><picture>
+              <source type="image/webp" srcset="images/macos-settings-sync-720.webp 720w, images/macos-settings-sync-1440.webp 1440w" sizes="(max-width: 900px) 90vw, 620px">
+              <img src="images/macos-settings-sync.png" width="1440" height="1000" loading="lazy" alt="Sync settings on the Mac: switches for battery, clipboard, notifications and media, and a low-battery alert threshold of 10, 15, 20 or 30 percent.">
+            </picture></div>
+            <figcaption>Choose what syncs, and at which battery level the Mac warns you</figcaption>
+          </div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="pairing" aria-labelledby="pairing-h">
+    <div class="wrap pair">
+      <div>
+        <div class="head"><h2 id="pairing-h">Pairing</h2></div>
+        <ol class="steps" data-stagger>
+          <li data-reveal="left"><div><h3>Open AndroMac on both</h3><p>The Mac and the phone need to be on the same Wi-Fi.</p></div></li>
+          <li data-reveal="left"><div><h3>Tap Pair on the phone</h3><p>It finds the Mac on the same Wi-Fi.</p></div></li>
+          <li data-reveal="left"><div><h3>Compare the code</h3><p>Both screens show six digits. If they match, confirm on both.</p></div></li>
+        </ol>
+        <p class="more"><a href="https://github.com/anilmetin0/AndroMac/blob/main/docs/GUIDE.md">Read the full guide</a></p>
+      </div>
+      <figure data-reveal="right">
+        <div class="frame">
+          <picture>
+            <source type="image/webp" srcset="images/macos-pairing-380.webp 380w, images/macos-pairing-760.webp 760w" sizes="(max-width: 600px) 52vw, 340px">
+            <img src="images/macos-pairing.png" width="760" height="556" loading="lazy" alt="Pairing window on the Mac with a six-digit code and Reject and Pair buttons.">
+          </picture>
+          <picture>
+            <source type="image/webp" srcset="images/android-pairing-300.webp 300w, images/android-pairing-600.webp 600w" sizes="(max-width: 600px) 38vw, 240px">
+            <img class="ph" src="images/android-pairing.png" width="1080" height="900" loading="lazy" alt="Pairing code dialog on Android with Reject and Pair buttons.">
+          </picture>
+        </div>
+        <figcaption>The pairing prompts on the Mac and on the phone</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="faq" aria-labelledby="faq-h">
+    <div class="wrap">
+      <div class="head"><h2 id="faq-h">Questions</h2></div>
+      <div class="faq" data-reveal="lift">
+        <details>
+          <summary>How do I install it?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+          <div class="ans">
+            <p>On the Mac, paste the four <a href="#mac">Homebrew lines</a> into Terminal. Without Homebrew, open the DMG, drag AndroMac to Applications and run the <code>xattr</code> line.</p>
+            <p>On the phone, download the APK and allow installs from your browser when Android asks. Then open AndroMac on both and pair them.</p>
+          </div>
+        </details>
+        <details>
+          <summary>macOS says AndroMac is damaged or can't be opened<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+          <div class="ans">
+            <p>The app is signed with its own certificate and is not notarized, so macOS blocks the first launch. Run this once in Terminal:</p>
+            <p><code>xattr -dr com.apple.quarantine /Applications/AndroMac.app</code></p>
+            <p>Or open the app, let macOS refuse it, then press Open Anyway in System Settings → Privacy &amp; Security.</p>
+          </div>
+        </details>
+        <details>
+          <summary>How do updates work?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+          <div class="ans">
+            <p>Both apps check once a day and can install what they find. Settings → Updates on either side has the check switch, Install updates automatically and Nightly builds.</p>
+            <p>If Homebrew installed the Mac app, <code>brew upgrade --cask andromac</code> also moves it to the new version.</p>
+          </div>
+        </details>
+        <details>
+          <summary>What does screen mirroring need?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+          <div class="ans">
+            <p>Wireless debugging on the phone. Tap Build number seven times to unlock Developer options, then turn on Wireless debugging. A USB cable with USB debugging on works too.</p>
+            <p>The first time, press the mirror button in the Mac panel and type the code from Pair device with pairing code on the phone. Turn Wireless debugging off when you are done.</p>
+          </div>
+        </details>
+        <details>
+          <summary>How do I remove AndroMac?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+          <div class="ans">
+            <p>On the Mac, run <code>brew uninstall --cask andromac</code>, or drag the app to the Trash if you installed it from the DMG. On the phone, uninstall it like any other app.</p>
+          </div>
+        </details>
+      </div>
+      <p class="more">More answers and troubleshooting are in the <a href="https://github.com/anilmetin0/AndroMac/blob/main/docs/GUIDE.md">guide</a>.</p>
+    </div>
+  </section>
+
+  <section id="changes" aria-labelledby="changes-h" hidden>
+    <div class="wrap" data-reveal="lift">
+      <div class="head">
+        <div>
+          <h2 id="changes-h">What's new in <span data-changes-version></span></h2>
+          <p class="date" hidden></p>
+        </div>
+        <a href="https://github.com/anilmetin0/AndroMac/blob/main/CHANGELOG.md">Full changelog</a>
+      </div>
+      <div class="changes"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>MIT License</p>
+    <nav aria-label="Project">
+      <a href="https://github.com/anilmetin0/AndroMac/releases">All releases</a>
+      <a href="https://github.com/anilmetin0/AndroMac/blob/main/docs/GUIDE.md">Guide</a>
+      <a href="https://github.com/anilmetin0/AndroMac/blob/main/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/anilmetin0/AndroMac/issues">Report an issue</a>
+      <a href="https://github.com/anilmetin0/AndroMac">Source code</a>
+      <a href="tr/" hreflang="tr" lang="tr">Türkçe</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

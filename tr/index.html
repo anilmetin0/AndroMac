@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AndroMac: Android telefonun, Mac'inde</title>
+  <meta name="description" content="Android telefonunun bildirimleri, panosu, pili, müziği, dosyaları ve ekranı Wi-Fi üzerinden Mac'inde.">
+  <link rel="canonical" href="https://anilmetin0.github.io/AndroMac/tr/">
+  <link rel="alternate" hreflang="en" href="https://anilmetin0.github.io/AndroMac/">
+  <link rel="alternate" hreflang="tr" href="https://anilmetin0.github.io/AndroMac/tr/">
+  <link rel="alternate" hreflang="x-default" href="https://anilmetin0.github.io/AndroMac/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AndroMac">
+  <meta property="og:title" content="AndroMac: Android telefonun, Mac'inde">
+  <meta property="og:description" content="Android telefonunun bildirimleri, panosu, dosyaları ve ekranı Wi-Fi üzerinden Mac'inde.">
+  <meta property="og:url" content="https://anilmetin0.github.io/AndroMac/tr/">
+  <meta property="og:image" content="https://anilmetin0.github.io/AndroMac/images/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Mac'te AndroMac menü çubuğu paneli, yanında telefondaki AndroMac uygulaması.">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#f5f6f4" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c1622" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../images/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="../images/icon.png" sizes="256x256" type="image/png">
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png">
+  <link rel="preload" href="../fonts/schibsted-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../images/macos-panel-640.webp" as="image" type="image/webp" imagesrcset="../images/macos-panel-320.webp 320w, ../images/macos-panel-640.webp 640w" imagesizes="(max-width: 600px) 46vw, 320px" fetchpriority="high">
+  <link rel="stylesheet" href="../site.css">
+  <script>try{const t=localStorage.getItem("theme");document.documentElement.dataset.theme=t==="dark"||t==="light"?t:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch{}</script>
+  <script>if("IntersectionObserver"in window&&!matchMedia("(prefers-reduced-motion: reduce)").matches){const r=document.documentElement;r.classList.add("rv");addEventListener("load",()=>{if(!r.dataset.revealReady)r.classList.remove("rv")})}</script>
+  <script src="../site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">İçeriğe geç</a>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="AndroMac"><img src="../images/icon-68.png" alt="" width="34" height="34"><span class="brand-name">AndroMac</span></a>
+    <nav aria-label="Ana menü">
+      <a href="#download">İndir</a>
+      <a href="#features">Özellikler</a>
+      <a href="#faq">SSS</a>
+      <a class="gh" href="https://github.com/anilmetin0/AndroMac" aria-label="GitHub’da AndroMac"><span class="gh-name"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.65 7.65 0 0 1 8 4.58c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg><span class="gh-text">GitHub</span></span><span class="stars" hidden><svg class="star" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .8l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L.8 6.1l5-.7Z"/></svg><span data-stars></span><span class="sr"> yıldız</span></span></a>
+      <button class="theme" type="button" aria-label="Açık veya koyu temaya geç" title="Açık veya koyu temaya geç"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg></button>
+      <div class="lang" role="group" aria-label="Dil"><a href="../" hreflang="en" lang="en" aria-label="English">EN</a><span aria-current="page">TR</span></div>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <h1>Android telefonun, Mac'inde</h1>
+        <p class="lede">Mac'te menü çubuğunda duran bir uygulama ve telefonunda onun Android eşi. Bildirimler, pano, dosyalar, müzik ve telefonun ekranı Wi-Fi üzerinden Mac'e gelir.</p>
+        <p class="reqs">Apple Silicon Mac ve macOS 14 ya da üstü. Android 10 ya da üstü.</p>
+        <div class="actions">
+          <a class="btn" href="#mac">Mac'e kur</a>
+          <a class="btn ghost" href="#android">Android uygulamasını indir</a>
+        </div>
+      </div>
+      <div class="stage">
+        <picture>
+          <source type="image/webp" srcset="../images/macos-panel-320.webp 320w, ../images/macos-panel-640.webp 640w" sizes="(max-width: 600px) 46vw, 320px">
+          <img class="panel" src="../images/macos-panel.png" width="640" height="1090" fetchpriority="high" alt="Mac'te AndroMac menü çubuğu paneli: yüzde 78 dolu ve şarj olan bir Pixel 9, çalan bir şarkı, pano ve kopyalama düğmeli bir doğrulama kodu dahil son telefon bildirimleri.">
+        </picture>
+        <picture>
+          <source type="image/webp" srcset="../images/android-home-270.webp 270w, ../images/android-home-540.webp 540w" sizes="(max-width: 600px) 36vw, 250px">
+          <img class="phone" src="../images/android-home.png" width="1080" height="2000" alt="Android'de eşleşmeye hazır AndroMac: Eşleştir düğmesi ve pil, pano, bildirim ve medya anahtarları.">
+        </picture>
+        <div class="banner" aria-hidden="true">
+          <span class="app"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 4C6.5 4 2 7.6 2 12c0 2.2 1.1 4.2 3 5.6L4 21l4.2-2.1c1.2.4 2.5.6 3.8.6 5.5 0 10-3.6 10-8S17.5 4 12 4z"/></svg></span>
+          <span><span class="meta"><b>Mesajlar</b><span>şimdi</span></span><b>Banka</b><br>Doğrulama kodunuz 481902</span>
+          <span class="code">Kodu kopyala</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section id="download" aria-labelledby="download-h">
+    <div class="wrap">
+      <div class="head"><h2 id="download-h">İndir</h2></div>
+      <div class="downloads" data-stagger>
+        <div class="card" id="mac" data-reveal="rise">
+          <h3>Mac <span class="ver" data-version></span></h3>
+          <p class="sub">Apple Silicon, macOS 14 ya da üstü</p>
+          <p class="label">Homebrew ile kurmak için Terminal'e yapıştır:</p>
+          <div class="term"><pre id="brew" tabindex="0">brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
+brew trust anilmetin0/andromac
+brew install --cask andromac
+xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
+          <div class="copy-row">
+            <button class="btn copy" type="button" data-copy="brew" data-label="Komutları kopyala">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+              <svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+              <span class="lbl" aria-live="polite">Komutları kopyala</span>
+            </button>
+          </div>
+          <p class="note">Uygulama Apple'ın noter onayından geçmediği için son satır, macOS'un indirilen dosyaya koyduğu karantina işaretini kaldırır.</p>
+          <p class="alt">Homebrew yok mu? <a data-asset="dmg" href="https://github.com/anilmetin0/AndroMac/releases/latest">DMG'yi indir</a></p>
+        </div>
+
+        <div class="card" id="android" data-reveal="rise">
+          <h3>Android <span class="ver" data-version></span></h3>
+          <p class="sub">Android 10 ya da üstü</p>
+          <div class="qr-box">
+            <img class="qr" src="../images/qr-apk.svg" width="168" height="168" loading="lazy" alt="Son AndroMac APK'sını indiren QR kod">
+            <ol class="apk-steps"><li>Kodu telefonun kamerasıyla okut</li><li>İnen APK'yı aç</li><li>Android sorarsa tarayıcıya kurulum izni ver</li></ol>
+          </div>
+          <p class="note">Sonraki güncellemeleri uygulama kendisi indirir, Android her birinde onayını ister.</p>
+          <div class="touch-only">
+            <a class="btn" data-asset="apk" href="https://github.com/anilmetin0/AndroMac/releases/latest">APK'yı indir</a>
+          </div>
+          <p class="alt">Ya da <a data-asset="apk" href="https://github.com/anilmetin0/AndroMac/releases/latest">APK'yı buradan indir</a></p>
+        </div>
+      </div>
+      <details class="nightly-box">
+        <summary>Nightly sürümleri mi arıyorsun?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <div class="nightly-body">
+          <p class="nightly-intro">Her değişiklikten sonra, adını tarihinden ve commit'inden alan bir nightly sürüm çıkar. Bir sonraki sürümü önceden denersin, ama hata çıkma ihtimali daha yüksektir. Kurduktan sonra uygulama nightly sürümleri kendisi takip eder. <span class="nightly-name" hidden>Son nightly: <strong data-nightly></strong></span></p>
+          <div class="downloads">
+            <div class="card">
+              <h3>Mac nightly</h3>
+              <p class="label">Homebrew ile kurmak için Terminal'e yapıştır:</p>
+              <div class="term"><pre id="brew-nightly" tabindex="0">brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
+brew trust anilmetin0/andromac
+brew install --cask andromac@nightly
+xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
+              <div class="copy-row">
+                <button class="btn copy" type="button" data-copy="brew-nightly" data-label="Komutları kopyala">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+              <svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+                  <span class="lbl" aria-live="polite">Komutları kopyala</span>
+                </button>
+              </div>
+              <p class="note">İki cask birbirinin yerine geçer, yani kurulu AndroMac de nightly'ye geçer.</p>
+              <p class="alt">Homebrew yok mu? <a href="https://github.com/anilmetin0/AndroMac/releases/download/nightly/AndroMac-nightly-macOS-arm64.dmg">Nightly DMG'yi indir</a></p>
+            </div>
+            <div class="card">
+              <h3>Android nightly</h3>
+              <div class="qr-box">
+                <img class="qr" src="../images/qr-apk-nightly.svg" width="168" height="168" loading="lazy" alt="AndroMac nightly APK'sını indiren QR kod">
+                <ol class="apk-steps"><li>Kodu telefonun kamerasıyla okut</li><li>İnen APK'yı aç</li><li>Android sorarsa tarayıcıya kurulum izni ver</li></ol>
+              </div>
+              <p class="note">Sonraki güncellemeleri uygulama kendisi indirir, Android her birinde onayını ister.</p>
+              <div class="touch-only"><a class="btn" href="https://github.com/anilmetin0/AndroMac/releases/download/nightly/AndroMac-nightly-android.apk">Nightly APK'yı indir</a></div>
+              <p class="alt">Ya da <a href="https://github.com/anilmetin0/AndroMac/releases/download/nightly/AndroMac-nightly-android.apk">nightly APK'yı buradan indir</a> · <a href="https://github.com/anilmetin0/AndroMac/releases/tag/nightly">Nightly notları</a></p>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="features" aria-labelledby="features-h">
+    <div class="wrap">
+      <div class="head"><h2 id="features-h">Neler yapıyor</h2></div>
+      <ul class="features" data-stagger>
+        <li data-reveal="lift"><h3>Bildirimler</h3><p>Telefon bildirimleri uygulamanın simgesi, görseli ve eylemleriyle Bildirim Merkezi'ne düşer, oradan yanıt verebilirsin. Tek kullanımlık kodların yanında Kodu kopyala düğmesi çıkar.</p></li>
+        <li data-reveal="lift"><h3>Pano</h3><p>Bir cihazda kopyala, ötekinde yapıştır. Mac, içinde arama yapabileceğin bir pano geçmişi tutar.</p></li>
+        <li data-reveal="lift"><h3>Pil</h3><p>Pil düzeyi ve şarj durumu menü çubuğunda durur, pil azalınca uyarı gelir.</p></li>
+        <li data-reveal="lift"><h3>Müzik ve ses</h3><p>Müziği oynat, duraklat, parça geç. Zil modunu ve ses düzeyini değiştir, kaybolan telefonu çaldır.</p></li>
+        <li data-reveal="lift"><h3>Dosyalar</h3><p>İki yönde de dosya gönder. Her dosya SHA-256 ile doğrulandıktan sonra kaydedilir.</p></li>
+        <li data-reveal="lift"><h3>Ekran yansıtma</h3><p>Telefonun ekranını Mac'te bir pencerede fare, klavye ve sesiyle kullan. Bunu uygulamayla gelen scrcpy yapar.</p></li>
+        <li data-reveal="lift"><h3>Birden fazla telefon</h3><p>Bir Mac'e birden fazla telefon eşleştir, her birinin ayarları ayrı kalır.</p></li>
+        <li data-reveal="lift"><h3>Güncellemeler</h3><p>İki uygulama da kendini günceller. Mac'e Homebrew ile kurduysan güncelleme de Homebrew'dan gelir. Nightly sürümler isteğe bağlı.</p></li>
+        <li data-reveal="lift"><h3>Yerel ağ</h3><p>Kendi Wi-Fi ağında çalışır, hesap açman gerekmez.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="inside" aria-labelledby="inside-h">
+    <div class="wrap">
+      <div class="head"><h2 id="inside-h">Uygulamalardan kareler</h2></div>
+      <div class="gallery" data-stagger>
+        <figure class="tile wide" data-reveal="zoom">
+          <div class="fig">
+            <div class="pane"><picture>
+              <source type="image/webp" srcset="../images/macos-window-720.webp 720w, ../images/macos-window-1440.webp 1440w" sizes="(max-width: 900px) 90vw, 620px">
+              <img src="../images/macos-window.png" width="1440" height="1000" loading="lazy" alt="Mac'te bildirim geçmişi penceresi: Messages, Signal, Calendar, Photos ve Maps bildirimleri ve bir arama alanı.">
+            </picture></div>
+            <figcaption>Telefondan gelen her bildirim bir geçmişte birikir; uygulamaya, başlığa ya da metne göre ararsın</figcaption>
+          </div>
+        </figure>
+        <figure class="tile tall" data-reveal="zoom">
+          <div class="fig">
+            <div class="pane"><picture>
+              <source type="image/webp" srcset="../images/android-sync-dark-300.webp 300w, ../images/android-sync-dark-600.webp 600w" sizes="(max-width: 600px) 60vw, 280px">
+              <img src="../images/android-sync-dark.png" width="1080" height="1800" loading="lazy" alt="Koyu temada Android uygulaması: pil, pano, bildirimler ve medya anahtarları.">
+            </picture></div>
+            <figcaption>Telefonun Mac'le neyi paylaşacağını sen seçersin: pil, pano, bildirimler ve müzik</figcaption>
+          </div>
+        </figure>
+        <figure class="tile tall" data-reveal="zoom">
+          <div class="fig">
+            <div class="pane"><picture>
+              <source type="image/webp" srcset="../images/android-connection-300.webp 300w, ../images/android-connection-600.webp 600w" sizes="(max-width: 600px) 60vw, 280px">
+              <img src="../images/android-connection.png" width="1080" height="1800" loading="lazy" alt="Android'de Bağlantı ekranı: eşlenen Mac, son adresi ve Otomatik yeniden bağlan anahtarı.">
+            </picture></div>
+            <figcaption>Mac aynı Wi-Fi'da göründüğünde telefon kendiliğinden yeniden bağlanır</figcaption>
+          </div>
+        </figure>
+        <figure class="tile wide" data-reveal="zoom">
+          <div class="fig">
+            <div class="pane"><picture>
+              <source type="image/webp" srcset="../images/macos-settings-sync-720.webp 720w, ../images/macos-settings-sync-1440.webp 1440w" sizes="(max-width: 900px) 90vw, 620px">
+              <img src="../images/macos-settings-sync.png" width="1440" height="1000" loading="lazy" alt="Mac'te Eşitleme ayarları: pil, pano, bildirim ve medya anahtarları ve yüzde 10, 15, 20 ya da 30 seçenekli düşük pil uyarı eşiği.">
+            </picture></div>
+            <figcaption>Nelerin eşitleneceğini ve pil kaça düşünce Mac'in uyaracağını seç</figcaption>
+          </div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="pairing" aria-labelledby="pairing-h">
+    <div class="wrap pair">
+      <div>
+        <div class="head"><h2 id="pairing-h">Eşleştirme</h2></div>
+        <ol class="steps" data-stagger>
+          <li data-reveal="left"><div><h3>İki cihazda da AndroMac'i aç</h3><p>Mac ve telefon aynı Wi-Fi ağında olmalı.</p></div></li>
+          <li data-reveal="left"><div><h3>Telefonda Eşleştir'e dokun</h3><p>Telefon, aynı ağdaki Mac'i kendisi bulur.</p></div></li>
+          <li data-reveal="left"><div><h3>Kodu karşılaştır</h3><p>İki ekranda da altı haneli bir kod çıkar. Kodlar aynıysa iki cihazda da onayla.</p></div></li>
+        </ol>
+        <p class="more"><a href="https://github.com/anilmetin0/AndroMac/blob/main/docs/GUIDE.tr.md">Rehberin tamamını oku</a></p>
+      </div>
+      <figure data-reveal="right">
+        <div class="frame">
+          <picture>
+            <source type="image/webp" srcset="../images/macos-pairing-380.webp 380w, ../images/macos-pairing-760.webp 760w" sizes="(max-width: 600px) 52vw, 340px">
+            <img src="../images/macos-pairing.png" width="760" height="556" loading="lazy" alt="Mac'te eşleştirme penceresi: altı haneli kod, Reject ve Pair düğmeleri.">
+          </picture>
+          <picture>
+            <source type="image/webp" srcset="../images/android-pairing-300.webp 300w, ../images/android-pairing-600.webp 600w" sizes="(max-width: 600px) 38vw, 240px">
+            <img class="ph" src="../images/android-pairing.png" width="1080" height="900" loading="lazy" alt="Android'de eşleştirme kodu penceresi, Reject ve Pair düğmeleriyle.">
+          </picture>
+        </div>
+        <figcaption>Mac'te ve telefonda çıkan eşleştirme pencereleri</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="faq" aria-labelledby="faq-h">
+    <div class="wrap">
+      <div class="head"><h2 id="faq-h">Sorular</h2></div>
+      <div class="faq" data-reveal="lift">
+        <details>
+          <summary>Nasıl kurarım?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+          <div class="ans">
+            <p>Mac'te dört <a href="#mac">Homebrew satırını</a> Terminal'e yapıştır. Homebrew yoksa DMG'yi aç, AndroMac'i Uygulamalar klasörüne sürükle ve <code>xattr</code> satırını çalıştır.</p>
+            <p>Telefonda APK'yı indir, Android sorarsa tarayıcıya kurulum izni ver. Sonra iki cihazda da AndroMac'i açıp eşleştir.</p>
+          </div>
+        </details>
+        <details>
+          <summary>macOS, AndroMac hasarlı ya da açılamıyor diyor<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+          <div class="ans">
+            <p>Uygulama kendi sertifikasıyla imzalı ama Apple'ın noter onayından geçmedi, bu yüzden macOS ilk açılışı engeller. Terminal'de bir kez şunu çalıştır:</p>
+            <p><code>xattr -dr com.apple.quarantine /Applications/AndroMac.app</code></p>
+            <p>Ya da uygulamayı açmayı dene, macOS engelledikten sonra Sistem Ayarları → Gizlilik ve Güvenlik'te Yine de Aç'a bas.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Güncellemeler nasıl geliyor?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+          <div class="ans">
+            <p>İki uygulama da günde bir kez yeni sürüm var mı diye bakar ve bulursa kurabilir. İki tarafta da Ayarlar → Güncellemeler'de denetimi kapatma, otomatik kurulum ve Nightly sürümler seçenekleri var.</p>
+            <p>Mac uygulamasını Homebrew ile kurduysan <code>brew upgrade --cask andromac</code> komutu da yeni sürüme geçirir.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Ekran yansıtma için ne gerekiyor?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+          <div class="ans">
+            <p>Telefonda Kablosuz hata ayıklama açık olmalı. Geliştirici seçeneklerini açmak için Derleme numarasına yedi kez dokun, sonra Kablosuz hata ayıklamayı aç. USB hata ayıklama açıksa USB kablosu da iş görür.</p>
+            <p>İlk seferde Mac panelindeki yansıtma düğmesine bas, telefondaki Cihazı eşleme koduyla eşle ekranında çıkan kodu gir. İşin bitince Kablosuz hata ayıklamayı kapat.</p>
+          </div>
+        </details>
+        <details>
+          <summary>AndroMac'i nasıl kaldırırım?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+          <div class="ans">
+            <p>Mac'te <code>brew uninstall --cask andromac</code> komutunu çalıştır. DMG'den kurduysan uygulamayı Çöp Sepeti'ne sürükle. Telefonda da diğer uygulamalar gibi kaldır.</p>
+          </div>
+        </details>
+      </div>
+      <p class="more">Diğer sorular ve sorun giderme <a href="https://github.com/anilmetin0/AndroMac/blob/main/docs/GUIDE.tr.md">rehberde</a>.</p>
+    </div>
+  </section>
+
+  <section id="changes" aria-labelledby="changes-h" hidden>
+    <div class="wrap" data-reveal="lift">
+      <div class="head">
+        <div>
+          <h2 id="changes-h"><span data-changes-version></span> sürümündeki yenilikler</h2>
+          <p class="date" hidden></p>
+        </div>
+        <a href="https://github.com/anilmetin0/AndroMac/blob/main/CHANGELOG.tr.md">Tüm değişiklikler</a>
+      </div>
+      <div class="changes"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>MIT lisansı</p>
+    <nav aria-label="Proje">
+      <a href="https://github.com/anilmetin0/AndroMac/releases">Tüm sürümler</a>
+      <a href="https://github.com/anilmetin0/AndroMac/blob/main/docs/GUIDE.tr.md">Rehber</a>
+      <a href="https://github.com/anilmetin0/AndroMac/blob/main/CHANGELOG.tr.md">Değişiklik günlüğü</a>
+      <a href="https://github.com/anilmetin0/AndroMac/issues">Sorun bildir</a>
+      <a href="https://github.com/anilmetin0/AndroMac">Kaynak kod</a>
+      <a href="../" hreflang="en" lang="en">English</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

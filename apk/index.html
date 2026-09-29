@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>AndroMac APK</title>
+  <link rel="icon" href="../images/icon.png" type="image/png">
+  <style>body{font:17px/1.5 system-ui,sans-serif;margin:0;padding:48px 24px;text-align:center;background:#0f2238;color:#e8f0f7}a{color:#7fe0cc}</style>
+  <script>
+    fetch("https://api.github.com/repos/anilmetin0/AndroMac/releases/latest")
+      .then((r) => r.json())
+      .then((release) => {
+        const apk = release.assets.find((a) => a.name.endsWith("-android.apk"));
+        if (apk) location.replace(apk.browser_download_url);
+      })
+      .catch(() => {});
+  </script>
+</head>
+<body>
+  <p>Downloading the latest AndroMac APK…</p>
+  <p><a href="https://github.com/anilmetin0/AndroMac/releases/latest">Not starting? Get it from GitHub</a></p>
+</body>
+</html>
