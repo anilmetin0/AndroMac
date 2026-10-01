@@ -13,9 +13,10 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ### Eklenenler
 
-- **Telefondan bağlantıyı kes.** Bağlıyken AndroMac bildiriminde Panoyu Mac'e gönder'in yanında
-  Bağlantıyı kes düğmesi var; bağlantı kesilince yerine Bağlan geliyor. Telefon, yeniden
-  bağlanana kadar Mac'e bağlanmıyor.
+- **Telefondan bağlantıyı kes.** Bağlıyken AndroMac bildiriminde Panoyu Mac'e gönder'in solunda
+  Bağlantıyı kes düğmesi var; Ayarlar → Bağlantı'da da Şimdi bağlan'ın yerine Bağlantıyı kes
+  çıkıyor. Bağlantı kesilince bildirimde Bağlan geliyor. Telefon, yeniden bağlanana kadar Mac'e
+  bağlanmıyor.
 - **Bağlantı kutucuğu.** Hızlı Ayarlar'a AndroMac bağlantısı'nı ekleyip bağlantıyı tek dokunuşla
   kapatıp açabilirsiniz.
 

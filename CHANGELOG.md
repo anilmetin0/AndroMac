@@ -14,8 +14,9 @@ raised. Nightly builds list their commits instead.
 ### Added
 
 - **Disconnect from the phone.** While connected, the AndroMac notification has a Disconnect
-  button next to Send clipboard to Mac; once disconnected it shows Connect. The phone stays off
-  the Mac until you connect again.
+  button before Send clipboard to Mac, and Settings → Connection has Disconnect in place of
+  Connect now; once disconnected the notification shows Connect. The phone stays off the Mac
+  until you connect again.
 - **Connection tile.** Add AndroMac connection to Quick Settings to turn the link off and on with
   one tap.
 

@@ -637,12 +637,12 @@ class LinkService : Service() {
                 this, REQ_CLIP, ClipHelperActivity.getIntent(this),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
+            builder.addAction(serviceAction(REQ_DISCONNECT, ACTION_DISCONNECT, R.string.link_disconnect))
             builder.addAction(
                 Notification.Action.Builder(
                     null as android.graphics.drawable.Icon?, getString(R.string.tile_clip), send,
                 ).build()
             )
-            builder.addAction(serviceAction(REQ_DISCONNECT, ACTION_DISCONNECT, R.string.link_disconnect))
         } else if (store.isPaired && !store.autoConnect) {
             builder.addAction(serviceAction(REQ_RESUME, ACTION_RESUME, R.string.link_resume))
         }

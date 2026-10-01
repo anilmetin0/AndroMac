@@ -31,7 +31,10 @@ class ConnectionActivity : Activity() {
             LinkService.start(this)          // wakes the loop so the new value applies now
             render()
         }
-        bindNavRow(R.id.rowConnectNow) { LinkService.start(this, LinkService.ACTION_CONNECT) }
+        // Connected, the row is the way off: the same Disconnect as the notification and the tile.
+        bindNavRow(R.id.rowConnectNow) {
+            LinkService.start(this, if (Link.isConnected) LinkService.ACTION_DISCONNECT else LinkService.ACTION_CONNECT)
+        }
         bindNavRow(R.id.rowUnpair) { confirmUnpair() }
     }
 
@@ -61,8 +64,12 @@ class ConnectionActivity : Activity() {
             store.pairedName.ifEmpty { getString(R.string.diag_none) }
         findViewById<TextView>(R.id.connectionAddress).text =
             store.lastEndpoint?.substringBeforeLast(':') ?: getString(R.string.diag_none)
-        // Nothing to connect to, or already connected: the row would be a dead end.
-        setRowEnabled(R.id.rowConnectNow, paired && state !is Link.State.Connected)
+        val connected = state is Link.State.Connected
+        findViewById<TextView>(R.id.rowConnectNow)
+            .setText(if (connected) R.string.link_disconnect else R.string.connection_now)
+        setRowEnabled(R.id.rowConnectNow, paired)
+        // Disconnect turns auto-connect off from outside this screen; the switch follows.
+        findViewById<android.widget.Switch>(R.id.swAuto).isChecked = store.autoConnect
         findViewById<View>(R.id.unpairCard).visibility = if (paired) View.VISIBLE else View.GONE
     }
 
