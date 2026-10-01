@@ -8,7 +8,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/anilmetin0/AndroMac?style=for-the-badge&label=lisans" alt="lisans"></a>
   <img src="https://img.shields.io/badge/macOS_14+_%7C_Android_10+-555?style=for-the-badge" alt="platformlar">
 </p>
-<p align="center">Android telefonun ve Mac'in, Wi-Fi üzerinden eşit.</p>
+<p align="center">Android telefonun ve Mac'in, Wi-Fi üzerinden hep eşitlenmiş.</p>
 <p align="center">
   <a href="https://github.com/anilmetin0/AndroMac/releases/latest">⬇️ İndir</a>
   •
