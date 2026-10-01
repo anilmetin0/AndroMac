@@ -259,6 +259,9 @@
 
     <!-- service -->
     <string name="tile_clip">Send clipboard to Mac</string>
+    <string name="tile_link">AndroMac connection</string>
+    <string name="link_disconnect">Disconnect</string>
+    <string name="link_resume">Connect</string>
     <string name="notif_listener_label">AndroMac notification mirror</string>
     <string name="version_footer">AndroMac %1$s</string>
 

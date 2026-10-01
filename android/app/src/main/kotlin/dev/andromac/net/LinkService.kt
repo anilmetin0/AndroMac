@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -16,6 +17,7 @@ import android.net.NetworkRequest
 import android.os.Build
 import android.os.PowerManager
 import android.os.SystemClock
+import android.service.quicksettings.TileService
 import android.util.Log
 import dev.andromac.R
 import dev.andromac.core.Link
@@ -27,6 +29,7 @@ import dev.andromac.core.Store
 import dev.andromac.core.UntrustedPeerException
 import dev.andromac.feature.BatteryReporter
 import dev.andromac.feature.ClipboardBridge
+import dev.andromac.feature.ConnectionTile
 import dev.andromac.feature.FileTransfer
 import dev.andromac.feature.FindPhone
 import dev.andromac.feature.IconProvider
@@ -93,6 +96,12 @@ class LinkService : Service() {
         // A process death during the 30 s alarm leaves the alarm stream pinned at maximum.
         FindPhone.restoreAlarmVolume(this)
         registerNetworkCallback()
+        Link.addListener(tileRefresh)
+    }
+
+    /** The connection tile reads [Link] state; it is told to re-read whenever that changes. */
+    private val tileRefresh: (Link.State) -> Unit = {
+        TileService.requestListeningState(this, ComponentName(this, ConnectionTile::class.java))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -104,6 +113,13 @@ class LinkService : Service() {
                 restartLadder()
             }
             ACTION_CONNECT -> { connectRequested = true; restartLadder() }
+            // The notification action and the QS tile: the auto-connect switch, one tap away.
+            ACTION_DISCONNECT -> {
+                store.autoConnect = false
+                current?.close()             // the read ends and the loop parks on auto-connect off
+                wake()
+            }
+            ACTION_RESUME -> { store.autoConnect = true; restartLadder() }
         }
         // Never start a second worker: a START_STICKY restart can arrive while the old
         // thread is still winding down, which used to produce two parallel connections.
@@ -127,6 +143,7 @@ class LinkService : Service() {
         screenReceiver?.let { runCatching { unregisterReceiver(it) } }
         Link.detach()
         Link.setState(Link.State.Stopped)
+        Link.removeListener(tileRefresh)
         super.onDestroy()
     }
 
@@ -625,8 +642,19 @@ class LinkService : Service() {
                     null as android.graphics.drawable.Icon?, getString(R.string.tile_clip), send,
                 ).build()
             )
+            builder.addAction(serviceAction(REQ_DISCONNECT, ACTION_DISCONNECT, R.string.link_disconnect))
+        } else if (store.isPaired && !store.autoConnect) {
+            builder.addAction(serviceAction(REQ_RESUME, ACTION_RESUME, R.string.link_resume))
         }
         return builder.build()
+    }
+
+    private fun serviceAction(req: Int, action: String, label: Int): Notification.Action {
+        val pi = PendingIntent.getService(
+            this, req, Intent(this, LinkService::class.java).setAction(action),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        return Notification.Action.Builder(null as android.graphics.drawable.Icon?, getString(label), pi).build()
     }
 
     /**
@@ -659,12 +687,18 @@ class LinkService : Service() {
     companion object {
         const val ACTION_PAIR = "dev.andromac.PAIR"
         const val ACTION_CONNECT = "dev.andromac.CONNECT"
+        /** Drop the link and turn auto-connect off, like the Mac's Disconnect. */
+        const val ACTION_DISCONNECT = "dev.andromac.DISCONNECT"
+        /** Auto-connect back on and dial now. */
+        const val ACTION_RESUME = "dev.andromac.RESUME"
         /** With [ACTION_PAIR]: the Bonjour instance name the user chose. */
         const val EXTRA_MAC = "mac"
         const val CHANNEL_STATUS = "status"
         const val CHANNEL_CLIP = "clipboard"
         private const val FGS_ID = 1
         private const val REQ_CLIP = 5
+        private const val REQ_DISCONNECT = 6
+        private const val REQ_RESUME = 7
         private const val CONNECT_TIMEOUT_MS = 5_000
         /** The Mac pings every 240 s (PROTOCOL §6.1); 300 s leaves slack. */
         private const val READ_TIMEOUT_MS = 300_000

@@ -196,6 +196,20 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".feature.ConnectionTile"
+            android:exported="true"
+            android:icon="@drawable/ic_notification"
+            android:label="@string/tile_link"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
+        </service>
+
         <!-- The "Found it" action and the notification swipe-away. Only our own PendingIntent. -->
         <receiver
             android:name=".feature.FindPhoneStopReceiver"

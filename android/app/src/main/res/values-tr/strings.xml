@@ -249,6 +249,9 @@
 
     <!-- service -->
     <string name="tile_clip">Panoyu Mac\'e gönder</string>
+    <string name="tile_link">AndroMac bağlantısı</string>
+    <string name="link_disconnect">Bağlantıyı kes</string>
+    <string name="link_resume">Bağlan</string>
     <string name="notif_listener_label">AndroMac bildirim aynası</string>
     <string name="version_footer">AndroMac %1$s</string>
 
