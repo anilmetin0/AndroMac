@@ -32,6 +32,9 @@ public enum SealedFile {
         if let box = try? AES.GCM.SealedBox(combined: data), let plain = try? AES.GCM.open(box, using: key) {
             return plain
         }
-        return data.first == UInt8(ascii: "[") ? data : nil
+        // Parsed, not sniffed: a sealed file starts with a random nonce, and one in 256 of those
+        // begins with "[" too.
+        guard data.first == UInt8(ascii: "["), (try? JSONSerialization.jsonObject(with: data)) != nil else { return nil }
+        return data
     }
 }

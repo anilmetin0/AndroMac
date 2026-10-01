@@ -24,6 +24,8 @@ struct SealedFileTests {
         let other = SealedFile.key(from: Data(repeating: 8, count: 32))
         #expect(SealedFile.open(sealed, key: other) == nil)
         #expect(SealedFile.open(Data([1, 2, 3]), key: key) == nil)
+        // A sealed file whose random nonce happens to start with "[" is still not plain JSON.
+        #expect(SealedFile.open(Data("[".utf8) + sealed.dropFirst(), key: other) == nil)
     }
 }
 
