@@ -9,6 +9,19 @@ raised. Nightly builds list their commits instead.
 
 ## Unreleased
 
+## 1.4.0 - 2026-10-01
+
+### Added
+
+- **Pick the Mac yourself.** Pair on the phone lists every Mac it finds on the network with its
+  name and IP address, and only the one you tap is contacted, even when it is the only one.
+- **Several Macs on one phone.** The phone remembers every Mac it has paired with. Settings →
+  Connection lists them with their IP address and when each was last seen; tap one to switch to
+  it, or Pair another Mac to add one.
+- **IP address and last seen on the Mac.** Settings → Devices shows each phone's local IP address
+  and, when it is offline, when it was last seen. The panel's offline card says when the phone was
+  last seen, and the pairing window shows the IP address of the phone asking to pair.
+
 ## 1.3.0 - 2026-10-01
 
 ### Added

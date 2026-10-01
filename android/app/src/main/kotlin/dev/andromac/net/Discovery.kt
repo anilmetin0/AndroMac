@@ -142,7 +142,9 @@ class Discovery(context: Context) {
             }
 
             override fun onServiceUpdated(serviceInfo: NsdServiceInfo) {
-                serviceInfo.hostAddresses.firstOrNull()?.let { offer(it, serviceInfo) }
+                // IPv4 first: the address the user reads, and the one the rest of the link uses.
+                serviceInfo.hostAddresses.let { a -> a.firstOrNull { it is java.net.Inet4Address } ?: a.firstOrNull() }
+                    ?.let { offer(it, serviceInfo) }
             }
 
             override fun onServiceLost() = Unit

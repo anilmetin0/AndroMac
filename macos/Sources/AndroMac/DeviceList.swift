@@ -195,10 +195,17 @@ private struct DeviceCard: View {
                 // Offline there is nothing to act on but More, so it sits on this line instead of
                 // taking a row of its own.
                 HStack(spacing: Theme.Space.small) {
-                    Text("Open AndroMac on the phone, on the same Wi‑Fi.")
-                        .font(Theme.Font.label)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    VStack(alignment: .leading, spacing: 2) {
+                        if let lastSeen = device.lastSeen {
+                            TimelineView(.everyMinute) { context in
+                                Text("Last seen \(RelativeTime.string(lastSeen, now: context.date))")
+                            }
+                        }
+                        Text("Open AndroMac on the phone, on the same Wi‑Fi.")
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .font(Theme.Font.label)
+                    .foregroundStyle(.secondary)
                     Spacer(minLength: 0)
                     // fixedSize: beside a two-line hint the menu was squeezed to half its size.
                     more.fixedSize().glassGroup()
@@ -233,9 +240,12 @@ private struct DeviceCard: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("Open device settings")
+        // The address only on hover: it tells two phones apart without crowding the card.
+        .help(address.map { Text("Open device settings") + Text(verbatim: " · \($0)") } ?? Text("Open device settings"))
         .accessibilityLabel("\(title), \(statusLine)")
     }
+
+    private var address: String? { live?.host ?? device.lastAddress }
 
     /// Three states worth telling apart, in the vocabulary Syncthing settled on: a disconnected
     /// device is not broken, and an offline one is not rejected.

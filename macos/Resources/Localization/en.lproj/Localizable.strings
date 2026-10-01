@@ -72,6 +72,7 @@
 "Delete" = "Delete";
 "Denied" = "Denied";
 "Device %@" = "Device %@";
+"Device %@ · %@" = "Device %@ · %@";
 "Device settings…" = "Device settings…";
 "Devices" = "Devices";
 "Disconnect" = "Disconnect";
@@ -113,6 +114,8 @@
 "Keychain access denied — restart the app and allow it" = "Keychain access denied — restart the app and allow it";
 "Keychain access denied. Restart the app and allow it." = "Keychain access denied. Restart the app and allow it.";
 "Language" = "Language";
+"Last seen %@" = "Last seen %@";
+"last seen %@" = "last seen %@";
 "Later" = "Later";
 "listener was cancelled" = "listener was cancelled";
 "Local Network" = "Local Network";

@@ -56,9 +56,11 @@ when `VERSION` is raised; [docs/RELEASING.md](docs/RELEASING.md) describes the p
 
 ## Scope
 
-Out of scope: SMS, call control, more than one Mac, and any access over the internet. The design
-is any number of phones and one Mac on one local network. A pull request that adds one of those
-will be closed however good the code is.
+AndroMac is phones and Macs on one local network. A phone talks to one Mac at a time and can
+switch between the Macs it knows.
+
+Out of scope: SMS, call control and any access over the internet. A pull request that adds one of
+those will be closed however good the code is.
 
 ## Toolchain
 

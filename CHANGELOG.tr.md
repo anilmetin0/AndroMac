@@ -9,6 +9,20 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ## Unreleased
 
+## 1.4.0 - 2026-10-01
+
+### Eklenenler
+
+- **Mac'i sen seç.** Telefonda Eşleştir, ağda bulduğu her Mac'i adı ve IP adresiyle listeliyor;
+  tek bir Mac olsa bile yalnızca dokunduğun Mac'e bağlanıyor.
+- **Bir telefonda birden fazla Mac.** Telefon eşleştiği her Mac'i hatırlıyor. Ayarlar → Bağlantı
+  bunları IP adresleri ve en son ne zaman görüldükleriyle listeliyor; birine dokunup ona
+  geçebilir, Başka bir Mac eşleştir ile yenisini ekleyebilirsin.
+- **Mac'te IP adresi ve son görülme.** Ayarlar → Cihazlar her telefonun yerel IP adresini ve
+  çevrimdışıysa en son ne zaman görüldüğünü gösteriyor. Paneldeki çevrimdışı kart da telefonun
+  en son ne zaman görüldüğünü yazıyor; eşleştirme penceresi eşleşmek isteyen telefonun IP
+  adresini gösteriyor.
+
 ## 1.3.0 - 2026-10-01
 
 ### Eklenenler

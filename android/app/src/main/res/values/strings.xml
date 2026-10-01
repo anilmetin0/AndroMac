@@ -92,6 +92,12 @@
     <string name="connection_state">State</string>
     <string name="connection_mac">Mac</string>
     <string name="connection_address">Last address</string>
+    <string name="connection_last_seen">Last seen</string>
+    <string name="connection_section_macs">Macs</string>
+    <string name="mac_add">Pair another Mac</string>
+    <string name="mac_in_use">In use</string>
+    <string name="mac_last_seen">last seen %1$s</string>
+    <string name="mac_forget_confirm">%1$s will be removed from this phone. To use it again, pair again.</string>
     <string name="connection_auto">Reconnect automatically</string>
     <string name="connection_auto_note">Whenever the Mac is reachable on this Wi-Fi.</string>
     <string name="connection_now">Connect now</string>
@@ -344,4 +350,5 @@
     <!-- pairing chooser -->
     <string name="pair_choose_title">Choose a Mac</string>
     <string name="pair_search_again">Search again</string>
+    <string name="pair_searching">Looking for Macs on this network…</string>
 </resources>

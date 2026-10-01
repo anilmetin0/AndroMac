@@ -14,6 +14,8 @@ import dev.andromac.feature.UpdateCheck
 import dev.andromac.feature.Updater
 import dev.andromac.net.LinkService
 import dev.andromac.ui.MainActivity
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 import java.security.KeyStore
 import java.security.PrivateKey
@@ -56,6 +58,7 @@ class Store(context: Context) {
             // break the pairing too, so we clear the pairing here — the user re-pairs.
             Log.w(Link.TAG, "static key could not be unwrapped, regenerating identity")
             unpair()
+            prefs.edit().remove(K_SAVED_MACS).apply()    // every saved Mac pinned the old identity
         } else if (pub != null && legacy != null) {
             // Migration: the plaintext record is wrapped and then deleted.
             val bytes = unb64(legacy)
@@ -148,6 +151,76 @@ class Store(context: Context) {
     }
 
     val isPaired: Boolean get() = pairedKey != null
+
+    // --- saved Macs ---
+    //
+    // The active slot above is what the link dials; this list is the Macs the user can switch
+    // back to without pairing again. Local only: the Mac never hears about it.
+
+    /** [key] is the Mac's static key in Base64, [lastSeen] epoch millis (0 = never). */
+    data class SavedMac(val key: String, val name: String, val host: String, val lastSeen: Long)
+
+    /**
+     * Every saved Mac. The active one is always among them: a pairing made before this list
+     * existed, or confirmed and not connected yet, shows up with what the active slot knows.
+     */
+    val savedMacs: List<SavedMac>
+        get() {
+            val stored = runCatching {
+                val a = JSONArray(prefs.getString(K_SAVED_MACS, null) ?: "[]")
+                List(a.length()) { i ->
+                    a.getJSONObject(i).run {
+                        SavedMac(getString("k"), optString("n"), optString("h"), optLong("s"))
+                    }
+                }
+            }.getOrDefault(emptyList())
+            val key = prefs.getString(K_PEER_KEY, null) ?: return stored
+            return if (stored.any { it.key == key }) stored
+            else stored + SavedMac(key, pairedName, lastEndpoint?.substringBeforeLast(':').orEmpty(), 0)
+        }
+
+    /** The saved entry of the Mac the link dials, null while unpaired. */
+    val activeMac: SavedMac?
+        get() = prefs.getString(K_PEER_KEY, null)?.let { k -> savedMacs.firstOrNull { it.key == k } }
+
+    private fun writeMacs(list: List<SavedMac>) {
+        val a = JSONArray()
+        list.forEach { a.put(JSONObject().put("k", it.key).put("n", it.name).put("h", it.host).put("s", it.lastSeen)) }
+        prefs.edit().putString(K_SAVED_MACS, a.toString()).apply()
+    }
+
+    /** The Mac with [key] answered from [host], or its session just ended: remember both, and when. */
+    fun seenMac(key: ByteArray, host: String): Unit = synchronized(LOCK) {
+        val k = b64(key)
+        val list = savedMacs.toMutableList()
+        val i = list.indexOfFirst { it.key == k }
+        val active = k == prefs.getString(K_PEER_KEY, null)
+        if (i < 0 && !active) return    // forgotten while its session was still up
+        val name = if (active) pairedName else list[i].name
+        val mac = SavedMac(k, name, host, System.currentTimeMillis())
+        if (i < 0) list += mac else list[i] = mac
+        writeMacs(list)
+    }
+
+    /** Makes [mac] the one the link dials; the old active Mac stays saved. */
+    fun activate(mac: SavedMac) = synchronized(LOCK) {
+        writeMacs(savedMacs)
+        unpair()
+        pairedKey = unb64(mac.key)
+        pairedName = mac.name
+    }
+
+    /** Drops [mac] from this phone; the active one is unpaired, as before this list existed. */
+    fun forget(mac: SavedMac) = synchronized(LOCK) {
+        writeMacs(savedMacs.filter { it.key != mac.key })
+        if (mac.key == prefs.getString(K_PEER_KEY, null)) unpair()
+    }
+
+    /** Clears the active slot for a new pairing, keeping the current Mac saved. */
+    fun unpairKeepingSaved() = synchronized(LOCK) {
+        writeMacs(savedMacs)
+        unpair()
+    }
 
     // --- user toggles ---
 
@@ -422,6 +495,7 @@ class Store(context: Context) {
         const val K_PEER_NAME = "peer_name"
         const val K_ENDPOINT = "last_endpoint"
         const val K_MAC_NETWORK = "mac_network"
+        const val K_SAVED_MACS = "saved_macs"
         const val K_SYNC_BATTERY = "sync_battery"
         const val K_SYNC_CLIPBOARD = "sync_clipboard"
         const val K_SYNC_MEDIA = "sync_media"
