@@ -9,6 +9,10 @@ raised. Nightly builds list their commits instead.
 
 ## Unreleased
 
+### Changed
+
+- In the notification, Disconnect is back after Send clipboard to Mac.
+
 ## 1.4.0 - 2026-10-01
 
 ### Added

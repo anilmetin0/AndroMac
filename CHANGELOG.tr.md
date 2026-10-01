@@ -9,6 +9,10 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ## Unreleased
 
+### Değişenler
+
+- Bildirimde Bağlantıyı kes yeniden Panoyu Mac'e gönder'in sağında.
+
 ## 1.4.0 - 2026-10-01
 
 ### Eklenenler
