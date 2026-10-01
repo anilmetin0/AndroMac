@@ -9,6 +9,23 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ## Unreleased
 
+## 1.3.0 - 2026-10-01
+
+### Eklenenler
+
+- **Telefondan bağlantıyı kes.** Bağlıyken AndroMac bildiriminde Panoyu Mac'e gönder'in yanında
+  Bağlantıyı kes düğmesi var; bağlantı kesilince yerine Bağlan geliyor. Telefon, yeniden
+  bağlanana kadar Mac'e bağlanmıyor.
+- **Bağlantı kutucuğu.** Hızlı Ayarlar'a AndroMac bağlantısı'nı ekleyip bağlantıyı tek dokunuşla
+  kapatıp açabilirsiniz.
+
+### Düzeltilenler
+
+- Ekran yansıtma, uyuyan telefonu başlamadan önce uyandırıyor.
+- Paneldeki Diğer ve zil menüleri ile alt bölüm panelin cam denetimlerini kullanıyor; çevrimdışı
+  telefonun Diğer düğmesi tam boyutunu koruyor.
+- Bildirimde yarım kalmış bir bağlantı için artık Aç düğmesi çıkmıyor.
+
 ## 1.2.0 - 2026-09-25
 
 ### Eklenenler

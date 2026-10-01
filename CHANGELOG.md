@@ -9,6 +9,23 @@ raised. Nightly builds list their commits instead.
 
 ## Unreleased
 
+## 1.3.0 - 2026-10-01
+
+### Added
+
+- **Disconnect from the phone.** While connected, the AndroMac notification has a Disconnect
+  button next to Send clipboard to Mac; once disconnected it shows Connect. The phone stays off
+  the Mac until you connect again.
+- **Connection tile.** Add AndroMac connection to Quick Settings to turn the link off and on with
+  one tap.
+
+### Fixed
+
+- Mirroring wakes a sleeping phone before it starts.
+- The panel's More and ringer menus, and its footer, use the panel's glass controls; an offline
+  phone's More button keeps its full size.
+- A link the notification cut off no longer gets an Open button.
+
 ## 1.2.0 - 2026-09-25
 
 ### Added
