@@ -286,3 +286,6 @@
 "Report a Problem" = "Sorun bildir";
 "Copy text" = "Metni kopyala";
 "Shows the whole notification" = "Bildirimin tamamını gösterir";
+"Device %@ · %@" = "Cihaz %@ · %@";
+"Last seen %@" = "Son görülme: %@";
+"last seen %@" = "son görülme: %@";

@@ -21,8 +21,11 @@ public struct PairedDevice: Codable, Identifiable, Sendable, Equatable {
     /// What the phone called itself in `hello`, or what the user renamed it to. Display only.
     public var name: String
     public let pairedAt: Date
-    /// Last time a session with this device was established. `nil` until it connects once.
+    /// Last time a session with this device started or ended. `nil` until it connects once.
     public var lastSeen: Date?
+    /// The phone's LAN IPv4 on its last connection, so two phones can be told apart. Display only:
+    /// DHCP hands it to someone else tomorrow, and it says nothing about who is calling.
+    public var lastAddress: String?
     /// Paused devices stay paired but are not let in. The user's "disconnect and stay disconnected"
     /// — without it, closing a session just makes the phone redial on its backoff ladder.
     public var paused: Bool
@@ -35,7 +38,7 @@ public struct PairedDevice: Codable, Identifiable, Sendable, Equatable {
 
     public init(
         key: Data, name: String, pairedAt: Date = Date(), lastSeen: Date? = nil,
-        paused: Bool = false, receivesClipboard: Bool = true
+        paused: Bool = false, receivesClipboard: Bool = true, lastAddress: String? = nil
     ) {
         self.key = key
         self.name = name
@@ -43,6 +46,7 @@ public struct PairedDevice: Codable, Identifiable, Sendable, Equatable {
         self.lastSeen = lastSeen
         self.paused = paused
         self.receivesClipboard = receivesClipboard
+        self.lastAddress = lastAddress
     }
 
     /// Decoded by hand so that a device written by an older build still loads.
@@ -61,6 +65,7 @@ public struct PairedDevice: Codable, Identifiable, Sendable, Equatable {
         lastSeen = try c.decodeIfPresent(Date.self, forKey: .lastSeen)
         paused = try c.decodeIfPresent(Bool.self, forKey: .paused) ?? false
         receivesClipboard = try c.decodeIfPresent(Bool.self, forKey: .receivesClipboard) ?? true
+        lastAddress = try c.decodeIfPresent(String.self, forKey: .lastAddress)
     }
 
     /// The full SHA-256 of the key, in hex. The dictionary key for live sessions and per-device

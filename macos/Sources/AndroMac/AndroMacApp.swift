@@ -200,7 +200,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if let next, next != request {
                 self.presentPairing(.init(
                     peerKey: next.peerKey, peerName: next.peerName, sas: next.sas,
-                    isFirstDevice: Store.shared.pairedDevices.isEmpty
+                    isFirstDevice: Store.shared.pairedDevices.isEmpty, address: next.address
                 ))
             }
         }

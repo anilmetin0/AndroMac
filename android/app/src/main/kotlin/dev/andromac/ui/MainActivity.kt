@@ -58,8 +58,8 @@ class MainActivity : Activity() {
         statusDot = findViewById(R.id.statusDot)
         pairButton = findViewById(R.id.pair)
         pairButton.setOnClickListener { onPairTapped() }
-        // Once paired the card opens the Mac's details: name, address, reconnect, forget.
-        bindNavRow(R.id.statusCard) { if (store.isPaired) open(ConnectionActivity::class.java) }
+        // Once a Mac is saved the card opens the Macs: name, address, reconnect, switch, forget.
+        bindNavRow(R.id.statusCard) { if (hasMacs()) open(ConnectionActivity::class.java) }
 
         for ((permission, rowId) in permissionRows) {
             bindNavRow(rowId) { startActivity(permission.settingsIntent(this)) }
@@ -193,8 +193,10 @@ class MainActivity : Activity() {
         }
         statusDot.background?.mutate()?.setTint(getColor(dotColor))
 
+        // The active Mac's address, when one is known.
+        val ip = store.lastEndpoint?.substringBeforeLast(':')
         detail.text = when (state) {
-            is Link.State.Connected -> ""
+            is Link.State.Connected -> ip.orEmpty()
             is Link.State.NeedsPairing -> getString(R.string.pair_code_with, state.peerName, state.sas.chunked(3).joinToString(" "))
             is Link.State.KeyChanged -> getString(R.string.key_changed_tap)
             // While pairing, every Mac the browse saw, so it is clear which one answers.
@@ -206,7 +208,7 @@ class MainActivity : Activity() {
             }
             // Unpaired: the Macs the last browse saw, never a prompt for one of them.
             Link.State.Stopped -> when {
-                paired -> mac
+                paired -> listOfNotNull(mac.ifEmpty { null }, ip).joinToString(" · ")
                 Link.discoveredMacs.isNotEmpty() ->
                     getString(R.string.macs_found, Link.discoveredMacs.keys.joinToString(", "))
                 else -> ""
@@ -229,7 +231,7 @@ class MainActivity : Activity() {
                 else -> R.string.pair
             }
         )
-        findViewById<View>(R.id.statusCard).isClickable = paired
+        findViewById<View>(R.id.statusCard).isClickable = hasMacs()
 
         renderOnboarding()
         renderPermissions()
@@ -237,13 +239,9 @@ class MainActivity : Activity() {
         renderClipboard()
 
         if (state is Link.State.NeedsPairing) confirmPairing(state.peerName, state.sas, state.peerKey)
-        // The Pair tap browsed and found several Macs: let the user pick one.
-        if (state !is Link.State.Searching && state != Link.State.Stopped) awaitingChoice = false
-        if (awaitingChoice && !paired && state == Link.State.Stopped && Link.discoveredMacs.size > 1) {
-            awaitingChoice = false
-            chooseMac()
-        }
     }
+
+    private fun hasMacs() = store.isPaired || store.savedMacs.isNotEmpty()
 
     /**
      * The connection guide. Visible only while unpaired, and it shows the LIVE state of every
@@ -359,8 +357,6 @@ class MainActivity : Activity() {
     private var pairingDialog: AlertDialog? = null
     private var chooserDialog: AlertDialog? = null
     private var keyDialog: AlertDialog? = null
-    /** Pair was tapped with fewer than two Macs known; the browse may still turn up more. */
-    private var awaitingChoice = false
 
     private fun onPairTapped() {
         when (val s = Link.state) {
@@ -368,33 +364,9 @@ class MainActivity : Activity() {
             is Link.State.KeyChanged -> warnKeyChange(s.peerName, s.sas)
             else -> when {
                 store.isPaired -> LinkService.start(this, LinkService.ACTION_CONNECT)
-                Link.discoveredMacs.size > 1 -> chooseMac()
-                else -> {
-                    awaitingChoice = true
-                    LinkService.start(this, LinkService.ACTION_PAIR)
-                }
+                chooserDialog?.isShowing != true -> pickMac(store) { chooserDialog = it }
             }
         }
-    }
-
-    /**
-     * Several Macs on this network: the chosen one is the only one dialled for pairing. The last
-     * item browses again, for a Mac that was missing or has gone.
-     */
-    private fun chooseMac() {
-        if (chooserDialog?.isShowing == true) return
-        val macs = Link.discoveredMacs.keys.toList()
-        chooserDialog = AlertDialog.Builder(this)
-            .setTitle(R.string.pair_choose_title)
-            .setItems((macs + getString(R.string.pair_search_again)).toTypedArray()) { _, i ->
-                if (i < macs.size) LinkService.start(this, LinkService.ACTION_PAIR, macs[i])
-                else {
-                    awaitingChoice = true
-                    LinkService.start(this, LinkService.ACTION_PAIR)
-                }
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
     }
 
     private fun confirmPairing(peerName: String, sas: String, key: ByteArray) {
@@ -424,8 +396,10 @@ class MainActivity : Activity() {
                 )
             )
             .setPositiveButton(R.string.key_changed_reset) { _, _ ->
-                store.unpair()
-                LinkService.start(this, LinkService.ACTION_PAIR)
+                // The saved entry holds the old key: it goes, and the user picks the Mac again.
+                store.activeMac?.let(store::forget)
+                LinkService.start(this)
+                pickMac(store) { chooserDialog = it }
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()

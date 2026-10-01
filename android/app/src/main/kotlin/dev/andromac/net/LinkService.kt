@@ -74,7 +74,7 @@ class LinkService : Service() {
     @Volatile private var worker: Thread? = null
     /** The user started the pairing flow: turn this round's pin check into a SAS prompt. */
     @Volatile private var pairingRequested = false
-    /** The Bonjour instance the user picked out of several Macs; null pairs with the only one. */
+    /** The Bonjour instance the user picked; pairing never dials a Mac nobody picked. */
     @Volatile private var pairTarget: String? = null
 
     private var netCallback: ConnectivityManager.NetworkCallback? = null
@@ -106,13 +106,21 @@ class LinkService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_PAIR -> {
-                pairTarget = intent.getStringExtra(EXTRA_MAC)
+            ACTION_PAIR -> intent.getStringExtra(EXTRA_MAC)?.let {
+                pairTarget = it
                 pairingRequested = true
                 notOurs.clear()              // "not ours" was measured against the old pin
+                current?.close()             // pairing another Mac while connected to one
                 restartLadder()
             }
             ACTION_CONNECT -> { connectRequested = true; restartLadder() }
+            // Another saved Mac became the active one: drop the old link and dial the new pin.
+            ACTION_SWITCH -> {
+                notOurs.clear()
+                connectRequested = true
+                current?.close()
+                restartLadder()
+            }
             // The notification action and the QS tile: the auto-connect switch, one tap away.
             ACTION_DISCONNECT -> {
                 store.autoConnect = false
@@ -237,7 +245,7 @@ class LinkService : Service() {
 
             val dialed = dial(discovery)
             if (dialed == null) {
-                // Several Macs and none picked: park until the user chooses one.
+                // The picked Mac did not answer: park until the user picks again.
                 if (!store.isPaired && !pairingRequested) continue
                 sleepBackoff()
                 continue
@@ -264,9 +272,13 @@ class LinkService : Service() {
                     pairTarget = null
                     pending.clear()
                     Link.macSeenOnNetwork = true
-                    store.lastEndpoint = "${s.inetAddress.hostAddress}:${s.port}"
+                    val host = s.inetAddress.hostAddress.orEmpty()
+                    store.lastEndpoint = "$host:${s.port}"
                     store.macNetwork = networkKey()
+                    store.seenMac(session.peerStaticPub, host)
                     serve(session, peerName)
+                    // Last seen is when the session ended, for the Mac it was with.
+                    store.seenMac(session.peerStaticPub, host)
                 }
                 // The ladder is reset by the Mac's hello, not by the handshake: a Mac that
                 // completes the handshake and then hangs up (this phone is disconnected there,
@@ -360,31 +372,17 @@ class LinkService : Service() {
         val name = store.pairedName
         val target = pairTarget.takeUnless { paired }
         // Paired: a moment more after the first Mac with our Mac's name, so a neighbour's Mac of the
-        // same name does not hide ours. Pairing with no pick: a longer moment after the first, so
-        // a second Mac is not missed and paired with by accident.
-        val settle = when {
-            target != null -> 0L
-            paired -> PAIRED_SETTLE_MS
-            else -> PAIR_SETTLE_MS
-        }
+        // same name does not hide ours.
+        val settle = if (target != null) 0L else PAIRED_SETTLE_MS
         val peers = discovery.browse(settleMs = settle) { found ->
-            when {
-                target != null -> found.any { it.service == target }
-                paired -> found.any { it.id !in notOurs && (name.isEmpty() || it.name == name) }
-                else -> found.isNotEmpty()
-            }
+            if (target != null) found.any { it.service == target }
+            else found.any { it.id !in notOurs && (name.isEmpty() || it.name == name) }
         }
         Link.macSeenOnNetwork = peers.isNotEmpty()
         if (target != null && peers.none { it.service == target }) {
             // The Mac picked in the chooser did not answer: stop, and let Pair offer the list again.
             pairingRequested = false
             pairTarget = null
-            Link.setState(Link.State.Stopped)
-            return null
-        }
-        if (!paired && target == null && Link.discoveredMacs.size > 1) {
-            // Several Macs: the user picks one (MainActivity's chooser); none is dialled on a guess.
-            pairingRequested = false
             Link.setState(Link.State.Stopped)
             return null
         }
@@ -691,7 +689,9 @@ class LinkService : Service() {
         const val ACTION_DISCONNECT = "dev.andromac.DISCONNECT"
         /** Auto-connect back on and dial now. */
         const val ACTION_RESUME = "dev.andromac.RESUME"
-        /** With [ACTION_PAIR]: the Bonjour instance name the user chose. */
+        /** The active Mac changed ([Store.activate]): drop the current link and dial it. */
+        const val ACTION_SWITCH = "dev.andromac.SWITCH"
+        /** With [ACTION_PAIR], required: the Bonjour instance name the user chose. */
         const val EXTRA_MAC = "mac"
         const val CHANNEL_STATUS = "status"
         const val CHANNEL_CLIP = "clipboard"
@@ -706,8 +706,6 @@ class LinkService : Service() {
         private const val HANDSHAKE_TIMEOUT_MS = 10_000
         /** One mDNS browse per this many failed attempts while an address is cached. */
         private const val BROWSE_EVERY = 4
-        /** Pairing with no Mac picked: how long to keep listening after the first one answers. */
-        private const val PAIR_SETTLE_MS = 1_500L
         /** Paired: how long to keep listening after the first Mac with our Mac's name answers. */
         private const val PAIRED_SETTLE_MS = 1_000L
         /** Repeated `onAvailable` events inside this window do not restart the ladder. */

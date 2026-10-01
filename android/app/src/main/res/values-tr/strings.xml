@@ -84,6 +84,12 @@
     <string name="connection_state">Durum</string>
     <string name="connection_mac">Mac</string>
     <string name="connection_address">Son adres</string>
+    <string name="connection_last_seen">Son görülme</string>
+    <string name="connection_section_macs">Mac\'ler</string>
+    <string name="mac_add">Başka bir Mac eşleştir</string>
+    <string name="mac_in_use">Kullanımda</string>
+    <string name="mac_last_seen">son görülme %1$s</string>
+    <string name="mac_forget_confirm">%1$s bu telefondan kaldırılacak. Yeniden kullanmak için tekrar eşleştirmen gerekir.</string>
     <string name="connection_auto">Otomatik yeniden bağlan</string>
     <string name="connection_auto_note">Mac bu Wi-Fi ağında erişilebilir olduğunda.</string>
     <string name="connection_now">Şimdi bağlan</string>
@@ -333,4 +339,5 @@
     <!-- pairing chooser -->
     <string name="pair_choose_title">Bir Mac seçin</string>
     <string name="pair_search_again">Yeniden ara</string>
+    <string name="pair_searching">Bu ağdaki Mac\'ler aranıyor…</string>
 </resources>

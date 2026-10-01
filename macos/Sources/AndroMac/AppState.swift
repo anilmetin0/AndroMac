@@ -16,6 +16,8 @@ final class AppState: ObservableObject {
         /// Nothing is paired yet, so this is setup rather than an addition. Only wording depends on
         /// it — the SAS comparison is the same either way.
         let isFirstDevice: Bool
+        /// The phone's LAN IPv4, so with two phones around the user can tell which one is asking.
+        let address: String?
 
         /// The short fingerprint of the key being offered, so the user has something stable to
         /// recognise the device by later in Settings.

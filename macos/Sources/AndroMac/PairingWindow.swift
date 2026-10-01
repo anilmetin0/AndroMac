@@ -66,7 +66,14 @@ struct PairingView: View {
 
             // The fingerprint is the name this device will carry in Settings. Showing it here is
             // what lets the user connect the prompt they approved to the entry they see later.
-            Text("Device \(request.fingerprint)")
+            // The address tells two phones on the same Wi-Fi apart; the phone shows its own in Settings.
+            Group {
+                if let address = request.address {
+                    Text("Device \(request.fingerprint) · \(address)")
+                } else {
+                    Text("Device \(request.fingerprint)")
+                }
+            }
                 .font(Theme.Font.label.monospaced())
                 .foregroundStyle(.secondary)
 

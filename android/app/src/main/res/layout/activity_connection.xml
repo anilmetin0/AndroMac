@@ -41,6 +41,31 @@
                         android:text="@string/connection_address" />
                     <TextView android:id="@+id/connectionAddress" style="@style/RowValue" />
                 </LinearLayout>
+                <LinearLayout android:id="@+id/rowLastSeen" style="@style/Row" android:background="@null">
+                    <TextView style="@style/RowTitle" android:layout_width="0dp" android:layout_weight="1"
+                        android:text="@string/connection_last_seen" />
+                    <TextView android:id="@+id/connectionLastSeen" style="@style/RowValue" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView style="@style/SectionLabel" android:text="@string/connection_section_macs" />
+
+            <!-- One item_mac row per saved Mac, filled in by ConnectionActivity. -->
+            <LinearLayout style="@style/Card">
+                <LinearLayout
+                    android:id="@+id/macList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/rowAddMac"
+                    style="@style/Row"
+                    android:textAppearance="@style/TextAppearance.AM.BodyLarge"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:drawableEnd="@drawable/ic_chevron"
+                    android:drawablePadding="16dp"
+                    android:text="@string/mac_add" />
             </LinearLayout>
 
             <TextView style="@style/SectionLabel" android:text="@string/connection_section_options" />

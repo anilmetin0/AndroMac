@@ -23,7 +23,8 @@ struct PairedDeviceTests {
     }
 
     @Test func survivesAJSONRoundTrip() throws {
-        let device = PairedDevice(key: keyA, name: "Pixel 9", lastSeen: Date(timeIntervalSince1970: 1_750_000_000), paused: true)
+        let device = PairedDevice(key: keyA, name: "Pixel 9", lastSeen: Date(timeIntervalSince1970: 1_750_000_000), paused: true,
+                                  lastAddress: "192.168.1.42")
         let back = try JSONDecoder().decode([PairedDevice].self, from: JSONEncoder().encode([device]))
         #expect(back == [device])
     }
@@ -77,6 +78,17 @@ struct PairedDeviceTests {
         #expect(!devices[0].paused)                 // absent flags fall back to their defaults
         #expect(devices[0].receivesClipboard)       // and clipboard sync defaults to on
         #expect(devices[0].lastSeen == nil)
+    }
+
+    @Test func aDeviceSavedBeforeLastAddressStillLoads() throws {
+        let old = """
+        [{"key":"\(keyA.base64EncodedString())","name":"Pixel 9","pairedAt":0,"lastSeen":10,"paused":true}]
+        """
+        let devices = try JSONDecoder().decode([PairedDevice].self, from: Data(old.utf8))
+        #expect(devices.count == 1)
+        #expect(devices[0].lastAddress == nil)
+        #expect(devices[0].lastSeen == Date(timeIntervalSinceReferenceDate: 10))
+        #expect(devices[0].paused)
     }
 
     @Test func corruptStoredDataFallsBackToTheLegacyPairing() {

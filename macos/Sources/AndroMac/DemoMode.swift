@@ -35,7 +35,8 @@ enum DemoMode {
         Store.shared.updateCheck = false
 
         let phone = PairedDevice(key: key(0x11), name: "Pixel 9")
-        let tablet = PairedDevice(key: key(0x22), name: "Galaxy Tab S9")
+        let tablet = PairedDevice(key: key(0x22), name: "Galaxy Tab S9",
+                                  lastSeen: Date().addingTimeInterval(-2 * 3600), lastAddress: "192.168.1.57")
         Store.shared.pairedDevices = [phone, tablet]
 
         let state = AppState.shared
@@ -52,14 +53,16 @@ enum DemoMode {
                 caps: ["clipboard", "media", "find_phone", "file", "system"],
                 lastClipboard: "https://github.com/anilmetin0/AndroMac",
                 system: AppState.PhoneSystem(ringer: "vibrate", volume: 9, volumeMax: 15,
-                                             canSilence: true)
+                                             canSilence: true),
+                host: "192.168.1.42"
             ),
             AppState.DeviceState(
                 id: tablet.id,
                 name: tablet.name,
                 battery: AppState.Battery(level: 41, charging: false, status: "discharging",
                                           temperature: 27.1, updated: Date()),
-                caps: ["clipboard", "file"]
+                caps: ["clipboard", "file"],
+                host: "192.168.1.57"
             ),
         ]
         // ANDROMAC_DEMO_OFFLINE=1 leaves the tablet paired but not connected, for the offline card.
@@ -102,7 +105,8 @@ enum DemoMode {
         // by actually pairing a phone.
         if ProcessInfo.processInfo.environment["ANDROMAC_DEMO_PAIRING"] == "1" {
             state.pairing = AppState.PairingRequest(
-                peerKey: key(0x33), peerName: "Pixel 9", sas: "428 517", isFirstDevice: true
+                peerKey: key(0x33), peerName: "Pixel 9", sas: "428 517", isFirstDevice: true,
+                address: "192.168.1.63"
             )
         }
         // ANDROMAC_DEMO_FILE=1 raises the incoming-file prompt; its buttons only close it.

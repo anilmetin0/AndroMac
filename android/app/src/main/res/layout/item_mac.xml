@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A saved Mac on the connection screen: tap to use it, long-press to forget it. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Row">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <TextView android:id="@+id/macName" style="@style/RowTitle" />
+        <TextView android:id="@+id/macDetail" style="@style/RowSubtitle" />
+    </LinearLayout>
+
+    <TextView android:id="@+id/macActive" style="@style/RowValue" android:text="@string/mac_in_use" />
+</LinearLayout>

@@ -358,9 +358,11 @@ struct SettingsList: View {
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(AppState.displayName(device.name) ?? String(localized: "Phone"))
-                        Text(deviceDetail(device))
-                            .font(Theme.Font.label)
-                            .foregroundStyle(.secondary)
+                        TimelineView(.everyMinute) { context in
+                            Text(deviceDetail(device, now: context.date))
+                        }
+                        .font(Theme.Font.label)
+                        .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -480,11 +482,19 @@ struct SettingsList: View {
 
     /// Fingerprint and reachability: enough to tell two phones of the same model apart, and to see
     /// which one the Mac is actually talking to right now. The panel's three words for it.
-    private func deviceDetail(_ device: PairedDevice) -> String {
-        let live = state.devices.contains { $0.id == device.id }
-        let reach = device.paused ? String(localized: "Disconnected")
-            : live ? String(localized: "Connected") : String(localized: "Offline")
-        return "\(reach) · \(device.shortFingerprint)"
+    /// State, then what tells two phones apart: where it is on the Wi-Fi and when it was last here.
+    private func deviceDetail(_ device: PairedDevice, now: Date) -> String {
+        let parts: [String?]
+        if device.paused {
+            parts = [String(localized: "Disconnected")]
+        } else if let live = state.devices.first(where: { $0.id == device.id }) {
+            parts = [String(localized: "Connected"), live.host]
+        } else {
+            parts = [String(localized: "Offline"),
+                     device.lastSeen.map { String(localized: "last seen \(RelativeTime.string($0, now: now))") },
+                     device.lastAddress]
+        }
+        return (parts.compactMap { $0 } + [device.shortFingerprint]).joined(separator: " · ")
     }
 
     /// Forget one device, or every device when `id` is nil. A forgotten phone is hung up on at

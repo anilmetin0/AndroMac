@@ -144,6 +144,7 @@ actor Server {
         // of its own and does not run `closeSession` on top of this.
         let closing = sessions
         sessions.removeAll()
+        for id in closing.keys { Store.shared.updateDevice(id: id) { $0.lastSeen = Date() } }
         for session in closing.values { await session.close() }
         listener?.stateUpdateHandler = nil
         listener?.newConnectionHandler = nil
@@ -285,13 +286,14 @@ actor Server {
             }
 
             sessions[deviceID] = session
-            Store.shared.updateDevice(id: deviceID) { $0.lastSeen = Date() }
             let address = Self.ipv4(host)
+            Store.shared.updateDevice(id: deviceID) { $0.lastSeen = Date(); $0.lastAddress = address }
             serveTasks[deviceID] = Task { await self.serve(session, id: deviceID, address: address) }
         } catch let WireError.untrusted(key, name, sas, isFirstDevice) {
             // An untrusted peer does not touch the current session; the user is simply asked.
             NSLog("AndroMac: pairing required")      // the code itself stays out of the log
-            await promptPairing(key: key, name: name, sas: sas, isFirstDevice: isFirstDevice)
+            await promptPairing(key: key, name: name, sas: sas, isFirstDevice: isFirstDevice,
+                                address: Self.ipv4(host))
         } catch {
             NSLog("AndroMac: handshake failed — \(error.localizedDescription)")
         }
@@ -384,7 +386,7 @@ actor Server {
         }
     }
 
-    private func promptPairing(key: Data, name: String, sas: String, isFirstDevice: Bool) async {
+    private func promptPairing(key: Data, name: String, sas: String, isFirstDevice: Bool, address: String?) async {
         // The code is per attempt (handshake v2). Once the user confirmed on the phone, it pins and
         // reconnects on its backoff ladder without showing a code; every retry would replace the
         // window with a code the user can never compare. The first attempt's code is the one the
@@ -403,7 +405,7 @@ actor Server {
         lastPairingPrompt = Date()
         await MainActor.run {
             AppState.shared.pairing = .init(
-                peerKey: key, peerName: name, sas: sas, isFirstDevice: isFirstDevice
+                peerKey: key, peerName: name, sas: sas, isFirstDevice: isFirstDevice, address: address
             )
         }
     }
@@ -460,6 +462,9 @@ actor Server {
         pingTasks[deviceID]?.cancel(); pingTasks[deviceID] = nil
         let session = sessions.removeValue(forKey: deviceID)
         serveTasks[deviceID] = nil
+        // "Last seen" is when it left, not when it came: a phone connected all day was seen just now.
+        // Only for a session that existed, so pausing an offline phone does not stamp it.
+        if session != nil { Store.shared.updateDevice(id: deviceID) { $0.lastSeen = Date() } }
         await session?.close()
         lowBatteryAlerted.remove(deviceID)
 
