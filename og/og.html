@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- Social preview (images/og.png). Render at exactly 1200x630, e.g. Playwright: viewport 1200x630, screenshot to ../images/og.png -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: "Schibsted Grotesk"; src: url("../fonts/schibsted-latin.woff2") format("woff2"); font-weight: 400 900; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body { position: relative; background: #17304d; color: #ffffff; font-family: "Schibsted Grotesk", sans-serif; }
+  .text { position: absolute; left: 72px; top: 124px; width: 520px; }
+  .brand { display: flex; align-items: center; gap: 20px; font-size: 32px; font-weight: 700; letter-spacing: -.01em; }
+  .brand img { width: 48px; height: 48px; }
+  h1 { margin-top: 44px; font-size: 76px; line-height: .98; font-weight: 800; letter-spacing: -.035em; }
+  p { max-width: 380px; margin-top: 30px; font-size: 26px; line-height: 1.42; color: #e4edf5; }
+  .panel { position: absolute; left: 640px; top: 68px; width: 290px; border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, .35); }
+  .phone { position: absolute; left: 952px; top: 243px; width: 220px; padding: 7px; border-radius: 30px; background: #0b1520; box-shadow: 0 24px 60px rgba(0, 0, 0, .45); }
+  .phone img { display: block; width: 100%; border-radius: 23px; }
+</style>
+</head>
+<body>
+  <div class="text">
+    <div class="brand"><img src="../images/icon.png" alt="">AndroMac</div>
+    <h1>Your Android phone, on your Mac</h1>
+    <p>Free, open-source apps for macOS and Android</p>
+  </div>
+  <img class="panel" src="../images/macos-panel.png" alt="">
+  <div class="phone"><img src="../images/android-connection.png" alt=""></div>
+</body>
+</html>
