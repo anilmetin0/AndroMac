@@ -44,7 +44,12 @@ fun Activity.pickMac(store: Store, shown: (AlertDialog) -> Unit = {}) {
                 )
                 b.setAdapter(adapter) { _, i ->
                     val peer = peers[i]
-                    val saved = store.savedMacs.firstOrNull { it.name == peer.name }
+                    // Name and address first. A name alone decides only when no other row carries
+                    // it: two Macs with one name would otherwise switch to the one not tapped.
+                    val ip = peer.host.hostAddress
+                    val saved = store.savedMacs.firstOrNull { it.name == peer.name && it.host == ip }
+                        ?: store.savedMacs.firstOrNull { it.name == peer.name }
+                            ?.takeIf { peers.count { p -> p.name == peer.name } == 1 }
                     if (saved != null) {
                         store.activate(saved)
                         store.lastEndpoint = "${peer.host.hostAddress}:${peer.port}"
