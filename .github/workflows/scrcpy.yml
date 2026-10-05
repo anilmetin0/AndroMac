@@ -1,0 +1,46 @@
+# Weekly: moves the bundled scrcpy (and the adb it ships) to its latest release. The hash comes
+# from that release's SHA256SUMS.txt, the same source a manual bump uses; fetch-scrcpy.sh checks
+# it again when the app is built. A push made with GITHUB_TOKEN starts no workflow, so the build
+# is started by hand afterwards and publishes the nightly with the new scrcpy. A stable release
+# still needs VERSION raised.
+name: scrcpy
+
+on:
+  schedule:
+    - cron: "23 5 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Bump
+        id: bump
+        run: |
+          gh api repos/Genymobile/scrcpy/releases/latest > "$RUNNER_TEMP/release.json"
+          tag="$(jq -r .tag_name "$RUNNER_TEMP/release.json")"
+          [[ "$tag" =~ ^v[0-9]+(\.[0-9]+)+$ ]] || { echo "::error::unexpected tag '$tag'"; exit 1; }
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/SHA256SUMS.txt" \
+            "https://github.com/Genymobile/scrcpy/releases/download/$tag/SHA256SUMS.txt"
+          version="$(python3 .github/scripts/bump-scrcpy.py "$RUNNER_TEMP/SHA256SUMS.txt" < "$RUNNER_TEMP/release.json")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Commit and build
+        if: steps.bump.outputs.version != ''
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "fix(macos): bundle scrcpy $VERSION"
+          git push origin HEAD:main
+          gh workflow run build.yml --ref main

@@ -249,7 +249,7 @@ scripts/
   dependabot.yml                   weekly updates for the actions and the Gradle plugins
   ISSUE_TEMPLATE/, PULL_REQUEST_TEMPLATE.md
 
-android/                           AGP 9.4.1, Gradle 9.7.1, minSdk 29, no dependencies
+android/                           AGP 9.4.1, Gradle 9.8.0, minSdk 29, no dependencies
   app/src/main/kotlin/dev/andromac/
     core/                          platform-free: Crypto, Session, Protocol, Store, Link, Version,
                                    FileNames, NetworkInfo, MacPick, NotificationImage

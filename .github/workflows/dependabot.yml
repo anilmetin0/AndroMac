@@ -1,0 +1,31 @@
+# Merges a Dependabot pull request once the build has passed on its exact head commit. Only
+# Dependabot's own branches, only a successful build, and only if nothing was pushed since.
+name: dependabot
+
+on:
+  workflow_run:
+    workflows: [build]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]' &&
+      startsWith(github.event.workflow_run.head_branch, 'dependabot/')
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      BRANCH: ${{ github.event.workflow_run.head_branch }}
+      SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - run: gh pr merge "$BRANCH" --repo "$REPO" --squash --delete-branch --match-head-commit "$SHA"

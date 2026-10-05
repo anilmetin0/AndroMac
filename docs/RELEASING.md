@@ -111,3 +111,12 @@ a new Mac certificate means one more Keychain prompt for every user.
 - If the changelog section is missing, the stable job stops before touching the release; add the
   section and run it again.
 - If the notes are wrong, edit the release on GitHub, or fix the changelog and re-publish.
+
+## Dependencies
+
+Dependabot opens weekly pull requests for the workflow actions and the Gradle setup.
+`.github/workflows/dependabot.yml` merges one as soon as the build has passed on its head commit.
+`.github/workflows/scrcpy.yml` checks every Tuesday for a new scrcpy release, which also brings
+its adb. It updates the pinned version and hash in `macos/scripts/fetch-scrcpy.sh` and the
+versions in `THIRD-PARTY-NOTICES.md`, commits to `main` and starts the build, so the nightly
+carries it. A stable release with it still takes a raised `VERSION`.
