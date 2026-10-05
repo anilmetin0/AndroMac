@@ -105,8 +105,10 @@ final class UpdateCheck: ObservableObject {
     /// Set by `channelChanged`: the check that is running, or the next one, ends with the offer.
     private var offerAfterCheck = false
 
-    /// "Check now" works even while the automatic check is off: an explicit click is consent.
-    func checkNow() async {
+    /// "Check now" works even while the automatic check is off: an explicit click is consent to
+    /// ask, not to install. A manual check that finds a release shows it in the update window,
+    /// automatic install or not; only the scheduled check hands it to the automatic install.
+    func checkNow(manual: Bool = false) async {
         // A demo sends nothing beyond this Mac; its update window has its own invented release.
         guard !checking, !DemoMode.isOn else { return }
         checking = true
@@ -128,7 +130,12 @@ final class UpdateCheck: ObservableObject {
             lastChecked = Date()
             Store.shared.updateLastCheck = lastChecked
             Store.shared.updateFound = release.map { ($0.version.description, $0.commit, $0.url.absoluteString) }
-            if let release, release.label != Store.shared.updateSkipped, Updater.installsItself(release) {
+            if let release, manual {
+                // The user asked, so the user decides: nothing installs behind the window.
+                Updater.shared.cancelWaiting()
+                offered = true
+                UpdateWindow.show(release)
+            } else if let release, release.label != Store.shared.updateSkipped, Updater.installsItself(release) {
                 Updater.shared.installWhenIdle(release)
             }
         } catch {

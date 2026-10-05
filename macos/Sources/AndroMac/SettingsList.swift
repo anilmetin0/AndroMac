@@ -287,7 +287,7 @@ struct SettingsList: View {
                 }
             LabeledContent("Status", value: updateStatus)
             HStack {
-                Button("Check now") { Task { await updates.checkNow() } }
+                Button("Check now") { Task { await updates.checkNow(manual: true) } }
                     .disabled(updates.checking || updater.phase.busy)
                 if let release = updates.available {
                     if !Updater.canInstall(release) {
