@@ -294,3 +294,7 @@
 "OK" = "Tamam";
 "This notification is no longer available on the connected phone." = "Bu bildirim bağlı telefonda artık kullanılamıyor.";
 "Could not send the action. Reconnect your phone and try again." = "Eylem gönderilemedi. Telefonu yeniden bağlayıp tekrar deneyin.";
+
+"Forget %@?" = "%@ unutulsun mu?";
+"Forget…" = "Unut…";
+"To use it with this Mac again, pair it again." = "Bu Mac'le yeniden kullanmak için tekrar eşleştirmen gerekir.";

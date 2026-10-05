@@ -68,6 +68,7 @@
 "Copy to clipboard" = "Copy to clipboard";
 "Copy to the Mac clipboard" = "Copy to the Mac clipboard";
 "Could not reach GitHub · %@" = "Could not reach GitHub · %@";
+"Could not send the action. Reconnect your phone and try again." = "Could not send the action. Reconnect your phone and try again.";
 "Decline" = "Decline";
 "Delete" = "Delete";
 "Denied" = "Denied";
@@ -88,8 +89,10 @@
 "Files" = "Files";
 "Files are saved to Downloads. Auto-accept applies to every paired phone." = "Files are saved to Downloads. Auto-accept applies to every paired phone.";
 "Forget" = "Forget";
+"Forget %@?" = "Forget %@?";
 "Forget all devices" = "Forget all devices";
 "Forget all devices?" = "Forget all devices?";
+"Forget…" = "Forget…";
 "Full" = "Full";
 "full" = "full";
 "General" = "General";
@@ -114,8 +117,8 @@
 "Keychain access denied — restart the app and allow it" = "Keychain access denied — restart the app and allow it";
 "Keychain access denied. Restart the app and allow it." = "Keychain access denied. Restart the app and allow it.";
 "Language" = "Language";
-"Last seen %@" = "Last seen %@";
 "last seen %@" = "last seen %@";
+"Last seen %@" = "Last seen %@";
 "Later" = "Later";
 "listener was cancelled" = "listener was cancelled";
 "Local Network" = "Local Network";
@@ -151,6 +154,7 @@
 "Off" = "Off";
 "Off here, the phone never sends it." = "Off here, the phone never sends it.";
 "Offline" = "Offline";
+"OK" = "OK";
 "On the phone, open Wireless debugging → Pair device with pairing code, and enter the code here." = "On the phone, open Wireless debugging → Pair device with pairing code, and enter the code here.";
 "Only when I ask" = "Only when I ask";
 "Open AndroMac" = "Open AndroMac";
@@ -188,6 +192,7 @@
 "Received from phone" = "Received from phone";
 "Reconnects" = "Reconnects";
 "Reject" = "Reject";
+"Reply" = "Reply";
 "Report a Problem" = "Report a Problem";
 "Reset AndroMac" = "Reset AndroMac";
 "Reset AndroMac?" = "Reset AndroMac?";
@@ -245,9 +250,11 @@
 "This Mac is visible on the network" = "This Mac is visible on the network";
 "This Mac's address" = "This Mac's address";
 "This Mac: %@" = "This Mac: %@";
+"This notification is no longer available on the connected phone." = "This notification is no longer available on the connected phone.";
 "This release has no macOS build to install." = "This release has no macOS build to install.";
 "Title only" = "Title only";
 "Title only leaves the content on the phone." = "Title only leaves the content on the phone.";
+"To use it with this Mac again, pair it again." = "To use it with this Mac again, pair it again.";
 "Traffic" = "Traffic";
 "Try again" = "Try again";
 "Turn off the phone's screen while mirroring" = "Turn off the phone's screen while mirroring";
@@ -265,8 +272,3 @@
 "Waiting for the Keychain to unlock" = "Waiting for the Keychain to unlock";
 "What syncs" = "What syncs";
 "Your phone's battery is low" = "Your phone's battery is low";
-
-"Reply" = "Reply";
-"OK" = "OK";
-"This notification is no longer available on the connected phone." = "This notification is no longer available on the connected phone.";
-"Could not send the action. Reconnect your phone and try again." = "Could not send the action. Reconnect your phone and try again.";

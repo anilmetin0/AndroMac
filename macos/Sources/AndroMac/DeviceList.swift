@@ -303,7 +303,7 @@ private struct DeviceCard: View {
     }
 
     /// The per-phone clipboard switch, Disconnect and Forget: reachable, but out of the way of a
-    /// glance. Offered whatever the phone's state, offline included.
+    /// glance. Disconnect only while the phone is connected.
     private var more: some View {
         GlassMenuButton(symbol: "ellipsis", label: String(localized: "More")) {
             var items: [PanelMenu.Item] = [
@@ -314,16 +314,26 @@ private struct DeviceCard: View {
                 .action(String(localized: "Device settings…")) { state.showMainWindow(.setting(.devices)) },
                 .separator,
             ]
-            if !device.paused {
+            // Only a phone on the line can be hung up on; offline, Disconnect did nothing visible.
+            if connected {
                 items.append(.action(String(localized: "Disconnect"), run: toggleConnection))
             }
-            // The same as Forget in Settings: this phone only, hung up on at once.
-            items.append(.action(String(localized: "Forget")) {
-                Store.shared.unpair(id: device.id)
-                Task { await Server.shared.disconnect(device.id) }
-            })
+            // The same as Forget in Settings, asked first: undoing it means pairing again.
+            items.append(.action(String(localized: "Forget…"), run: confirmForget))
             return items
         }
+    }
+
+    private func confirmForget() {
+        let alert = NSAlert()
+        alert.messageText = String(localized: "Forget \(title)?")
+        alert.informativeText = String(localized: "To use it with this Mac again, pair it again.")
+        alert.addButton(withTitle: String(localized: "Forget")).hasDestructiveAction = true
+        alert.addButton(withTitle: String(localized: "Cancel"))
+        NSApp.activate(ignoringOtherApps: true)
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        Store.shared.unpair(id: device.id)
+        Task { await Server.shared.disconnect(device.id) }
     }
 
     /// Disconnect hangs up and keeps the phone from coming back; Connect lets it in again.
