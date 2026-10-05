@@ -9,6 +9,13 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ## Unreleased
 
+## 1.5.1 - 2026-10-05
+
+### Değişenler
+
+- Ekran yansıtma scrcpy 5.0 ve adb 37.0.1 kullanıyor. Görüntü Mac'te donanımla çözülüyor; işlemciyi ve
+  pili çok daha az yoruyor.
+
 ## 1.5.0 - 2026-10-05
 
 ### Eklenenler

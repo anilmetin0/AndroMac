@@ -9,6 +9,13 @@ raised. Nightly builds list their commits instead.
 
 ## Unreleased
 
+## 1.5.1 - 2026-10-05
+
+### Changed
+
+- Screen mirroring uses scrcpy 5.0 and adb 37.0.1. The video is decoded in hardware on the Mac, which
+  takes far less CPU and battery.
+
 ## 1.5.0 - 2026-10-05
 
 ### Added
