@@ -28,7 +28,7 @@
   <link rel="icon" href="images/icon.png" sizes="256x256" type="image/png">
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
   <link rel="preload" href="fonts/schibsted-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="images/macos-panel-640.webp" as="image" type="image/webp" imagesrcset="images/macos-panel-320.webp 320w, images/macos-panel-640.webp 640w" imagesizes="(max-width: 600px) 46vw, 320px" fetchpriority="high">
+  <link rel="preload" href="images/macos-panel-640.webp?v=3" as="image" type="image/webp" imagesrcset="images/macos-panel-320.webp?v=3 320w, images/macos-panel-640.webp?v=3 640w" imagesizes="(max-width: 600px) 46vw, 320px" fetchpriority="high">
   <link rel="stylesheet" href="site.css">
   <script>try{const t=localStorage.getItem("theme");document.documentElement.dataset.theme=t==="dark"||t==="light"?t:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch{}</script>
   <script>if("IntersectionObserver"in window&&!matchMedia("(prefers-reduced-motion: reduce)").matches){const r=document.documentElement;r.classList.add("rv");addEventListener("load",()=>{if(!r.dataset.revealReady)r.classList.remove("rv")})}</script>
@@ -64,11 +64,11 @@
       </div>
       <div class="stage">
         <picture>
-          <source type="image/webp" srcset="images/macos-panel-320.webp 320w, images/macos-panel-640.webp 640w" sizes="(max-width: 600px) 46vw, 320px">
+          <source type="image/webp" srcset="images/macos-panel-320.webp?v=3 320w, images/macos-panel-640.webp?v=3 640w" sizes="(max-width: 600px) 46vw, 320px">
           <img class="panel" src="images/macos-panel.png" width="640" height="1090" fetchpriority="high" alt="AndroMac menu-bar panel on the Mac: a Pixel 9 at 78% and charging, a song playing, the clipboard, and recent phone notifications including a verification code with a copy button.">
         </picture>
         <picture>
-          <source type="image/webp" srcset="images/android-home-270.webp 270w, images/android-home-540.webp 540w" sizes="(max-width: 600px) 36vw, 250px">
+          <source type="image/webp" srcset="images/android-home-270.webp?v=3 270w, images/android-home-540.webp?v=3 540w, images/android-home-1080.webp?v=3 1080w" sizes="(max-width: 600px) 36vw, 250px">
           <img class="phone" src="images/android-home.png" width="1080" height="2000" alt="AndroMac on Android, ready to pair, with a Pair button and switches for battery, clipboard, notifications and media.">
         </picture>
         <div class="banner" aria-hidden="true">
@@ -181,7 +181,7 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
         <figure class="tile wide" data-reveal="zoom">
           <div class="fig">
             <div class="pane"><picture>
-              <source type="image/webp" srcset="images/macos-window-720.webp 720w, images/macos-window-1440.webp 1440w" sizes="(max-width: 900px) 90vw, 620px">
+              <source type="image/webp" srcset="images/macos-window-720.webp?v=3 720w, images/macos-window-1440.webp?v=3 1440w" sizes="(max-width: 900px) 90vw, 620px">
               <img src="images/macos-window.png" width="1440" height="1000" loading="lazy" alt="Notification history window on the Mac, listing notifications from Messages, Signal, Calendar, Photos and Maps, with a search field.">
             </picture></div>
             <figcaption>Every notification from the phone, in a history you can search by app, title or text</figcaption>
@@ -190,7 +190,7 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
         <figure class="tile tall" data-reveal="zoom">
           <div class="fig">
             <div class="pane"><picture>
-              <source type="image/webp" srcset="images/android-sync-dark-300.webp 300w, images/android-sync-dark-600.webp 600w" sizes="(max-width: 600px) 60vw, 280px">
+              <source type="image/webp" srcset="images/android-sync-dark-300.webp?v=3 300w, images/android-sync-dark-600.webp?v=3 600w, images/android-sync-dark-1080.webp?v=3 1080w" sizes="(max-width: 600px) 60vw, 280px">
               <img src="images/android-sync-dark.png" width="1080" height="1800" loading="lazy" alt="The Android app in dark mode, with switches for battery, clipboard, notifications and media.">
             </picture></div>
             <figcaption>Choose what the phone shares with the Mac: battery, clipboard, notifications and media</figcaption>
@@ -199,7 +199,7 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
         <figure class="tile tall" data-reveal="zoom">
           <div class="fig">
             <div class="pane"><picture>
-              <source type="image/webp" srcset="images/android-connection-300.webp 300w, images/android-connection-600.webp 600w" sizes="(max-width: 600px) 60vw, 280px">
+              <source type="image/webp" srcset="images/android-connection-300.webp?v=3 300w, images/android-connection-600.webp?v=3 600w, images/android-connection-1080.webp?v=3 1080w" sizes="(max-width: 600px) 60vw, 280px">
               <img src="images/android-connection.png" width="1080" height="1800" loading="lazy" alt="Connection screen on Android with the paired Mac, its last address, and a Reconnect automatically switch.">
             </picture></div>
             <figcaption>The phone reconnects whenever the Mac is reachable on the same Wi-Fi</figcaption>
@@ -208,7 +208,7 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
         <figure class="tile wide" data-reveal="zoom">
           <div class="fig">
             <div class="pane"><picture>
-              <source type="image/webp" srcset="images/macos-settings-sync-720.webp 720w, images/macos-settings-sync-1440.webp 1440w" sizes="(max-width: 900px) 90vw, 620px">
+              <source type="image/webp" srcset="images/macos-settings-sync-720.webp?v=3 720w, images/macos-settings-sync-1440.webp?v=3 1440w" sizes="(max-width: 900px) 90vw, 620px">
               <img src="images/macos-settings-sync.png" width="1440" height="1000" loading="lazy" alt="Sync settings on the Mac: switches for battery, clipboard, notifications and media, and a low-battery alert threshold of 10, 15, 20 or 30 percent.">
             </picture></div>
             <figcaption>Choose what syncs, and at which battery level the Mac warns you</figcaption>
@@ -232,11 +232,11 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
       <figure data-reveal="right">
         <div class="frame">
           <picture>
-            <source type="image/webp" srcset="images/macos-pairing-380.webp 380w, images/macos-pairing-760.webp 760w" sizes="(max-width: 600px) 52vw, 340px">
+            <source type="image/webp" srcset="images/macos-pairing-380.webp?v=3 380w, images/macos-pairing-760.webp?v=3 760w" sizes="(max-width: 600px) 52vw, 340px">
             <img src="images/macos-pairing.png" width="760" height="556" loading="lazy" alt="Pairing window on the Mac with a six-digit code and Reject and Pair buttons.">
           </picture>
           <picture>
-            <source type="image/webp" srcset="images/android-pairing-300.webp 300w, images/android-pairing-600.webp 600w" sizes="(max-width: 600px) 38vw, 240px">
+            <source type="image/webp" srcset="images/android-pairing-300.webp?v=3 300w, images/android-pairing-600.webp?v=3 600w, images/android-pairing-1080.webp?v=3 1080w" sizes="(max-width: 600px) 38vw, 240px">
             <img class="ph" src="images/android-pairing.png" width="1080" height="900" loading="lazy" alt="Pairing code dialog on Android with Reject and Pair buttons.">
           </picture>
         </div>
