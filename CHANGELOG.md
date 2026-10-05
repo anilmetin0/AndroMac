@@ -9,8 +9,24 @@ raised. Nightly builds list their commits instead.
 
 ## Unreleased
 
+## 1.5.0 - 2026-10-05
+
+### Added
+
+- **Phone actions in the notification history.** A notification's buttons (Reply, Mark as read
+  and the like) show in the history window and in the opened panel row, so a notification closed
+  by mistake can still be answered. They work while the phone is connected and the notification
+  is still on it.
+
 ### Changed
 
+- Closing a Mac notification that has phone actions leaves it on the phone, so its actions stay
+  available in the history. Notifications without actions are still dismissed on both.
+- Check now asks first. On both the Mac and the phone, a release found by Check now shows its
+  version and notes and installs only when you confirm. The daily automatic check still installs
+  by itself when automatic install is on.
+- In the panel, a phone's More menu offers Disconnect only while the phone is connected, and
+  Forget asks before it removes the pairing.
 - In the notification, Disconnect is back after Send clipboard to Mac.
 
 ## 1.4.0 - 2026-10-01

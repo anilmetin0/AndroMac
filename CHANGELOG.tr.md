@@ -9,8 +9,24 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ## Unreleased
 
+## 1.5.0 - 2026-10-05
+
+### Eklenenler
+
+- **Bildirim geçmişinde telefon eylemleri.** Bir bildirimin düğmeleri (Yanıtla, Okundu olarak
+  işaretle gibi) geçmiş penceresinde ve paneldeki açılan satırda görünüyor; yanlışlıkla kapatılan
+  bir bildirime yine yanıt verilebiliyor. Telefon bağlıyken ve bildirim telefonda duruyorken
+  çalışıyorlar.
+
 ### Değişenler
 
+- Telefon eylemleri olan bir bildirim Mac'te kapatılınca telefonda kalıyor; eylemleri geçmişte
+  kullanılabilir kalıyor. Eylemi olmayan bildirimler eskisi gibi iki tarafta da kapanıyor.
+- Şimdi kontrol et önce soruyor. Mac'te ve telefonda, Şimdi kontrol et ile bulunan sürüm, sürüm
+  numarası ve notlarıyla gösteriliyor; ancak onaylarsan kuruluyor. Otomatik kurulum açıksa günlük
+  otomatik kontrol eskisi gibi kendisi kuruyor.
+- Paneldeki telefon menüsünde Bağlantıyı kes yalnızca telefon bağlıyken çıkıyor; Unut da
+  eşleşmeyi silmeden önce soruyor.
 - Bildirimde Bağlantıyı kes yeniden Panoyu Mac'e gönder'in sağında.
 
 ## 1.4.0 - 2026-10-01
