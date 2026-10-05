@@ -124,10 +124,15 @@ class LinkService : Service() {
             // The notification action and the QS tile: the auto-connect switch, one tap away.
             ACTION_DISCONNECT -> {
                 store.autoConnect = false
-                current?.close()             // the read ends and the loop parks on auto-connect off
+                // The Mac's switch follows; the read ends and the loop parks on auto-connect off.
+                if (!Link.hangUp(Protocol.autoConnect(false, store.autoConnectChanged))) current?.close()
                 wake()
             }
-            ACTION_RESUME -> { store.autoConnect = true; restartLadder() }
+            ACTION_RESUME -> {
+                store.autoConnect = true
+                Link.send(Protocol.autoConnect(true, store.autoConnectChanged))  // a Connect-now link
+                restartLadder()
+            }
         }
         // Never start a second worker: a START_STICKY restart can arrive while the old
         // thread is still winding down, which used to produce two parallel connections.
@@ -177,6 +182,8 @@ class LinkService : Service() {
     private var notOursNet: String? = null
     /** "Connect now" with auto-connect off: one full attempt, then park again. */
     @Volatile private var connectRequested = false
+    /** The dial in hand was a "Connect now"; its hello says so (PROTOCOL §3). */
+    @Volatile private var dialRequested = false
     private var screenReceiver: BroadcastReceiver? = null
 
     /**
@@ -238,6 +245,7 @@ class LinkService : Service() {
                 await(0)                     // indefinite: the network callback wakes it
                 continue
             }
+            dialRequested = connectRequested
             connectRequested = false         // one attempt per request
 
             Link.setState(Link.State.Searching)
@@ -433,7 +441,7 @@ class LinkService : Service() {
         // Through the send queue, like everything else: a direct write from this read thread would
         // wait on the session lock while the queue is mid-chunk, and a Mac blocked writing to us
         // at the same moment would never be read (both sides stuck on a full socket buffer).
-        Link.send(Protocol.hello(store.deviceName))
+        Link.send(Protocol.hello(store.deviceName, store.autoConnect, store.autoConnectChanged, dialRequested))
         battery.start()
         media.start()
         system.start()
@@ -492,6 +500,9 @@ class LinkService : Service() {
             Protocol.T_MEDIA_CONTROL -> media.control(msg.optString("cmd"))
             Protocol.T_SYSTEM_CONTROL -> system.control(msg)
             Protocol.T_CLIPBOARD_REQUEST -> clipboard.macAskedForClipboard()
+            // The Mac's switch changed, or it is newer than ours: it is one setting on both sides.
+            // Off from a Mac that refused us, the loop parks once this link ends.
+            Protocol.T_AUTO_CONNECT -> store.adoptAutoConnect(msg.optBoolean("on", true), msg.optLong("ts"))
             Protocol.T_HELLO -> {
                 // The Mac let us in: this is a working link, so the next drop starts the ladder over.
                 macAsleep = false

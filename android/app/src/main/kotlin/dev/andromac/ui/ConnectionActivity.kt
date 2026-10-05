@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import dev.andromac.R
 import dev.andromac.core.Link
+import dev.andromac.core.Protocol
 import dev.andromac.core.Store
 import dev.andromac.net.LinkService
 
@@ -41,6 +42,7 @@ class ConnectionActivity : Activity() {
 
         bindSwitchRow(R.id.rowAuto, R.id.swAuto, store.autoConnect) {
             store.autoConnect = it
+            Link.send(Protocol.autoConnect(it, store.autoConnectChanged))  // the Mac's switch follows
             LinkService.start(this)          // wakes the loop so the new value applies now
             render()
         }

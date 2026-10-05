@@ -84,6 +84,16 @@ object Link {
         Thread(r, "andromac-send").apply { isDaemon = true }
     }
 
+    /** Send [last] and then hang up, in that order; false with no link. */
+    fun hangUp(last: JSONObject): Boolean {
+        val s = session ?: return false
+        io.execute {
+            runCatching { s.send(last) }
+            s.close()
+        }
+        return true
+    }
+
     /** True if the message was queued. With no link it is dropped silently (PROTOCOL §6 — nothing is buffered). */
     fun send(msg: JSONObject): Boolean {
         val s = session ?: return false

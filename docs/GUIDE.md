@@ -127,6 +127,10 @@ Settings → Connection, or on the AndroMac connection tile in Quick Settings. T
 disconnected until you tap **Connect** again. On the Mac, **Disconnect** is in the phone's
 **⋯** menu in the panel.
 
+Disconnect turns **Connect automatically** off. It is one switch on both sides: the Mac has it per
+phone in the **⋯** menu and in Settings → Devices, and changing it on either side changes it on
+the other. With it off, a phone connects only when you tap **Connect**.
+
 ## Features
 
 | Feature | Direction | What it does |
@@ -202,7 +206,7 @@ Settings → About. Copy the whole string into bug reports.
 | Settings | Connection, Notifications, Clipboard, File transfer, Permissions, Language, Updates and About. At the bottom, **Reset AndroMac** erases the pairings, all settings and the clipboard history, after asking first. |
 | Clipboard history | The last 20 texts sent to or received from the Mac. Tap to copy, or tap the send button to send again. Kept in memory only; sensitive clips are not saved. |
 | Permissions | All six permissions, each marked granted or not, and whether it is required. Tap one to open the system screen for it. |
-| Connection | The connection state, the saved Macs with their last address, **Reconnect automatically**, **Connect** or **Disconnect**, and **Forget this Mac**. |
+| Connection | The connection state, the saved Macs with their last address, **Connect automatically**, **Connect** or **Disconnect**, and **Forget this Mac**. |
 | Notification settings | **App filter**, **Silent notifications**, and **Only while the phone is locked**, plus a list of what is always skipped. |
 | App filter | Full, Title only or Off for every app the phone has seen. |
 | Clipboard settings | Incoming: **Write to the clipboard**, **Show a notification**. Outgoing: **Never send sensitive content**. Plus **Send clipboard to Mac**. |
@@ -216,8 +220,8 @@ Settings → About. Copy the whole string into bug reports.
 The menu bar panel gives you a quick look. With more than one phone paired, tabs at the top
 switch between them. The phone's card shows its name and state, the battery, what is playing, and
 the ringer and volume. Below it are buttons to ring the phone, send a test notification, and
-mirror the screen, and a **⋯** menu with **Send my clipboard here**, **Device settings…** and
-**Disconnect**. Next come the last clipboard entry and the four latest notifications. Drop files
+mirror the screen, and a **⋯** menu with **Send my clipboard here**, **Connect automatically**,
+**Device settings…**, **Disconnect** and **Forget…**. Next come the last clipboard entry and the four latest notifications. Drop files
 onto the panel to send them. ⌘, opens Settings. Right-click the menu bar icon for Open AndroMac,
 Settings and Quit.
 

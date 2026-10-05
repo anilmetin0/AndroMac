@@ -29,6 +29,20 @@ struct PairedDeviceTests {
         #expect(back == [device])
     }
 
+    // MARK: auto-connect, one switch on both sides
+
+    @Test func theNewerAutoConnectChangeWins() {
+        let t1 = Date(timeIntervalSince1970: 1_750_000_000), t2 = t1.addingTimeInterval(60)
+        var mac = PairedDevice(key: keyA, name: "Pixel 9", paused: true)
+        mac.autoConnectChanged = t1
+        #expect(mac.syncAutoConnect(phoneOn: true, changed: t2) == .adopt)    // turned on there later
+        #expect(mac.syncAutoConnect(phoneOn: true, changed: t1.addingTimeInterval(-60)) == .tell)
+        #expect(mac.syncAutoConnect(phoneOn: true, changed: nil) == .tell)    // never touched there
+        #expect(mac.syncAutoConnect(phoneOn: false, changed: t2) == .keep)    // already agree
+        mac.autoConnectChanged = nil
+        #expect(mac.syncAutoConnect(phoneOn: true, changed: nil) == .keep)    // neither side has a say
+    }
+
     // MARK: the migration that can lose a pairing
 
     @Test func firstRunWithNothingStoredHasNoDevices() {

@@ -9,6 +9,17 @@ raised. Nightly builds list their commits instead.
 
 ## Unreleased
 
+### Added
+
+- **Auto-connect on the Mac.** Each phone has a Connect automatically switch in the panel's More
+  menu and in Settings → Devices. It is the same switch as the phone's: flip it on either side and
+  both change. A phone turned off on the Mac no longer redials all night.
+
+### Changed
+
+- Disconnect, on the Mac or on the phone, turns auto-connect off on both. The panel shows such a
+  phone as "Auto-connect off", with Connect right beside it.
+
 ## 1.5.1 - 2026-10-05
 
 ### Changed

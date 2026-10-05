@@ -9,6 +9,17 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ## Unreleased
 
+### Eklenenler
+
+- **Mac'te otomatik bağlanma.** Her telefonun panelde Diğer menüsünde ve Ayarlar → Cihazlar'da
+  bir Otomatik bağlan anahtarı var. Telefondaki anahtarla aynı: hangi tarafta değiştirirsen ikisi
+  birlikte değişiyor. Mac'te kapatılan telefon artık bütün gece yeniden denemiyor.
+
+### Değişenler
+
+- Bağlantıyı kes, Mac'te de telefonda da, otomatik bağlanmayı iki tarafta kapatıyor. Panel böyle
+  bir telefonu "Otomatik bağlanma kapalı" diye gösteriyor ve yanında Bağlan düğmesi var.
+
 ## 1.5.1 - 2026-10-05
 
 ### Değişenler

@@ -126,6 +126,10 @@ da Hızlı Ayarlar'daki AndroMac bağlantısı karesindeki **Bağlantıyı kes**
 yeniden **Bağlan**'a dokunana kadar bağlanmaz. Mac'te **Bağlantıyı kes**, paneldeki telefonun
 **⋯** menüsünde.
 
+Bağlantıyı kes, **Otomatik bağlan**'ı kapatır. Bu iki tarafta tek bir anahtar: Mac'te her telefon
+için **⋯** menüsünde ve Ayarlar → Cihazlar'da duruyor, bir tarafta değiştirince öbür tarafta da
+değişiyor. Kapalıyken telefon yalnızca **Bağlan**'a dokunduğunda bağlanır.
+
 ## Özellikler
 
 | Özellik | Yön | Ne yapar |
@@ -202,7 +206,7 @@ Hakkında'da durur. Hata bildirirken bu satırın tamamını kopyala.
 | Ayarlar | Bağlantı, Bildirimler, Pano, Dosya aktarımı, İzinler, Dil, Güncellemeler ve Hakkında. En altta **AndroMac'i sıfırla** önce sorar, sonra eşleştirmeleri, bütün ayarları ve pano geçmişini siler. |
 | Pano geçmişi | Mac'e giden ya da Mac'ten gelen son 20 metin. Dokununca kopyalanır, gönder düğmesi yeniden gönderir. Yalnızca bellekte tutulur; hassas metinler kaydedilmez. |
 | İzinler | Altı iznin tamamı; verilip verilmediği ve zorunlu olup olmadığıyla. Birine dokununca ilgili sistem ekranı açılır. |
-| Bağlantı | Bağlantı durumu, kayıtlı Mac'ler ve son adresleri, **Otomatik yeniden bağlan**, **Bağlan** ya da **Bağlantıyı kes**, ve **Bu Mac'i unut**. |
+| Bağlantı | Bağlantı durumu, kayıtlı Mac'ler ve son adresleri, **Otomatik bağlan**, **Bağlan** ya da **Bağlantıyı kes**, ve **Bu Mac'i unut**. |
 | Bildirim ayarları | **Uygulama filtresi**, **Sessiz bildirimler** ve **Sadece telefon kilitliyken**; bir de her zaman atlananların listesi. |
 | Uygulama filtresi | Telefonun gördüğü her uygulama için Tam, Sadece başlık ya da Kapalı. |
 | Pano ayarları | Gelen: **Panoya otomatik yaz**, **Bildirim göster**. Giden: **Hassas içeriği gönderme**. Bir de **Panoyu Mac'e gönder**. |
@@ -216,8 +220,8 @@ Hakkında'da durur. Hata bildirirken bu satırın tamamını kopyala.
 Menü çubuğu paneli hızlıca göz atmak içindir. Birden fazla telefon eşliyse üstteki sekmeler
 aralarında geçiş yapar. Telefonun kartı adını ve durumunu, pilini, çalanı, zil modunu ve ses
 düzeyini gösterir. Altında telefonu çaldırma, test bildirimi gönderme ve ekranı yansıtma
-düğmeleri, bir de **Panomu buraya gönder**, **Cihaz ayarları…** ve **Bağlantıyı kes**'i taşıyan
-**⋯** menüsü var. Sonra son pano kaydı ve en son dört bildirim gelir. Dosya göndermek için panele
+düğmeleri, bir de **Panomu buraya gönder**, **Otomatik bağlan**, **Cihaz ayarları…**,
+**Bağlantıyı kes** ve **Unut…**'u taşıyan **⋯** menüsü var. Sonra son pano kaydı ve en son dört bildirim gelir. Dosya göndermek için panele
 bırak. ⌘, Ayarlar'ı açar. Menü çubuğu simgesine sağ tıklayınca AndroMac'i aç, Ayarlar ve Çık
 çıkar.
 

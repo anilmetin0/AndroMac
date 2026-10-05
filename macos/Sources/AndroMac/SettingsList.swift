@@ -347,11 +347,11 @@ struct SettingsList: View {
             LabeledContent("This Mac", value: Store.shared.deviceName)
         }
 
-        Section {
-            // One row per pairing, so several phones are as visible here as in the panel.
-            // Trust is per device, so removing it is per device too; "Forget all" is the old
-            // single-phone Unpair, kept for the case where you are handing the Mac on.
-            ForEach(Store.shared.pairedDevices) { device in
+        // One section per pairing, so several phones are as visible here as in the panel, each
+        // with its own switch. Trust is per device, so removing it is per device too; "Forget all"
+        // is the old single-phone Unpair, kept for the case where you are handing the Mac on.
+        ForEach(Store.shared.pairedDevices) { device in
+            Section {
                 LabeledContent {
                     Button("Forget", role: .destructive) { unpair(device.id) }
                         .controlSize(.small)
@@ -365,20 +365,29 @@ struct SettingsList: View {
                         .foregroundStyle(.secondary)
                     }
                 }
+                // The phone's own switch, mirrored: flipping either flips both (PROTOCOL §3).
+                Toggle("Connect automatically", isOn: Binding(
+                    get: { !device.paused },
+                    set: { on in Task { await Server.shared.setAutoConnect(on, for: device.id) } }
+                ))
             }
+        }
 
-            if Store.shared.pairedDevices.isEmpty {
-                Text("Open AndroMac on the phone to pair it.")
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else if Store.shared.pairedDevices.count > 1 {
-                // It also wipes both histories and the app list, so it asks first.
-                Button("Forget all devices", role: .destructive) { confirmForgetAll = true }
-                    .confirmationDialog("Forget all devices?", isPresented: $confirmForgetAll) {
-                        Button("Forget all devices", role: .destructive) { unpair(nil) }
-                    } message: {
-                        Text("Every phone has to pair again. The notification and clipboard histories are cleared.")
-                    }
+        if Store.shared.pairedDevices.count != 1 {
+            Section {
+                if Store.shared.pairedDevices.isEmpty {
+                    Text("Open AndroMac on the phone to pair it.")
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    // It also wipes both histories and the app list, so it asks first.
+                    Button("Forget all devices", role: .destructive) { confirmForgetAll = true }
+                        .confirmationDialog("Forget all devices?", isPresented: $confirmForgetAll) {
+                            Button("Forget all devices", role: .destructive) { unpair(nil) }
+                        } message: {
+                            Text("Every phone has to pair again. The notification and clipboard histories are cleared.")
+                        }
+                }
             }
         }
     }
@@ -485,10 +494,10 @@ struct SettingsList: View {
     /// State, then what tells two phones apart: where it is on the Wi-Fi and when it was last here.
     private func deviceDetail(_ device: PairedDevice, now: Date) -> String {
         let parts: [String?]
-        if device.paused {
-            parts = [String(localized: "Disconnected")]
-        } else if let live = state.devices.first(where: { $0.id == device.id }) {
+        if let live = state.devices.first(where: { $0.id == device.id }) {
             parts = [String(localized: "Connected"), live.host]
+        } else if device.paused {
+            parts = [String(localized: "Auto-connect off")]
         } else {
             parts = [String(localized: "Offline"),
                      device.lastSeen.map { String(localized: "last seen \(RelativeTime.string($0, now: now))") },

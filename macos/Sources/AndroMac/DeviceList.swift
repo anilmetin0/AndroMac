@@ -188,12 +188,13 @@ private struct DeviceCard: View {
             if connected {
                 MirrorStatus(deviceID: device.id, name: title,
                              canOpenOnPhone: live?.caps.contains("debugging") == true)
-            } else if !device.paused {
+            } else {
                 // Paired but not here: almost every connection problem is one of these two things.
                 // The Mac only listens (PROTOCOL §1), so there is nothing to click for it: the
-                // phone dials in as soon as both are true.
-                // Offline there is nothing to act on but More, so it sits on this line instead of
-                // taking a row of its own.
+                // phone dials in as soon as both are true. With auto-connect off the phone stays
+                // parked too, so Connect here only lets it in and the hint says so.
+                // Offline there is little to act on, so it sits on this line instead of taking a
+                // row of its own.
                 HStack(spacing: Theme.Space.small) {
                     VStack(alignment: .leading, spacing: 2) {
                         if let lastSeen = device.lastSeen {
@@ -201,19 +202,30 @@ private struct DeviceCard: View {
                                 Text("Last seen \(RelativeTime.string(lastSeen, now: context.date))")
                             }
                         }
-                        Text("Open AndroMac on the phone, on the same Wi‑Fi.")
+                        Text(device.paused
+                             ? "To use it again, click Connect here, then tap Connect on the phone."
+                             : "Open AndroMac on the phone, on the same Wi‑Fi.")
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .font(Theme.Font.label)
                     .foregroundStyle(.secondary)
                     Spacer(minLength: 0)
-                    // fixedSize: beside a two-line hint the menu was squeezed to half its size.
-                    more.fixedSize().glassGroup()
+                    // fixedSize: beside a two-line hint the controls were squeezed to half their size.
+                    HStack(spacing: Theme.Space.small) {
+                        if device.paused {
+                            Button("Connect", action: connect)
+                                .secondaryAction()
+                                .controlSize(.small)
+                        }
+                        more
+                    }
+                    .fixedSize()
+                    .glassGroup()
                 }
             }
 
             Spacer(minLength: 0)
-            if connected || device.paused { actions }
+            if connected { actions }
         }
     }
 
@@ -247,27 +259,23 @@ private struct DeviceCard: View {
 
     private var address: String? { live?.host ?? device.lastAddress }
 
-    /// Three states worth telling apart, in the vocabulary Syncthing settled on: a disconnected
-    /// device is not broken, and an offline one is not rejected.
+    /// Three states worth telling apart: a phone kept away is not broken, and an offline one is
+    /// not rejected. With auto-connect off the link can still be up (Connect on the phone, or the
+    /// switch turned off mid-session), so being connected is said first.
     private var statusLine: String {
-        if device.paused { return String(localized: "Disconnected") }
         if connected { return String(localized: "Connected") }
+        if device.paused { return String(localized: "Auto-connect off") }
         return String(localized: "Offline")
     }
 
     static func dotColor(device: PairedDevice, connected: Bool) -> Color {
-        if device.paused { return .secondary.opacity(0.5) }
-        return connected ? .green : .orange
+        if connected { return .green }
+        return device.paused ? .secondary.opacity(0.5) : .orange
     }
 
     private var actions: some View {
         HStack(spacing: Theme.Space.small) {
-            if device.paused {
-                Button("Connect", action: toggleConnection)
-                    .secondaryAction()
-                    .controlSize(.small)
-            }
-            if connected, live?.caps.contains("find_phone") == true {
+            if live?.caps.contains("find_phone") == true {
                 IconButton(symbol: "bell.and.waves.left.and.right",
                            label: String(localized: "Ring this phone")) {
                     Task { await Server.shared.send(["t": "find_phone"], to: device.id) }
@@ -275,7 +283,7 @@ private struct DeviceCard: View {
             }
             // Proves the whole notification chain in one click: the phone posts a notification to
             // itself, its listener picks it up and it comes back here.
-            if connected, live?.caps.contains("system") == true {
+            if live?.caps.contains("system") == true {
                 IconButton(symbol: "bell.badge",
                            label: String(localized: "Send a test notification from this phone")) {
                     Task {
@@ -285,7 +293,7 @@ private struct DeviceCard: View {
                     }
                 }
             }
-            if connected { mirrorButton }
+            mirrorButton
             Spacer(minLength: 0)
             more
         }
@@ -302,8 +310,8 @@ private struct DeviceCard: View {
         .disabled(mirror.phase(device.id).busy)
     }
 
-    /// The per-phone clipboard switch, Disconnect and Forget: reachable, but out of the way of a
-    /// glance. Disconnect only while the phone is connected.
+    /// The per-phone switches, Disconnect and Forget: reachable, but out of the way of a glance.
+    /// Disconnect only while the phone is connected.
     private var more: some View {
         GlassMenuButton(symbol: "ellipsis", label: String(localized: "More")) {
             var items: [PanelMenu.Item] = [
@@ -311,12 +319,17 @@ private struct DeviceCard: View {
                 .action(String(localized: "Send my clipboard here"), checked: device.receivesClipboard) {
                     Store.shared.updateDevice(id: device.id) { $0.receivesClipboard.toggle() }
                 },
+                // The same switch as on the phone: flipping either flips both (PROTOCOL §3).
+                .action(String(localized: "Connect automatically"), checked: !device.paused) {
+                    let on = device.paused
+                    Task { await Server.shared.setAutoConnect(on, for: device.id) }
+                },
                 .action(String(localized: "Device settings…")) { state.showMainWindow(.setting(.devices)) },
                 .separator,
             ]
             // Only a phone on the line can be hung up on; offline, Disconnect did nothing visible.
             if connected {
-                items.append(.action(String(localized: "Disconnect"), run: toggleConnection))
+                items.append(.action(String(localized: "Disconnect"), run: disconnect))
             }
             // The same as Forget in Settings, asked first: undoing it means pairing again.
             items.append(.action(String(localized: "Forget…"), run: confirmForget))
@@ -336,15 +349,19 @@ private struct DeviceCard: View {
         Task { await Server.shared.disconnect(device.id) }
     }
 
-    /// Disconnect hangs up and keeps the phone from coming back; Connect lets it in again.
-    private func toggleConnection() {
-        Store.shared.updateDevice(id: device.id) { $0.paused.toggle() }
-        // Disconnecting has to hang up as well as refuse the next attempt, or the phone stays on
-        // the line until something else drops it. Reconnecting is the phone's job: it retries on
-        // its own backoff (PROTOCOL §1), the Mac only stops turning it away.
-        if Store.shared.device(id: device.id)?.paused == true {
-            Task { await Server.shared.disconnect(device.id) }
+    /// Like the phone's Disconnect: hang up and turn auto-connect off on both sides, so the phone
+    /// stays away until someone taps Connect on either one.
+    private func disconnect() {
+        Task {
+            await Server.shared.setAutoConnect(false, for: device.id)
+            await Server.shared.disconnect(device.id)
         }
+    }
+
+    /// The Mac only listens (PROTOCOL §1): this turns auto-connect back on, and the phone hears it
+    /// the next time it dials, or right away if it is already on the line.
+    private func connect() {
+        Task { await Server.shared.setAutoConnect(true, for: device.id) }
     }
 }
 

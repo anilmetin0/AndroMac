@@ -98,7 +98,7 @@
     <string name="mac_in_use">In use</string>
     <string name="mac_last_seen">last seen %1$s</string>
     <string name="mac_forget_confirm">%1$s will be removed from this phone. To use it again, pair again.</string>
-    <string name="connection_auto">Reconnect automatically</string>
+    <string name="connection_auto">Connect automatically</string>
     <string name="connection_auto_note">Whenever the Mac is reachable on this Wi-Fi.</string>
     <string name="connection_now">Connect now</string>
     <string name="connection_summary_auto">%1$s · automatic</string>

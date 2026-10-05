@@ -90,7 +90,7 @@
     <string name="mac_in_use">Kullanımda</string>
     <string name="mac_last_seen">son görülme %1$s</string>
     <string name="mac_forget_confirm">%1$s bu telefondan kaldırılacak. Yeniden kullanmak için tekrar eşleştirmen gerekir.</string>
-    <string name="connection_auto">Otomatik yeniden bağlan</string>
+    <string name="connection_auto">Otomatik bağlan</string>
     <string name="connection_auto_note">Mac bu Wi-Fi ağında erişilebilir olduğunda.</string>
     <string name="connection_now">Şimdi bağlan</string>
     <string name="connection_summary_auto">%1$s · otomatik</string>

@@ -270,11 +270,26 @@ actor Server {
             // Pausing has to bite HERE rather than by closing the socket later: the phone
             // reconnects on its own ladder, so anything that merely drops the link just turns
             // into a retry loop.
-            guard Self.admits(session) else {
-                NSLog("AndroMac: a paused or forgotten phone tried to connect, declining")
+            guard let device = Store.shared.device(forKey: session.peerStaticPub) else {
+                NSLog("AndroMac: a forgotten phone tried to connect, declining")
                 await session.close()
                 return
             }
+            // A paused phone is heard out first: its hello says whether someone tapped Connect
+            // there or turned auto-connect on after it was turned off here (PROTOCOL §3). If not,
+            // it is told so it stops dialling, instead of retrying a closed door all night.
+            var first: [String: Any]?
+            if device.paused {
+                let hello = await Self.firstMessage(session)
+                guard let hello, Self.overridesPause(hello, device) else {
+                    NSLog("AndroMac: a paused phone tried to connect, declining")
+                    _ = try? await session.send(Self.autoConnectMessage(device))
+                    await session.close()
+                    return
+                }
+                first = hello
+            }
+            let overridden = first != nil
 
             // Same phone reconnecting: replace its own row and leave every other phone alone.
             // The old read loop is cancelled first so it cannot tear down its successor.
@@ -282,7 +297,7 @@ actor Server {
                 serveTasks[deviceID]?.cancel()
                 await closeSession(deviceID, updateUI: false)
                 // The close suspended: a Disconnect or Forget may have landed meanwhile.
-                guard Self.admits(session) else {
+                guard Self.admits(session, overridden: overridden) else {
                     await session.close()
                     return
                 }
@@ -291,7 +306,7 @@ actor Server {
             sessions[deviceID] = session
             let address = Self.ipv4(host)
             Store.shared.updateDevice(id: deviceID) { $0.lastSeen = Date(); $0.lastAddress = address }
-            serveTasks[deviceID] = Task { await self.serve(session, id: deviceID, address: address) }
+            serveTasks[deviceID] = Task { await self.serve(session, id: deviceID, address: address, first: first) }
         } catch let WireError.untrusted(key, name, sas, isFirstDevice) {
             // An untrusted peer does not touch the current session; the user is simply asked.
             NSLog("AndroMac: pairing required")      // the code itself stays out of the log
@@ -302,10 +317,57 @@ actor Server {
         }
     }
 
-    /// Paired right now and not paused, by the full key.
-    private static func admits(_ session: Session) -> Bool {
+    /// Paired right now and not paused (or let in despite it), by the full key.
+    private static func admits(_ session: Session, overridden: Bool) -> Bool {
         guard let device = Store.shared.device(forKey: session.peerStaticPub) else { return false }
-        return !device.paused
+        return !device.paused || overridden
+    }
+
+    /// The phone's first message, or nil if it does not come within the handshake budget.
+    private static func firstMessage(_ session: Session) async -> [String: Any]? {
+        let timeout = Task { try await Task.sleep(for: .seconds(10)); await session.close() }
+        defer { timeout.cancel() }
+        return try? await session.receive()
+    }
+
+    /// Someone at the phone asked for this connection: "Connect now", or auto-connect turned on
+    /// there after it was turned off here.
+    private static func overridesPause(_ hello: [String: Any], _ device: PairedDevice) -> Bool {
+        guard hello["t"] as? String == "hello" else { return false }
+        if hello["connect"] as? Bool == true { return true }
+        guard let (on, changed) = autoConnect(hello["auto_connect"]) else { return false }
+        return on && device.syncAutoConnect(phoneOn: on, changed: changed) == .adopt
+    }
+
+    /// `{"on":true,"ts":<ms>}`; a `ts` of 0 means the switch was never changed there.
+    private static func autoConnect(_ value: Any?) -> (Bool, Date?)? {
+        guard let value = value as? [String: Any], let on = value["on"] as? Bool else { return nil }
+        let ms = value["ts"] as? Double ?? 0
+        return (on, ms > 0 ? Date(timeIntervalSince1970: ms / 1000) : nil)
+    }
+
+    private static func autoConnectMessage(_ device: PairedDevice) -> [String: Any] {
+        let ms = (device.autoConnectChanged?.timeIntervalSince1970 ?? 0) * 1000
+        return ["t": "auto_connect", "on": !device.paused, "ts": Int64(ms)]
+    }
+
+    /// The phone's switch against ours: the newer change wins on both sides (PROTOCOL §3).
+    private func syncAutoConnect(_ value: Any?, from deviceID: String) async {
+        guard let (on, changed) = Self.autoConnect(value),
+              let device = Store.shared.device(id: deviceID) else { return }
+        switch device.syncAutoConnect(phoneOn: on, changed: changed) {
+        case .adopt: Store.shared.updateDevice(id: deviceID) { $0.paused = !on; $0.autoConnectChanged = changed }
+        case .tell: _ = await send(Self.autoConnectMessage(device), to: deviceID)
+        case .keep: break
+        }
+    }
+
+    /// This Mac's auto-connect switch for one phone. Off keeps the link up, like the phone's own
+    /// switch, and refuses the next attempt; the phone hears of it now, or when it next dials.
+    func setAutoConnect(_ on: Bool, for deviceID: String) async {
+        Store.shared.updateDevice(id: deviceID) { $0.paused = !on; $0.autoConnectChanged = Date() }
+        guard let device = Store.shared.device(id: deviceID) else { return }
+        _ = await send(Self.autoConnectMessage(device), to: deviceID)
     }
 
     /// RFC 1918 / link-local / ULA / loopback. A peer that gives a name (DNS) is not assumed to be
@@ -413,7 +475,7 @@ actor Server {
         }
     }
 
-    private func serve(_ session: Session, id deviceID: String, address: String?) async {
+    private func serve(_ session: Session, id deviceID: String, address: String?, first: sending [String: Any]?) async {
         let store = Store.shared
         let name = store.device(id: deviceID)?.name ?? ""
         await MainActor.run {
@@ -427,6 +489,8 @@ actor Server {
             "proto": 3,
             "caps": ["battery", "clipboard", "notification", "find_phone", "media", "file"],
         ], to: deviceID)
+        // The hello a paused phone was let in on was read before this loop existed.
+        if let first { await handle(first, bytes: 0, from: deviceID) }
 
         // One timer per phone. PROTOCOL §6.1 still holds: the phone never sets a timer of its own,
         // it only answers, so N phones cost N pings from the Mac and nothing on the battery side.
@@ -516,6 +580,10 @@ actor Server {
                     $0.caps = caps
                 }
             }
+            await syncAutoConnect(msg["auto_connect"], from: deviceID)
+
+        case "auto_connect":
+            await syncAutoConnect(msg, from: deviceID)
 
         case "battery":
             guard Store.shared.syncBattery, let level = msg["level"] as? Int else { break }

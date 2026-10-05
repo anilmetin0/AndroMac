@@ -361,7 +361,14 @@ class Store(context: Context) {
      */
     var autoConnect: Boolean
         get() = prefs.getBoolean(K_AUTO_CONNECT, true)
-        set(v) = prefs.edit().putBoolean(K_AUTO_CONNECT, v).apply()
+        set(v) = adoptAutoConnect(v, System.currentTimeMillis())
+
+    /** When the switch last changed, here or on the Mac; 0 if never. The newer side wins (PROTOCOL §3). */
+    val autoConnectChanged: Long get() = prefs.getLong(K_AUTO_CONNECT_CHANGED, 0)
+
+    /** The Mac's newer change, kept with the Mac's time so both sides agree on when it happened. */
+    fun adoptAutoConnect(on: Boolean, changed: Long) =
+        prefs.edit().putBoolean(K_AUTO_CONNECT, on).putLong(K_AUTO_CONNECT_CHANGED, changed).apply()
 
     // --- file transfer ---
 
@@ -522,6 +529,7 @@ class Store(context: Context) {
         const val K_PERM_DISMISSED = "permissions_dismissed"
         const val K_PERM_OFFERED = "notification_access_offered"
         const val K_AUTO_CONNECT = "auto_connect"
+        const val K_AUTO_CONNECT_CHANGED = "auto_connect_changed"
         const val K_FILE_TRANSFER = "file_transfer"
         const val K_FILE_AUTO_ACCEPT = "file_auto_accept"
 

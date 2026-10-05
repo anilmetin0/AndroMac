@@ -156,6 +156,15 @@ sees.
   - Approving a phone never drops another. Unpairing removes one device and leaves the rest.
   - A paused device stays paired but is refused at the handshake. That is the only way to make a
     disconnect stick, because closing the socket only starts the phone's reconnect ladder.
+  - Paused on the Mac and auto-connect off on the phone are one switch. Each side stamps the time
+    of its last change, and the newer change wins on both. The phone sends its switch in `hello`
+    and in `auto_connect` when it changes; the Mac answers with `auto_connect` when its own is
+    newer, and when it changes. A paused phone is let in after its `hello` only if that `hello`
+    has `"connect":true` (the user tapped Connect there) or a newer `on`. Otherwise the Mac sends
+    `auto_connect` off and closes, and the phone stops dialling until someone taps Connect.
+    Turning the switch off keeps a live link up; Disconnect turns it off and hangs up. The phone
+    has one switch for all its Macs and each Mac one per phone, so a switch turned off by one Mac
+    is also off when the phone moves to another.
 - The Bonjour record carries no key; the phone makes its pin decision only from the key proven
   during the handshake.
 
@@ -184,6 +193,15 @@ ignored silently for forward compatibility. Unknown fields are ignored too.
 {"t":"hello","name":"Pixel 9","platform":"android","proto":3,
  "caps":["battery","clipboard","notification","find_phone","media","file","system","debugging"]}
 ```
+
+The phone's `hello` also carries `"auto_connect":{"on":true,"ts":1750000000000}` (`ts` in ms, 0
+if the switch was never changed) and `"connect":true` after a tap on Connect (§3).
+
+### `auto_connect`, bidirectional
+```json
+{"t":"auto_connect","on":false,"ts":1750000000000}
+```
+The auto-connect switch and when it last changed (§3). The receiver keeps the newer one.
 
 ### `battery`, Android → macOS
 ```json

@@ -29,6 +29,9 @@ public struct PairedDevice: Codable, Identifiable, Sendable, Equatable {
     /// Paused devices stay paired but are not let in. The user's "disconnect and stay disconnected"
     /// — without it, closing a session just makes the phone redial on its backoff ladder.
     public var paused: Bool
+    /// When `paused` last changed, here or on the phone: the auto-connect switch is one setting on
+    /// both sides, and the newer change wins (PROTOCOL §3). `nil` until it is first changed.
+    public var autoConnectChanged: Date?
     /// Does the Mac's clipboard go to this phone when something is copied here?
     ///
     /// Per device rather than global: with two phones, "sync my clipboard" is a different answer
@@ -66,6 +69,25 @@ public struct PairedDevice: Codable, Identifiable, Sendable, Equatable {
         paused = try c.decodeIfPresent(Bool.self, forKey: .paused) ?? false
         receivesClipboard = try c.decodeIfPresent(Bool.self, forKey: .receivesClipboard) ?? true
         lastAddress = try c.decodeIfPresent(String.self, forKey: .lastAddress)
+        autoConnectChanged = try c.decodeIfPresent(Date.self, forKey: .autoConnectChanged)
+    }
+
+    /// What to do with the phone's auto-connect switch against this Mac's (PROTOCOL §3).
+    public enum AutoConnectSync: Equatable, Sendable {
+        /// The phone's change is newer: take its value.
+        case adopt
+        /// Ours is newer and they differ: tell the phone.
+        case tell
+        case keep
+    }
+
+    /// Last writer wins. A side that never changed the switch has no say against one that did.
+    // ponytail: wall clocks of two devices on one LAN, NTP-synced; seconds of skew only matter for
+    // two flips seconds apart on both sides, and then either outcome is one the user asked for.
+    public func syncAutoConnect(phoneOn: Bool, changed phoneChanged: Date?) -> AutoConnectSync {
+        guard phoneOn == paused else { return .keep }       // the same value on both sides
+        if let phoneChanged, phoneChanged > (autoConnectChanged ?? .distantPast) { return .adopt }
+        return autoConnectChanged == nil ? .keep : .tell
     }
 
     /// The full SHA-256 of the key, in hex. The dictionary key for live sessions and per-device

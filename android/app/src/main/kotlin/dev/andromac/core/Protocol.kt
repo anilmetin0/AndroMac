@@ -22,6 +22,8 @@ object Protocol {
     /** The Mac is about to sleep (PROTOCOL §5). */
     const val T_SLEEP = "sleep"
     const val T_PONG = "pong"
+    /** The auto-connect switch, one setting on both sides (PROTOCOL §3). */
+    const val T_AUTO_CONNECT = "auto_connect"
     const val T_FIND_PHONE = "find_phone"
     const val T_MEDIA = "media"
     const val T_MEDIA_CONTROL = "media_control"
@@ -55,11 +57,14 @@ object Protocol {
     const val MAX_NOTIFICATION_TEXT = 2048
     const val MAX_NOTIFICATION_ID = 256
 
-    fun hello(name: String) = JSONObject()
+    /** [connect]: the user tapped Connect, which lets the phone in even where the Mac paused it. */
+    fun hello(name: String, autoConnect: Boolean, autoConnectChanged: Long, connect: Boolean) = JSONObject()
         .put("t", T_HELLO)
         .put("name", name)
         .put("platform", "android")
         .put("proto", VERSION)
+        .put("auto_connect", JSONObject().put("on", autoConnect).put("ts", autoConnectChanged))
+        .apply { if (connect) put("connect", true) }
         .put(
             "caps",
             JSONArray(
@@ -69,6 +74,11 @@ object Protocol {
                 )
             ),
         )
+
+    fun autoConnect(on: Boolean, changed: Long) = JSONObject()
+        .put("t", T_AUTO_CONNECT)
+        .put("on", on)
+        .put("ts", changed)
 
     fun battery(level: Int, charging: Boolean, status: String, tempC: Double?) = JSONObject()
         .put("t", T_BATTERY)
