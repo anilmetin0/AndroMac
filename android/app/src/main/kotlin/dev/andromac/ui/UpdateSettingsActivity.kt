@@ -108,6 +108,8 @@ class UpdateSettingsActivity : Activity() {
         refresh()
         runUpdateCheck(store) {
             checking = false
+            // The user asked: what was found waits for their tap here, never for the silent install.
+            manualCheckLabel = newerRelease(store)?.label
             if (installAfterCheck) {
                 installAfterCheck = false
                 newerRelease(store)?.takeIf { it.apk != null && it.checksums != null }?.let(::install)
@@ -247,6 +249,9 @@ private var checkedThisProcess = false
 /** Checks running in this process. Main thread only. */
 private var checksInFlight = 0
 
+/** The release the last manual "Check now" found: offered on screen, so not installed behind it. */
+private var manualCheckLabel: String? = null
+
 /**
  * The release to offer, while it is still newer than what is running and belongs to the channel
  * the Beta switch is on now.
@@ -375,6 +380,7 @@ fun Activity.offerOrInstallUpdate(store: Store, onDialog: (AlertDialog) -> Unit 
     if (release.label == store.updateSkipped) return false
     // A metered network is the user's data plan: the download waits for a tap on Install now.
     val metered = getSystemService(ConnectivityManager::class.java).isActiveNetworkMetered
+    if (release.label == manualCheckLabel) return true
     if (autoInstallUpdates && !metered && Build.VERSION.SDK_INT >= 31 && release.apk != null &&
         release.checksums != null && Updater.canInstall(this) && Updater.state !is UpdateCheck.Step.Failed
     ) {
