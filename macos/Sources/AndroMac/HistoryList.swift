@@ -80,6 +80,10 @@ private struct HistoryRow: View {
                         .font(Theme.Font.body)
                         .textSelection(.enabled)
                 }
+                if !entry.buttons.isEmpty {
+                    NotificationActions(entry: entry)
+                        .padding(.top, Theme.Space.tight)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             if let link = NotificationHistory.link(entry) { OpenLinkButton(url: link) }
@@ -88,6 +92,6 @@ private struct HistoryRow: View {
             }
         }
         .padding(.vertical, Theme.Space.hair)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 }

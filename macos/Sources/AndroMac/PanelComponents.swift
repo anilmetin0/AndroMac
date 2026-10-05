@@ -167,7 +167,7 @@ struct NotificationRow: View {
     /// A row with a picture is taller by what the thumbnail needs; an open row by its text, which
     /// scrolls inside the row past `openTextMax`.
     static func height(_ entry: NotificationHistory.Entry, open: Bool = false) -> CGFloat {
-        if open { return iconSize + textHeight(entry) + actionsHeight + 2 * Theme.Space.tight + Theme.Space.small }
+        if open { return iconSize + textHeight(entry) + actionsHeight + (entry.buttons.isEmpty ? 0 : NotificationActions.height(entry) + Theme.Space.tight) + 2 * Theme.Space.tight + Theme.Space.small }
         return entry.image == nil ? 36 : pictureSize + Theme.Space.small
     }
 
@@ -305,6 +305,11 @@ struct NotificationRow: View {
             .font(Theme.Font.label)
             .frame(height: Self.actionsHeight)
             .padding(.leading, Self.textIndent)
+
+            if !entry.buttons.isEmpty {
+                NotificationActions(entry: entry)
+                    .padding(.leading, Self.textIndent)
+            }
         }
     }
 

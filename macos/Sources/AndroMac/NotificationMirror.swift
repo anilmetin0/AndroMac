@@ -63,7 +63,10 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         // icon copy, the Notification Center request and the history rewrite.
         // A replay that brings a picture is new, however: the phone sends one only when it changed.
         let history = NotificationHistory.shared
-        if silent, image == nil, history.contains(id: id, title: title, text: text) { return }
+        let historyID = Self.identifier(id, peer: peer)
+        let actions = redacted ? [] : NotificationAction.parse(msg["actions"])
+        history.markActive(historyID)
+        if silent, image == nil, history.contains(id: historyID, title: title, text: text, actions: actions) { return }
 
         let content = UNMutableNotificationContent()
         content.title = redacted ? app : title
@@ -71,7 +74,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         content.body = redacted ? String(localized: "Content hidden") : text
         content.sound = (silent || !Store.shared.notificationSound) ? nil : .default
         // `silent` is needed at presentation time too: willPresent is the only place that suppresses the banner.
-        content.userInfo = ["id": id, "pkg": pkg, "silent": silent, "peer": peer]
+        content.userInfo = ["id": id, "pkg": pkg, "silent": silent, "peer": peer, "hasActions": !actions.isEmpty]
         if silent { content.interruptionLevel = .passive }
         // A web address in the text gets an Open link button; never on a redacted notification.
         let link = redacted ? nil : WebLink.find(in: title + "\n" + text)
@@ -82,7 +85,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
 
         // A category is ALWAYS registered: even with no actions we still offer "Mute".
         content.categoryIdentifier = registerCategory(
-            for: NotificationAction.parse(msg["actions"]), link: link != nil, code: code != nil
+            for: actions, link: link != nil, code: code != nil
         )
 
         // Every package without an icon on disk is asked for once per session, whatever this
@@ -91,7 +94,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
 
         // The picture: a new one, else the one this notification already had (a text-only update
         // brings none). Never on a redacted notification, and a stale one is deleted with the entry.
-        let imageName = redacted ? nil : (image.flatMap(history.saveImage) ?? history.image(forID: id))
+        let imageName = redacted ? nil : (image.flatMap(history.saveImage) ?? history.image(forID: historyID) ?? history.image(forID: id))
 
         // Attach the picture or avatar if there is one, the app icon otherwise. The temporary copy
         // is handed to UserNotifications and deleted after `add` completes (or right away if the
@@ -114,7 +117,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         }
 
         history.add(
-            .init(id: id, app: app, pkg: pkg, title: title, text: text, date: Date(), image: imageName),
+            .init(id: id, app: app, pkg: pkg, title: title, text: text, date: Date(), image: imageName, peer: peer, actions: actions),
             silent: silent
         )
 
@@ -161,6 +164,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
     /// Dismissed on the phone — remove it on the Mac too.
     func remove(_ id: String, from peer: String) {
         let identifier = Self.identifier(id, peer: peer)
+        NotificationHistory.shared.markInactive(identifier)
         center.removeDeliveredNotifications(withIdentifiers: [identifier])
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
     }
@@ -275,7 +279,10 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
             await AppModes.shared.set(.off, for: pkg, on: peer)
 
         case UNNotificationDismissActionIdentifier:
-            await Server.shared.send(["t": "notification_dismiss", "id": id], to: peer)
+            // Keep actionable notifications on the phone so history can still invoke them.
+            if userInfo["hasActions"] as? Bool != true {
+                await Server.shared.send(["t": "notification_dismiss", "id": id], to: peer)
+            }
 
         case UNNotificationDefaultActionIdentifier:
             break        // a plain click: do nothing on the phone

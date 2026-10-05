@@ -265,3 +265,8 @@
 "Waiting for the Keychain to unlock" = "Waiting for the Keychain to unlock";
 "What syncs" = "What syncs";
 "Your phone's battery is low" = "Your phone's battery is low";
+
+"Reply" = "Reply";
+"OK" = "OK";
+"This notification is no longer available on the connected phone." = "This notification is no longer available on the connected phone.";
+"Could not send the action. Reconnect your phone and try again." = "Could not send the action. Reconnect your phone and try again.";

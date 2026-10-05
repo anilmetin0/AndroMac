@@ -17,28 +17,14 @@ final class NotificationHistory: ObservableObject {
 
     static let shared = NotificationHistory()
 
-    struct Entry: Identifiable, Codable, Hashable {
-        let id: String          // StatusBarNotification.key
-        let app: String
-        let pkg: String
-        let title: String
-        let text: String
-        let date: Date
-        /// The picture or avatar file in `images/`, when the phone sent one. Optional, so a
-        /// history written before pictures still decodes.
-        let image: String?
-
-        init(id: String, app: String, pkg: String, title: String, text: String, date: Date, image: String? = nil) {
-            self.id = id; self.app = app; self.pkg = pkg
-            self.title = title; self.text = text; self.date = date; self.image = image
-        }
-    }
+    typealias Entry = NotificationHistoryEntry
 
     private let limit = 200
     private let fileURL: URL
     private let imagesURL: URL
 
     @Published private(set) var entries: [Entry] = []
+    @Published private(set) var activeIDs: Set<String> = []
     private var saveTask: Task<Void, Never>?
     /// Nothing is written before the file was read: a save before that would replace the stored
     /// history with only what arrived since launch.
@@ -54,8 +40,8 @@ final class NotificationHistory: ObservableObject {
         load()
     }
 
-    func contains(id: String, title: String, text: String) -> Bool {
-        entries.contains { $0.id == id && $0.title == title && $0.text == text }
+    func contains(id: String, title: String, text: String, actions: [NotificationAction]) -> Bool {
+        entries.contains { $0.id == id && $0.title == title && $0.text == text && $0.buttons == actions }
     }
 
     /// The picture of an entry already shown for this notification key, if any.
@@ -100,14 +86,28 @@ final class NotificationHistory: ObservableObject {
     /// The web address in the entry's text, for the Open link button (WebLink).
     static func link(_ entry: Entry) -> URL? { WebLink.find(in: entry.title + "\n" + entry.text) }
 
+    func markActive(_ id: String) { activeIDs.insert(id) }
+
+    func markInactive(_ id: String) { activeIDs.remove(id) }
+
+    func disconnected(_ peer: String) {
+        activeIDs.subtract(entries.filter { $0.peer == peer }.map(\.id))
+    }
+
     func add(_ entry: Entry, silent: Bool = false) {
+        // Replace legacy, unscoped entries when the phone replays them with routing metadata.
+        if entry.peer != nil, let index = entries.firstIndex(where: { $0.peer == nil && $0.id == entry.phoneID }) {
+            let old = entries[index]
+            entries[index] = Entry(id: old.id, app: old.app, pkg: old.pkg, title: old.title,
+                                   text: old.text, date: old.date, image: old.image, peer: entry.peer)
+        }
         // A silent update of one already listed (the replay on every reconnect, a picture that
         // arrived late) changes it in place: it keeps its time and its row, so the list does not
         // jump and an old notification does not come back as "now".
         if silent, let index = entries.firstIndex(where: { $0.id == entry.id }) {
             let old = entries[index]
-            entries[index] = Entry(id: entry.id, app: entry.app, pkg: entry.pkg, title: entry.title,
-                                   text: entry.text, date: old.date, image: entry.image)
+            entries[index] = Entry(id: entry.phoneID, app: entry.app, pkg: entry.pkg, title: entry.title,
+                                   text: entry.text, date: old.date, image: entry.image, peer: entry.peer, actions: entry.actions)
             if let image = old.image, image != entry.image { deleteImages([image]) }
             scheduleSave()
             return
@@ -120,6 +120,7 @@ final class NotificationHistory: ObservableObject {
             dropped += entries.suffix(entries.count - limit)
             entries.removeLast(entries.count - limit)
         }
+        activeIDs.formIntersection(entries.map(\.id))
         deleteImages(Set(dropped.compactMap(\.image)).subtracting([entry.image].compactMap { $0 }))
         scheduleSave()
     }
@@ -139,6 +140,7 @@ final class NotificationHistory: ObservableObject {
     /// Unpairing: the file is deleted rather than rewritten, which works even before the key is loaded.
     func clear() {
         entries.removeAll()
+        activeIDs.removeAll()
         saveTask?.cancel(); saveTask = nil
         loadTask?.cancel(); loadTask = nil
         loaded = true
@@ -164,7 +166,9 @@ final class NotificationHistory: ObservableObject {
             loaded = true
             let fresh = entries
             if let decoded {
-                entries = fresh + decoded.filter { old in !fresh.contains { $0.id == old.id } }
+                entries = fresh + decoded.filter { old in
+                    !fresh.contains { $0.id == old.id || (old.peer == nil && $0.phoneID == old.id) }
+                }
                 if entries.count > limit { entries.removeLast(entries.count - limit) }
             }
             sweepImages()

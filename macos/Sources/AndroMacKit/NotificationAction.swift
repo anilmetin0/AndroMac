@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Every distinct list of actions becomes a registered `UNNotificationCategory`, so what the phone
 /// sends is bounded here: at most `maxCount` actions, each title at most `maxTitle` characters.
-public struct NotificationAction: Equatable, Sendable {
+public struct NotificationAction: Hashable, Codable, Sendable {
     /// The position in the phone's list, which is what `notification_action` sends back.
     public let index: Int
     public let title: String

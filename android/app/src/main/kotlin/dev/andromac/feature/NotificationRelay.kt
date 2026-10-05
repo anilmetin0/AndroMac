@@ -148,7 +148,7 @@ class NotificationRelay : NotificationListenerService() {
         // did not change the text, a "seen" state): the Mac already shows exactly this, so the
         // radio is not woken for it. Only the reconnect push sends it again, silently. A picture
         // that arrived late (a contact photo loaded after the first post) goes out, silently.
-        val signature = "$mode\u0000$title\u0000$text\u0000" + actions.joinToString("\u0000") { it.title }
+        val signature = "$mode\u0000$title\u0000$text\u0000" + actions.joinToString("\u0000") { "${it.title}\u0000${it.reply}" }
         val unchanged = lastSent.put(sbn.key, signature) == signature
         if (unchanged && !forceSilent && image == null) return
 

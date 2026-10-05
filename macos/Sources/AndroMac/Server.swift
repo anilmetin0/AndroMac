@@ -155,7 +155,10 @@ actor Server {
         // hop to it never returns and every quit used to sit out the full 2 s timeout.
         if updateUI {
             await MainActor.run {
-                for id in closing.keys { FileTransfer.shared.sessionEnded(id) }
+                for id in closing.keys {
+                    FileTransfer.shared.sessionEnded(id)
+                    NotificationHistory.shared.disconnected(id)
+                }
                 LinkStats.shared.sessionEnded()
                 AppState.shared.devices.removeAll()
                 AppState.shared.status = .stopped
@@ -476,6 +479,7 @@ actor Server {
             LinkStats.shared.sessionEnded()
             FileTransfer.shared.sessionEnded(deviceID)
             IconCache.shared.forgetRequests(from: deviceID)
+            NotificationHistory.shared.disconnected(deviceID)
             guard updateUI else { return }
             AppState.shared.removeDevice(id: deviceID)
             if !stillConnected { AppState.shared.status = .listening }

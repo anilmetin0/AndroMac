@@ -80,10 +80,14 @@ enum DemoMode {
                     id: "demo-\(index)", app: entry.app, pkg: entry.pkg,
                     title: entry.title, text: entry.text,
                     date: now.addingTimeInterval(Double(index) * -420),
-                    image: entry.image
+                    image: entry.image, peer: phone.id,
+                    actions: index == 1 ? [NotificationAction(index: 0, title: "Reply", reply: true),
+                                          NotificationAction(index: 1, title: "Mark as read", reply: false)] : []
                 )
             )
         }
+
+        NotificationHistory.shared.entries.forEach { NotificationHistory.shared.markActive($0.id) }
 
         ClipboardHistory.shared.record("https://github.com/anilmetin0/AndroMac", direction: .sent)
         ClipboardHistory.shared.record("Meeting room B, 14:30", direction: .received)

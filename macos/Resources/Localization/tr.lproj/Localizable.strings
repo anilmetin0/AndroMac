@@ -289,3 +289,8 @@
 "Device %@ · %@" = "Cihaz %@ · %@";
 "Last seen %@" = "Son görülme: %@";
 "last seen %@" = "son görülme: %@";
+
+"Reply" = "Yanıt";
+"OK" = "Tamam";
+"This notification is no longer available on the connected phone." = "Bu bildirim bağlı telefonda artık kullanılamıyor.";
+"Could not send the action. Reconnect your phone and try again." = "Eylem gönderilemedi. Telefonu yeniden bağlayıp tekrar deneyin.";
