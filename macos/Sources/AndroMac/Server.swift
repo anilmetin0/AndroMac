@@ -296,11 +296,12 @@ actor Server {
             if sessions[deviceID] != nil {
                 serveTasks[deviceID]?.cancel()
                 await closeSession(deviceID, updateUI: false)
-                // The close suspended: a Disconnect or Forget may have landed meanwhile.
-                guard Self.admits(session, overridden: overridden) else {
-                    await session.close()
-                    return
-                }
+            }
+            // Waiting for the hello and closing the old session both suspended: a Disconnect or
+            // Forget may have landed meanwhile. Nothing suspends between this check and the install.
+            guard Self.admits(session, overridden: overridden) else {
+                await session.close()
+                return
             }
 
             sessions[deviceID] = session
