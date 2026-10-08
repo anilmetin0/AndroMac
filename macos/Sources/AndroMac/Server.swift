@@ -266,30 +266,42 @@ actor Server {
 
             // The handshake checked the key against the list as it was when the connection came
             // in, up to 10 s ago. Trust is decided again now, against the list as it is: a phone
-            // forgotten in the meantime has no record and is refused, and a paused one stays out.
-            // Pausing has to bite HERE rather than by closing the socket later: the phone
-            // reconnects on its own ladder, so anything that merely drops the link just turns
-            // into a retry loop.
-            guard let device = Store.shared.device(forKey: session.peerStaticPub) else {
+            // forgotten in the meantime has no record and is refused.
+            guard var device = Store.shared.device(forKey: session.peerStaticPub) else {
                 NSLog("AndroMac: a forgotten phone tried to connect, declining")
                 await session.close()
                 return
             }
-            // A paused phone is heard out first: its hello says whether someone tapped Connect
-            // there or turned auto-connect on after it was turned off here (PROTOCOL §3). If not,
-            // it is told so it stops dialling, instead of retrying a closed door all night.
+            // With auto-connect off, the phone is heard out first: its hello says whether someone
+            // tapped Connect there or turned auto-connect on after it was turned off here
+            // (PROTOCOL §3). If not, it is told so it stops dialling, instead of retrying a closed
+            // door all night. This has to bite HERE rather than by closing the socket later: the
+            // phone reconnects on its own ladder, so anything that merely drops the link just
+            // turns into a retry loop.
             var first: [String: Any]?
             if device.paused {
-                let hello = await Self.firstMessage(session)
-                guard let hello, Self.overridesPause(hello, device) else {
-                    NSLog("AndroMac: a paused phone tried to connect, declining")
+                guard let hello = await Self.firstMessage(session, within: handshakeTimeout) else {
+                    await session.close()
+                    return
+                }
+                // The wait suspended: a Forget, or a Connect clicked here, counts from now on.
+                guard let current = Store.shared.device(forKey: session.peerStaticPub) else {
+                    NSLog("AndroMac: a forgotten phone tried to connect, declining")
+                    await session.close()
+                    return
+                }
+                device = current
+                if device.paused, !Self.overridesPause(hello, device) {
+                    NSLog("AndroMac: a phone with auto-connect off tried to connect, declining")
                     _ = try? await session.send(Self.autoConnectMessage(device))
                     await session.close()
                     return
                 }
                 first = hello
             }
-            let overridden = first != nil
+            // Let in although its switch is off here: only for as long as nobody changes it again.
+            let overridden = device.paused
+            let decidedAt = device.autoConnectChanged
 
             // Same phone reconnecting: replace its own row and leave every other phone alone.
             // The old read loop is cancelled first so it cannot tear down its successor.
@@ -299,7 +311,7 @@ actor Server {
             }
             // Waiting for the hello and closing the old session both suspended: a Disconnect or
             // Forget may have landed meanwhile. Nothing suspends between this check and the install.
-            guard Self.admits(session, overridden: overridden) else {
+            guard Self.admits(session, overridden: overridden, decidedAt: decidedAt) else {
                 await session.close()
                 return
             }
@@ -318,16 +330,17 @@ actor Server {
         }
     }
 
-    /// Paired right now and not paused (or let in despite it), by the full key.
-    private static func admits(_ session: Session, overridden: Bool) -> Bool {
+    /// Paired right now, by the full key, and not paused, or let in despite it with the switch as it
+    /// was then: one turned off since (a newer change) keeps the phone out after all.
+    private static func admits(_ session: Session, overridden: Bool, decidedAt: Date?) -> Bool {
         guard let device = Store.shared.device(forKey: session.peerStaticPub) else { return false }
-        return !device.paused || overridden
+        return !device.paused || overridden && device.autoConnectChanged == decidedAt
     }
 
     /// The phone's first message, or nil if it does not come within the handshake budget.
-    private static func firstMessage(_ session: Session) async -> [String: Any]? {
-        let timeout = Task { try await Task.sleep(for: .seconds(10)); await session.close() }
-        defer { timeout.cancel() }
+    private static func firstMessage(_ session: Session, within timeout: Duration) async -> [String: Any]? {
+        let timer = Task { try await Task.sleep(for: timeout); await session.close() }
+        defer { timer.cancel() }
         return try? await session.receive()
     }
 
@@ -340,16 +353,19 @@ actor Server {
         return on && device.syncAutoConnect(phoneOn: on, changed: changed) == .adopt
     }
 
-    /// `{"on":true,"ts":<ms>}`; a `ts` of 0 means the switch was never changed there.
+    /// `{"on":true,"ts":<ms>}`; a `ts` of 0 means the switch was never changed there. A time past
+    /// tomorrow is a broken clock and counts as tomorrow: kept as it came, it would win every sync
+    /// after it, and no longer fit the `ts` this Mac sends back.
     private static func autoConnect(_ value: Any?) -> (Bool, Date?)? {
         guard let value = value as? [String: Any], let on = value["on"] as? Bool else { return nil }
         let ms = value["ts"] as? Double ?? 0
-        return (on, ms > 0 ? Date(timeIntervalSince1970: ms / 1000) : nil)
+        guard ms.isFinite, ms > 0 else { return (on, nil) }
+        return (on, min(Date(timeIntervalSince1970: ms / 1000), Date().addingTimeInterval(86_400)))
     }
 
     private static func autoConnectMessage(_ device: PairedDevice) -> [String: Any] {
         let ms = (device.autoConnectChanged?.timeIntervalSince1970 ?? 0) * 1000
-        return ["t": "auto_connect", "on": !device.paused, "ts": Int64(ms)]
+        return ["t": "auto_connect", "on": !device.paused, "ts": Int64(ms.rounded())]
     }
 
     /// The phone's switch against ours: the newer change wins on both sides (PROTOCOL §3).
@@ -369,6 +385,16 @@ actor Server {
         Store.shared.updateDevice(id: deviceID) { $0.paused = !on; $0.autoConnectChanged = Date() }
         guard let device = Store.shared.device(id: deviceID) else { return }
         _ = await send(Self.autoConnectMessage(device), to: deviceID)
+    }
+
+    /// Disconnect, like the phone's: auto-connect off on both sides, then hang up. The phone is told
+    /// first, but a link too clogged to take that within a second is closed anyway: the panel must
+    /// not keep showing it connected for as long as a stalled write takes to fail.
+    func hangUp(_ deviceID: String) async {
+        let fallback = Task { try await Task.sleep(for: .seconds(1)); await self.disconnect(deviceID) }
+        await setAutoConnect(false, for: deviceID)
+        fallback.cancel()
+        await disconnect(deviceID)
     }
 
     /// RFC 1918 / link-local / ULA / loopback. A peer that gives a name (DNS) is not assumed to be
@@ -419,7 +445,7 @@ actor Server {
         let staticKey = store.identity()
         // Every trusted phone, not just the first. A paused device is deliberately still in the
         // list: pausing is "do not talk to me", not "forget me", so the handshake still succeeds
-        // and `serve` is the one that declines — otherwise a paused phone would be shown to the
+        // and `accept` is the one that declines — otherwise a paused phone would be shown to the
         // user as an unknown device asking to pair.
         let pinnedKeys = store.pairedDevices.map(\.key)
         let timeout = handshakeTimeout
@@ -763,8 +789,8 @@ actor Server {
         try? JSONSerialization.data(withJSONObject: msg, options: [.withoutEscapingSlashes])
     }
 
-    /// Hang up on one phone without forgetting it. Pairing survives; the phone will be refused on
-    /// its next attempt for as long as it stays paused.
+    /// Hang up on one phone without forgetting it. Pairing survives; whether it comes back is up to
+    /// the auto-connect switch (`hangUp` turns it off first).
     func disconnect(_ deviceID: String) async {
         serveTasks[deviceID]?.cancel()
         await closeSession(deviceID)

@@ -159,7 +159,7 @@ final class Store: @unchecked Sendable {
     /// read folds them into a one-element list and removes the old keys. `pairedAt` is unknown for
     /// a migrated device, so it gets `.distantPast` — it sorts oldest, which is true.
     private func loadDevices() -> [PairedDevice] {
-        let (devices, migrated) = PairedDevice.load(
+        var (devices, migrated) = PairedDevice.load(
             stored: defaults.data(forKey: "pairedDevices"),
             legacyKey: defaults.data(forKey: "peerKey"),
             legacyName: defaults.string(forKey: "peerName") ?? ""
@@ -169,6 +169,9 @@ final class Store: @unchecked Sendable {
             forget("peerKey")
             forget("peerName")
             NSLog("AndroMac: migrated the single paired phone into the device list")
+        }
+        if PairedDevice.dateUndatedPauses(&devices, now: Date()) {
+            write(try? JSONEncoder().encode(devices), "pairedDevices")
         }
         return devices
     }

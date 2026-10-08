@@ -127,8 +127,10 @@ yeniden **Bağlan**'a dokunana kadar bağlanmaz. Mac'te **Bağlantıyı kes**, p
 **⋯** menüsünde.
 
 Bağlantıyı kes, **Otomatik bağlan**'ı kapatır. Bu iki tarafta tek bir anahtar: Mac'te her telefon
-için **⋯** menüsünde ve Ayarlar → Cihazlar'da duruyor, bir tarafta değiştirince öbür tarafta da
-değişiyor. Kapalıyken telefon yalnızca **Bağlan**'a dokunduğunda bağlanır.
+için **⋯** menüsünde ve Ayarlar → Cihazlar'da duruyor. Bir taraftaki değişiklik, bağlıyken öbür
+tarafa hemen, değilken bir sonraki bağlantıda geçer. Kapalıyken telefon yalnızca üzerinde
+**Bağlan**'a dokunduğunda bağlanır; bu yüzden Mac'te yeniden açtıktan sonra telefonda da bir kez
+**Bağlan**'a dokun.
 
 ## Özellikler
 

@@ -192,7 +192,8 @@ private struct DeviceCard: View {
                 // Paired but not here: almost every connection problem is one of these two things.
                 // The Mac only listens (PROTOCOL §1), so there is nothing to click for it: the
                 // phone dials in as soon as both are true. With auto-connect off the phone stays
-                // parked too, so Connect here only lets it in and the hint says so.
+                // parked too, so Connect here only lets it in, and until the phone has heard of
+                // that the hint says it needs a tap there.
                 // Offline there is little to act on, so it sits on this line instead of taking a
                 // row of its own.
                 HStack(spacing: Theme.Space.small) {
@@ -202,10 +203,16 @@ private struct DeviceCard: View {
                                 Text("Last seen \(RelativeTime.string(lastSeen, now: context.date))")
                             }
                         }
-                        Text(device.paused
-                             ? "To use it again, click Connect here, then tap Connect on the phone."
-                             : "Open AndroMac on the phone, on the same Wi‑Fi.")
-                            .fixedSize(horizontal: false, vertical: true)
+                        Group {
+                            if device.paused {
+                                Text("To use it again, click Connect here, then tap Connect on the phone.")
+                            } else if device.awaitsConnectOnPhone {
+                                Text("Now tap Connect on the phone.")
+                            } else {
+                                Text("Open AndroMac on the phone, on the same Wi‑Fi.")
+                            }
+                        }
+                        .fixedSize(horizontal: false, vertical: true)
                     }
                     .font(Theme.Font.label)
                     .foregroundStyle(.secondary)
@@ -350,16 +357,14 @@ private struct DeviceCard: View {
     }
 
     /// Like the phone's Disconnect: hang up and turn auto-connect off on both sides, so the phone
-    /// stays away until someone taps Connect on either one.
+    /// stays away until someone taps Connect on it.
     private func disconnect() {
-        Task {
-            await Server.shared.setAutoConnect(false, for: device.id)
-            await Server.shared.disconnect(device.id)
-        }
+        Task { await Server.shared.hangUp(device.id) }
     }
 
-    /// The Mac only listens (PROTOCOL §1): this turns auto-connect back on, and the phone hears it
-    /// the next time it dials, or right away if it is already on the line.
+    /// The Mac only listens (PROTOCOL §1): this turns auto-connect back on here. The phone, parked
+    /// with its own switch off, hears of it once someone taps Connect there, or right away if it
+    /// is already on the line.
     private func connect() {
         Task { await Server.shared.setAutoConnect(true, for: device.id) }
     }

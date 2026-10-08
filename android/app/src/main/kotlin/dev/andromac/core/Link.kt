@@ -4,6 +4,7 @@ import android.util.Log
 import org.json.JSONObject
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * The single in-process link state. The NotificationListenerService, the QS tile and the
@@ -70,7 +71,15 @@ object Link {
         listeners.forEach { runCatching { it(s) } }
     }
 
-    internal fun attach(s: Session) { session = s }
+    /**
+     * Publishes [s] with [hello] already first in the send queue: nothing another thread sends can
+     * go out ahead of it, and a Mac that has this phone's auto-connect off reads the hello first to
+     * decide whether to let it in (PROTOCOL §3).
+     */
+    internal fun attach(s: Session, hello: JSONObject) {
+        io.execute { write(s, hello) }
+        session = s
+    }
     internal fun detach() { session = null }
 
     val isConnected: Boolean get() = session != null
@@ -84,13 +93,23 @@ object Link {
         Thread(r, "andromac-send").apply { isDaemon = true }
     }
 
-    /** Send [last] and then hang up, in that order; false with no link. */
+    /** Holds the fallback close of [hangUp]. */
+    private val timer by lazy {
+        Executors.newSingleThreadScheduledExecutor { r -> Thread(r, "andromac-hangup").apply { isDaemon = true } }
+    }
+
+    /**
+     * Send [last] and then hang up, in that order; false with no link. A write stuck on a Mac that
+     * stopped reading would hold the close back for the whole read timeout, and the close is what
+     * frees such a write ([Session.close]), so it also comes on its own after [HANG_UP_GRACE_MS].
+     */
     fun hangUp(last: JSONObject): Boolean {
         val s = session ?: return false
         io.execute {
             runCatching { s.send(last) }
             s.close()
         }
+        timer.schedule({ s.close() }, HANG_UP_GRACE_MS, TimeUnit.MILLISECONDS)
         return true
     }
 
@@ -99,15 +118,20 @@ object Link {
         val s = session ?: return false
         io.execute {
             if (session !== s) return@execute        // drop it if the link changed in the meantime
-            try {
-                s.send(msg)
-            } catch (e: Exception) {
-                Log.w(TAG, "send failed, dropping the link", e)
-                s.close()
-            }
+            write(s, msg)
         }
         return true
     }
 
+    private fun write(s: Session, msg: JSONObject) {
+        try {
+            s.send(msg)
+        } catch (e: Exception) {
+            Log.w(TAG, "send failed, dropping the link", e)
+            s.close()
+        }
+    }
+
+    private const val HANG_UP_GRACE_MS = 1_000L
     const val TAG = "AndroMac"
 }

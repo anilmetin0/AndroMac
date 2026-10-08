@@ -128,8 +128,10 @@ disconnected until you tap **Connect** again. On the Mac, **Disconnect** is in t
 **⋯** menu in the panel.
 
 Disconnect turns **Connect automatically** off. It is one switch on both sides: the Mac has it per
-phone in the **⋯** menu and in Settings → Devices, and changing it on either side changes it on
-the other. With it off, a phone connects only when you tap **Connect**.
+phone in the **⋯** menu and in Settings → Devices. A change on one side reaches the other right
+away while they are connected, otherwise the next time they connect. With it off, the phone
+connects only when you tap **Connect** on it, so after turning it back on at the Mac, tap
+**Connect** on the phone once.
 
 ## Features
 

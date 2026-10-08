@@ -41,14 +41,19 @@ class ConnectionActivity : Activity() {
         store = Store(this)
 
         bindSwitchRow(R.id.rowAuto, R.id.swAuto, store.autoConnect) {
+            // render() moving the switch to a value set elsewhere is no change made here; stamped
+            // now, an old value would become the newest on both sides.
+            if (it == store.autoConnect) return@bindSwitchRow
             store.autoConnect = it
             Link.send(Protocol.autoConnect(it, store.autoConnectChanged))  // the Mac's switch follows
             LinkService.start(this)          // wakes the loop so the new value applies now
             render()
         }
         // Connected, the row is the way off: the same Disconnect as the notification and the tile.
+        // It acts on the state its label was drawn from, so a tap does what the row says.
         bindNavRow(R.id.rowConnectNow) {
-            LinkService.start(this, if (Link.isConnected) LinkService.ACTION_DISCONNECT else LinkService.ACTION_CONNECT)
+            val connected = Link.state is Link.State.Connected
+            LinkService.start(this, if (connected) LinkService.ACTION_DISCONNECT else LinkService.ACTION_CONNECT)
         }
         bindNavRow(R.id.rowUnpair) { store.activeMac?.let(::confirmForget) }
         bindNavRow(R.id.rowAddMac) { if (pickerDialog?.isShowing != true) pickMac(store) { pickerDialog = it } }

@@ -124,6 +124,7 @@ class LinkService : Service() {
             // The notification action and the QS tile: the auto-connect switch, one tap away.
             ACTION_DISCONNECT -> {
                 store.autoConnect = false
+                connectRequested = false     // a Connect now not dialled yet is overruled too
                 // The Mac's switch follows; the read ends and the loop parks on auto-connect off.
                 if (!Link.hangUp(Protocol.autoConnect(false, store.autoConnectChanged))) current?.close()
                 wake()
@@ -288,6 +289,9 @@ class LinkService : Service() {
                     // Last seen is when the session ended, for the Mac it was with.
                     store.seenMac(session.peerStaticPub, host)
                 }
+                // Turned off during the link, here or by a Mac that kept us out: park now (the
+                // top of the loop does it) rather than after a rung of the ladder.
+                if (!store.autoConnect && !connectRequested) continue
                 // The ladder is reset by the Mac's hello, not by the handshake: a Mac that
                 // completes the handshake and then hangs up (this phone is disconnected there,
                 // or not approved yet) must not be redialled in a tight loop (PROTOCOL §3).
@@ -435,13 +439,16 @@ class LinkService : Service() {
     /** The session is up: process messages. Blocks and does not return until the link drops. */
     private fun serve(session: Session, peerName: String) {
         current = session
-        Link.attach(session)
-        Link.setState(Link.State.Connected(peerName))
-        note(getString(R.string.fgs_connected, peerName), connected = true)
+        // A Connect now tapped while this dial was under way counts for it, and is used up by it.
+        val connect = dialRequested || connectRequested
+        connectRequested = false
+        // The hello is queued before the link is published, so it is the first thing the Mac reads.
         // Through the send queue, like everything else: a direct write from this read thread would
         // wait on the session lock while the queue is mid-chunk, and a Mac blocked writing to us
         // at the same moment would never be read (both sides stuck on a full socket buffer).
-        Link.send(Protocol.hello(store.deviceName, store.autoConnect, store.autoConnectChanged, dialRequested))
+        Link.attach(session, Protocol.hello(store.deviceName, store.autoConnect, store.autoConnectChanged, connect))
+        Link.setState(Link.State.Connected(peerName))
+        note(getString(R.string.fgs_connected, peerName), connected = true)
         battery.start()
         media.start()
         system.start()
@@ -471,6 +478,12 @@ class LinkService : Service() {
             FileTransfer.onSessionEnded(this)
             Link.detach()
             session.close()
+            // No longer Connected while the loop waits out its next rung: the screen and the
+            // notification kept offering Disconnect for a link that was gone.
+            if (running) {
+                Link.setState(Link.State.Searching)
+                note(getString(R.string.state_waiting_mac))
+            }
         }
     }
 
@@ -502,7 +515,7 @@ class LinkService : Service() {
             Protocol.T_CLIPBOARD_REQUEST -> clipboard.macAskedForClipboard()
             // The Mac's switch changed, or it is newer than ours: it is one setting on both sides.
             // Off from a Mac that refused us, the loop parks once this link ends.
-            Protocol.T_AUTO_CONNECT -> store.adoptAutoConnect(msg.optBoolean("on", true), msg.optLong("ts"))
+            Protocol.T_AUTO_CONNECT -> (msg.opt("on") as? Boolean)?.let { store.syncAutoConnect(it, msg.optLong("ts")) }
             Protocol.T_HELLO -> {
                 // The Mac let us in: this is a working link, so the next drop starts the ladder over.
                 macAsleep = false

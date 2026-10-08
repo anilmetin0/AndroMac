@@ -19,6 +19,7 @@ import org.json.JSONObject
 import java.io.File
 import java.security.KeyStore
 import java.security.PrivateKey
+import java.util.concurrent.TimeUnit
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -366,8 +367,20 @@ class Store(context: Context) {
     /** When the switch last changed, here or on the Mac; 0 if never. The newer side wins (PROTOCOL §3). */
     val autoConnectChanged: Long get() = prefs.getLong(K_AUTO_CONNECT_CHANGED, 0)
 
-    /** The Mac's newer change, kept with the Mac's time so both sides agree on when it happened. */
-    fun adoptAutoConnect(on: Boolean, changed: Long) =
+    /**
+     * The Mac's switch against ours, by the rule the Mac applies too (PROTOCOL §3): the newer change
+     * wins, and with neither newer, off does. Taken with the Mac's time, so both sides agree on when
+     * it happened. A time past tomorrow is a broken clock and counts as tomorrow; kept as it came,
+     * it would win every sync after it.
+     */
+    fun syncAutoConnect(on: Boolean, changed: Long) {
+        if (on == autoConnect) return
+        val theirs = changed.coerceIn(0, System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1))
+        val mine = autoConnectChanged
+        if (theirs > mine || theirs == mine && !on) adoptAutoConnect(on, theirs)
+    }
+
+    private fun adoptAutoConnect(on: Boolean, changed: Long) =
         prefs.edit().putBoolean(K_AUTO_CONNECT, on).putLong(K_AUTO_CONNECT_CHANGED, changed).apply()
 
     // --- file transfer ---

@@ -13,7 +13,8 @@ raised. Nightly builds list their commits instead.
 
 - **Auto-connect on the Mac.** Each phone has a Connect automatically switch in the panel's More
   menu and in Settings → Devices. It is the same switch as the phone's: flip it on either side and
-  both change. A phone turned off on the Mac no longer redials all night.
+  the other follows as soon as the two are connected. A phone turned off on the Mac no longer
+  redials all night.
 
 ### Changed
 

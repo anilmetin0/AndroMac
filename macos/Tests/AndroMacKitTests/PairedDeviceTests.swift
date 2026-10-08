@@ -39,8 +39,39 @@ struct PairedDeviceTests {
         #expect(mac.syncAutoConnect(phoneOn: true, changed: t1.addingTimeInterval(-60)) == .tell)
         #expect(mac.syncAutoConnect(phoneOn: true, changed: nil) == .tell)    // never touched there
         #expect(mac.syncAutoConnect(phoneOn: false, changed: t2) == .keep)    // already agree
-        mac.autoConnectChanged = nil
-        #expect(mac.syncAutoConnect(phoneOn: true, changed: nil) == .keep)    // neither side has a say
+    }
+
+    @Test func withNeitherChangeNewerOffWins() {
+        // A phone's switch turned off before it was dated, against a Mac never touched: the two
+        // must settle on one value rather than stay apart for good.
+        let mac = PairedDevice(key: keyA, name: "Pixel 9")
+        #expect(mac.syncAutoConnect(phoneOn: false, changed: nil) == .adopt)
+        let paused = PairedDevice(key: keyA, name: "Pixel 9", paused: true)
+        #expect(paused.syncAutoConnect(phoneOn: true, changed: nil) == .tell)
+    }
+
+    @Test func aPauseFromBeforeTheSwitchWasDatedOutranksEarlierPhoneChanges() {
+        let upgrade = Date(timeIntervalSince1970: 1_760_000_000)
+        var devices = [PairedDevice(key: keyA, name: "Pixel 9", paused: true),
+                       PairedDevice(key: keyB, name: "Pixel 8")]
+        #expect(PairedDevice.dateUndatedPauses(&devices, now: upgrade))
+        #expect(devices[0].autoConnectChanged == upgrade)
+        #expect(devices[1].autoConnectChanged == nil)                       // only pauses are dated
+        #expect(devices[0].syncAutoConnect(phoneOn: true, changed: upgrade.addingTimeInterval(-3600)) == .tell)
+        #expect(!PairedDevice.dateUndatedPauses(&devices, now: upgrade))    // once
+    }
+
+    @Test func turnedOnHereWhileThePhoneWasAwayItStillNeedsATapThere() {
+        let seen = Date(timeIntervalSince1970: 1_750_000_000)
+        var mac = PairedDevice(key: keyA, name: "Pixel 9", lastSeen: seen)
+        #expect(!mac.awaitsConnectOnPhone)                                   // never changed
+        mac.autoConnectChanged = seen.addingTimeInterval(60)
+        #expect(mac.awaitsConnectOnPhone)
+        mac.lastSeen = seen.addingTimeInterval(120)                          // it has been here since
+        #expect(!mac.awaitsConnectOnPhone)
+        mac.paused = true
+        mac.autoConnectChanged = seen.addingTimeInterval(180)
+        #expect(!mac.awaitsConnectOnPhone)                                   // off: nothing to wait for
     }
 
     // MARK: the migration that can lose a pairing

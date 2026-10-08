@@ -26,8 +26,9 @@ public struct PairedDevice: Codable, Identifiable, Sendable, Equatable {
     /// The phone's LAN IPv4 on its last connection, so two phones can be told apart. Display only:
     /// DHCP hands it to someone else tomorrow, and it says nothing about who is calling.
     public var lastAddress: String?
-    /// Paused devices stay paired but are not let in. The user's "disconnect and stay disconnected"
-    /// — without it, closing a session just makes the phone redial on its backoff ladder.
+    /// Auto-connect off for this phone: it stays paired but is let in only when someone taps Connect
+    /// there (PROTOCOL §3). The user's "disconnect and stay disconnected" — without it, closing a
+    /// session just makes the phone redial on its backoff ladder.
     public var paused: Bool
     /// When `paused` last changed, here or on the phone: the auto-connect switch is one setting on
     /// both sides, and the newer change wins (PROTOCOL §3). `nil` until it is first changed.
@@ -81,13 +82,36 @@ public struct PairedDevice: Codable, Identifiable, Sendable, Equatable {
         case keep
     }
 
-    /// Last writer wins. A side that never changed the switch has no say against one that did.
-    // ponytail: wall clocks of two devices on one LAN, NTP-synced; seconds of skew only matter for
-    // two flips seconds apart on both sides, and then either outcome is one the user asked for.
+    /// Last writer wins, and with neither change newer, off wins: both sides start on, so an off
+    /// nobody dated (a phone's switch from before it was dated) was still turned off on purpose.
+    /// The phone applies the same rule to the Mac's switch, so the two cannot settle apart.
+    // ponytail: wall clocks of two devices, both set from the network; seconds of skew only matter
+    // for two flips seconds apart on both sides. A clock set by hand minutes off widens that window
+    // as far; a shared change counter instead of times would close it.
     public func syncAutoConnect(phoneOn: Bool, changed phoneChanged: Date?) -> AutoConnectSync {
         guard phoneOn == paused else { return .keep }       // the same value on both sides
-        if let phoneChanged, phoneChanged > (autoConnectChanged ?? .distantPast) { return .adopt }
-        return autoConnectChanged == nil ? .keep : .tell
+        let phone = phoneChanged ?? .distantPast, mac = autoConnectChanged ?? .distantPast
+        if phone != mac { return phone > mac ? .adopt : .tell }
+        return phoneOn ? .tell : .adopt
+    }
+
+    /// Auto-connect was turned on here after the phone was last seen. The phone's own switch is
+    /// still off as far as this Mac knows, so it stays parked until someone taps Connect there.
+    public var awaitsConnectOnPhone: Bool {
+        guard !paused, let changed = autoConnectChanged else { return false }
+        return changed > (lastSeen ?? .distantPast)
+    }
+
+    /// Dates every pause written before the switch was dated (1.5.1) to `now`, once. The phone's
+    /// switch never touched it until then, so no change made there earlier may undo it.
+    /// - Returns: whether any was dated, so the caller writes the list back.
+    public static func dateUndatedPauses(_ devices: inout [PairedDevice], now: Date) -> Bool {
+        var dated = false
+        for i in devices.indices where devices[i].paused && devices[i].autoConnectChanged == nil {
+            devices[i].autoConnectChanged = now
+            dated = true
+        }
+        return dated
     }
 
     /// The full SHA-256 of the key, in hex. The dictionary key for live sessions and per-device

@@ -152,6 +152,7 @@
 "Notifications" = "Notifications";
 "Notifications are off for AndroMac" = "Notifications are off for AndroMac";
 "Notifications from your phone appear here." = "Notifications from your phone appear here.";
+"Now tap Connect on the phone." = "Now tap Connect on the phone.";
 "Off" = "Off";
 "Off here, the phone never sends it." = "Off here, the phone never sends it.";
 "Offline" = "Offline";
@@ -255,7 +256,7 @@
 "This release has no macOS build to install." = "This release has no macOS build to install.";
 "Title only" = "Title only";
 "Title only leaves the content on the phone." = "Title only leaves the content on the phone.";
-"To use it again, tap Connect here and on the phone." = "To use it again, tap Connect here and on the phone.";
+"To use it again, click Connect here, then tap Connect on the phone." = "To use it again, click Connect here, then tap Connect on the phone.";
 "To use it with this Mac again, pair it again." = "To use it with this Mac again, pair it again.";
 "Traffic" = "Traffic";
 "Try again" = "Try again";
