@@ -6,8 +6,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-VERSION="5.0"
-SHA256="7cb4e41c859b05b36e89dc9be6c353cc5980c00d7f7f6a763b5b355551b82e9c"
+VERSION="5.0.1"
+SHA256="33611e51977a8289e2e124b220f727895181ef2eb9060e0987a4dc2db9cf0d6b"
 NAME="scrcpy-macos-aarch64-v$VERSION"
 DEST="vendor/scrcpy"
 
