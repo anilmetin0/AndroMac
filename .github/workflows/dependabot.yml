@@ -40,7 +40,7 @@ jobs:
           prs="$(gh pr list --state open --base main --author 'app/dependabot' \
             --limit 50 --json number --jq '.[].number')"
           for number in $prs; do
-            pr="$(gh pr view "$number" --json author,headRepository,headRepositoryOwner,headRefName,headRefOid,baseRefName,isDraft,mergeStateStatus)"
+            pr="$(gh pr view "$number" --json author,headRepository,headRepositoryOwner,headRefName,headRefOid,baseRefName,isDraft,mergeStateStatus)" || continue
             if ! jq -e --arg repo "$GH_REPO" '
               .author.login == "app/dependabot" and
               .headRepository.nameWithOwner == $repo and
@@ -53,7 +53,7 @@ jobs:
             sha="$(jq -r .headRefOid <<< "$pr")"
             # A skipped CodeRabbit check is not approval. All published checks must
             # pass; only the intentionally absent PR release job may be skipped.
-            files="$(gh pr diff "$number" --name-only)"
+            files="$(gh pr diff "$number" --name-only)" || continue
             required='["version", "Android · APK", "macOS · verify + .app", "CodeRabbit"]'
             if [[ "$files" == *".github/workflows/"* ]]; then
               required="$(jq '. + ["analyze"]' <<< "$required")"
@@ -68,7 +68,7 @@ jobs:
             ' <<< "$checks" >/dev/null; then
               continue
             fi
-            reviews="$(gh api --paginate --slurp "repos/$GH_REPO/pulls/$number/reviews")"
+            reviews="$(gh api --paginate --slurp "repos/$GH_REPO/pulls/$number/reviews")" || continue
             if ! jq -e '
               add | [.[] | select(.user.type != "Bot" and
                 (.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED"))] |
@@ -77,7 +77,8 @@ jobs:
               continue
             fi
             if ! jq -e --arg sha "$sha" '
-              add | [.[] | select(.user.login == "coderabbitai[bot]" and .commit_id == $sha)] |
+              add | [.[] | select(.user.login == "coderabbitai[bot]" and .commit_id == $sha and
+                (.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED"))] |
               sort_by(.id) | last | .state == "APPROVED"
             ' <<< "$reviews" >/dev/null; then
               continue
@@ -93,7 +94,7 @@ jobs:
                   }
                 }
               }' \
-              -f owner="${GH_REPO%%/*}" -f name="${GH_REPO#*/}" -F number="$number")"
+              -f owner="${GH_REPO%%/*}" -f name="${GH_REPO#*/}" -F number="$number")" || continue
             # An incomplete page is not evidence that every review thread is resolved.
             if ! jq -e --arg sha "$sha" '
               (.errors | not) and (.data.repository.pullRequest |
