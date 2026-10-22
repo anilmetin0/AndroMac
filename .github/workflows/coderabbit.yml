@@ -1,0 +1,45 @@
+# Dependabot PRs are otherwise skipped as bot-authored, including on the free OSS plan.
+# This job reads PR metadata and posts the supported review command; it never checks out code.
+name: CodeRabbit dependency review
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coderabbit-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  request-review:
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'dependabot/') &&
+      github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Request a review of the current head
+        shell: bash
+        run: |
+          marker="<!-- coderabbit-dependency-review:$HEAD_SHA -->"
+          existing="$(gh api --paginate "repos/$GH_REPO/issues/$PR_NUMBER/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]") | .body')"
+          if [[ "$existing" == *"$marker"* ]]; then
+            echo "A review was already requested for this commit."
+            exit 0
+          fi
+          body="$RUNNER_TEMP/coderabbit-review.txt"
+          printf '@coderabbitai review\n\n%s\n' "$marker" > "$body"
+          gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body-file "$body"
