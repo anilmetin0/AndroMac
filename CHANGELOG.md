@@ -11,6 +11,9 @@ raised. Nightly builds list their commits instead.
 
 ### Added
 
+- **Fill code.** A Mac notification with a one-time code now has Fill code next to Copy code. It
+  types the code into the field you were typing in, without bringing AndroMac forward. It needs
+  the Accessibility permission; without it macOS asks once and the code is copied instead.
 - **Auto-connect on the Mac.** Each phone has a Connect automatically switch in the panel's More
   menu and in Settings → Devices. It is the same switch as the phone's: flip it on either side and
   the other follows as soon as the two are connected. A phone turned off on the Mac no longer

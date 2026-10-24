@@ -151,7 +151,7 @@ connects only when you tap **Connect** on it, so after turning it back on at the
 | Files | Both ways | Share from the phone's share sheet, or drop files onto the Mac panel. The receiver is asked first, unless you turn on auto-accept. Files go to Downloads, are checked when they arrive, and are never opened for you. |
 | Several phones | Mac | More than one phone can be connected at once. The panel shows them as tabs. Each one can be disconnected on its own and has its own clipboard switch. Settings → Devices lists every phone with its IP address and when it was last seen, and is where you forget one. |
 | Several Macs | Phone | A phone can remember more than one Mac and switch between them in Settings → Connection. |
-| Verification codes | Mac | When a notification contains a one-time code, the Mac notification gets Copy code and the panel shows a copy button for it. A code needs a word such as code, OTP, kod or şifre near it. Copied codes do not go into the clipboard history. |
+| Verification codes | Mac | When a notification contains a one-time code, the Mac notification gets Fill code and Copy code, and the panel shows a copy button for it. A code needs a word such as code, OTP, kod or şifre near it. Fill code types the code into the focused field and needs the Accessibility permission; without it the code is copied. Copied codes do not go into the clipboard history. |
 | Metrics | Mac | Messages per hour, traffic, reconnects and the most common message types. |
 | Screen mirroring | Phone to Mac | The phone's screen in a window, with mouse, keyboard and sound, over Wireless debugging or USB. See [Screen mirroring](#screen-mirroring). |
 | Updates | Both | Each app checks once a day and installs updates itself. See [Updates](#updates). |
