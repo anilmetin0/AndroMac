@@ -12,6 +12,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
     fileprivate static let muteIdentifier = "andromac.mute"
     fileprivate static let linkIdentifier = "andromac.link"
     fileprivate static let codeIdentifier = "andromac.code"
+    fileprivate static let fillIdentifier = "andromac.fill"
 
     private let center = UNUserNotificationCenter.current()
     private var categories: [String: UNNotificationCategory] = [:]
@@ -79,7 +80,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         // A web address in the text gets an Open link button; never on a redacted notification.
         let link = redacted ? nil : WebLink.find(in: title + "\n" + text)
         if let link { content.userInfo["link"] = link.absoluteString }
-        // A one-time code gets Copy code, the same code the panel row offers.
+        // A one-time code gets Fill code and Copy code; the panel row offers the same code.
         let code = redacted ? nil : VerificationCode.find(in: title + "\n" + text)
         if let code { content.userInfo["code"] = code }
 
@@ -203,8 +204,11 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         // A notification still on screen with a dropped category loses only its buttons.
         if categories.count >= 64 { categories.removeAll() }
 
+        // Fill code has no .foreground option on purpose: AndroMac stays in the background, so the
+        // field the user was typing in keeps the focus and receives the code.
         var unActions: [UNNotificationAction] = code
-            ? [UNNotificationAction(identifier: Self.codeIdentifier, title: String(localized: "Copy code"), options: [])]
+            ? [UNNotificationAction(identifier: Self.fillIdentifier, title: String(localized: "Fill code"), options: []),
+               UNNotificationAction(identifier: Self.codeIdentifier, title: String(localized: "Copy code"), options: [])]
             : []
         unActions += actions.map { a in
             a.reply
@@ -268,6 +272,11 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
             // the clipboard history.
             guard let code = userInfo["code"] as? String, !code.isEmpty else { return }
             await ClipboardWatcher.shared.restore(code)
+
+        case Self.fillIdentifier:
+            // Typed into the focused field; without the Accessibility permission it is copied instead.
+            guard let code = userInfo["code"] as? String, !code.isEmpty else { return }
+            await CodeTyper.fill(code)
 
         case Self.linkIdentifier:
             // Checked again here: userInfo comes back from the system, and only the web is opened.

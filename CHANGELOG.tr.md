@@ -11,6 +11,9 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ### Eklenenler
 
+- **Kodu yaz.** Tek kullanımlık kod içeren Mac bildiriminde Kodu kopyala'nın yanında artık Kodu yaz
+  da var. Kodu, AndroMac'i öne getirmeden o an yazdığın alana yazar. Erişilebilirlik izni gerekir;
+  izin yoksa macOS bir kez sorar ve kod panoya kopyalanır.
 - **Mac'te otomatik bağlanma.** Her telefonun panelde Diğer menüsünde ve Ayarlar → Cihazlar'da bir
   Otomatik bağlan anahtarı var. Telefondaki anahtarla aynı: hangi tarafta değiştirirsen, iki taraf
   bağlanır bağlanmaz öbürü de aynı değere geçiyor. Mac'te kapatılan telefon artık bütün gece yeniden

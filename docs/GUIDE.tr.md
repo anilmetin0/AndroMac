@@ -150,7 +150,7 @@ tarafa hemen, değilken bir sonraki bağlantıda geçer. Kapalıyken telefon yal
 | Dosyalar | İki yön | Telefonda paylaşım menüsünden, Mac'te dosyaları panele bırakarak. Otomatik kabulü açmadıysan alıcıya önce sorulur. Dosyalar İndirilenler'e iner, gelince denetlenir ve kendiliğinden açılmaz. |
 | Birden fazla telefon | Mac | Aynı anda birden fazla telefon bağlanabilir. Panel onları sekme olarak gösterir. Her birinin bağlantısı ayrı kesilebilir, her birinin kendi pano anahtarı var. Ayarlar → Cihazlar her telefonu IP adresi ve en son ne zaman görüldüğüyle listeler; unutma da oradan yapılır. |
 | Birden fazla Mac | Telefon | Telefon birden fazla Mac'i hatırlar, Ayarlar → Bağlantı'dan aralarında geçiş yapılır. |
-| Doğrulama kodları | Mac | Bildirimde tek kullanımlık kod varsa Mac bildiriminde Kodu kopyala çıkar, panel de kod için bir kopyalama düğmesi gösterir. Kodun yanında kod, şifre, OTP ya da code gibi bir sözcük olmalı. Kopyalanan kodlar pano geçmişine girmez. |
+| Doğrulama kodları | Mac | Bildirimde tek kullanımlık kod varsa Mac bildiriminde Kodu yaz ve Kodu kopyala çıkar, panel de kod için bir kopyalama düğmesi gösterir. Kodun yanında kod, şifre, OTP ya da code gibi bir sözcük olmalı. Kodu yaz, kodu odaktaki alana yazar ve Erişilebilirlik izni ister; izin yoksa kod kopyalanır. Kopyalanan kodlar pano geçmişine girmez. |
 | Ölçümler | Mac | Saatlik mesaj, trafik, yeniden bağlanma ve en sık mesaj tipleri. |
 | Ekran yansıtma | Telefondan Mac'e | Telefonun ekranı bir pencerede; fare, klavye ve sesle. Kablosuz hata ayıklama ya da USB üzerinden. Bkz. [Ekran yansıtma](#ekran-yansıtma). |
 | Güncellemeler | İki taraf | İki uygulama da günde bir kez denetler ve güncellemeyi kendisi kurar. Bkz. [Güncellemeler](#güncellemeler). |

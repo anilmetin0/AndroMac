@@ -103,4 +103,18 @@ struct VerificationCodeTests {
         #expect(code("483927") == nil)
         #expect(code("") == nil)
     }
+
+    // MARK: what Fill code may type
+
+    @Test func onlyPlainCodesAreTypable() {
+        #expect(VerificationCode.isTypable("481920"))
+        #expect(VerificationCode.isTypable("G-728301"))
+        #expect(VerificationCode.isTypable("AB12CD"))
+        #expect(!VerificationCode.isTypable(""))
+        #expect(!VerificationCode.isTypable("1234567890123"))   // longer than 12
+        #expect(!VerificationCode.isTypable("1234\n"))          // Return would submit a form
+        #expect(!VerificationCode.isTypable("12 34"))
+        #expect(!VerificationCode.isTypable("١٢٣٤"))             // non-ASCII digits
+        #expect(!VerificationCode.isTypable("rm -rf"))
+    }
 }
