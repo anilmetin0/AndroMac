@@ -9,6 +9,11 @@ on:
   schedule:
     - cron: "23,53 * * * *"
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Check eligibility without merging
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -35,6 +40,8 @@ jobs:
       GH_REPO: ${{ github.repository }}
     steps:
       - name: Check the current head, all checks, and review approval
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
         shell: bash
         run: |
           prs="$(gh pr list --state open --base main --author 'app/dependabot' \
@@ -104,7 +111,11 @@ jobs:
               continue
             fi
             # The merge API rejects a head changed while checks were being read.
-            gh pr merge "$number" --squash --delete-branch --match-head-commit "$sha"
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "PR #$number ($sha) is eligible; dry run, no merge performed."
+            else
+              gh pr merge "$number" --squash --delete-branch --match-head-commit "$sha"
+            fi
             # Re-evaluate the remaining PRs against the updated base on the next run.
             break
           done
