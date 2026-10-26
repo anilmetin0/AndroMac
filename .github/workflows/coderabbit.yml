@@ -1,0 +1,62 @@
+# Dependabot PRs are otherwise skipped as bot-authored, including on the free OSS plan.
+# This job reads PR metadata and posts the supported review command; it never checks out code.
+name: CodeRabbit dependency review
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coderabbit-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  request-review:
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'dependabot/') &&
+      github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Request a review of the current head
+        shell: bash
+        run: |
+          marker="<!-- coderabbit-dependency-review:$HEAD_SHA -->"
+          reviewed="$(gh api --paginate --slurp "repos/$GH_REPO/pulls/$PR_NUMBER/reviews" | jq --arg sha "$HEAD_SHA" \
+            '[.[][] | select(.user.login == "coderabbitai[bot]" and .commit_id == $sha)] | length')"
+          if (( reviewed > 0 )); then
+            echo "CodeRabbit already reviewed this commit."
+            exit 0
+          fi
+          comments="$RUNNER_TEMP/comments.json"
+          gh api --paginate --slurp "repos/$GH_REPO/issues/$PR_NUMBER/comments" | jq 'add // []' > "$comments"
+          # Requests for this commit, and whether CodeRabbit declined the latest one (rate limit, skip).
+          requests="$(jq --arg m "$marker" '[.[] | select(.user.login == "github-actions[bot]" and (.body | contains($m)))] | length' "$comments")"
+          declined="$(jq --arg m "$marker" '
+            ([.[] | select(.user.login == "github-actions[bot]" and (.body | contains($m))) | .created_at] | max) as $last
+            | [.[] | select($last != null and .user.login == "coderabbitai[bot]" and .created_at > $last
+                and (.body | test("Action not completed|Review skipped|rate limit"; "i")))] | length > 0' "$comments")"
+          if (( requests > 0 )) && [[ "$declined" != "true" ]]; then
+            echo "A review was already requested for this commit."
+            exit 0
+          fi
+          # Bounded: a later push, reopen or ready event retries a declined request, at most three times.
+          if (( requests >= 3 )); then
+            echo "CodeRabbit declined three requests for this commit; leaving it for a manual review."
+            exit 0
+          fi
+          body="$RUNNER_TEMP/coderabbit-review.txt"
+          printf '@coderabbitai review\n\n%s\n' "$marker" > "$body"
+          gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body-file "$body"

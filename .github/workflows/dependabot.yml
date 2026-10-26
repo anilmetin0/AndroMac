@@ -1,31 +1,128 @@
-# Merges a Dependabot pull request once the build has passed on its exact head commit. Only
-# Dependabot's own branches, only a successful build, and only if nothing was pushed since.
+# Merge only a same-repository Dependabot PR with passing checks and an explicit
+# CodeRabbit approval on its current head. No PR code is checked out or executed.
 name: dependabot
 
 on:
   workflow_run:
-    workflows: [build]
+    workflows: [build, codeql]
     types: [completed]
+  schedule:
+    - cron: "23,53 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Check eligibility without merging
+        type: boolean
+        default: true
 
 permissions:
   contents: read
 
+concurrency:
+  group: dependabot-merge
+  cancel-in-progress: false
+
 jobs:
   merge:
     if: >-
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'pull_request' &&
-      github.event.workflow_run.actor.login == 'dependabot[bot]' &&
-      startsWith(github.event.workflow_run.head_branch, 'dependabot/')
-    runs-on: ubuntu-26.04
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'pull_request')
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: write
       pull-requests: write
+      checks: read
+      statuses: read
+      actions: write
     env:
       GH_TOKEN: ${{ github.token }}
-      REPO: ${{ github.repository }}
-      BRANCH: ${{ github.event.workflow_run.head_branch }}
-      SHA: ${{ github.event.workflow_run.head_sha }}
+      GH_REPO: ${{ github.repository }}
     steps:
-      - run: gh pr merge "$BRANCH" --repo "$REPO" --squash --delete-branch --match-head-commit "$SHA"
+      - name: Check the current head, all checks, and review approval
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+        shell: bash
+        run: |
+          prs="$(gh pr list --state open --base main --author 'app/dependabot' \
+            --limit 50 --json number --jq '.[].number')"
+          for number in $prs; do
+            pr="$(gh pr view "$number" --json author,headRepository,headRepositoryOwner,headRefName,headRefOid,baseRefName,isDraft,mergeStateStatus)" || continue
+            if ! jq -e --arg repo "$GH_REPO" '
+              .author.login == "app/dependabot" and
+              .headRepository.nameWithOwner == $repo and
+              (.headRefName | startswith("dependabot/")) and
+              .baseRefName == "main" and (.isDraft | not) and
+              .mergeStateStatus == "CLEAN"
+            ' <<< "$pr" >/dev/null; then
+              continue
+            fi
+            sha="$(jq -r .headRefOid <<< "$pr")"
+            # A skipped CodeRabbit check is not approval. All published checks must
+            # pass; only the intentionally absent PR release job may be skipped.
+            files="$(gh pr diff "$number" --name-only)" || continue
+            required='["version", "Android · APK", "macOS · verify + .app", "CodeRabbit"]'
+            if [[ "$files" == *".github/workflows/"* ]]; then
+              required="$(jq '. + ["analyze"]' <<< "$required")"
+            fi
+            checks="$(gh pr checks "$number" --json name,bucket || true)"
+            if ! jq -e --argjson required "$required" '
+              length > 0 and
+              all(.[]; .bucket == "pass" or (.name == "GitHub Release" and .bucket == "skipping")) and
+              ([.[] | select(.bucket == "pass") | .name] as $names |
+                $required |
+                all(.[]; . as $required | $names | index($required) != null))
+            ' <<< "$checks" >/dev/null; then
+              continue
+            fi
+            reviews="$(gh api --paginate --slurp "repos/$GH_REPO/pulls/$number/reviews")" || continue
+            if ! jq -e '
+              add | [.[] | select(.user.type != "Bot" and
+                (.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED"))] |
+              group_by(.user.login) | all(.[]; sort_by(.id) | last | .state != "CHANGES_REQUESTED")
+            ' <<< "$reviews" >/dev/null; then
+              continue
+            fi
+            if ! jq -e --arg sha "$sha" '
+              add | [.[] | select(.user.login == "coderabbitai[bot]" and .commit_id == $sha and
+                (.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED"))] |
+              sort_by(.id) | last | .state == "APPROVED"
+            ' <<< "$reviews" >/dev/null; then
+              continue
+            fi
+            # GraphQL variables are supplied separately and must remain literal.
+            # shellcheck disable=SC2016
+            threads="$(gh api graphql \
+              -f query='query($owner:String!,$name:String!,$number:Int!) {
+                repository(owner:$owner,name:$name) {
+                  pullRequest(number:$number) {
+                    headRefOid
+                    reviewThreads(first:100) { nodes { isResolved } pageInfo { hasNextPage } }
+                  }
+                }
+              }' \
+              -f owner="${GH_REPO%%/*}" -f name="${GH_REPO#*/}" -F number="$number")" || continue
+            # An incomplete page is not evidence that every review thread is resolved.
+            if ! jq -e --arg sha "$sha" '
+              (.errors | not) and (.data.repository.pullRequest |
+                .headRefOid == $sha and .reviewThreads.pageInfo.hasNextPage == false and
+                all(.reviewThreads.nodes[]; .isResolved == true))
+            ' <<< "$threads" >/dev/null; then
+              continue
+            fi
+            # The merge API rejects a head changed while checks were being read.
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "PR #$number ($sha) is eligible; dry run, no merge performed."
+            else
+              gh pr merge "$number" --squash --delete-branch --match-head-commit "$sha"
+              # GITHUB_TOKEN merges do not emit another push workflow run. Dispatch
+              # the normal verified build explicitly; signing stays in build.yml.
+              gh workflow run build.yml --ref main --field channel=nightly
+              if [[ "$files" == *".github/workflows/"* ]]; then
+                gh workflow run codeql.yml --ref main
+              fi
+            fi
+            # Re-evaluate the remaining PRs against the updated base on the next run.
+            break
+          done
