@@ -13,16 +13,36 @@ derlemeler bunun yerine commit'lerini listeler.
 
 - Finder'ın Paylaş menüsünden AndroMac ile dosya gönderme. Dosya ekranın üst kenarına
   sürüklenince bırakma alanı açılır ve üzerinde adı yazan telefona gönderir.
-- Genel ayarlarda ve menü çubuğu panelinde Bluetooth arama denetimleri, gelen arama bildirimi.
+- Aramalar ayarlarında ve menü çubuğu panelinde Bluetooth arama denetimleri, gelen arama bildirimi.
   HFP ile Mac'e ses aktarımı denenir; sistem desteklemiyorsa ses telefonda kalır.
 
 - **Mac'te otomatik bağlanma.** Her telefonun panelde Diğer menüsünde ve Ayarlar → Cihazlar'da bir
   Otomatik bağlan anahtarı var. Telefondaki anahtarla aynı: hangi tarafta değiştirirsen, iki taraf
   bağlanır bağlanmaz öbürü de aynı değere geçiyor. Mac'te kapatılan telefon artık bütün gece yeniden
   denemiyor.
+- **Karşılama penceresi ve kurulum.** Mac uygulaması, eşleşmiş telefon yokken ilk açıldığında bir
+  karşılama penceresi açar: Bildirimler, Yerel Ağ, Bluetooth ve Mikrofon
+  izinlerini tek tek ister, sonra telefonu bağlar ve aramaları kurar. Sonradan Ayarlar → Genel →
+  Karşılama ekranını yeniden göster ile açılır. Telefonda da benzer bir kurulum var: Gerekli
+  izinler, Önerilen, İsteğe bağlı, sonra Bağlan. Ayarlar → Yardım → Kurulum rehberi onu yeniden
+  açar.
+- **Aramalar için Bluetooth eşleştirme.** Ayarlar → Aramalar'daki ya da karşılama penceresindeki
+  Eşleştir, Bluetooth eşleştirmesini telefondan başlatır. İki ekranda aynı kod çıkar; onaylanınca
+  Mac aramaları bağlar. Telefonda Yakındaki cihazlar izni gerekir, yoksa telefon bir bildirimle
+  ister. macOS Bluetooth ayarlarından eşleştirmek hâlâ çalışıyor.
+- Mac'te Ayarlar → İzinler artık Bildirimler, Yerel Ağ, Bluetooth, Mikrofon ve
+  Anahtar Zinciri'ni listeliyor. Telefonda İzinler, Zorunlu, Önerilir ve İsteğe bağlı diye
+  gruplanıyor ve Mac'te aramalar'ı içeriyor.
 
 ### Değişenler
 
+- Mac'te ayarlar yeniden düzenlendi: Genel, Cihazlar, Bildirimler, Pano, Dosyalar, Aramalar, Ekran
+  yansıtma, İzinler, Güncellemeler ve Gelişmiş. Eşitleme sayfası kalktı. Her eşitleme anahtarı kendi
+  sayfasının en üstünde, Pil ve medya ise Cihazlar'da. Ağ, Ölçümler ve gizlilik notu Gelişmiş'e,
+  telefon uygulaması için QR kod Cihazlar'a taşındı.
+- Telefonda ayarlar Bağlantı, Özellikler, Uygulama ve Yardım diye gruplanıyor. Özellikler'de
+  Bildirimler, Pano, Dosya aktarımı ve Mac'te aramalar'ın yanında Medya ve Pil durumu anahtarları
+  var.
 - Ağ kaybolunca eski soket kapanır; Mac ping yanıtlarını denetler. Uyku sonrasında Mac'in
   portu değişse de otomatik bağlantıyı kapatıp açmadan yeniden keşfedilebilir.
 

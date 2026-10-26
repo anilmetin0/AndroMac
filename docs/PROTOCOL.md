@@ -197,7 +197,8 @@ ignored silently for forward compatibility. Unknown fields are ignored too.
 ### `hello`, once from each side at the start of a connection
 ```json
 {"t":"hello","name":"Pixel 9","platform":"android","proto":3,
- "caps":["battery","clipboard","notification","find_phone","media","file","system","debugging"]}
+ "caps":["battery","clipboard","notification","find_phone","media","file","system","debugging",
+         "bt_pair"]}
 ```
 
 The phone's `hello` also carries `"auto_connect":{"on":true,"ts":1750000000000}` (`ts` in ms, 0
@@ -414,6 +415,25 @@ high-priority notification. It lasts at most 30 s. The "Found it" action on the 
 dismissing the notification, opening the app, losing the connection, or a second `find_phone`
 (it toggles) stops it at once. The Mac panel shows the button if the phone advertised
 `find_phone` in its `caps`.
+
+### `bt_pair`, macOS → Android
+```json
+{"t":"bt_pair","addr":"F0:B2:14:BC:07:B9"}
+```
+Asks the phone to bond with the Mac over Bluetooth, for call control (HFP). Android does not give
+apps the phone's own Bluetooth address, so the phone dials the Mac's address it receives here.
+The phone checks the address format and starts no scan. Android and macOS then show the same
+pairing code and the user confirms it on both. The Mac sends this only if the phone advertised
+`bt_pair` in its `caps`.
+
+### `bt_pair_result`, Android → macOS
+```json
+{"t":"bt_pair_result","state":"bonded","name":"Galaxy S24+"}
+```
+`state` is `bonded`, `failed`, `permission` (Nearby devices is not granted yet; the phone shows a
+notification that asks for it, and a later `bonded` or `failed` follows) or `bluetooth_off`.
+`name` is the phone's Bluetooth name, sent with `bonded`. The phone gives up after 120 s with
+`failed`; it holds a single delayed callback for that, no timer.
 
 ### `media`, Android → macOS
 ```json

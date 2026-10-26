@@ -35,6 +35,21 @@
     <string name="onboarding_step3_waiting">Finish the steps above</string>
     <string name="onboarding_help">I can\'t connect</string>
 
+    <!-- setup flow -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_start">Get started</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_done">Done</string>
+    <string name="onboarding_progress">Step %1$d of %2$d</string>
+    <string name="onboarding_welcome_title">Your phone, on your Mac</string>
+    <string name="onboarding_welcome_body">Notifications, clipboard, files and calls, on your local network</string>
+    <string name="onboarding_required_title">Required permissions</string>
+    <string name="onboarding_required_body">AndroMac can\'t connect or mirror notifications without these</string>
+    <string name="onboarding_recommended_title">Recommended</string>
+    <string name="onboarding_optional_title">Optional</string>
+    <string name="onboarding_optional_body">Turn on only what you\'ll use</string>
+    <string name="onboarding_connect_title">Connect to your Mac</string>
+
     <!-- help screen -->
     <string name="help_title">Connection help</string>
     <string name="help_section_state">Current state</string>
@@ -56,20 +71,19 @@
 
     <!-- setup -->
     <string name="setup_notif_title">Notification access</string>
-    <string name="setup_notif_note">Required to mirror notifications to your Mac. If you installed the APK from a file the switch may be greyed out; on the app info screen tap ⋮ → Allow restricted settings.</string>
-    <string name="setup_local_network_title">Allow local network access</string>
-    <string name="setup_local_network_note">Without it the phone cannot find or reach your Mac. Android lists it under Nearby devices.</string>
-    <string name="setup_post_notif_title">Allow notifications</string>
-    <string name="setup_post_notif_note">Without it the status notification and the Mac clipboard notification never appear.</string>
-    <string name="setup_battery_title">Battery optimization</string>
-    <string name="setup_battery_note">Without an exemption the system may drop the connection.</string>
+    <string name="setup_notif_note">Mirrors notifications to your Mac. If it is greyed out: App info → ⋮ → Allow restricted settings</string>
+    <string name="setup_local_network_title">Local network access</string>
+    <string name="setup_local_network_note">Finds and reaches your Mac. Android lists it under Nearby devices</string>
+    <string name="setup_post_notif_title">AndroMac notifications</string>
+    <string name="setup_post_notif_note">For the connection status and the Mac\'s clipboard</string>
+    <string name="setup_battery_title">Unrestricted battery</string>
+    <string name="setup_battery_note">Keeps the connection from dropping</string>
     <string name="setup_dnd_title">Do Not Disturb access</string>
-    <string name="setup_dnd_note">Lets you silence this phone from the Mac.</string>
+    <string name="setup_dnd_note">Silence this phone from your Mac</string>
     <string name="setup_overlay_title">Display over other apps</string>
-    <string name="setup_overlay_note">Lets the Mac read this phone\'s clipboard without you tapping a notification first.</string>
-    <string name="setup_notif_prompt">AndroMac mirrors your notifications to the Mac, which Android allows only with notification access. Open the settings screen and switch AndroMac on.</string>
-    <string name="setup_open_settings">Open settings</string>
-    <string name="setup_later">Later</string>
+    <string name="setup_overlay_note">Lets the Mac read the clipboard without a tap on the phone</string>
+    <string name="setup_bt_title">Calls on your Mac</string>
+    <string name="setup_bt_note">Answer calls from your Mac over Bluetooth</string>
 
     <!-- permissions -->
     <string name="permissions_title">Permissions</string>
@@ -79,7 +93,7 @@
         <item quantity="other">%d not granted</item>
     </plurals>
     <string name="permission_granted">Granted</string>
-    <string name="permission_not_granted">Not granted</string>
+    <string name="permission_allow">Allow</string>
     <string name="permission_required">Required</string>
     <string name="permission_recommended">Recommended</string>
     <string name="permission_optional">Optional</string>
@@ -115,7 +129,12 @@
     <string name="settings_clipboard">Clipboard</string>
     <string name="settings_language">Language</string>
     <string name="settings_updates">Updates</string>
-    <string name="updates_summary_off">Off</string>
+    <string name="settings_setup">Setup guide</string>
+    <string name="section_features">Features</string>
+    <string name="section_help">Help</string>
+    <string name="summary_off">Off</string>
+    <string name="calls_summary_ready">Nearby devices allowed</string>
+    <string name="calls_summary_allow">Allow Nearby devices</string>
     <string name="update_card_title">Update available</string>
     <string name="update_card_body">AndroMac %1$s · tap to install</string>
 
@@ -161,7 +180,6 @@
     <string name="language_system">System</string>
 
     <string name="settings_files">File transfer</string>
-    <string name="file_summary_off">Off</string>
     <string name="file_summary_ask">Ask before saving</string>
     <string name="file_summary_auto">Accept automatically</string>
 

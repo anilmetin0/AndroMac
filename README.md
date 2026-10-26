@@ -36,7 +36,7 @@ phone's screen in a window.
 - Notifications in Notification Center with the app's icon and any picture they carry, actions, inline reply and a setting per app
 - Media controls, ringer and volume, and a button that makes a lost phone ring
 - Files in both directions, with Finder's Share menu, a drop target at the Mac's top edge, and the phone's share sheet
-- Bluetooth call controls for a paired phone; call audio on the Mac depends on system support
+- Bluetooth call controls, with one-step Bluetooth pairing from the Mac; call audio on the Mac depends on system support
 - Screen mirroring with mouse, keyboard and sound, through the bundled [scrcpy](https://github.com/Genymobile/scrcpy)
 - Several phones on one Mac, and several Macs on one phone
 - Disconnect and reconnect from the phone's notification, the Connection screen or a Quick Settings tile
@@ -86,8 +86,8 @@ adb install AndroMac-*-android.apk
 
 ### Pair
 
-1. Open AndroMac on both devices. They need to be on the same Wi-Fi.
-2. On the phone, grant what the Permissions card asks for, then tap Pair.
+1. Open AndroMac on both devices. The first launch starts a short setup on each. They need to be on the same Wi-Fi.
+2. On the phone, grant the permissions the setup asks for, then tap Pair.
 3. Pick your Mac from the list. It shows each Mac's name and IP address.
 4. Check that both screens show the same six digits, and confirm on both.
 

@@ -80,6 +80,11 @@
             </intent-filter>
         </activity>
 
+        <!-- The setup flow: once on first launch, then from Settings. -->
+        <activity
+            android:name=".ui.OnboardingActivity"
+            android:exported="false" />
+
         <activity
             android:name=".ui.SettingsActivity"
             android:exported="false"

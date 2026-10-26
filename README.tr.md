@@ -36,7 +36,7 @@ pencerede gösterebilir.
 - Bildirim Merkezi'nde bildirimler; uygulamanın ikonu, varsa görseli, eylemleri, satır içi yanıt ve uygulama başına ayarla
 - Medya denetimleri, zil ve ses düzeyi, kaybolan telefonu çaldıran bir düğme
 - İki yönde dosya; Finder'ın Paylaş menüsü, Mac ekranının üst kenarında bırakma alanı ve telefonun paylaşım menüsü
-- Eşlenmiş telefon için Bluetooth arama denetimleri; Mac'te görüşme sesi sistem desteğine bağlı
+- Bluetooth arama denetimleri ve Mac'ten tek adımda Bluetooth eşleştirme; Mac'te görüşme sesi sistem desteğine bağlı
 - Fare, klavye ve sesle ekran yansıtma, uygulamayla gelen [scrcpy](https://github.com/Genymobile/scrcpy) ile
 - Bir Mac'e birden fazla telefon, bir telefona birden fazla Mac
 - Telefonun bildiriminden, Bağlantı ekranından ya da Hızlı Ayarlar karesinden bağlantıyı kesip yeniden bağlanma
@@ -86,8 +86,8 @@ adb install AndroMac-*-android.apk
 
 ### Eşleştir
 
-1. İki cihazda da AndroMac'i aç. İkisi aynı Wi-Fi'da olmalı.
-2. Telefonda İzinler kartının istediklerini ver, sonra Eşleştir'e dokun.
+1. İki cihazda da AndroMac'i aç. İlk açılışta ikisinde de kısa bir kurulum başlar. İkisi aynı Wi-Fi'da olmalı.
+2. Telefonda kurulumun istediği izinleri ver, sonra Eşleştir'e dokun.
 3. Listeden Mac'ini seç. Her Mac adıyla ve IP adresiyle görünür.
 4. İki ekranda aynı altı hanenin çıktığını kontrol et ve ikisinde de onayla.
 

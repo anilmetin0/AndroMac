@@ -459,10 +459,19 @@ class Store(context: Context) {
         get() = prefs.getString(K_PERM_DISMISSED, "") ?: ""
         set(v) = prefs.edit().putString(K_PERM_DISMISSED, v).apply()
 
-    /** Notification access has no runtime dialog, so the app offers the settings screen once. */
-    var notificationAccessOffered: Boolean
-        get() = prefs.getBoolean(K_PERM_OFFERED, false)
-        set(v) = prefs.edit().putBoolean(K_PERM_OFFERED, v).apply()
+    /**
+     * The runtime permissions the app has asked for. Android shows the dialog only until the user
+     * denies it for good, and does not say when that happened; asked before plus no rationale
+     * means it did (ui/Permissions.kt, grant).
+     */
+    var permissionsAsked: Set<String>
+        get() = prefs.getStringSet(K_PERM_ASKED, emptySet()).orEmpty()
+        set(v) = prefs.edit().putStringSet(K_PERM_ASKED, v).apply()
+
+    /** The setup flow was shown once. It never opens on its own again; Settings has it. */
+    var onboardingDone: Boolean
+        get() = prefs.getBoolean(K_ONBOARDING_DONE, false)
+        set(v) = prefs.edit().putBoolean(K_ONBOARDING_DONE, v).apply()
 
     /**
      * What the Mac calls this phone: the name the user gave it in Settings (About phone), then
@@ -540,7 +549,8 @@ class Store(context: Context) {
         const val K_UPDATE_FOUND_BETA = "update_found_beta"
         const val K_UPDATE_SKIPPED = "update_skipped"
         const val K_PERM_DISMISSED = "permissions_dismissed"
-        const val K_PERM_OFFERED = "notification_access_offered"
+        const val K_PERM_ASKED = "permissions_asked"
+        const val K_ONBOARDING_DONE = "onboarding_done"
         const val K_AUTO_CONNECT = "auto_connect"
         const val K_AUTO_CONNECT_CHANGED = "auto_connect_changed"
         const val K_FILE_TRANSFER = "file_transfer"

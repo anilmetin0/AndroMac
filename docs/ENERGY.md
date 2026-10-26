@@ -68,9 +68,9 @@ ping-pong in an environment like this one.
 
 ## Measurement
 
-### From inside the app (Mac → Settings → Metrics)
+### From inside the app (Mac → Settings → Advanced → Metrics)
 
-The Metrics tab puts numbers on the rules above. It shows uptime, messages sent and received,
+The Metrics section puts numbers on the rules above. It shows uptime, messages sent and received,
 messages per hour, total traffic, reconnect count, and the three most frequent incoming message
 types.
 

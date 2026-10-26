@@ -244,35 +244,8 @@ struct MenuPanel: View {
         VStack(alignment: .leading, spacing: Theme.Space.small) {
             Text("Connect a phone")
                 .font(Theme.Font.heading)
-
-            OnboardingStep(
-                number: 1,
-                title: String(localized: "Install AndroMac on the phone and open it"),
-                detail: nil,
-                done: false
-            )
-            OnboardingStep(
-                number: 2,
-                title: String(localized: "Put both devices on the same Wi-Fi network"),
-                detail: NetworkInfo.localIPv4().map { String(localized: "This Mac: \($0)") }
-                    ?? String(localized: "This Mac has no local network"),
-                done: NetworkInfo.localIPv4() != nil
-            )
-            OnboardingStep(
-                number: 3,
-                title: String(localized: "Tap \"Pair\" on the phone"),
-                detail: isListening
-                    ? String(localized: "This Mac is visible on the network")
-                    : String(localized: "Preparing to broadcast…"),
-                done: isListening
-            )
+            PairSteps()
         }
-    }
-
-    private var isListening: Bool {
-        if case .listening = state.status { return true }
-        if case .connected = state.status { return true }
-        return false
     }
 
     // MARK: clipboard

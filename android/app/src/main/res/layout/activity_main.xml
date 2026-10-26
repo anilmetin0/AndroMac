@@ -205,19 +205,19 @@
             <include layout="@layout/view_onboarding" />
         </LinearLayout>
 
-        <!-- ============ sync: four toggles, no explanatory text ============ -->
+        <!-- ============ sync: four toggles, no explanatory text; Settings, Features has them in the same order ============ -->
 
         <TextView style="@style/SectionLabel" android:text="@string/section_sync" />
 
         <LinearLayout style="@style/Card">
 
-            <LinearLayout android:id="@+id/rowBattery" style="@style/Row">
+            <LinearLayout android:id="@+id/rowNotifications" style="@style/Row">
                 <TextView
                     style="@style/RowTitle"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:text="@string/sync_battery" />
-                <Switch android:id="@+id/swBattery" style="@style/RowSwitch" />
+                    android:text="@string/sync_notifications" />
+                <Switch android:id="@+id/swNotifications" style="@style/RowSwitch" />
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowClipboard" style="@style/Row">
@@ -229,15 +229,6 @@
                 <Switch android:id="@+id/swClipboard" style="@style/RowSwitch" />
             </LinearLayout>
 
-            <LinearLayout android:id="@+id/rowNotifications" style="@style/Row">
-                <TextView
-                    style="@style/RowTitle"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:text="@string/sync_notifications" />
-                <Switch android:id="@+id/swNotifications" style="@style/RowSwitch" />
-            </LinearLayout>
-
             <LinearLayout android:id="@+id/rowMedia" style="@style/Row">
                 <TextView
                     style="@style/RowTitle"
@@ -245,6 +236,15 @@
                     android:layout_weight="1"
                     android:text="@string/sync_media" />
                 <Switch android:id="@+id/swMedia" style="@style/RowSwitch" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/rowBattery" style="@style/Row">
+                <TextView
+                    style="@style/RowTitle"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="@string/sync_battery" />
+                <Switch android:id="@+id/swBattery" style="@style/RowSwitch" />
             </LinearLayout>
         </LinearLayout>
 

@@ -7,6 +7,11 @@
         No colour here: the view styles below pick the colour role.
     -->
     <style name="TextAppearance.AM" parent="@android:style/TextAppearance.DeviceDefault" />
+    <style name="TextAppearance.AM.HeadlineMedium">
+        <item name="android:textSize">28sp</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textFontWeight">400</item>
+    </style>
     <style name="TextAppearance.AM.HeadlineSmall">
         <item name="android:textSize">24sp</item>
         <item name="android:letterSpacing">0</item>
@@ -45,11 +50,6 @@
     <style name="TextAppearance.AM.LabelLarge">
         <item name="android:textSize">14sp</item>
         <item name="android:letterSpacing">0.007</item>
-        <item name="android:textFontWeight">500</item>
-    </style>
-    <style name="TextAppearance.AM.LabelMedium">
-        <item name="android:textSize">12sp</item>
-        <item name="android:letterSpacing">0.042</item>
         <item name="android:textFontWeight">500</item>
     </style>
     <style name="TextAppearance.AM.LabelSmall">
@@ -175,6 +175,25 @@
     <style name="TonalButton" parent="PrimaryButton">
         <item name="android:background">@drawable/bg_button_tonal</item>
         <item name="android:textColor">@color/am_on_secondary_container</item>
+    </style>
+
+    <!-- A tonal button inside a list row (the permission rows): it trails the text, so it takes
+         the row's padding instead of its own end margin, and keeps Material's 16dp label inset. -->
+    <style name="CompactTonalButton" parent="TonalButton">
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:layout_marginEnd">0dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+    </style>
+
+    <!-- Material 3 text button: the lowest-emphasis action, like Skip in the setup flow. -->
+    <style name="TextButton" parent="PrimaryButton">
+        <item name="android:layout_marginEnd">0dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:background">@drawable/bg_button_text</item>
+        <item name="android:textColor">@color/am_primary</item>
     </style>
 
     <!-- The whole row is clickable; the switch must not steal the click. Track and thumb come

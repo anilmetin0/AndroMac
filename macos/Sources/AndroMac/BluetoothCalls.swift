@@ -63,7 +63,7 @@ final class BluetoothCalls: NSObject, ObservableObject, IOBluetoothHandsFreeDevi
         guard incoming, token == callToken else { return }
         if action == Self.answerAction { answer() }
         else if action == Self.declineAction { endCall() }
-        else { AppState.shared.showSettings() }
+        else { AppState.shared.showMainWindow(.setting(.calls)) }
     }
 
     func bootstrap() {
@@ -346,38 +346,63 @@ struct BluetoothCallSettings: View {
         state.focusedDevice.flatMap { $0.caps.contains("bt_pair") ? $0 : nil }
     }
 
+    /// Sections for a grouped `Form`: Settings → Calls, and the calls page of the welcome window.
     var body: some View {
+        // The automatic route first: the phone bonds on its own when it advertises `bt_pair`.
         if let phone = pairable, !calls.connected, !calls.connecting {
-            Text("AndroMac can pair \(phone.name) with this Mac over Bluetooth.").formNote()
-            HStack {
-                Button("Pair \(phone.name)") { calls.pair(with: phone.id) }
-                    .disabled(calls.pairing)
-                if calls.pairing { ProgressView().controlSize(.small) }
+            Section {
+                LabeledContent {
+                    HStack(spacing: Theme.Space.small) {
+                        if calls.pairing { ProgressView().controlSize(.small) }
+                        Button("Pair") { calls.pair(with: phone.id) }
+                            .disabled(calls.pairing)
+                    }
+                } label: {
+                    Text(phone.name)
+                    Text("Pairs with this Mac over Bluetooth")
+                }
+            } footer: {
+                if let note = calls.pairNote { Text(note).formNote() }
             }
-            if let note = calls.pairNote { Text(note).formNote() }
         }
-        Text("Or pair your Android phone in macOS Bluetooth settings, then choose it here.").formNote()
-        HStack {
-            Button("Bluetooth settings…") {
-                NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.BluetoothSettings")!)
-            }
-            Button("Refresh paired devices") { calls.refresh() }
-        }
-        if !calls.phones.isEmpty {
-            Picker("Phone", selection: $calls.selectedID) {
-                ForEach(calls.phones) { phone in Text(phone.name).tag(phone.id) }
-            }
-            .disabled(calls.connected || calls.connecting)
-            if calls.connected || calls.connecting {
-                Button("Disconnect calls") { calls.disable() }
+
+        Section {
+            if calls.phones.isEmpty {
+                LabeledContent("Phone", value: String(localized: "None paired over Bluetooth"))
             } else {
-                Button("Connect calls") { calls.connect() }
+                Picker("Phone", selection: $calls.selectedID) {
+                    ForEach(calls.phones) { phone in Text(phone.name).tag(phone.id) }
+                }
+                .disabled(calls.connected || calls.connecting)
             }
+            HStack(spacing: Theme.Space.small) {
+                Button("Bluetooth settings…") {
+                    NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.BluetoothSettings")!)
+                }
+                Button("Refresh") { calls.refresh() }
+                Spacer(minLength: 0)
+                if calls.connecting { ProgressView().controlSize(.small) }
+                if calls.connected || calls.connecting {
+                    Button("Disconnect") { calls.disable() }
+                } else if !calls.phones.isEmpty {
+                    Button("Connect") { calls.connect() }
+                }
+            }
+            if calls.connected { BluetoothCallControls() }
+            if let error = calls.error {
+                Text(error)
+                    .font(Theme.Font.label)
+                    .foregroundStyle(.red)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        } footer: {
+            Text("If macOS can't open the call audio, the call stays on the phone").formNote()
         }
-        if calls.connecting { ProgressView().controlSize(.small) }
-        if calls.connected { BluetoothCallControls() }
-        if let error = calls.error { Text(error).foregroundStyle(.red).formNote() }
-        Text("Bluetooth call audio depends on your Mac and phone. If macOS cannot open the audio channel, the call stays on your phone.").formNote()
+        // Listing paired devices raises the Bluetooth prompt, so it runs on its own only once
+        // that is answered; the Refresh button asks for it.
+        .onAppear {
+            if calls.phones.isEmpty, SystemPermissions.shared.bluetooth == .allowed { calls.refresh() }
+        }
     }
 }
 

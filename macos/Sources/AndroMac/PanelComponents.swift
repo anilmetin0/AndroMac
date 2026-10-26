@@ -102,6 +102,40 @@ final class PanelMenu: NSObject {
     }
 }
 
+/// The three things pairing needs, ticked off live. The panel shows them while nothing is paired,
+/// and the welcome window shows them on its pairing page.
+struct PairSteps: View {
+    @EnvironmentObject private var state: AppState
+
+    var body: some View {
+        // Read once per redraw: it walks the interfaces.
+        let address = NetworkInfo.localIPv4()
+        VStack(alignment: .leading, spacing: Theme.Space.small) {
+            OnboardingStep(
+                number: 1,
+                title: String(localized: "Install AndroMac on the phone and open it"),
+                detail: nil,
+                done: false
+            )
+            OnboardingStep(
+                number: 2,
+                title: String(localized: "Put both devices on the same Wi-Fi network"),
+                detail: address.map { String(localized: "This Mac: \($0)") }
+                    ?? String(localized: "This Mac has no local network"),
+                done: address != nil
+            )
+            OnboardingStep(
+                number: 3,
+                title: String(localized: "Tap \"Pair\" on the phone"),
+                detail: state.status.isLive
+                    ? String(localized: "This Mac is visible on the network")
+                    : String(localized: "Preparing to broadcast…"),
+                done: state.status.isLive
+            )
+        }
+    }
+}
+
 /// A numbered setup step; completed ones turn into a check mark.
 struct OnboardingStep: View {
     let number: Int

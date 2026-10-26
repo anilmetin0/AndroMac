@@ -204,6 +204,8 @@ final class QuickSend {
 
     private func track(_ event: NSEvent) {
         if event.type == .leftMouseUp {
+            // Every click on the Mac ends here; only a visible target has anything to dismiss.
+            guard panel?.isVisible == true else { return }
             dismissal?.cancel()
             let work = DispatchWorkItem { [weak self] in self?.hide() }
             dismissal = work

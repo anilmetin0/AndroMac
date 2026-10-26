@@ -10,6 +10,8 @@ enum Theme {
     /// Type scale. Every size in the UI is one of these; if a new one seems necessary, the layout
     /// is usually what needs fixing.
     enum Font {
+        /// The welcome window's page titles, the one place the app speaks above panel scale.
+        static let display: SwiftUI.Font = .system(size: 22, weight: .semibold)
         static let title: SwiftUI.Font = .system(size: 15, weight: .semibold)
         static let heading: SwiftUI.Font = .system(size: 13, weight: .semibold)
         static let body: SwiftUI.Font = .system(size: 12)

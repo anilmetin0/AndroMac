@@ -32,9 +32,10 @@ Güvenlik**'te **Yine de Aç**'a bas.
 
 1. Anahtar Zinciri sorusuna **Always Allow** de. Reddedersen uygulama yine çalışır, panel geçici
    bir anahtar kullandığını söyler.
-2. Yerel Ağ sorusuna **İzin ver** de. Verilmezse telefon Mac'i bulamaz.
+2. Yerel Ağ sorusuna **İzin ver** de. Verilmezse telefon Mac'i bulamaz. [Karşılama
+   penceresi](#karşılama-ve-kurulum) de bunu ister.
 3. AndroMac Dock'ta değil, menü çubuğunda durur. Paneli açmak için telefon simgesine tıkla.
-4. İsteğe bağlı: Ayarlar → Genel → **Oturum açınca başlat**.
+4. İsteğe bağlı: Ayarlar → Genel → **Girişte başlat**.
 
 ### Android 10 ve üstü
 
@@ -49,21 +50,22 @@ gh release download --repo anilmetin0/AndroMac --pattern '*-android.apk'
 adb install AndroMac-*-android.apk
 ```
 
-Sonra AndroMac'i aç ve izinleri ver:
+Sonra AndroMac'i aç. [Kurulum](#karşılama-ve-kurulum) izinleri adım adım ister:
 
-1. Uygulama bildirim iznini hemen ister, ardından bildirim erişimi ekranını önerir.
-2. Zorunlu bir izin eksikken ana ekranın üstünde onu gösteren bir kart çıkar. Bir satıra dokununca
+1. Zorunlu bir izin eksikken ana ekranın üstünde onu gösteren bir kart çıkar. Bir satıra dokununca
    ilgili sistem ekranı açılır. Çarpı, başka bir izin eksilene kadar kartı gizler. Tam liste
-   Ayarlar → İzinler'de:
+   Ayarlar → İzinler'de; Zorunlu, Önerilir ve İsteğe bağlı diye gruplanır:
    - **Yerel ağ erişimi**, Android 17 ve üstünde zorunlu. Verilmezse telefon Mac'i bulamaz, ona
      bağlanamaz. Android bunu Yakındaki cihazlar altında gösterir.
-   - **Bildirimlere izin ver**, zorunlu; uygulamanın kendi bildirimleri için.
+   - **AndroMac bildirimleri**, Android 13 ve üstünde zorunlu; uygulamanın kendi bildirimleri için.
    - **Bildirim erişimi**, zorunlu; bildirim aynası ve çalan müzik bilgisi için.
-   - **Pil optimizasyonu**, önerilir; ekran kapalıyken Android bağlantıyı kesmesin diye.
+   - **Sınırsız pil kullanımı**, önerilir; ekran kapalıyken Android bağlantıyı kesmesin diye.
+   - **Mac'te aramalar**, isteğe bağlı; telefonun [aramalar](#bluetooth-aramaları) için Mac ile
+     Bluetooth üzerinden eşleşmesini sağlayan Yakındaki cihazlar izni. Android 12 ve üstü.
    - **Rahatsız Etmeyin erişimi**, isteğe bağlı; Mac'in telefonu sessize alabilmesi için.
    - **Diğer uygulamaların üzerinde göster**, isteğe bağlı; Mac telefonun panosunu istediğinde
      bildirime dokunman gerekmesin diye.
-3. Android 13 ve üstünde, dosyadan kurulan uygulamalarda bildirim erişimi anahtarı gri görünür.
+2. Android 13 ve üstünde, dosyadan kurulan uygulamalarda bildirim erişimi anahtarı gri görünür.
    Bir kez açmayı dene, sonra **Ayarlar → Uygulamalar → AndroMac → ⋮ → Kısıtlı ayarlara izin ver**
    yolunu izleyip tekrar dene.
 
@@ -72,6 +74,22 @@ Uygulama olarak `https://github.com/anilmetin0/AndroMac` adresini ekle ya da tel
 [obtainium://add/github.com/anilmetin0/AndroMac](obtainium://add/https://github.com/anilmetin0/AndroMac)
 bağlantısını aç. Obtainium kararlı sürümleri izler. Nightly sürümler için bunun yerine
 uygulamanın güncelleme ayarlarında **Nightly sürümler**'i aç.
+
+### Karşılama ve kurulum
+
+Her uygulama, henüz eşleşmesi yokken bir kez kısa bir kurulum açar. Mac'te **Atla**, telefonda
+**Geç** kurulumu her adımda bırakır; atladığın izinler Ayarlar'da durur.
+
+Mac'te ekranın ortasında bir karşılama penceresi açılır. Sırasıyla **Erişime izin ver**
+(Bildirimler, Yerel Ağ, aramalar için Bluetooth ve Mikrofon),
+**Telefonunu bağla**, **Aramalar Mac'te** ve bir özet gelir. Bir satırdaki **İzin ver** ya izni
+ister ya da ilgili Sistem Ayarları bölmesini açar. Yeniden açmak için Ayarlar → Genel →
+**Karşılama ekranını yeniden göster**.
+
+Telefonda kurulum bir karşılamayla başlar, sonra **Gerekli izinler**, **Önerilen** ve **İsteğe
+bağlı** (Mac'te aramalar, Rahatsız Etmeyin erişimi, Diğer uygulamaların üzerinde göster) gelir,
+en sonda **Mac'ine bağlan** var. Tüm izinleri verilmiş bir adım atlanır. Yeniden açmak için
+Ayarlar → Yardım → **Kurulum rehberi**.
 
 ### Güncellemeler
 
@@ -109,7 +127,7 @@ oradan görürsün:
 
 Yine de bağlanmıyorsa listenin altındaki **Bağlanamıyorum** canlı tanı ekranını açar: telefonun
 adresi, Mac'in görülüp görülmediği, bağlantı durumu, uygulama sürümü ve sık sorunlara çözümler.
-Mac'te Ayarlar → Ağ aynı bilgiyi gösterir.
+Mac'te Ayarlar → Gelişmiş, Mac'in adresini ve Bonjour hizmetini gösterir.
 
 Mac'teki eşleştirme penceresi her zaman **Reddet** seçili açılır; bir telefon ancak sen
 **Eşleştir**'e tıklayınca eşleşir.
@@ -136,7 +154,7 @@ tarafa hemen, değilken bir sonraki bağlantıda geçer. Kapalıyken telefon yal
 
 | Özellik | Yön | Ne yapar |
 |---|---|---|
-| Pil | Telefondan Mac'e | Seviye, şarj durumu ve sıcaklık. Menü çubuğunda isteğe bağlı yüzde; seviye Ayarlar → Eşitleme'de seçtiğin eşiğin altına düşünce bir uyarı. |
+| Pil | Telefondan Mac'e | Seviye, şarj durumu ve sıcaklık. Menü çubuğunda isteğe bağlı yüzde; seviye Ayarlar → Cihazlar'da seçtiğin eşiğin altına düşünce bir uyarı. |
 | Pano | Mac'ten telefona | Kopyaladıkça gider (Ayarlar → Pano) ya da pano geçmişindeki Telefona gönder ile elle. Telefon arka planda panoya yazamıyorsa Yapıştır düğmeli bir bildirim gösterir. Parola yöneticisinin gizli işaretlediği metin hiç gönderilmez. |
 | Pano | Telefondan Mac'e | Paneli açtığında Mac ister. Telefonda AndroMac'i açtığında da gider. Kendin göndermek için Hızlı Ayarlar karesi, bildirimdeki düğme ve paylaşım menüsü var. Bkz. [neden böyle çalışıyor](#telefonun-panosu-neden-isteniyor). |
 | Pano geçmişi | Mac | İki taraftan son 50 kayıt. Arama, tıklayınca kopyalama, sağ tıkla telefona geri gönderme ya da silme. |
@@ -156,7 +174,7 @@ tarafa hemen, değilken bir sonraki bağlantıda geçer. Kapalıyken telefon yal
 | Güncellemeler | İki taraf | İki uygulama da günde bir kez denetler ve güncellemeyi kendisi kurar. Bkz. [Güncellemeler](#güncellemeler). |
 
 Olmayanlar: SMS ve internet üzerinden erişim. Yerel ağ eşitlemesi için telefonla Mac'in aynı
-ağda olması gerekir. Bluetooth arama denetimleri ayrıdır ve sistemden Bluetooth eşleştirmesi ister.
+ağda olması gerekir. Bluetooth arama denetimleri ayrıdır ve telefonun Mac ile Bluetooth üzerinden eşleşmesini ister.
 
 ### Mac'ten dosya gönderme
 
@@ -172,9 +190,23 @@ et** açık değilse telefon almadan önce sorar.
 
 ### Bluetooth aramaları
 
-Android telefonunu macOS Bluetooth ayarlarında eşleştir. AndroMac'te **Ayarlar → Genel → Telefon
-aramaları** bölümünü aç, **Eşlenmiş cihazları yenile**'ye bas, telefonunu seç ve **Aramaları bağla**'ya
-bas. Gelen aramalar panelde ve Bildirim Merkezi'nde **Yanıtla** ve **Reddet** seçenekleriyle görünür.
+Mac aramaları Bluetooth üzerinden yönetir, bu yüzden telefonun onunla bir kez eşleşmesi gerekir.
+AndroMac bunu senin yerine yapabilir:
+
+1. Telefonda Ayarlar → Özellikler ya da Ayarlar → İzinler'den **Mac'te aramalar**'a (Yakındaki
+   cihazlar) izin ver.
+2. Mac'te **Ayarlar → Aramalar**'ı aç ve telefonun yanındaki **Eşleştir**'e tıkla. Düğme, telefon
+   AndroMac'e bağlıyken ve uygulama sürümü destekliyorsa görünür. Karşılama penceresinde de aynı
+   düğme var.
+3. Telefon Bluetooth eşleştirmesini başlatır. İki ekranda aynı kod çıkar; ikisinde de onayla. Mac
+   sonra aramaları kendisi bağlar.
+
+Yakındaki cihazlar izni henüz verilmediyse telefon onu isteyen bir bildirim gösterir. Eşleştirme
+iki dakika sonra vazgeçer. Elle eşleştirmek istersen telefonu macOS Bluetooth ayarlarında eşleştir
+(Ayarlar → Aramalar'daki **Bluetooth ayarları…** onları açar), **Yenile**'ye bas, telefonu seç ve
+**Bağlan**'a bas.
+
+Gelen aramalar panelde ve Bildirim Merkezi'nde **Yanıtla** ve **Reddet** seçenekleriyle görünür.
 Görüşme sırasında **Aramayı bitir**, **Mac sesini kullan** veya **Telefon sesini kullan** seçenekleri var.
 
 Mac'te görüşme sesi için mikrofon izni ve çalışan bir Bluetooth SCO ses kanalı gerekir. Bazı macOS
@@ -225,20 +257,22 @@ eşleşene kadar görünür; sonra üst çubuktaki **ⓘ** düğmesi onu canlı 
 kalan her şey üst çubuktaki **Ayarlar**'da.
 
 Sürüm `1.1.0 (12 · abc1234)` biçiminde yazılır: sürüm, derleme numarası ve commit. Ayarlar →
-Hakkında'da durur. Hata bildirirken bu satırın tamamını kopyala.
+Yardım → Hakkında'da durur. Hata bildirirken bu satırın tamamını kopyala.
 
 | Ekran | İçinde ne var |
 |---|---|
-| Ayarlar | Bağlantı, Bildirimler, Pano, Dosya aktarımı, İzinler, Dil, Güncellemeler ve Hakkında. En altta **AndroMac'i sıfırla** önce sorar, sonra eşleştirmeleri, bütün ayarları ve pano geçmişini siler. |
+| Ayarlar | En üstte **Bağlantı**. **Özellikler**: Bildirimler, Pano, **Medya** ve **Pil durumu** anahtarları, Dosya aktarımı ve Mac'te aramalar. **Uygulama**: İzinler, Dil (Android 13 ve üstü) ve Güncellemeler. **Yardım**: Kurulum rehberi, Bağlantı yardımı ve Hakkında. En altta **AndroMac'i sıfırla** önce sorar, sonra eşleştirmeleri, bütün ayarları ve pano geçmişini siler. |
 | Pano geçmişi | Mac'e giden ya da Mac'ten gelen son 20 metin. Dokununca kopyalanır, gönder düğmesi yeniden gönderir. Yalnızca bellekte tutulur; hassas metinler kaydedilmez. |
-| İzinler | Altı iznin tamamı; verilip verilmediği ve zorunlu olup olmadığıyla. Birine dokununca ilgili sistem ekranı açılır. |
+| İzinler | Bu Android sürümündeki her izin; Zorunlu, Önerilir ve İsteğe bağlı diye gruplanmış, her biri verilmiş ya da **İzin ver** düğmesiyle. Birine dokununca ilgili sistem ekranı açılır. |
 | Bağlantı | Bağlantı durumu, kayıtlı Mac'ler ve son adresleri, **Otomatik bağlan**, **Bağlan** ya da **Bağlantıyı kes**, ve **Bu Mac'i unut**. |
 | Bildirim ayarları | **Uygulama filtresi**, **Sessiz bildirimler** ve **Sadece telefon kilitliyken**; bir de her zaman atlananların listesi. |
 | Uygulama filtresi | Telefonun gördüğü her uygulama için Tam, Sadece başlık ya da Kapalı. |
 | Pano ayarları | Gelen: **Panoya otomatik yaz**, **Bildirim göster**. Giden: **Hassas içeriği gönderme**. Bir de **Panoyu Mac'e gönder**. |
 | Bağlantı yardımı | Canlı tanı ve sık sorunlar. **ⓘ** düğmesinden ya da **Bağlanamıyorum**'dan açılır. |
 | Güncellemeler | Bkz. [Güncellemeler](#güncellemeler). |
-| Dosyalar | **Mac'ten dosya al** ve **Dosyaları otomatik kabul et**. Dosyalar İndirilenler'e iner. Göndermek için herhangi bir uygulamanın paylaşım menüsünü kullan. |
+| Dosya aktarımı | **Mac'ten dosya al** ve **Dosyaları otomatik kabul et**. Dosyalar İndirilenler'e iner. Göndermek için herhangi bir uygulamanın paylaşım menüsünü kullan. |
+| Mac'te aramalar | Yakındaki cihazlar iznini ister. İzin verilince satır Android'in Bluetooth ayarlarını açar. Bkz. [Bluetooth aramaları](#bluetooth-aramaları). |
+| Kurulum rehberi | İlk açılış kurulumunu yeniden açar. Bkz. [Karşılama ve kurulum](#karşılama-ve-kurulum). |
 | Dil | Android'in uygulama başına dil seçicisi; İngilizce ve Türkçe. |
 
 ### Mac'te
@@ -259,18 +293,16 @@ sayfaları var.
 | Bildirimler | Bildirim geçmişi; arama ve temizleme düğmesi. |
 | Pano | Pano geçmişi. Tıklayınca kopyalar, sağ tıkla geri gönderir ya da siler. |
 | Uygulamalar | Telefondaki her uygulama için Tam, Sadece başlık ya da Kapalı. |
-| Genel | **Oturum açınca başlat**, **Menü çubuğunda pil yüzdesi** ve **Dil** (Sistem, İngilizce, Türkçe; yeniden başlatma ister). **AndroMac'i sıfırla…** eşleşmiş telefonları, iki geçmişi, bütün ayarları ve bu Mac'in anahtarını silip yeniden başlatır. Her telefonun yeniden eşleşmesi gerekir. |
-| Eşitleme | Dört eşitleme anahtarı, düşük pil uyarısı ve eşiği (%10, %15, %20 ya da %30). |
-| Pano | Mac'in panosunun otomatik mi elle mi gönderileceği, panel açılınca telefonun panosunun istenip istenmeyeceği. |
-| Bildirimler | Yansıtılan bildirimler için ses, geçmişte kaç kayıt olduğu. |
+| Genel | **Girişte başlat**, **Pil yüzdesini menü çubuğunda göster** ve **Dil** (Sistem, İngilizce, Türkçe; yeniden başlatma ister). Uygulama sürümü ve **Karşılama ekranını yeniden göster**. **AndroMac'i sıfırla…** eşleşmiş telefonları, iki geçmişi, bütün ayarları ve bu Mac'in anahtarını silip yeniden başlatır. Her telefonun yeniden eşleşmesi gerekir. |
+| Cihazlar | Bu Mac'in adı, sonra eşleşmiş her telefon; durumu, yerel IP adresi ve en son ne zaman görüldüğüyle, **Otomatik bağlan** ve **Unut** ile. **Pil ve medya** telefonun pili ile çalanı gösteren anahtarları, düşük pil uyarısını ve eşiğini (%10, %15, %20 ya da %30) taşır. Yayın sayfasının QR kodu APK'yı telefona kurmak için burada. |
+| Bildirimler | **Bildirimleri yansıt**, **Yansıtılan bildirimlerde ses çal** ve geçmişteki kayıt sayısı. |
+| Pano | **Panoyu eşitle**, Mac'in panosunun otomatik mi elle mi gönderileceği, **Gizli işaretli panoyu asla gönderme** ve panel açılınca telefonun panosunun istenip istenmeyeceği. |
 | Dosyalar | **Dosya al** ve **Dosyaları otomatik kabul et**. |
+| Aramalar | Bağlı telefon için **Eşleştir**, sonra Bluetooth telefonu, **Bluetooth ayarları…**, **Yenile** ve **Bağlan**. Bkz. [Bluetooth aramaları](#bluetooth-aramaları). |
 | Ekran yansıtma | Ses, telefon ekranını kapatma, uyanık tutma, çözünürlük sınırı. |
-| Cihazlar | Eşleşmiş her telefon; durumu, yerel IP adresi ve en son ne zaman görüldüğüyle, her biri için **Unut** düğmesiyle. Bu Mac'in adı ve uygulama sürümü de burada. |
-| İzinler | Bildirimler, Yerel Ağ ve Anahtar Zinciri erişimi; her biri ilgili Sistem Ayarları bölmesini açan bir düğmeyle. |
-| Ağ | Mac'in ve telefonun adresleri, Yerel Ağ iznine bir kestirmeyle. |
-| Güncellemeler | Bkz. [Güncellemeler](#güncellemeler). APK'yı telefona kurmak için yayın sayfasının QR kodu da burada. |
-| Ölçümler | Her telefon için saatlik mesaj, trafik ve yeniden bağlanma. |
-| Gizlilik | Bu Mac'te neyin saklandığı ve ne zaman silindiği. |
+| İzinler | Bildirimler, Yerel Ağ, Bluetooth, Mikrofon ve Anahtar Zinciri erişimi; her biri ilgili Sistem Ayarları bölmesini açan bir düğmeyle. |
+| Güncellemeler | Bkz. [Güncellemeler](#güncellemeler). |
+| Gelişmiş | Gizlilik notu: her şey yerel ağında, şifreli kalır; tek istisna isteğe bağlı güncelleme denetimi. **Ağ**'da Mac'in adresi, Bonjour hizmeti ve Yerel Ağ iznine bir kestirme var. **Ölçümler**'de her telefon için saatlik mesaj, trafik ve yeniden bağlanma. |
 
 ## Sorun giderme
 
@@ -313,7 +345,7 @@ issue ile değil, [SECURITY.md](../SECURITY.md)'de anlatıldığı gibi gizli ol
 ## Pil kullanımı
 
 Bağlantıyı canlı tutma işini Mac yapar, telefon çoğu zaman bekler. Boştayken Mac'te Ayarlar →
-Ölçümler her telefon için saatte yaklaşık 30 mesaj göstermeli. Çok daha fazlasını görürsen bir
+Gelişmiş → Ölçümler her telefon için saatte yaklaşık 30 mesaj göstermeli. Çok daha fazlasını görürsen bir
 sorun var demektir; bir issue aç. Ayrıntılar [ENERGY.md](ENERGY.md)'de (İngilizce).
 
 ## Ekran görüntüleri
@@ -326,6 +358,10 @@ sorun var demektir; bir issue aç. Ayrıntılar [ENERGY.md](ENERGY.md)'de (İngi
 <td align="center"><img src="images/android-settings.png" alt="Android'de Ayarlar" width="230"></td>
 </tr>
 <tr>
+<td colspan="2" align="center"><img src="images/android-setup.png" alt="Android'de kurulum, Gerekli izinler" width="230"></td>
+<td colspan="2" align="center"><img src="images/macos-welcome.png" alt="macOS'ta karşılama penceresi, Erişime izin ver" width="380"></td>
+</tr>
+<tr>
 <td colspan="2" align="center"><img src="images/android-pairing.png" alt="Android'de eşleştirme kodu" width="230"></td>
 <td colspan="2" align="center"><img src="images/macos-pairing.png" alt="macOS'ta eşleştirme kodu penceresi" width="380"></td>
 </tr>
@@ -336,7 +372,7 @@ sorun var demektir; bir issue aç. Ayrıntılar [ENERGY.md](ENERGY.md)'de (İngi
 <td colspan="4" align="center"><img src="images/macos-settings.png" alt="macOS'ta Ayarlar, Cihazlar" width="640"></td>
 </tr>
 <tr>
-<td colspan="4" align="center"><img src="images/macos-settings-sync.png" alt="macOS'ta Ayarlar, Eşitleme" width="640"></td>
+<td colspan="4" align="center"><img src="images/macos-settings-calls.png" alt="macOS'ta Ayarlar, Aramalar" width="640"></td>
 </tr>
 </table>
 

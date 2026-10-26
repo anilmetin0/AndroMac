@@ -122,6 +122,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { await UpdateCheck.shared.checkAtLaunch() }
         // The status item exists once the scene is up, one runloop turn from now.
         DispatchQueue.main.async { self.installStatusItemMenu() }
+        // The welcome window, on the very first launch only.
+        DispatchQueue.main.async { OnboardingWindow.showOnFirstLaunch() }
     }
 
     // MARK: right-click on the menu bar icon
