@@ -35,6 +35,7 @@ jobs:
       pull-requests: write
       checks: read
       statuses: read
+      actions: write
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
@@ -115,6 +116,12 @@ jobs:
               echo "PR #$number ($sha) is eligible; dry run, no merge performed."
             else
               gh pr merge "$number" --squash --delete-branch --match-head-commit "$sha"
+              # GITHUB_TOKEN merges do not emit another push workflow run. Dispatch
+              # the normal verified build explicitly; signing stays in build.yml.
+              gh workflow run build.yml --ref main --field channel=nightly
+              if [[ "$files" == *".github/workflows/"* ]]; then
+                gh workflow run codeql.yml --ref main
+              fi
             fi
             # Re-evaluate the remaining PRs against the updated base on the next run.
             break

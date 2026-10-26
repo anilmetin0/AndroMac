@@ -50,6 +50,8 @@ if args[:2] == ['pr', 'list']:
     print('\n'.join(f['prs']))
     sys.exit()
 if args[:2] == ['pr', 'merge']:
+    sys.exit(1 if f.get('merge_fail') else 0)
+if args[:2] == ['workflow', 'run']:
     sys.exit()
 if args[:2] == ['pr', 'comment']:
     sys.exit()
@@ -70,7 +72,7 @@ print(value if isinstance(value, str) else json.dumps(value))
 
 
 class Workflows(unittest.TestCase):
-    def run_workflow(self, filename, items=None, comments='', dry_run=False):
+    def run_workflow(self, filename, items=None, comments='', dry_run=False, merge_fail=False):
         with tempfile.TemporaryDirectory() as tmp:
             folder = Path(tmp)
             gh = folder / 'gh'
@@ -78,14 +80,14 @@ class Workflows(unittest.TestCase):
             gh.chmod(0o755)
             fixture, calls = folder / 'fixture.json', folder / 'calls.jsonl'
             fixture.write_text(json.dumps({'prs': list(items or {}), 'items': items or {},
-                                           'comments': comments}))
+                                           'comments': comments, 'merge_fail': merge_fail}))
             env = dict(os.environ, PATH=str(folder) + os.pathsep + os.environ['PATH'],
                        FIXTURE=str(fixture), CALLS=str(calls), GH_REPO=REPO,
                        HEAD_SHA=SHA, PR_NUMBER='1', RUNNER_TEMP=tmp,
                        DRY_RUN=str(dry_run).lower(), GH_TOKEN='test-token')
             result = subprocess.run(['bash', '-e', '-o', 'pipefail', '-c', workflow_script(filename)],
                                     env=env, capture_output=True, text=True, timeout=15)
-            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.returncode, 1 if merge_fail else 0, result.stderr)
             return [json.loads(line) for line in calls.read_text().splitlines()], result.stdout
 
     def assert_merge(self, item, expected):
@@ -94,6 +96,9 @@ class Workflows(unittest.TestCase):
         self.assertEqual(bool(merges), expected)
         if merges:
             self.assertEqual(merges[0][-2:], ['--match-head-commit', SHA])
+            self.assertIn(['workflow', 'run', 'build.yml', '--ref', 'main', '--field', 'channel=nightly'], calls)
+        else:
+            self.assertFalse(any(c[:2] == ['workflow', 'run'] for c in calls))
 
     def test_eligible_and_skipped_release(self):
         item = eligible()
@@ -178,7 +183,18 @@ class Workflows(unittest.TestCase):
     def test_dry_run_never_merges(self):
         calls, output = self.run_workflow('dependabot.yml', {'1': eligible()}, dry_run=True)
         self.assertFalse(any(c[:2] == ['pr', 'merge'] for c in calls))
+        self.assertFalse(any(c[:2] == ['workflow', 'run'] for c in calls))
         self.assertIn('eligible; dry run, no merge performed', output)
+
+    def test_dispatches_only_after_successful_merge(self):
+        calls, _ = self.run_workflow('dependabot.yml', {'1': eligible()})
+        self.assertIn(['workflow', 'run', 'codeql.yml', '--ref', 'main'], calls)
+        item = eligible()
+        item['files'] = 'android/build.gradle.kts'
+        calls, _ = self.run_workflow('dependabot.yml', {'1': item})
+        self.assertNotIn(['workflow', 'run', 'codeql.yml', '--ref', 'main'], calls)
+        calls, _ = self.run_workflow('dependabot.yml', {'1': eligible()}, merge_fail=True)
+        self.assertFalse(any(c[:2] == ['workflow', 'run'] for c in calls))
 
     def test_review_request_idempotency(self):
         marker = '<!-- coderabbit-dependency-review:' + SHA + ' -->'
