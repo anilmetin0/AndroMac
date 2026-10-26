@@ -8,11 +8,11 @@ link to them. `macos/scripts/fetch-scrcpy.sh` pins the exact release and its SHA
 The license copies sit in `Contents/Resources/Licenses/`: `scrcpy-LICENSE.txt` and this file,
 `THIRD-PARTY-NOTICES.md`.
 
-## scrcpy 5.0
+## scrcpy 5.0.1
 
 - Copyright (C) 2018 Genymobile, Copyright (C) 2018-2026 Romain Vimont
 - License: Apache License 2.0, included in the app as `Contents/Resources/Licenses/scrcpy-LICENSE.txt`
-- Source: https://github.com/Genymobile/scrcpy/tree/v5.0
+- Source: https://github.com/Genymobile/scrcpy/tree/v5.0.1
 - Files in the bundle: `Contents/MacOS/scrcpy`, `Contents/Resources/scrcpy-server`,
   `Contents/Resources/scrcpy.png` (the mirroring window's icon)
 
@@ -25,8 +25,8 @@ The `scrcpy` binary is the static macOS build from the scrcpy release. It contai
 | libusb | 1.0.30 | LGPL 2.1 or later | https://github.com/libusb/libusb/tree/v1.0.30 |
 
 The scripts that build it from those sources, with the exact configure flags, are in
-[`app/deps/`](https://github.com/Genymobile/scrcpy/tree/v5.0/app/deps) and
-[`release/`](https://github.com/Genymobile/scrcpy/tree/v5.0/release) of the scrcpy repository.
+[`app/deps/`](https://github.com/Genymobile/scrcpy/tree/v5.0.1.1/app/deps) and
+[`release/`](https://github.com/Genymobile/scrcpy/tree/v5.0.1.1/release) of the scrcpy repository.
 To use a different build, delete `scrcpy`, `adb` and `scrcpy-server` from the bundle and install
 scrcpy with Homebrew; AndroMac then uses that copy.
 
