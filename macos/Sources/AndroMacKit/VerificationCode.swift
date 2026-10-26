@@ -71,6 +71,15 @@ public enum VerificationCode {
         pattern: #"\b("# + contextWords.joined(separator: "|") + #")\b"#, options: options)
     // swiftlint:enable force_try
 
+    /// Whether `code` is safe to type into another app (the notification's Fill code button).
+    /// The code comes from notification text, so only what a real one-time code contains is typed:
+    /// ASCII letters, digits and dashes, at most 12 of them. A crafted notification can never type
+    /// Return, a shortcut or a long string.
+    public static func isTypable(_ code: String) -> Bool {
+        (1...12).contains(code.count)
+            && code.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-") }
+    }
+
     /// The code in this text, or `nil` when there is nothing worth offering.
     public static func find(in text: String) -> String? {
         let text = String(text.prefix(maxLength))
