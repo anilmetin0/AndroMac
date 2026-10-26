@@ -56,7 +56,8 @@ if args[:2] == ['workflow', 'run']:
 if args[:2] == ['pr', 'comment']:
     sys.exit()
 if args[0] == 'api' and any('/comments' in x for x in args):
-    print(f.get('comments', ''))
+    c = f.get('comments', '')
+    print(c if isinstance(c, str) else json.dumps(c))
     sys.exit()
 number = args[2] if args[0] == 'pr' else (
     next((x.split('/')[-2] for x in args if '/reviews' in x), None)
@@ -198,12 +199,28 @@ class Workflows(unittest.TestCase):
 
     def test_review_request_idempotency(self):
         marker = '<!-- coderabbit-dependency-review:' + SHA + ' -->'
-        for comments, expected in [('', True), (marker, False),
-                                   ('<!-- coderabbit-dependency-review:old -->', True)]:
-            with self.subTest(comments=comments):
-                calls, _ = self.run_workflow('coderabbit.yml', comments=comments)
-                self.assertEqual(any(c[:2] == ['pr', 'comment'] for c in calls), expected)
 
+        def comment(login, body, at):
+            return {'user': {'login': login}, 'body': body, 'created_at': at}
+
+        request = comment('github-actions[bot]', marker, '2026-01-01T00:00:00Z')
+        declined = comment('coderabbitai[bot]', 'Action not completed. Review skipped.', '2026-01-01T00:01:00Z')
+        done = comment('coderabbitai[bot]', 'Action performed. Review finished.', '2026-01-01T00:01:00Z')
+        old = comment('github-actions[bot]', '<!-- coderabbit-dependency-review:old -->', '2026-01-01T00:00:00Z')
+        cases = [
+            ([], [], True),                              # first request
+            ([request], [], False),                      # requested, no answer yet
+            ([request, done], [], False),                # accepted
+            ([request, declined], [], True),             # declined: retry on the next event
+            ([request, request, request, declined], [], False),   # bounded at three requests
+            ([old], [], True),                           # a marker for another commit
+            ([], [{'user': {'login': 'coderabbitai[bot]'}, 'commit_id': SHA}], False),  # reviewed
+        ]
+        for comments, reviews, expected in cases:
+            with self.subTest(comments=comments, reviews=reviews):
+                items = {'1': {'reviews': [reviews]}}
+                calls, _ = self.run_workflow('coderabbit.yml', items, comments=[comments])
+                self.assertEqual(any(c[:2] == ['pr', 'comment'] for c in calls), expected)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
