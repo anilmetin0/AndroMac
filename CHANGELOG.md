@@ -47,6 +47,14 @@ raised. Nightly builds list their commits instead.
 - Disconnect, on the Mac or on the phone, turns auto-connect off on both. The panel shows such a
   phone as "Auto-connect off", with Connect right beside it.
 
+### Fixed
+
+- Text shared to AndroMac from another app now asks before it replaces the Mac's clipboard, and
+  shows what will be copied (passwords stay hidden). Before, any app on the phone could change the
+  Mac's clipboard without the user seeing it.
+- A received file with a very long name no longer fails: the temporary download name now fits in
+  one path component.
+
 ## 1.5.1 - 2026-10-05
 
 ### Changed

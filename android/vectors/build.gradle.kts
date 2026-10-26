@@ -29,6 +29,8 @@ kotlin {
         "dev/andromac/feature/UpdateCheck.kt",
         // The in-memory clipboard history: bounded, newest first.
         "dev/andromac/feature/ClipHistory.kt",
+        // The excerpt the share-sheet confirmation shows.
+        "dev/andromac/feature/SharePreview.kt",
         // Which discovered Mac to dial, and "key changed" versus "somebody else's Mac".
         "dev/andromac/core/MacPick.kt",
         "dev/andromac/core/ReconnectPolicy.kt",

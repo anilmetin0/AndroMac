@@ -361,4 +361,5 @@
     <string name="bt_pair_channel">Bluetooth eşleştirme</string>
     <string name="bt_pair_title">%1$s ile eşleştir</string>
     <string name="bt_pair_text">Mac\'te aramalar için dokunup eşleştir</string>
+    <string name="share_text_title">Bu metin Mac\'in panosuna kopyalansın mı?</string>
 </resources>

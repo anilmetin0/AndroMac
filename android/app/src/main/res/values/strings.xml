@@ -372,4 +372,5 @@
     <string name="bt_pair_channel">Bluetooth pairing</string>
     <string name="bt_pair_title">Pair with %1$s</string>
     <string name="bt_pair_text">Tap to pair for calls on your Mac</string>
+    <string name="share_text_title">Copy this to your Mac\'s clipboard?</string>
 </resources>

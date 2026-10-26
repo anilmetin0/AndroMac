@@ -49,6 +49,14 @@ derlemeler bunun yerine commit'lerini listeler.
 - Bağlantıyı kes, Mac'te de telefonda da, otomatik bağlanmayı iki tarafta kapatıyor. Panel böyle
   bir telefonu "Otomatik bağlanma kapalı" diye gösteriyor ve yanında Bağlan düğmesi var.
 
+### Düzeltilenler
+
+- Başka bir uygulamadan AndroMac'e paylaşılan metin, Mac'in panosunu değiştirmeden önce artık onay
+  istiyor ve neyin kopyalanacağını gösteriyor (parolalar gizli kalıyor). Önceden telefondaki
+  herhangi bir uygulama Mac'in panosunu kullanıcı görmeden değiştirebiliyordu.
+- Çok uzun adlı bir dosyayı almak artık başarısız olmuyor: geçici indirme adı tek bir yol
+  bileşenine sığıyor.
+
 ## 1.5.1 - 2026-10-05
 
 ### Değişenler
