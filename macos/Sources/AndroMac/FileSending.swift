@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import SwiftUI
 
 /// All Mac entry points use the same destination and file validation rules.
@@ -67,7 +68,7 @@ final class ShareFilesWindow: NSWindowController, NSWindowDelegate {
     }
 
     private init(urls: [URL]) {
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 360, height: 220),
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 360, height: urls.count > 1 ? 320 : 220),
                               styleMask: [.titled, .closable], backing: .buffered, defer: false)
         window.title = String(localized: "Send to Android")
         window.isReleasedWhenClosed = false
@@ -94,6 +95,19 @@ private struct ShareFilesView: View {
         VStack(alignment: .leading, spacing: Theme.Space.large) {
             Text(urls.count == 1 ? urls[0].lastPathComponent : String(localized: "\(urls.count) files"))
                 .font(Theme.Font.title).lineLimit(2).truncationMode(.middle)
+            // Every name is listed: the window can be opened by any app, so nothing goes unseen.
+            if urls.count > 1 {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 2) {
+                        ForEach(urls, id: \.self) { url in
+                            Text(url.lastPathComponent).lineLimit(1).truncationMode(.middle)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .font(Theme.Font.label).foregroundStyle(.secondary)
+                .frame(maxHeight: 96)
+            }
             if phones.isEmpty {
                 HStack(spacing: Theme.Space.small) {
                     ProgressView().controlSize(.small)
@@ -113,12 +127,12 @@ private struct ShareFilesView: View {
                 Button("Send") {
                     if FileSending.send(urls, to: selected) { close() }
                 }
-                .keyboardShortcut(.defaultAction)
+                // Not the default button: a stray Return must not send files the user did not pick.
                 .disabled(!phones.contains { $0.id == selected })
             }
         }
         .padding(Theme.Space.large)
-        .frame(width: 360, height: 220)
+        .frame(width: 360, height: urls.count > 1 ? 320 : 220)
         .onAppear(perform: selectPhone)
         .onChange(of: phones.map(\.id)) { _, _ in selectPhone() }
     }
@@ -175,16 +189,32 @@ final class FileDropView: NSView {
 }
 
 /// Appears only during a file drag at the top edge. No idle timer, accessibility grant or polling.
+/// The drag monitors exist only while a phone that accepts files is connected: otherwise every
+/// window move and text selection on the Mac would wake AndroMac for nothing.
 @MainActor
 final class QuickSend {
     static let shared = QuickSend()
     private var globalMonitor: Any?
     private var localMonitor: Any?
+    private var devices: AnyCancellable?
     private var panel: NSPanel?
     private var dismissal: DispatchWorkItem?
+    /// The drag pasteboard keeps the last drag's files after it ends; only a newer drag counts.
+    private var seenDrag = 0
 
     func start() {
+        guard devices == nil else { return }
+        devices = AppState.shared.$devices
+            .map { $0.contains { $0.caps.contains("file") } }
+            .removeDuplicates()
+            .sink { [weak self] canSend in
+                MainActor.assumeIsolated { canSend ? self?.watch() : self?.unwatch() }
+            }
+    }
+
+    private func watch() {
         guard globalMonitor == nil else { return }
+        seenDrag = NSPasteboard(name: .drag).changeCount
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDragged, .leftMouseUp]) { event in
             MainActor.assumeIsolated { self.track(event) }
         }
@@ -192,6 +222,14 @@ final class QuickSend {
             MainActor.assumeIsolated { self.track(event) }
             return event
         }
+    }
+
+    private func unwatch() {
+        if let globalMonitor { NSEvent.removeMonitor(globalMonitor) }
+        if let localMonitor { NSEvent.removeMonitor(localMonitor) }
+        globalMonitor = nil; localMonitor = nil
+        dismissal?.cancel()
+        hide()
     }
 
     func attach(to button: NSStatusBarButton) {
@@ -204,6 +242,7 @@ final class QuickSend {
 
     private func track(_ event: NSEvent) {
         if event.type == .leftMouseUp {
+            seenDrag = NSPasteboard(name: .drag).changeCount
             // Every click on the Mac ends here; only a visible target has anything to dismiss.
             guard panel?.isVisible == true else { return }
             dismissal?.cancel()
@@ -214,9 +253,10 @@ final class QuickSend {
         }
         let point = NSEvent.mouseLocation
         guard let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }),
-              point.y >= screen.frame.maxY - 40,
-              NSPasteboard(name: .drag).canReadObject(forClasses: [NSURL.self],
-                  options: [.urlReadingFileURLsOnly: true]) else { return }
+              point.y >= screen.frame.maxY - 40 else { return }
+        let board = NSPasteboard(name: .drag)
+        guard board.changeCount != seenDrag,
+              board.canReadObject(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) else { return }
         show(on: screen)
     }
 
@@ -249,11 +289,8 @@ final class QuickSend {
     func hide() { panel?.orderOut(nil) }
 
     func stop() {
-        if let globalMonitor { NSEvent.removeMonitor(globalMonitor) }
-        if let localMonitor { NSEvent.removeMonitor(localMonitor) }
-        globalMonitor = nil; localMonitor = nil
-        dismissal?.cancel()
-        hide()
+        devices = nil
+        unwatch()
     }
 }
 

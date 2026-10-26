@@ -198,11 +198,12 @@ AndroMac bunu senin yerine yapabilir:
 2. Mac'te **Ayarlar → Aramalar**'ı aç ve telefonun yanındaki **Eşleştir**'e tıkla. Düğme, telefon
    AndroMac'e bağlıyken ve uygulama sürümü destekliyorsa görünür. Karşılama penceresinde de aynı
    düğme var.
-3. Telefon Bluetooth eşleştirmesini başlatır. İki ekranda aynı kod çıkar; ikisinde de onayla. Mac
-   sonra aramaları kendisi bağlar.
+3. Telefonda Mac'inin adını taşıyan bir bildirim çıkar. Dokun: telefon, gerekirse önce Yakındaki
+   cihazlar iznini isteyip Bluetooth eşleştirmesini başlatır. İki ekranda aynı kod çıkar; ikisinde
+   de onayla. Mac sonra aramaları kendisi bağlar.
 
-Yakındaki cihazlar izni henüz verilmediyse telefon onu isteyen bir bildirim gösterir. Eşleştirme
-iki dakika sonra vazgeçer. Elle eşleştirmek istersen telefonu macOS Bluetooth ayarlarında eşleştir
+Bu bildirime dokunmadan hiçbir şey eşleşmez; böylece bir Mac telefonu başka bir cihazla
+eşleştiremez. Eşleştirme iki dakika sonra vazgeçer. Elle eşleştirmek istersen telefonu macOS Bluetooth ayarlarında eşleştir
 (Ayarlar → Aramalar'daki **Bluetooth ayarları…** onları açar), **Yenile**'ye bas, telefonu seç ve
 **Bağlan**'a bas.
 

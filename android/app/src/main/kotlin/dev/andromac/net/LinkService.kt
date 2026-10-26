@@ -212,6 +212,8 @@ class LinkService : Service() {
      * data as the default route, still reaches the Mac.
      */
     private val lanNetworks: MutableSet<Network> = ConcurrentHashMap.newKeySet()
+    /** LAN networks whose first IPv4 address has already triggered a dial. */
+    private val addressed: MutableSet<Network> = ConcurrentHashMap.newKeySet()
 
     /** False if the network callback could not be registered: then nothing is gated on it. */
     @Volatile private var watchingNetworks = false
@@ -532,7 +534,7 @@ class LinkService : Service() {
                 msg.optString("pkg"), msg.optInt("mode", -1),
             )
             Protocol.T_FIND_PHONE -> FindPhone.start(this)
-            Protocol.T_BT_PAIR -> BluetoothPair.request(this, msg.optString("addr"))
+            Protocol.T_BT_PAIR -> BluetoothPair.request(this, msg.optString("addr"), store.pairedName)
             Protocol.T_MEDIA_CONTROL -> media.control(msg.optString("cmd"))
             Protocol.T_SYSTEM_CONTROL -> system.control(msg)
             Protocol.T_CLIPBOARD_REQUEST -> clipboard.macAskedForClipboard()
@@ -605,6 +607,7 @@ class LinkService : Service() {
 
             override fun onLost(network: Network) {
                 lanNetworks -= network
+                addressed -= network
                 val lost = connection?.takeIf { it.network == network }
                 if (lost != null) {
                     // A socket bound to a vanished LAN cannot recover on the new one. Closing it
@@ -617,8 +620,15 @@ class LinkService : Service() {
             }
 
             override fun onLinkPropertiesChanged(network: Network, properties: android.net.LinkProperties) {
-                // DHCP can finish after onAvailable. Retry a failed early dial once routes exist.
-                if (current == null && network in lanNetworks) onEvent()
+                // DHCP can finish after onAvailable: retry a failed early dial once, when the network
+                // first has an IPv4 address. Later address, route and DNS updates (IPv6 RAs, lease
+                // renewals) are not a new chance to reach the Mac and must not reset the ladder.
+                if (current == null && network in lanNetworks && network !in addressed &&
+                    properties.linkAddresses.any { it.address is java.net.Inet4Address }
+                ) {
+                    addressed += network
+                    onEvent()
+                }
             }
         }
         netCallback = cb

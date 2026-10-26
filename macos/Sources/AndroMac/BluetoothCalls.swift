@@ -51,6 +51,7 @@ final class BluetoothCalls: NSObject, ObservableObject, IOBluetoothHandsFreeDevi
     @Published private(set) var pairNote: String?
     private var pairedBefore: Set<String> = []
     private var pairTimeout: Task<Void, Never>?
+    private var pairingDeviceID: String?
 
     static var notificationCategory: UNNotificationCategory {
         UNNotificationCategory(identifier: notificationCategoryID, actions: [
@@ -97,34 +98,41 @@ final class BluetoothCalls: NSObject, ObservableObject, IOBluetoothHandsFreeDevi
         }
         let address = raw.replacingOccurrences(of: "-", with: ":").uppercased()
         pairedBefore = Set(pairedAddresses())
+        pairingDeviceID = deviceID
         error = nil
-        pairNote = String(localized: "Confirm the pairing code on your phone and your Mac.")
+        pairNote = String(localized: "Tap the AndroMac notification on your phone.")
         pairing = true
-        pairTimeout?.cancel()
-        pairTimeout = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(120))
-            guard !Task.isCancelled, let self, self.pairing else { return }
-            self.pairFailed()
-        }
+        restartPairTimeout()
         Task {
             if await !Server.shared.send(["t": "bt_pair", "addr": address], to: deviceID) { pairFailed() }
         }
     }
 
-    /// `bt_pair_result` from the phone. `name` is its Bluetooth name, used only when the paired
-    /// list did not grow (the phone was paired before) to find it among the Mac's devices.
-    func pairResult(_ state: String, name: String) {
-        guard pairing else { return }
+    /// The phone gives up after 120 s from the moment it shows its notification; so does the Mac.
+    private func restartPairTimeout() {
+        pairTimeout?.cancel()
+        pairTimeout = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(125))
+            guard !Task.isCancelled, let self, self.pairing else { return }
+            self.pairFailed()
+        }
+    }
+
+    /// `bt_pair_result` from the phone that was asked; any other phone's answer is ignored. `name`
+    /// is its Bluetooth name, used only when the paired list did not grow (it was paired before).
+    func pairResult(_ state: String, name: String, from deviceID: String) {
+        guard pairing, deviceID == pairingDeviceID else { return }
         switch state {
         case "bonded":
             pairTimeout?.cancel(); pairTimeout = nil
-            pairing = false; pairNote = nil
+            pairing = false; pairNote = nil; pairingDeviceID = nil
             refresh()
             let fresh = phones.first { !pairedBefore.contains($0.id) }
             if let phone = fresh ?? phones.first(where: { $0.name == name }) { selectedID = phone.id }
             connect()
-        case "permission":
-            pairNote = String(localized: "Allow Nearby devices on your phone from the AndroMac notification.")
+        case "confirm":
+            pairNote = String(localized: "Tap the AndroMac notification on your phone.")
+            restartPairTimeout()
         case "bluetooth_off":
             pairFailed(String(localized: "Turn on Bluetooth on your phone, then try again."))
         default:
@@ -134,7 +142,7 @@ final class BluetoothCalls: NSObject, ObservableObject, IOBluetoothHandsFreeDevi
 
     private func pairFailed(_ message: String? = nil) {
         pairTimeout?.cancel(); pairTimeout = nil
-        pairing = false; pairNote = nil
+        pairing = false; pairNote = nil; pairingDeviceID = nil
         error = message ?? String(localized: "Pairing did not finish. Try again, or pair in Bluetooth settings.")
     }
 

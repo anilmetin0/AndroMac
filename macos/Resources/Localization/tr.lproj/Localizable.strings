@@ -318,8 +318,6 @@
 /* Send queue */
 "The send queue is full. Wait for the current files to finish, then try again." = "Gönderim kuyruğu dolu. Mevcut dosyaların bitmesini bekleyip tekrar dene.";
 
-"Allow Nearby devices on your phone from the AndroMac notification." = "Telefonundaki AndroMac bildiriminden Yakındaki cihazlar iznini ver.";
-"Confirm the pairing code on your phone and your Mac." = "Eşleştirme kodunu telefonunda ve Mac'inde onayla.";
 "Pairing did not finish. Try again, or pair in Bluetooth settings." = "Eşleştirme tamamlanmadı. Tekrar dene ya da Bluetooth ayarlarından eşleştir.";
 "Turn on Bluetooth on your Mac, then try again." = "Mac'inde Bluetooth'u aç, sonra tekrar dene.";
 "Turn on Bluetooth on your phone, then try again." = "Telefonunda Bluetooth'u aç, sonra tekrar dene.";
@@ -368,3 +366,5 @@
 "Welcome to AndroMac" = "AndroMac'e hoş geldin";
 "You're all set" = "Her şey hazır";
 "Your Android phone's notifications, clipboard, files and calls on your Mac" = "Android telefonunun bildirimleri, panosu, dosyaları ve aramaları Mac'inde";
+
+"Tap the AndroMac notification on your phone." = "Telefonundaki AndroMac bildirimine dokun.";

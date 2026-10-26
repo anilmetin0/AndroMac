@@ -200,11 +200,12 @@ that for you:
 2. On the Mac, open **Settings → Calls** and click **Pair** next to the phone. The button shows
    while the phone is connected to AndroMac and its app version supports it. The welcome window has
    the same button.
-3. The phone starts the Bluetooth pairing. Both screens show the same code; confirm it on both.
+3. The phone shows a notification naming your Mac. Tap it: the phone starts the Bluetooth pairing,
+   asking for Nearby devices first if needed. Both screens show the same code; confirm it on both.
    The Mac then connects calls by itself.
 
-If Nearby devices is not allowed yet, the phone shows a notification that asks for it. Pairing
-gives up after two minutes. To pair by hand instead, pair the phone in macOS Bluetooth settings
+Nothing pairs until you tap that notification, so a Mac cannot pair the phone with something else.
+Pairing gives up after two minutes. To pair by hand instead, pair the phone in macOS Bluetooth settings
 (**Bluetooth settings…** in Settings → Calls opens them), click **Refresh**, choose the phone and
 click **Connect**.
 

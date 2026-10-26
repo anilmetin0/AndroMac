@@ -359,6 +359,6 @@
     <string name="pair_search_again">Yeniden ara</string>
     <string name="pair_searching">Bu ağdaki Mac\'ler aranıyor…</string>
     <string name="bt_pair_channel">Bluetooth eşleştirme</string>
-    <string name="bt_pair_title">Mac\'inle eşleştir</string>
-    <string name="bt_pair_text">Mac\'inin aramaları alabilmesi için dokunup Bluetooth\'a izin ver</string>
+    <string name="bt_pair_title">%1$s ile eşleştir</string>
+    <string name="bt_pair_text">Mac\'te aramalar için dokunup eşleştir</string>
 </resources>

@@ -27,7 +27,7 @@ raised. Nightly builds list their commits instead.
   Recommended, Optional, then Connect. Settings → Help → Setup guide opens it again.
 - **Bluetooth pairing for calls.** Pair in Settings → Calls, or in the welcome window, starts the
   Bluetooth pairing from the phone. Both screens show the same code, and the Mac connects calls
-  once it is confirmed. It needs Nearby devices on the phone, which asks through a notification.
+  once it is confirmed. The phone asks for a tap on its notification first.
   Pairing in macOS Bluetooth settings still works.
 - Settings → Permissions on the Mac lists Notifications, Local Network, Bluetooth,
   Microphone and Keychain. On the phone, Permissions is grouped as Required, Recommended and

@@ -28,8 +28,8 @@ derlemeler bunun yerine commit'lerini listeler.
   açar.
 - **Aramalar için Bluetooth eşleştirme.** Ayarlar → Aramalar'daki ya da karşılama penceresindeki
   Eşleştir, Bluetooth eşleştirmesini telefondan başlatır. İki ekranda aynı kod çıkar; onaylanınca
-  Mac aramaları bağlar. Telefonda Yakındaki cihazlar izni gerekir, yoksa telefon bir bildirimle
-  ister. macOS Bluetooth ayarlarından eşleştirmek hâlâ çalışıyor.
+  Mac aramaları bağlar. Telefon önce bildirimine dokunmanı ister. macOS Bluetooth ayarlarından
+  eşleştirmek hâlâ çalışıyor.
 - Mac'te Ayarlar → İzinler artık Bildirimler, Yerel Ağ, Bluetooth, Mikrofon ve
   Anahtar Zinciri'ni listeliyor. Telefonda İzinler, Zorunlu, Önerilir ve İsteğe bağlı diye
   gruplanıyor ve Mac'te aramalar'ı içeriyor.

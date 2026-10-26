@@ -16,6 +16,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import dev.andromac.R
 import dev.andromac.core.Link
 import dev.andromac.core.Protocol
@@ -25,8 +26,10 @@ import dev.andromac.ui.BluetoothPairActivity
  * `bt_pair` from the Mac: bond with the Mac over Bluetooth so it can act as a hands-free device.
  *
  * Android does not reveal its own Bluetooth address to apps, so the phone dials the Mac and not
- * the other way round. The Mac's address arrives over the encrypted link; Android then shows its
- * own pairing dialog, and the user confirms the same code on both screens. No scan is started.
+ * the other way round. The Mac's address arrives over the encrypted link. Nothing is bonded until
+ * the user taps the notification on the phone: a paired Mac must not be able to steer the phone
+ * into bonding with some other device. Android then shows its own pairing dialog, and the user
+ * confirms the same code on both screens. No scan is started.
  */
 object BluetoothPair {
 
@@ -34,18 +37,23 @@ object BluetoothPair {
     private val mac = Regex("^([0-9A-F]{2}:){5}[0-9A-F]{2}$")
     private var receiver: BroadcastReceiver? = null
     private var timeout: Runnable? = null
+    /** A request is waiting for the tap, or a bond is in progress: further requests are dropped. */
+    private var busyUntil = 0L
 
     fun granted(ctx: Context): Boolean =
         Build.VERSION.SDK_INT < 31 ||
             ctx.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
 
-    /** Called from LinkService's read thread. */
-    fun request(ctx: Context, address: String) {
+    /** Called from LinkService's read thread. [macName] is the paired Mac, shown on the notification. */
+    fun request(ctx: Context, address: String, macName: String) {
         val app = ctx.applicationContext
         val addr = address.uppercase()
         if (!mac.matches(addr)) return
         handler.post {
-            if (granted(app)) bond(app, addr) else askPermission(app, addr)
+            val now = SystemClock.elapsedRealtime()
+            if (now < busyUntil) return@post
+            busyUntil = now + TIMEOUT_MS
+            confirm(app, addr, macName)
         }
     }
 
@@ -54,7 +62,7 @@ object BluetoothPair {
     fun bond(ctx: Context, addr: String) {
         val app = ctx.applicationContext
         app.getSystemService(NotificationManager::class.java).cancel(NOTIF_ID)
-        if (!granted(app)) { report(STATE_PERMISSION); return }
+        if (!granted(app)) { report(STATE_FAILED); return }
         val adapter = app.getSystemService(BluetoothManager::class.java)?.adapter
         if (adapter == null || !adapter.isEnabled) { report(STATE_BLUETOOTH_OFF); return }
         val name = runCatching { adapter.name }.getOrNull().orEmpty()
@@ -83,12 +91,15 @@ object BluetoothPair {
         handler.postDelayed(t, TIMEOUT_MS)
         // An address the phone never scanned has no known type, and Android bonds it over Classic
         // Bluetooth, which is what hands-free calling uses.
+        // The tap restarts the Mac's wait, which began when the notification went up.
+        report(STATE_CONFIRM)
         val started = runCatching { device.createBond() }.getOrDefault(false)
         if (!started) { stopWatching(app); report(STATE_FAILED) }
     }
 
     /** Returns whether a pairing was still being watched. */
     private fun stopWatching(ctx: Context): Boolean {
+        busyUntil = 0L
         timeout?.let(handler::removeCallbacks)
         timeout = null
         val r = receiver ?: return false
@@ -98,12 +109,13 @@ object BluetoothPair {
     }
 
     private fun report(state: String, name: String = "") {
+        if (state != STATE_CONFIRM) busyUntil = 0L
         Link.send(Protocol.btPairResult(state, name))
     }
 
-    /** A service cannot show the runtime dialog; the notification opens a screen that can. */
-    private fun askPermission(ctx: Context, addr: String) {
-        report(STATE_PERMISSION)
+    /** The user starts the bond; the screen it opens also asks for Nearby devices when needed. */
+    private fun confirm(ctx: Context, addr: String, macName: String) {
+        report(STATE_CONFIRM)
         val nm = ctx.getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(
             NotificationChannel(CHANNEL, ctx.getString(R.string.bt_pair_channel), NotificationManager.IMPORTANCE_HIGH)
@@ -120,8 +132,9 @@ object BluetoothPair {
                 NOTIF_ID,
                 Notification.Builder(ctx, CHANNEL)
                     .setSmallIcon(R.drawable.ic_notification)
-                    .setContentTitle(ctx.getString(R.string.bt_pair_title))
+                    .setContentTitle(ctx.getString(R.string.bt_pair_title, macName))
                     .setContentText(ctx.getString(R.string.bt_pair_text))
+                    .setTimeoutAfter(TIMEOUT_MS)
                     .setContentIntent(open)
                     .setAutoCancel(true)
                     .build(),
@@ -131,7 +144,7 @@ object BluetoothPair {
 
     const val STATE_BONDED = "bonded"
     const val STATE_FAILED = "failed"
-    const val STATE_PERMISSION = "permission"
+    const val STATE_CONFIRM = "confirm"
     const val STATE_BLUETOOTH_OFF = "bluetooth_off"
 
     private const val CHANNEL = "bt_pair"

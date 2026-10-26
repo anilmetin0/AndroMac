@@ -2,13 +2,13 @@ package dev.andromac.ui
 
 import android.Manifest
 import android.app.Activity
-import android.content.pm.PackageManager
 import android.os.Bundle
 import dev.andromac.feature.BluetoothPair
 
 /**
- * Invisible: asks for "Nearby devices" (BLUETOOTH_CONNECT), which a service cannot do, then hands
- * the pairing the Mac asked for back to [BluetoothPair]. Opened only from our own notification.
+ * Invisible: opened by the user's tap on the pairing notification, which is the confirmation that
+ * starts the bond. Asks for "Nearby devices" (BLUETOOTH_CONNECT) first when needed, which a
+ * service cannot do. Not exported: only our own immutable PendingIntent reaches it.
  */
 class BluetoothPairActivity : Activity() {
 
@@ -29,7 +29,8 @@ class BluetoothPairActivity : Activity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) BluetoothPair.bond(this, address)
+        // Denied: bond() reports the failure to the Mac instead of leaving it waiting.
+        BluetoothPair.bond(this, address)
         finish()
     }
 

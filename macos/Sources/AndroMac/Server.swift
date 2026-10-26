@@ -649,7 +649,7 @@ actor Server {
 
         case "bt_pair_result":
             let state = clip(msg["state"], 32), name = clip(msg["name"], 64)
-            await MainActor.run { BluetoothCalls.shared.pairResult(state, name: name) }
+            await MainActor.run { BluetoothCalls.shared.pairResult(state, name: name, from: deviceID) }
 
         case "clipboard":
             // Capped like the phone caps what it sends (PROTOCOL §5): the history keeps 50 of these.

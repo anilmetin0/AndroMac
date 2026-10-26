@@ -422,18 +422,21 @@ dismissing the notification, opening the app, losing the connection, or a second
 ```
 Asks the phone to bond with the Mac over Bluetooth, for call control (HFP). Android does not give
 apps the phone's own Bluetooth address, so the phone dials the Mac's address it receives here.
-The phone checks the address format and starts no scan. Android and macOS then show the same
-pairing code and the user confirms it on both. The Mac sends this only if the phone advertised
-`bt_pair` in its `caps`.
+The phone checks the address format and starts no scan. It bonds only after the user taps the
+notification that names the paired Mac, so a paired Mac cannot steer the phone into bonding with
+another device. While one request is waiting or bonding, further `bt_pair` messages are ignored.
+Android and macOS then show the same pairing code and the user confirms it on both. The Mac
+sends this only if the phone advertised `bt_pair` in its `caps`.
 
 ### `bt_pair_result`, Android → macOS
 ```json
 {"t":"bt_pair_result","state":"bonded","name":"Galaxy S24+"}
 ```
-`state` is `bonded`, `failed`, `permission` (Nearby devices is not granted yet; the phone shows a
-notification that asks for it, and a later `bonded` or `failed` follows) or `bluetooth_off`.
-`name` is the phone's Bluetooth name, sent with `bonded`. The phone gives up after 120 s with
-`failed`; it holds a single delayed callback for that, no timer.
+`state` is `confirm` (the notification is up, or the user tapped it and the bond started; the Mac
+restarts its 125 s wait each time), `bonded`, `failed` or `bluetooth_off`. `name` is the phone's
+Bluetooth name, sent with `bonded`. The phone gives up 120 s after the tap with `failed`; it holds
+a single delayed callback for that, no timer. The Mac ignores a result from any phone other than
+the one it asked.
 
 ### `media`, Android → macOS
 ```json

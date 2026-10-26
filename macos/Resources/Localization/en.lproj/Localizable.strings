@@ -27,7 +27,6 @@
 "Allow access" = "Allow access";
 "Allow Do Not Disturb access on the phone to silence it" = "Allow Do Not Disturb access on the phone to silence it";
 "Allow microphone access in System Settings to use call audio on your Mac" = "Allow microphone access in System Settings to use call audio on your Mac";
-"Allow Nearby devices on your phone from the AndroMac notification." = "Allow Nearby devices on your phone from the AndroMac notification.";
 "Allow USB debugging on the phone." = "Allow USB debugging on the phone.";
 "Allowed" = "Allowed";
 "Android Emulator" = "Android Emulator";
@@ -73,7 +72,6 @@
 "Clear the clipboard history?" = "Clear the clipboard history?";
 "Clear the notification history?" = "Clear the notification history?";
 "Clipboard" = "Clipboard";
-"Confirm the pairing code on your phone and your Mac." = "Confirm the pairing code on your phone and your Mac.";
 "Connect" = "Connect";
 "Connect a phone" = "Connect a phone";
 "Connect automatically" = "Connect automatically";
@@ -124,8 +122,8 @@
 "Forget all devices" = "Forget all devices";
 "Forget all devices?" = "Forget all devices?";
 "Forget…" = "Forget…";
-"Full" = "Full";
 "full" = "full";
+"Full" = "Full";
 "General" = "General";
 "Get the app on the phone" = "Get the app on the phone";
 "History" = "History";
@@ -284,6 +282,7 @@
 "Sync clipboard" = "Sync clipboard";
 "System" = "System";
 "Tap \"Pair\" on the phone" = "Tap \"Pair\" on the phone";
+"Tap the AndroMac notification on your phone." = "Tap the AndroMac notification on your phone.";
 "Text you copy on either device appears here." = "Text you copy on either device appears here.";
 "The code did not match. Open a new code on the phone and try again." = "The code did not match. Open a new code on the phone and try again.";
 "The download could not be opened." = "The download could not be opened.";
