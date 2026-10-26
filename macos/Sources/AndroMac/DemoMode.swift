@@ -109,7 +109,7 @@ enum DemoMode {
         // by actually pairing a phone.
         if ProcessInfo.processInfo.environment["ANDROMAC_DEMO_PAIRING"] == "1" {
             state.pairing = AppState.PairingRequest(
-                peerKey: key(0x33), peerName: "Pixel 9", sas: "428 517", isFirstDevice: true,
+                peerKey: key(0x33), peerName: "Pixel 9", sas: "123 456", isFirstDevice: true,
                 address: "192.168.1.63"
             )
         }
@@ -121,7 +121,7 @@ enum DemoMode {
 
     /// Newest first. The two pictures are drawn in code (`picture`), so no photo is in the repository.
     private static let notifications: [(app: String, pkg: String, title: String, text: String, image: String?)] = [
-        ("Messages", "com.google.android.apps.messaging", "Bank", "Your verification code is 481902", nil),
+        ("Messages", "com.google.android.apps.messaging", "Bank", "Your verification code is 123456", nil),
         ("Signal", "org.thoughtcrime.securesms", "Deniz", "Photo", "demo-beach"),
         ("Calendar", "com.google.android.calendar", "Standup", "In 10 minutes · Room B", nil),
         ("Photos", "com.google.android.apps.photos", "Memories", "A day at the coast, one year ago", "demo-sunset"),
@@ -243,6 +243,21 @@ enum DemoMode {
                 ? NSApp.windows.first { $0.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true }
                 : nil
             (prompt ?? main)?.makeKeyAndOrderFront(nil)
+            if ProcessInfo.processInfo.environment["ANDROMAC_DEMO_QUICKSEND"] == "1" {
+                QuickSend.shared.show()
+                // A keyable fixture for capturing the same view with native window screenshot tools.
+                // The actual drop panel stays nonactivating so Finder keeps ownership of a drag.
+                let preview = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 320, height: 96),
+                                       styleMask: [.titled], backing: .buffered, defer: false)
+                preview.title = String(localized: "Send to Android")
+                preview.contentView = NSHostingView(rootView: QuickSendLabel().environmentObject(state))
+                preview.center()
+                preview.makeKeyAndOrderFront(nil)
+                held.append(preview)
+            }
+            if let path = ProcessInfo.processInfo.environment["ANDROMAC_DEMO_SHARE"] {
+                FileSending.share([URL(fileURLWithPath: path)])
+            }
         }
     }
 

@@ -108,12 +108,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // A demo instance fills the UI from DemoMode and never touches the network (see DemoMode).
         guard !DemoMode.isOn else {
             DemoMode.seed()
+            QuickSend.shared.start()
+            DispatchQueue.main.async { self.installStatusItemMenu() }
             // One runloop turn later: the scenes exist by then, so the demo windows come up on top.
             DispatchQueue.main.async { DemoMode.openWindows() }
             return
         }
 
         Task { await Server.shared.start() }
+        QuickSend.shared.start()
+        BluetoothCalls.shared.bootstrap()
         // Every launch offers what it finds — once per release, and never for one that was skipped.
         Task { await UpdateCheck.shared.checkAtLaunch() }
         // The status item exists once the scene is up, one runloop turn from now.
@@ -132,6 +136,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let click = NSClickGestureRecognizer(target: self, action: #selector(showStatusMenu(_:)))
         click.buttonMask = 0x2
         button.addGestureRecognizer(click)
+        QuickSend.shared.attach(to: button)
     }
 
     @MainActor
@@ -165,6 +170,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        QuickSend.shared.stop()
+        BluetoothCalls.shared.disconnect()
         NotificationHistory.shared.flush()
         ClipboardHistory.shared.flush()
         // Closing the sessions politely, but never at the cost of a slow quit. Detached: this
@@ -174,6 +181,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let done = DispatchSemaphore(value: 0)
         Task.detached { await Server.shared.stop(updateUI: false); done.signal() }
         _ = done.wait(timeout: .now() + .milliseconds(200))
+    }
+
+    func application(_ application: NSApplication, open urls: [URL]) {
+        FileSending.share(urls.filter(\.isFileURL))
     }
 
     /// Pairing is confirmed by the user; the code must match the one on the phone (PROTOCOL §3).

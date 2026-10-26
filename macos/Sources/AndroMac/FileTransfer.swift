@@ -66,6 +66,8 @@ final class FileTransfer: ObservableObject {
 
     // MARK: entry points (panel)
 
+    func canQueue(_ count: Int) -> Bool { count > 0 && queue.count + count <= maxQueue }
+
     /// Files are queued and offered one at a time (§5 step 1). Directories and anything above
     /// 4 GiB are skipped silently.
     func send(urls: [URL], to peer: String) {

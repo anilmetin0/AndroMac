@@ -35,7 +35,8 @@ pencerede gösterebilir.
 - İki yönde pano, Mac'te aranabilir bir geçmişle
 - Bildirim Merkezi'nde bildirimler; uygulamanın ikonu, varsa görseli, eylemleri, satır içi yanıt ve uygulama başına ayarla
 - Medya denetimleri, zil ve ses düzeyi, kaybolan telefonu çaldıran bir düğme
-- İki yönde dosya; Mac'te sürükle bırak, telefonda paylaşım menüsü
+- İki yönde dosya; Finder'ın Paylaş menüsü, Mac ekranının üst kenarında bırakma alanı ve telefonun paylaşım menüsü
+- Eşlenmiş telefon için Bluetooth arama denetimleri; Mac'te görüşme sesi sistem desteğine bağlı
 - Fare, klavye ve sesle ekran yansıtma, uygulamayla gelen [scrcpy](https://github.com/Genymobile/scrcpy) ile
 - Bir Mac'e birden fazla telefon, bir telefona birden fazla Mac
 - Telefonun bildiriminden, Bağlantı ekranından ya da Hızlı Ayarlar karesinden bağlantıyı kesip yeniden bağlanma

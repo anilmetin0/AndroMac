@@ -80,6 +80,20 @@ if [[ -d Resources/Localization ]]; then
     cp -R Resources/Localization/*.lproj "$APP/Contents/Resources/"
 fi
 
+# Share extensions are native XPC executables; Foundation supplies their entry point.
+EXTENSION="$APP/Contents/PlugIns/AndroMacShare.appex"
+mkdir -p "$EXTENSION/Contents/MacOS" "$EXTENSION/Contents/Resources"
+swiftc -parse-as-library -application-extension -swift-version 6 \
+    -target "$(uname -m)-apple-macos14.0" -module-name AndroMacShare \
+    -Xlinker -e -Xlinker _NSExtensionMain ShareExtension/ShareViewController.swift \
+    -o "$EXTENSION/Contents/MacOS/AndroMacShare"
+cp ShareExtension/Info.plist "$EXTENSION/Contents/Info.plist"
+/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $ANDROMAC_VERSION" "$EXTENSION/Contents/Info.plist"
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${ANDROMAC_BUILD:-1}" "$EXTENSION/Contents/Info.plist"
+cp "$ICNS" "$EXTENSION/Contents/Resources/AppIcon.icns"
+/usr/libexec/PlistBuddy -c "Add :CFBundleIconFile string AppIcon" "$EXTENSION/Contents/Info.plist"
+cp -R Resources/Localization/*.lproj "$EXTENSION/Contents/Resources/"
+
 # UserNotifications and Keychain require a signed bundle.
 #
 # An ad-hoc signature (`-`) produces a DIFFERENT identity on every build; macOS then treats the
@@ -100,6 +114,7 @@ SIGN=(codesign --force --sign "$IDENTITY" --timestamp=none)
 for helper in "$APP/Contents/MacOS/scrcpy" "$APP/Contents/MacOS/adb"; do
     [[ -f "$helper" ]] && "${SIGN[@]}" "$helper"
 done
+"${SIGN[@]}" --entitlements ShareExtension/entitlements.plist "$EXTENSION"
 "${SIGN[@]}" --identifier dev.andromac "$APP"
 echo "Signed with: $IDENTITY"
 [[ "$IDENTITY" == "-" ]] && echo "Note: ad-hoc signature. Answer Always Allow to the Keychain prompt."

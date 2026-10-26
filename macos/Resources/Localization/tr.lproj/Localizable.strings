@@ -303,3 +303,46 @@
 "To use it with this Mac again, pair it again." = "Bu Mac'le yeniden kullanmak için tekrar eşleştirmen gerekir.";
 
 
+
+/* File sharing and Bluetooth calls */
+"%lld files" = "%lld dosya";
+"Allow microphone access in System Settings to use call audio on your Mac" = "Mac'te görüşme sesi için Sistem Ayarları'ndan mikrofon erişimine izin ver";
+"Answer" = "Yanıtla";
+"Bluetooth call audio depends on your Mac and phone. If macOS cannot open the audio channel, the call stays on your phone." = "Bluetooth arama sesi Mac ve telefon desteğine bağlıdır. macOS ses kanalını açamazsa görüşme telefonda devam eder.";
+"Bluetooth calls disconnected. Connect again when your phone is nearby." = "Bluetooth arama bağlantısı kesildi. Telefon yakındayken yeniden bağlan.";
+"Bluetooth settings…" = "Bluetooth ayarları…";
+"Choose up to 50 files, each no larger than 4 GB. Folders cannot be sent." = "Her biri en fazla 4 GB olan en çok 50 dosya seç. Klasörler gönderilemez.";
+"Connect calls" = "Aramaları bağla";
+"Connect your phone to send files" = "Dosya göndermek için telefonunu bağla";
+"Could not connect calls. Pair your phone in Bluetooth settings and try again." = "Aramalar bağlanamadı. Telefonunu Bluetooth ayarlarında eşleştirip tekrar dene.";
+"Could not send files" = "Dosyalar gönderilemedi";
+"Disconnect calls" = "Arama bağlantısını kes";
+"Drop files to send to %@" = "%@ cihazına göndermek için dosyaları bırak";
+"End call" = "Aramayı bitir";
+"Incoming call" = "Gelen arama";
+"macOS could not open Bluetooth call audio. Continue the call on your phone." = "macOS Bluetooth arama sesini açamadı. Görüşmeye telefonundan devam et.";
+"Phone calls" = "Telefon aramaları";
+"Ready for calls" = "Aramalar için hazır";
+"Refresh paired devices" = "Eşlenmiş cihazları yenile";
+"Send to Android" = "Android'e gönder";
+"This phone does not support Bluetooth call control" = "Bu telefon Bluetooth arama denetimini desteklemiyor";
+"Use Mac audio" = "Mac sesini kullan";
+"Use phone audio" = "Telefon sesini kullan";
+
+/* Finder share extension */
+"Choose up to 50 files in Finder, then share them with AndroMac." = "Finder'da en fazla 50 dosya seç, sonra AndroMac ile paylaş.";
+"Could not open AndroMac. Open the app and try again." = "AndroMac açılamadı. Uygulamayı açıp tekrar dene.";
+"Could not read the shared files. Try sharing them from Finder." = "Paylaşılan dosyalar okunamadı. Finder'dan paylaşmayı dene.";
+"Opening AndroMac…" = "AndroMac açılıyor…";
+
+/* Send queue */
+"The send queue is full. Wait for the current files to finish, then try again." = "Gönderim kuyruğu dolu. Mevcut dosyaların bitmesini bekleyip tekrar dene.";
+
+"Allow Nearby devices on your phone from the AndroMac notification." = "Telefonundaki AndroMac bildiriminden Yakındaki cihazlar iznini ver.";
+"AndroMac can pair %@ with this Mac over Bluetooth." = "AndroMac, %@ cihazını bu Mac ile Bluetooth üzerinden eşleştirebilir.";
+"Confirm the pairing code on your phone and your Mac." = "Eşleştirme kodunu telefonunda ve Mac'inde onayla.";
+"Or pair your Android phone in macOS Bluetooth settings, then choose it here." = "Ya da Android telefonunu macOS Bluetooth ayarlarında eşleştir, sonra buradan seç.";
+"Pair %@" = "%@ ile eşleştir";
+"Pairing did not finish. Try again, or pair in Bluetooth settings." = "Eşleştirme tamamlanmadı. Tekrar dene ya da Bluetooth ayarlarından eşleştir.";
+"Turn on Bluetooth on your Mac, then try again." = "Mac'inde Bluetooth'u aç, sonra tekrar dene.";
+"Turn on Bluetooth on your phone, then try again." = "Telefonunda Bluetooth'u aç, sonra tekrar dene.";

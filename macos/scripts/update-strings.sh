@@ -31,6 +31,12 @@ swiftc -c \
     -sdk "$(xcrun --show-sdk-path)" \
     -I "$BIN" -I "$BIN/Modules" \
     "$MACOS"/Sources/AndroMac/*.swift
+swiftc -c -application-extension \
+    -emit-localized-strings -emit-localized-strings-path "$TMP" \
+    -module-name AndroMacShare \
+    -target "$(uname -m)-apple-macos14.0" \
+    -sdk "$(xcrun --show-sdk-path)" \
+    "$MACOS"/ShareExtension/*.swift
 cd "$MACOS"
 
 python3 - "$TMP" "${1:-}" <<'PY'

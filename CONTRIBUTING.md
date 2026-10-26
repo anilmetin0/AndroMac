@@ -59,8 +59,9 @@ when `VERSION` is raised; [docs/RELEASING.md](docs/RELEASING.md) describes the p
 AndroMac is phones and Macs on one local network. A phone talks to one Mac at a time and can
 switch between the Macs it knows.
 
-Out of scope: SMS, call control and any access over the internet. A pull request that adds one of
-those will be closed however good the code is.
+Out of scope: SMS and access over the internet. Bluetooth call control uses macOS HFP and the
+phone's system Bluetooth pairing. Call audio depends on whether macOS can open the SCO channel;
+do not claim microphone or speaker support without testing both directions on hardware.
 
 ## Toolchain
 

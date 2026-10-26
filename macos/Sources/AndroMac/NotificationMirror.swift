@@ -18,6 +18,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
 
     func bootstrap() {
         center.delegate = self
+        center.setNotificationCategories([BluetoothCalls.notificationCategory])
         center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if let error { NSLog("AndroMac: notification permission error — \(error.localizedDescription)") }
             else if !granted { NSLog("AndroMac: notification permission was not granted") }
@@ -227,7 +228,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
             identifier: id, actions: unActions, intentIdentifiers: [],
             options: [.customDismissAction]
         )
-        center.setNotificationCategories(Set(categories.values))
+        center.setNotificationCategories(Set(categories.values).union([BluetoothCalls.notificationCategory]))
         return id
     }
 
@@ -251,6 +252,11 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         let id = userInfo["id"] as? String ?? ""
         let pkg = userInfo["pkg"] as? String ?? ""
         let peer = userInfo["peer"] as? String ?? ""
+
+        if let token = userInfo["callToken"] as? String {
+            await BluetoothCalls.shared.notificationAction(response.actionIdentifier, token: token)
+            return
+        }
 
         // "File received" (FileTransfer): a click reveals the file in Finder, it is never opened.
         if let path = userInfo["file"] as? String {

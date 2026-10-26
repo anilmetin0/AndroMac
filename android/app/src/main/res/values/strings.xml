@@ -351,4 +351,7 @@
     <string name="pair_choose_title">Choose a Mac</string>
     <string name="pair_search_again">Search again</string>
     <string name="pair_searching">Looking for Macs on this network…</string>
+    <string name="bt_pair_channel">Bluetooth pairing</string>
+    <string name="bt_pair_title">Pair with your Mac</string>
+    <string name="bt_pair_text">Tap to allow Bluetooth so your Mac can handle calls</string>
 </resources>

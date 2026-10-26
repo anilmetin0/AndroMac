@@ -21,6 +21,10 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- "Find phone": vibration alongside the alarm sound (FindPhone.kt) -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Bluetooth calls: bond with the Mac when it asks (BluetoothPair). No scan, no location. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
 
     <!--
         In-app updates (feature/Updater.kt): the app downloads the release APK, checks it against
@@ -152,6 +156,13 @@
                 <data android:mimeType="*/*" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.BluetoothPairActivity"
+            android:exported="false"
+            android:theme="@style/TransparentTheme"
+            android:excludeFromRecents="true"
+            android:taskAffinity="" />
 
         <!-- Invisible helper: reading and writing the clipboard requires focus (see
              ClipboardBridge). Only our own PendingIntents and our tile invoke it. -->

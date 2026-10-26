@@ -11,12 +11,20 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ### Eklenenler
 
+- Finder'ın Paylaş menüsünden AndroMac ile dosya gönderme. Dosya ekranın üst kenarına
+  sürüklenince bırakma alanı açılır ve üzerinde adı yazan telefona gönderir.
+- Genel ayarlarda ve menü çubuğu panelinde Bluetooth arama denetimleri, gelen arama bildirimi.
+  HFP ile Mac'e ses aktarımı denenir; sistem desteklemiyorsa ses telefonda kalır.
+
 - **Mac'te otomatik bağlanma.** Her telefonun panelde Diğer menüsünde ve Ayarlar → Cihazlar'da bir
   Otomatik bağlan anahtarı var. Telefondaki anahtarla aynı: hangi tarafta değiştirirsen, iki taraf
   bağlanır bağlanmaz öbürü de aynı değere geçiyor. Mac'te kapatılan telefon artık bütün gece yeniden
   denemiyor.
 
 ### Değişenler
+
+- Ağ kaybolunca eski soket kapanır; Mac ping yanıtlarını denetler. Uyku sonrasında Mac'in
+  portu değişse de otomatik bağlantıyı kapatıp açmadan yeniden keşfedilebilir.
 
 - Bağlantıyı kes, Mac'te de telefonda da, otomatik bağlanmayı iki tarafta kapatıyor. Panel böyle
   bir telefonu "Otomatik bağlanma kapalı" diye gösteriyor ve yanında Bağlan düğmesi var.

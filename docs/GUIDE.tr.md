@@ -155,8 +155,32 @@ tarafa hemen, değilken bir sonraki bağlantıda geçer. Kapalıyken telefon yal
 | Ekran yansıtma | Telefondan Mac'e | Telefonun ekranı bir pencerede; fare, klavye ve sesle. Kablosuz hata ayıklama ya da USB üzerinden. Bkz. [Ekran yansıtma](#ekran-yansıtma). |
 | Güncellemeler | İki taraf | İki uygulama da günde bir kez denetler ve güncellemeyi kendisi kurar. Bkz. [Güncellemeler](#güncellemeler). |
 
-Olmayanlar: SMS, aramalar ve internet üzerinden erişim. Telefonla Mac'in aynı yerel ağda olması
-gerekir.
+Olmayanlar: SMS ve internet üzerinden erişim. Yerel ağ eşitlemesi için telefonla Mac'in aynı
+ağda olması gerekir. Bluetooth arama denetimleri ayrıdır ve sistemden Bluetooth eşleştirmesi ister.
+
+### Mac'ten dosya gönderme
+
+Finder'da en fazla 50 dosya seç, sağ tıkla ve **Paylaş → AndroMac**'i seç. AndroMac'te telefonu
+seçip **Gönder**'e bas. Paylaşım hedefi görünmüyorsa **Sistem Ayarları → Genel → Giriş Öğeleri ve
+Uzantılar → Paylaşma** bölümünden AndroMac'i etkinleştir (konum macOS sürümüne göre değişebilir).
+
+Hızlı göndermek için dosyaları ekranın üst kenarına veya AndroMac'in menü çubuğu simgesine sürükle.
+**Android'e gönder** alanına bırak. Alan, panelde seçili telefonun adını gösterir; bırakınca gönderim
+başlar. Bağlı telefon yoksa dosya bırakılamaz. Mevcut panele bırakma ve dosya seçme yolları da
+çalışır. Klasörler ve 4 GiB'dan büyük dosyalar gönderilemez. Telefonda **Dosyaları otomatik kabul
+et** açık değilse telefon almadan önce sorar.
+
+### Bluetooth aramaları
+
+Android telefonunu macOS Bluetooth ayarlarında eşleştir. AndroMac'te **Ayarlar → Genel → Telefon
+aramaları** bölümünü aç, **Eşlenmiş cihazları yenile**'ye bas, telefonunu seç ve **Aramaları bağla**'ya
+bas. Gelen aramalar panelde ve Bildirim Merkezi'nde **Yanıtla** ve **Reddet** seçenekleriyle görünür.
+Görüşme sırasında **Aramayı bitir**, **Mac sesini kullan** veya **Telefon sesini kullan** seçenekleri var.
+
+Mac'te görüşme sesi için mikrofon izni ve çalışan bir Bluetooth SCO ses kanalı gerekir. Bazı macOS
+ve telefon birleşimleri, arama denetimi bağlansa bile bu kanalı reddeder. AndroMac hatayı gösterip
+sesi telefona geri verir. İki yönlü mikrofon ve hoparlör sesi, kendi Mac'in ve telefonunla sınanmalı;
+arama denetiminin bağlanması tek başına sesin çalıştığını göstermez.
 
 ### Ekran yansıtma
 

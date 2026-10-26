@@ -156,8 +156,32 @@ connects only when you tap **Connect** on it, so after turning it back on at the
 | Screen mirroring | Phone to Mac | The phone's screen in a window, with mouse, keyboard and sound, over Wireless debugging or USB. See [Screen mirroring](#screen-mirroring). |
 | Updates | Both | Each app checks once a day and installs updates itself. See [Updates](#updates). |
 
-Not included: SMS, calls, and access over the internet. The phone and the Mac have to be on the
-same local network.
+Not included: SMS and access over the internet. LAN sync needs the phone and Mac on the same
+local network. Bluetooth call control is separate and needs system Bluetooth pairing.
+
+### Send files from the Mac
+
+In Finder, select up to 50 files, right-click and choose **Share → AndroMac**. Choose the phone
+in AndroMac and click **Send**. If the share target is hidden, enable AndroMac under
+**System Settings → General → Login Items & Extensions → Sharing** (the location varies by macOS version).
+
+For a quick send, drag files to the top edge of the screen or onto AndroMac's menu bar icon.
+Drop them on **Send to Android**. The target names the phone currently selected in the panel;
+dropping sends immediately to that phone. With no connected phone it cannot accept a drop.
+The existing panel drop and file picker also work. Folders and files larger than 4 GiB cannot be sent.
+The phone still asks before receiving unless its **Accept files automatically** setting is on.
+
+### Bluetooth calls
+
+Pair your Android phone in macOS Bluetooth settings. In AndroMac, open **Settings → General →
+Phone calls**, click **Refresh paired devices**, choose your phone and click **Connect calls**.
+Incoming calls appear in the panel and in Notification Center, with **Answer** and **Decline**.
+During a call, use **End call**, **Use Mac audio** or **Use phone audio**.
+
+Mac audio needs microphone permission and a working Bluetooth SCO audio channel. Some macOS
+and phone combinations reject this channel even when call control connects. AndroMac reports
+the failure and returns audio to the phone. Two-way microphone and speaker audio needs a hardware
+test on your Mac and phone; a connected call-control session alone does not prove it works.
 
 ### Screen mirroring
 

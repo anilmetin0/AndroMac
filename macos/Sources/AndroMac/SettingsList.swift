@@ -112,6 +112,8 @@ struct SettingsList: View {
             }
         }
 
+        Section("Phone calls") { BluetoothCallSettings() }
+
         // The version is the first thing asked for in a bug report; the GitHub mark beside it opens
         // the repository, where the report goes.
         Section {
@@ -588,7 +590,7 @@ struct SettingsList: View {
     }
 }
 
-private extension View {
+extension View {
     /// A section footer: one quiet line, leading like System Settings (a grouped form centres or
     /// trails it otherwise).
     func formNote() -> some View {

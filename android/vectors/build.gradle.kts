@@ -31,6 +31,7 @@ kotlin {
         "dev/andromac/feature/ClipHistory.kt",
         // Which discovered Mac to dial, and "key changed" versus "somebody else's Mac".
         "dev/andromac/core/MacPick.kt",
+        "dev/andromac/core/ReconnectPolicy.kt",
     )
 }
 

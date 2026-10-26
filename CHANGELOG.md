@@ -11,12 +11,20 @@ raised. Nightly builds list their commits instead.
 
 ### Added
 
+- Finder's Share menu can send files through AndroMac. A drop target appears when files are
+  dragged to the top edge of the screen; it sends to the phone named on the target.
+- Bluetooth call controls in General settings and the menu bar panel, with incoming-call
+  notifications. Mac audio is attempted through HFP; unsupported audio stays on the phone.
+
 - **Auto-connect on the Mac.** Each phone has a Connect automatically switch in the panel's More
   menu and in Settings → Devices. It is the same switch as the phone's: flip it on either side and
   the other follows as soon as the two are connected. A phone turned off on the Mac no longer
   redials all night.
 
 ### Changed
+
+- Reconnection closes sockets on LAN loss and checks ping replies on the Mac. Discovery can
+  recover a changed Mac port after sleep without toggling auto-connect.
 
 - Disconnect, on the Mac or on the phone, turns auto-connect off on both. The panel shows such a
   phone as "Auto-connect off", with Connect right beside it.
