@@ -276,7 +276,8 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         case Self.fillIdentifier:
             // Typed into the focused field; without the Accessibility permission it is copied instead.
             guard let code = userInfo["code"] as? String, !code.isEmpty else { return }
-            await CodeTyper.fill(code)
+            // Return the response before typing so Notification Center can dismiss its banner.
+            Task { @MainActor in await CodeTyper.fill(code) }
 
         case Self.linkIdentifier:
             // Checked again here: userInfo comes back from the system, and only the web is opened.
