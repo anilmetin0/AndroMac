@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbarStyle="outsideOverlay"
+    android:clipToPadding="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
+
+        <include layout="@layout/view_header" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="16dp"
+            android:textAppearance="@style/TextAppearance.AM.BodyMedium"
+            android:lineSpacingMultiplier="1.3"
+            android:textColor="?android:attr/textColorSecondary"
+            android:text="@string/sms_intro" />
+
+        <LinearLayout style="@style/Card">
+
+            <LinearLayout android:id="@+id/rowEnabled" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/sms_enable" />
+                    <TextView style="@style/RowSubtitle" android:text="@string/sms_enable_note" />
+                </LinearLayout>
+                <Switch android:id="@+id/swEnabled" style="@style/RowSwitch" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView style="@style/SectionLabel" android:text="@string/sms_access" />
+
+        <!-- SMS and Contacts rows from ui/Permissions.kt. -->
+        <LinearLayout android:id="@+id/smsPermissions" style="@style/Card" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

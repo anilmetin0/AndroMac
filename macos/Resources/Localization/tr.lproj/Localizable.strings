@@ -45,7 +45,7 @@
 "Keychain access denied — restart the app and allow it" = "Keychain erişimi reddedildi — uygulamayı yeniden başlat ve izin ver";
 "Language" = "Dil";
 "listener was cancelled" = "dinleyici iptal edildi";
-"Messages" = "Mesaj";
+"Messages" = "Mesajlar";
 "Messages / hour" = "Mesaj / saat";
 "Metrics" = "Ölçümler";
 "Most frequent" = "En sık";
@@ -368,3 +368,25 @@
 "Your Android phone's notifications, clipboard, files and calls on your Mac" = "Android telefonunun bildirimleri, panosu, dosyaları ve aramaları Mac'inde";
 
 "Tap the AndroMac notification on your phone." = "Telefonundaki AndroMac bildirimine dokun.";
+
+"%@, %@: %@" = "%@, %@: %@";
+"%@, unread, %@: %@" = "%@, okunmadı, %@: %@";
+"Allow SMS access on your phone" = "Telefonunda SMS erişimine izin ver";
+"Can't reply to this sender" = "Bu gönderene yanıt verilemez";
+"Invalid number" = "Geçersiz numara";
+"Messages is off on the phone" = "Telefonda Mesajlar kapalı";
+"New message" = "Yeni mesaj";
+"No conversation selected" = "Seçili konuşma yok";
+"No messages" = "Mesaj yok";
+"No service" = "Şebeke yok";
+"No SMS access on the phone" = "Telefonda SMS erişimi yok";
+"Not sent" = "Gönderilmedi";
+"Open" = "Aç";
+"Phone not connected" = "Telefon bağlı değil";
+"Phone number" = "Telefon numarası";
+"Sending…" = "Gönderiliyor…";
+"Text message" = "SMS";
+"To" = "Kime";
+"To:" = "Kime:";
+"Turn on Messages on your phone" = "Telefonunda Mesajlar'ı aç";
+"You, %@: %@" = "Sen, %@: %@";

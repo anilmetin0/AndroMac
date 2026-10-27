@@ -34,6 +34,8 @@ kotlin {
         // Which discovered Mac to dial, and "key changed" versus "somebody else's Mac".
         "dev/andromac/core/MacPick.kt",
         "dev/andromac/core/ReconnectPolicy.kt",
+        // Messages: what the Mac may send, and the limits on what goes back.
+        "dev/andromac/core/Sms.kt",
     )
 }
 

@@ -722,6 +722,23 @@ actor Server {
             guard let id = msg["id"] as? String else { break }
             await NotificationMirror.shared.remove(id, from: deviceID)
 
+        // PROTOCOL §5 Messages. Parsed and clamped here, off the main thread; the window takes
+        // them only from the phone it is showing, and only while it is open.
+        case "sms_threads":
+            guard let list = SMS.threads(msg) else { break }
+            await MainActor.run { Messages.shared.threadsArrived(list, from: deviceID) }
+
+        case "sms_messages":
+            guard let list = SMS.messages(msg) else { break }
+            await MainActor.run { Messages.shared.messagesArrived(list, from: deviceID) }
+
+        case "sms_sent":
+            guard let sent = SMS.sent(msg) else { break }
+            await MainActor.run { Messages.shared.result(sent, from: deviceID) }
+
+        case "sms_changed":
+            await MainActor.run { Messages.shared.changed(from: deviceID) }
+
         case _ where type.hasPrefix("file_"):
             // PROTOCOL §5 file_* — offer/accept/chunk/ack/done/result/cancel, both directions.
             await FileTransfer.shared.handle(type, msg, from: deviceID)
@@ -760,6 +777,16 @@ actor Server {
     func send(_ msg: sending [String: Any], to deviceID: String) async -> Bool {
         guard let json = Self.encode(msg) else { return false }
         return await send(json: json, to: deviceID)
+    }
+
+    /// `sms_request` and `sms_send` go only to a phone that advertised `sms` (PROTOCOL §5).
+    @discardableResult
+    func sendSMS(_ msg: sending [String: Any], to deviceID: String) async -> Bool {
+        let capable = await MainActor.run {
+            AppState.shared.devices.first { $0.id == deviceID }?.caps.contains("sms") == true
+        }
+        guard capable else { return false }
+        return await send(msg, to: deviceID)
     }
 
     /// Send to every connected phone. What "sync" means for anything not addressed at one device in

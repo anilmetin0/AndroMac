@@ -27,6 +27,16 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
 
     <!--
+        Messages on the Mac (feature/SmsBridge.kt), off until the user turns it on. Contacts only
+        put names to numbers. Not the default SMS app: Android records what it sends.
+    -->
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- SMS permissions imply a radio; without this a Wi-Fi tablet could not install the app. -->
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+
+    <!--
         In-app updates (feature/Updater.kt): the app downloads the release APK, checks it against
         the checksum published with the release and opens the system's install dialog. The user
         confirms it there, and the system still enforces the signature.
@@ -124,6 +134,11 @@
             android:name=".ui.FileSettingsActivity"
             android:exported="false"
             android:label="@string/file_title" />
+
+        <activity
+            android:name=".ui.SmsSettingsActivity"
+            android:exported="false"
+            android:label="@string/sms_title" />
 
         <activity
             android:name=".ui.PermissionsActivity"
@@ -234,6 +249,11 @@
         <!-- Accept / Decline / Cancel on the file transfer notifications. Only our own PendingIntent. -->
         <receiver
             android:name=".feature.FileActionReceiver"
+            android:exported="false" />
+
+        <!-- The radio's result for each part of a text sent from the Mac. Only our own PendingIntent. -->
+        <receiver
+            android:name=".feature.SmsBridge$SmsSentReceiver"
             android:exported="false" />
 
         <!-- Where the package installer reports the result of an in-app update. Ours alone. -->

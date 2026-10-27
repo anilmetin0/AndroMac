@@ -3,8 +3,11 @@
     Every detail screen, one row each with a one-line summary of what is set there. Grouped the
     way people look for them: the Mac, what is mirrored, how the app itself behaves, and help.
     Features carries the same four switches as the main screen, in the same order.
+    Past lint's 80-view mark: one static list, inflated once per visit, with nothing to recycle.
 -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="TooManyViews"
     android:id="@+id/scrollRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -97,6 +100,18 @@
                     android:orientation="vertical">
                     <TextView style="@style/RowTitle" android:text="@string/settings_files" />
                     <TextView android:id="@+id/fileSummary" style="@style/RowSubtitle" />
+                </LinearLayout>
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/rowSms" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/sms_title" />
+                    <TextView android:id="@+id/smsSummary" style="@style/RowSubtitle" />
                 </LinearLayout>
                 <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>

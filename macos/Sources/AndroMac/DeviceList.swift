@@ -300,6 +300,14 @@ private struct DeviceCard: View {
                     }
                 }
             }
+            if live?.caps.contains("sms") == true {
+                IconButton(symbol: "message", label: String(localized: "Messages")) {
+                    // The window follows the focused phone; this card's phone is the one asked for.
+                    state.focusedDeviceID = device.id
+                    state.refocus()
+                    state.showMessages()
+                }
+            }
             mirrorButton
             Spacer(minLength: 0)
             more

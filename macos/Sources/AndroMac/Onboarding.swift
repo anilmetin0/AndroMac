@@ -73,10 +73,7 @@ enum OnboardingWindow {
     fileprivate static func closed() {
         Store.shared.onboardingDone = true
         window = nil
-        let mainOpen = NSApp.windows.contains {
-            $0.isVisible && $0.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true
-        }
-        if !mainOpen && !DemoMode.isOn { NSApp.setActivationPolicy(.accessory) }
+        if !AppState.appWindowVisible() && !DemoMode.isOn { NSApp.setActivationPolicy(.accessory) }
     }
 
     private final class Delegate: NSObject, NSWindowDelegate {

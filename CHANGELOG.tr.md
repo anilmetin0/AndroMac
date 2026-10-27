@@ -11,6 +11,9 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ### Eklenenler
 
+- **Mesajlar.** SMS konuşmaları Mac'te bir Mesajlar penceresinde (⌘⇧M): oku, yanıtla ya da yeni
+  mesaj yaz; mesaj telefonun SIM'i üzerinden gider. Telefonda Ayarlar → Mesajlar'dan açılana kadar
+  kapalı; Kişiler izni yalnızca isim ekler. Mac'te hiçbir şey saklanmaz.
 - Finder'ın Paylaş menüsünden AndroMac ile dosya gönderme. Dosya ekranın üst kenarına
   sürüklenince bırakma alanı açılır ve üzerinde adı yazan telefona gönderir.
 - Aramalar ayarlarında ve menü çubuğu panelinde Bluetooth arama denetimleri, gelen arama bildirimi.

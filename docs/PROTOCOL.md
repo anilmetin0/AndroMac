@@ -198,7 +198,7 @@ ignored silently for forward compatibility. Unknown fields are ignored too.
 ```json
 {"t":"hello","name":"Pixel 9","platform":"android","proto":3,
  "caps":["battery","clipboard","notification","find_phone","media","file","system","debugging",
-         "bt_pair"]}
+         "bt_pair","sms"]}
 ```
 
 The phone's `hello` also carries `"auto_connect":{"on":true,"ts":1750000000000}` (`ts` in ms, 0
@@ -457,6 +457,64 @@ not synced because that would require a timer (§6.10). If media sync is switche
 `cmd` is one of `play|pause|next|previous`. The phone forwards it to the active session's
 `transportControls`, or ignores it when there is no session.
 
+### Messages (`sms_*`)
+
+The Mac shows the phone's SMS conversations and can send a text through the phone. Only SMS: no
+MMS, RCS or chat apps. Nothing is stored on the Mac; it asks again each time the Messages window
+opens. The phone advertises `sms` in its `caps`. The Mac sends these only to a phone that did.
+
+#### `sms_request`, macOS → Android
+```json
+{"t":"sms_request"}
+{"t":"sms_request","thread":42}
+```
+Without `thread`, asks for the conversation list; with it, for that conversation's messages.
+
+#### `sms_threads`, Android → macOS
+```json
+{"t":"sms_threads","state":"ok","threads":[
+  {"thread":42,"addr":"+905551112233","name":"Ayşe","snippet":"Yoldayım","ts":1750000000000,"unread":1}]}
+```
+The 50 most recent conversations, newest first. `name` is present only when Contacts access is
+granted and the number is a contact. `snippet` is the last message, at most 160 characters.
+`state` is `ok`, `off` (Messages is turned off on the phone) or `no_permission` (SMS access was
+not granted); with any state other than `ok`, `threads` is empty.
+
+#### `sms_messages`, Android → macOS
+```json
+{"t":"sms_messages","thread":42,"state":"ok","messages":[
+  {"id":901,"body":"Yoldayım","ts":1750000000000,"out":false,"status":"received"}]}
+```
+The 200 most recent messages of the conversation, oldest first, fewer if they would not fit in
+900 KiB (older ones are left out). `body` is at most 2048
+characters. `status` is `received`, `sent`, `pending` or `failed`. `state` as for `sms_threads`.
+
+#### `sms_send`, macOS → Android
+```json
+{"t":"sms_send","id":"7c1e","to":"+905551112233","body":"Geliyorum"}
+```
+`to` is the conversation's address: digits, spaces, `+`, `-`, `(` and `)` only, at most 32
+characters; anything else is answered with `invalid`. `body` is 1 to 2048 characters. The phone
+sends through its default SIM, split into parts as needed. Android records the message in the
+phone's own Messages app. `id` is the Mac's, at most 64 characters, echoed in `sms_sent`.
+
+#### `sms_sent`, Android → macOS
+```json
+{"t":"sms_sent","id":"7c1e","ok":false,"reason":"no_service"}
+```
+Sent once per `sms_send`, when the radio reports the result. If the link is down at that moment
+the result is lost and the Mac's bubble stays pending. `reason` (only when `ok` is false)
+is `off`, `no_permission`, `invalid`, `no_service` or `failed`.
+
+#### `sms_changed`, Android → macOS
+```json
+{"t":"sms_changed"}
+```
+The SMS store changed (a text arrived or was sent), or Messages was turned on or off or its SMS
+access changed on the phone. The phone listens with a content observer
+while connected and Messages is on, and coalesces bursts into one message per second at most; no
+timer or polling. The Mac asks again only if its Messages window is open.
+
 ### File transfer, bidirectional (`file_*`)
 
 Files travel over the same authenticated session, with no second socket, key or HTTP server.
@@ -540,8 +598,8 @@ files onto the Mac panel are the only entry points.
 Sharing plain text from the Android share sheet sends a `clipboard` message instead of a file.
 
 `hello.caps` from the phone in this version:
-`["battery","clipboard","notification","find_phone","media","file","system","debugging"]`. The Mac
-sends its own list, which has no `system` or `debugging`: those describe what a phone can be asked
+`["battery","clipboard","notification","find_phone","media","file","system","debugging","bt_pair","sms"]`.
+The Mac sends its own list, which has no `system`, `debugging`, `bt_pair` or `sms`: those describe what a phone can be asked
 to do. If the other side does not advertise a capability, the matching UI element is hidden.
 
 ## 6. Energy contract

@@ -11,6 +11,9 @@ raised. Nightly builds list their commits instead.
 
 ### Added
 
+- **Messages.** SMS conversations in a Messages window on the Mac (⌘⇧M): read them, reply, or
+  start a new text, sent through the phone's SIM. Off until it is turned on in the phone's
+  Settings → Messages; contacts access only adds names. Nothing is stored on the Mac.
 - Finder's Share menu can send files through AndroMac. A drop target appears when files are
   dragged to the top edge of the screen; it sends to the phone named on the target.
 - Bluetooth call controls in Calls settings and the menu bar panel, with incoming-call

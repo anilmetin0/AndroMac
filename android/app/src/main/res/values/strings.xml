@@ -84,6 +84,10 @@
     <string name="setup_overlay_note">Lets the Mac read the clipboard without a tap on the phone</string>
     <string name="setup_bt_title">Calls on your Mac</string>
     <string name="setup_bt_note">Answer calls from your Mac over Bluetooth</string>
+    <string name="setup_sms_title">SMS</string>
+    <string name="setup_sms_note">Read and send texts from your Mac</string>
+    <string name="setup_contacts_title">Contacts</string>
+    <string name="setup_contacts_note">Show names instead of numbers</string>
 
     <!-- permissions -->
     <string name="permissions_title">Permissions</string>
@@ -180,6 +184,13 @@
     <string name="language_system">System</string>
 
     <string name="settings_files">File transfer</string>
+    <string name="sms_title">Messages</string>
+    <string name="sms_intro">SMS only, no MMS or chat apps. Nothing is stored on the Mac.</string>
+    <string name="sms_enable">Messages on your Mac</string>
+    <string name="sms_enable_note">Conversations and replies on the Mac</string>
+    <string name="sms_access">Access</string>
+    <string name="sms_summary_on">On</string>
+    <string name="sms_summary_allow">Allow SMS access</string>
     <string name="file_summary_ask">Ask before saving</string>
     <string name="file_summary_auto">Accept automatically</string>
 

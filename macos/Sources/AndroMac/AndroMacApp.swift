@@ -40,9 +40,18 @@ struct AndroMacApp: App {
                 Link("Report a Problem", destination: URL(string: "https://github.com/anilmetin0/AndroMac/issues/new/choose")!)
             }
         }
+
+        // The phone's texts, held in memory only while this window is open (see `Messages`).
+        Window("Messages", id: AndroMacApp.messagesWindowID) {
+            MessagesView()
+        }
+        .defaultSize(width: 780, height: 580)
+        .windowResizability(.contentMinSize)
+        .keyboardShortcut("m", modifiers: [.command, .shift])
     }
 
     static let mainWindowID = "main"
+    static let messagesWindowID = "messages"
 }
 
 /// The menu bar icon, plus the battery percentage when asked for.
@@ -63,7 +72,10 @@ private struct MenuBarLabel: View {
         }
         // The icon on its own said nothing under VoiceOver.
         .accessibilityLabel("AndroMac: " + state.headline)
-        .onAppear { state.openMainWindow = { openWindow(id: AndroMacApp.mainWindowID) } }
+        .onAppear {
+            state.openMainWindow = { openWindow(id: AndroMacApp.mainWindowID) }
+            state.openMessagesWindow = { openWindow(id: AndroMacApp.messagesWindowID) }
+        }
     }
 }
 
@@ -99,7 +111,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // compiler cannot see through the notification closure.
             let window = note.object as? NSWindow
             MainActor.assumeIsolated {
-                guard let window, window.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true
+                guard let window, let id = window.identifier?.rawValue,
+                      id.contains(AndroMacApp.mainWindowID) || id.contains(AndroMacApp.messagesWindowID),
+                      !AppState.appWindowVisible(except: window)
                 else { return }
                 NSApp.setActivationPolicy(.accessory)
             }

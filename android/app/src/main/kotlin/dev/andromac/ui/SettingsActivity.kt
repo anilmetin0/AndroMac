@@ -40,6 +40,7 @@ class SettingsActivity : Activity() {
         }
         bindSwitchRow(R.id.rowBattery, R.id.swBattery, store.syncBattery) { store.syncBattery = it }
         bindNavRow(R.id.rowFiles) { open(FileSettingsActivity::class.java) }
+        bindNavRow(R.id.rowSms) { open(SmsSettingsActivity::class.java) }
         // Missing, the row asks for Nearby devices; granted, it opens the Bluetooth pairings.
         bindNavRow(R.id.rowCalls) {
             if (!Permission.BLUETOOTH_CONNECT.granted(this)) grant(Permission.BLUETOOTH_CONNECT)
@@ -90,6 +91,11 @@ class SettingsActivity : Activity() {
             !store.fileTransfer -> R.string.summary_off
             store.fileAutoAccept -> R.string.file_summary_auto
             else -> R.string.file_summary_ask
+        }))
+        text(R.id.smsSummary, getString(when {
+            !store.sms -> R.string.summary_off
+            !Permission.SMS.granted(this) -> R.string.sms_summary_allow
+            else -> R.string.sms_summary_on
         }))
         text(R.id.callsSummary, getString(
             if (Permission.BLUETOOTH_CONNECT.granted(this)) R.string.calls_summary_ready else R.string.calls_summary_allow

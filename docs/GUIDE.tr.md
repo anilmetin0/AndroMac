@@ -166,6 +166,7 @@ tarafa hemen, değilken bir sonraki bağlantıda geçer. Kapalıyken telefon yal
 | Telefonu bul | Mac'ten telefona | Telefon en fazla 30 saniye alarm sesiyle çalar ve titrer. "Buldum", ikinci bir basış ya da süre dolması durdurur. |
 | Telefon denetimleri | Mac'ten telefona | Panelden zil modu (zil, titreşim, sessiz) ve medya ses düzeyi, bir de test bildirimi. Sessize almak telefonda Rahatsız Etmeyin erişimi ister. |
 | Dosyalar | İki yön | Telefonda paylaşım menüsünden, Mac'te dosyaları panele bırakarak. Otomatik kabulü açmadıysan alıcıya önce sorulur. Dosyalar İndirilenler'e iner, gelince denetlenir ve kendiliğinden açılmaz. |
+| Mesajlar | İki yönlü | SMS konuşmaları Mac'te bir Mesajlar penceresinde (⌘⇧M ya da telefon kartındaki mesaj düğmesi): en son 50 konuşma, her birinin son 200 mesajı, telefon üzerinden yanıt ve yeni mesaj. Yalnızca SMS; MMS, RCS ve sohbet uygulamaları yok. Telefonda Ayarlar → Mesajlar'dan açılana kadar kapalı. Mac'te hiçbir şey saklanmaz. |
 | Birden fazla telefon | Mac | Aynı anda birden fazla telefon bağlanabilir. Panel onları sekme olarak gösterir. Her birinin bağlantısı ayrı kesilebilir, her birinin kendi pano anahtarı var. Ayarlar → Cihazlar her telefonu IP adresi ve en son ne zaman görüldüğüyle listeler; unutma da oradan yapılır. |
 | Birden fazla Mac | Telefon | Telefon birden fazla Mac'i hatırlar, Ayarlar → Bağlantı'dan aralarında geçiş yapılır. |
 | Doğrulama kodları | Mac | Bildirimde tek kullanımlık kod varsa Mac bildiriminde Kodu kopyala çıkar, panel de kod için bir kopyalama düğmesi gösterir. Kodun yanında kod, şifre, OTP ya da code gibi bir sözcük olmalı. Kopyalanan kodlar pano geçmişine girmez. |
@@ -173,7 +174,7 @@ tarafa hemen, değilken bir sonraki bağlantıda geçer. Kapalıyken telefon yal
 | Ekran yansıtma | Telefondan Mac'e | Telefonun ekranı bir pencerede; fare, klavye ve sesle. Kablosuz hata ayıklama ya da USB üzerinden. Bkz. [Ekran yansıtma](#ekran-yansıtma). |
 | Güncellemeler | İki taraf | İki uygulama da günde bir kez denetler ve güncellemeyi kendisi kurar. Bkz. [Güncellemeler](#güncellemeler). |
 
-Olmayanlar: SMS ve internet üzerinden erişim. Yerel ağ eşitlemesi için telefonla Mac'in aynı
+Olmayanlar: MMS, RCS ve internet üzerinden erişim. Yerel ağ eşitlemesi için telefonla Mac'in aynı
 ağda olması gerekir. Bluetooth arama denetimleri ayrıdır ve telefonun Mac ile Bluetooth üzerinden eşleşmesini ister.
 
 ### Mac'ten dosya gönderme
@@ -262,7 +263,7 @@ Yardım → Hakkında'da durur. Hata bildirirken bu satırın tamamını kopyala
 
 | Ekran | İçinde ne var |
 |---|---|
-| Ayarlar | En üstte **Bağlantı**. **Özellikler**: Bildirimler, Pano, **Medya** ve **Pil durumu** anahtarları, Dosya aktarımı ve Mac'te aramalar. **Uygulama**: İzinler, Dil (Android 13 ve üstü) ve Güncellemeler. **Yardım**: Kurulum rehberi, Bağlantı yardımı ve Hakkında. En altta **AndroMac'i sıfırla** önce sorar, sonra eşleştirmeleri, bütün ayarları ve pano geçmişini siler. |
+| Ayarlar | En üstte **Bağlantı**. **Özellikler**: Bildirimler, Pano, **Medya** ve **Pil durumu** anahtarları, Dosya aktarımı, Mesajlar ve Mac'te aramalar. **Uygulama**: İzinler, Dil (Android 13 ve üstü) ve Güncellemeler. **Yardım**: Kurulum rehberi, Bağlantı yardımı ve Hakkında. En altta **AndroMac'i sıfırla** önce sorar, sonra eşleştirmeleri, bütün ayarları ve pano geçmişini siler. |
 | Pano geçmişi | Mac'e giden ya da Mac'ten gelen son 20 metin. Dokununca kopyalanır, gönder düğmesi yeniden gönderir. Yalnızca bellekte tutulur; hassas metinler kaydedilmez. |
 | İzinler | Bu Android sürümündeki her izin; Zorunlu, Önerilir ve İsteğe bağlı diye gruplanmış, her biri verilmiş ya da **İzin ver** düğmesiyle. Birine dokununca ilgili sistem ekranı açılır. |
 | Bağlantı | Bağlantı durumu, kayıtlı Mac'ler ve son adresleri, **Otomatik bağlan**, **Bağlan** ya da **Bağlantıyı kes**, ve **Bu Mac'i unut**. |
@@ -272,6 +273,7 @@ Yardım → Hakkında'da durur. Hata bildirirken bu satırın tamamını kopyala
 | Bağlantı yardımı | Canlı tanı ve sık sorunlar. **ⓘ** düğmesinden ya da **Bağlanamıyorum**'dan açılır. |
 | Güncellemeler | Bkz. [Güncellemeler](#güncellemeler). |
 | Dosya aktarımı | **Mac'ten dosya al** ve **Dosyaları otomatik kabul et**. Dosyalar İndirilenler'e iner. Göndermek için herhangi bir uygulamanın paylaşım menüsünü kullan. |
+| Mesajlar | Mac'te mesajları açar ya da kapatır (varsayılan kapalı) ve SMS iznini ister. Kişiler izni isteğe bağlıdır, yalnızca numaraların yerine isim gösterir. |
 | Mac'te aramalar | Yakındaki cihazlar iznini ister. İzin verilince satır Android'in Bluetooth ayarlarını açar. Bkz. [Bluetooth aramaları](#bluetooth-aramaları). |
 | Kurulum rehberi | İlk açılış kurulumunu yeniden açar. Bkz. [Karşılama ve kurulum](#karşılama-ve-kurulum). |
 | Dil | Android'in uygulama başına dil seçicisi; İngilizce ve Türkçe. |

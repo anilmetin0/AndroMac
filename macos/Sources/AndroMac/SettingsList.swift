@@ -325,6 +325,17 @@ struct SettingsList: View {
                     get: { !device.paused },
                     set: { on in Task { await Server.shared.setAutoConnect(on, for: device.id) } }
                 ))
+                // The Messages window follows the panel's phone, so opening it here selects this one.
+                if state.devices.first(where: { $0.id == device.id })?.caps.contains("sms") == true {
+                    LabeledContent("Messages") {
+                        Button("Open") {
+                            state.focusedDeviceID = device.id
+                            state.refocus()
+                            state.showMessages()
+                        }
+                        .controlSize(.small)
+                    }
+                }
             }
         }
 
