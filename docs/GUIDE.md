@@ -287,7 +287,8 @@ the ringer and volume. Below it are buttons to ring the phone, send a test notif
 mirror the screen, and a **⋯** menu with **Send my clipboard here**, **Connect automatically**,
 **Device settings…**, **Disconnect** and **Forget…**. Next come the last clipboard entry and the four latest notifications. Drop files
 onto the panel to send them. ⌘, opens Settings. Right-click the menu bar icon for Open AndroMac,
-Settings and Quit.
+Settings and Quit. ⌘Q closes the windows like ⌘W and AndroMac keeps running in the menu bar;
+to quit, use Quit there or the power button in the panel.
 
 The window has a sidebar with **Notifications**, **Clipboard** and **Apps** at the top, followed
 by the settings pages.

@@ -396,7 +396,6 @@ struct MenuPanel: View {
             IconButton(symbol: "power", label: String(localized: "Quit AndroMac")) {
                 NSApplication.shared.terminate(nil)
             }
-            .keyboardShortcut("q", modifiers: .command)
         }
         .glassGroup()
     }

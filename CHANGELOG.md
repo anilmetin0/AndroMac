@@ -38,6 +38,9 @@ raised. Nightly builds list their commits instead.
 
 ### Changed
 
+- ⌘Q closes AndroMac's windows like ⌘W and the app keeps running in the menu bar. Quit is in
+  the menu bar icon's right-click menu and the panel's power button.
+
 - Settings on the Mac are reorganized: General, Devices, Notifications, Clipboard, Files, Calls,
   Screen mirroring, Permissions, Updates and Advanced. The Sync page is gone. Each sync switch is
   now at the top of its own page, and Battery and media sit in Devices. Network, Metrics and the

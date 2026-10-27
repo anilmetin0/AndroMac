@@ -39,6 +39,9 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ### Değişenler
 
+- ⌘Q, AndroMac pencerelerini ⌘W gibi kapatır; uygulama menü çubuğunda çalışmaya devam eder. Çıkış
+  menü çubuğu simgesinin sağ tık menüsünde ve paneldeki güç düğmesinde.
+
 - Mac'te ayarlar yeniden düzenlendi: Genel, Cihazlar, Bildirimler, Pano, Dosyalar, Aramalar, Ekran
   yansıtma, İzinler, Güncellemeler ve Gelişmiş. Eşitleme sayfası kalktı. Her eşitleme anahtarı kendi
   sayfasının en üstünde, Pil ve medya ise Cihazlar'da. Ağ, Ölçümler ve gizlilik notu Gelişmiş'e,
