@@ -40,6 +40,12 @@ object Protocol {
     const val T_CLIPBOARD_REQUEST = "clipboard_request"
     const val T_BT_PAIR = "bt_pair"
     const val T_BT_PAIR_RESULT = "bt_pair_result"
+    const val T_SMS_REQUEST = "sms_request"
+    const val T_SMS_THREADS = "sms_threads"
+    const val T_SMS_MESSAGES = "sms_messages"
+    const val T_SMS_SEND = "sms_send"
+    const val T_SMS_SENT = "sms_sent"
+    const val T_SMS_CHANGED = "sms_changed"
 
     /** File transfer (PROTOCOL §5): one chunk per frame, 512 KiB raw is ~683 KiB as base64, under the 1 MiB frame cap. */
     const val FILE_CHUNK = 512 * 1024
@@ -72,7 +78,7 @@ object Protocol {
             JSONArray(
                 listOf(
                     "battery", "clipboard", "notification", "find_phone", "media", "file", "system",
-                    "debugging", "bt_pair",
+                    "debugging", "bt_pair", "sms",
                 )
             ),
         )
@@ -195,6 +201,49 @@ object Protocol {
         .put("t", T_BT_PAIR_RESULT)
         .put("state", state)
         .apply { if (name.isNotEmpty()) put("name", name.take(64)) }
+
+    // --- messages, PROTOCOL §5 `sms_*`; the limits live in [Sms] ---
+
+    /** With any [state] other than `ok` the list is empty. */
+    fun smsThreads(state: String, threads: List<Sms.Thread> = emptyList()) = JSONObject()
+        .put("t", T_SMS_THREADS)
+        .put("state", state)
+        .put("threads", JSONArray(
+            threads.takeIf { state == Sms.STATE_OK }.orEmpty().take(Sms.MAX_THREADS).map {
+                JSONObject()
+                    .put("thread", it.thread)
+                    .put("addr", it.addr)
+                    .apply { if (!it.name.isNullOrEmpty()) put("name", it.name) }
+                    .put("snippet", Sms.clip(it.snippet, Sms.MAX_SNIPPET))
+                    .put("ts", it.ts)
+                    .put("unread", it.unread)
+            }
+        ))
+
+    /** [messages] oldest first, as the Mac shows them. */
+    fun smsMessages(thread: Long, state: String, messages: List<Sms.Message> = emptyList()) = JSONObject()
+        .put("t", T_SMS_MESSAGES)
+        .put("thread", thread)
+        .put("state", state)
+        .put("messages", JSONArray(
+            messages.takeIf { state == Sms.STATE_OK }.orEmpty().takeLast(Sms.MAX_MESSAGES).map {
+                JSONObject()
+                    .put("id", it.id)
+                    .put("body", Sms.clip(it.body, Sms.MAX_BODY))
+                    .put("ts", it.ts)
+                    .put("out", it.out)
+                    .put("status", it.status)
+            }
+        ))
+
+    /** [reason] only when [ok] is false. */
+    fun smsSent(id: String, ok: Boolean, reason: String? = null) = JSONObject()
+        .put("t", T_SMS_SENT)
+        .put("id", id.take(Sms.MAX_ID))
+        .put("ok", ok)
+        .apply { if (!ok) put("reason", reason ?: Sms.REASON_FAILED) }
+
+    fun smsChanged() = JSONObject().put("t", T_SMS_CHANGED)
 
     // --- file transfer, PROTOCOL §5 `file_*` ---
 

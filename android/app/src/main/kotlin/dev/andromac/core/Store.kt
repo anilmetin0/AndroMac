@@ -398,6 +398,24 @@ class Store(context: Context) {
         get() = prefs.getBoolean(K_FILE_AUTO_ACCEPT, false)
         set(v) = prefs.edit().putBoolean(K_FILE_AUTO_ACCEPT, v).apply()
 
+    // --- messages ---
+
+    /**
+     * Messages on the Mac (feature/SmsBridge.kt). Default OFF: texts carry one-time codes and
+     * private conversations, so nothing is read until the user turns it on or grants SMS access.
+     */
+    var sms: Boolean
+        get() = prefs.getBoolean(K_SMS, false)
+        set(v) = prefs.edit().putBoolean(K_SMS, v).apply()
+
+    /**
+     * The next PendingIntent request code for a sent-text result. Kept across restarts: a part
+     * still with the radio from before must never share a code, and so the result, with a new one.
+     */
+    var smsRequestCode: Int
+        get() = prefs.getInt(K_SMS_REQUEST, 0)
+        set(v) = prefs.edit().putInt(K_SMS_REQUEST, v).apply()
+
     // --- updates ---
 
     /**
@@ -555,6 +573,8 @@ class Store(context: Context) {
         const val K_AUTO_CONNECT_CHANGED = "auto_connect_changed"
         const val K_FILE_TRANSFER = "file_transfer"
         const val K_FILE_AUTO_ACCEPT = "file_auto_accept"
+        const val K_SMS = "sms"
+        const val K_SMS_REQUEST = "sms_request_code"
 
         // --- static key wrapping ---
         private const val KEYSTORE = "AndroidKeyStore"

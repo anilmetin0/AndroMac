@@ -50,7 +50,7 @@ enum DemoMode {
                 media: AppState.Media(playing: true, title: "Sunlight", artist: "Hozier",
                                       album: "Unreal Unearth", app: "Spotify",
                                       pkg: "com.spotify.music"),
-                caps: ["clipboard", "media", "find_phone", "file", "system", "bt_pair"],
+                caps: ["clipboard", "media", "find_phone", "file", "system", "bt_pair", "sms"],
                 lastClipboard: "https://github.com/anilmetin0/AndroMac",
                 system: AppState.PhoneSystem(ringer: "vibrate", volume: 9, volumeMax: 15,
                                              canSilence: true),
@@ -136,6 +136,50 @@ enum DemoMode {
         ("Maps", "com.google.android.apps.maps", "Traffic", "12 min to home, light traffic", nil),
         ("Podcasts", "com.google.android.apps.podcasts", "New episode", "Search Engine · 41 min", nil),
     ]
+
+    // MARK: messages
+
+    /// Invented conversations for the Messages window, newest first, as the phone sends them.
+    static var smsThreads: [SMS.Thread] {
+        let now = Date()
+        return [
+            SMS.Thread(id: 42, address: "+90 555 111 22 33", name: "Deniz", snippet: "On my way, 10 minutes",
+                       date: now.addingTimeInterval(-240), unread: 1),
+            SMS.Thread(id: 17, address: "+90 532 444 55 66", name: "Ece", snippet: "See you Saturday",
+                       date: now.addingTimeInterval(-3 * 3600), unread: 0),
+            SMS.Thread(id: 8, address: "+44 20 7946 0958", name: nil, snippet: "Your parcel arrives tomorrow between 9 and 12",
+                       date: now.addingTimeInterval(-26 * 3600), unread: 0),
+            SMS.Thread(id: 3, address: "BANK", name: nil, snippet: "Your verification code is 123456",
+                       date: now.addingTimeInterval(-3 * 86400), unread: 0),
+        ]
+    }
+
+    /// Oldest first.
+    static func smsMessages(_ thread: Int64) -> [SMS.Message] {
+        let now = Date()
+        let lines: [(String, Bool, TimeInterval)]
+        switch thread {
+        case 42: lines = [
+            ("Are we still on for dinner tonight?", false, -26 * 3600),
+            ("Yes! 8 at the usual place", true, -25.9 * 3600),
+            ("Perfect", false, -25.8 * 3600),
+            ("Leaving the office now", true, -900),
+            ("On my way, 10 minutes", false, -240),
+        ]
+        case 17: lines = [
+            ("Did you book the cabin?", true, -3.2 * 3600),
+            ("Done, two nights", false, -3.1 * 3600),
+            ("See you Saturday", false, -3 * 3600),
+        ]
+        case 8: lines = [("Your parcel arrives tomorrow between 9 and 12", false, -26 * 3600)]
+        case 3: lines = [("Your verification code is 123456", false, -3 * 86400)]
+        default: lines = []
+        }
+        return lines.enumerated().map { index, line in
+            SMS.Message(id: thread * 100 + Int64(index), body: line.0, date: now.addingTimeInterval(line.2),
+                        outgoing: line.1, status: line.1 ? .sent : .received)
+        }
+    }
 
     // MARK: drawn assets
 
@@ -245,9 +289,14 @@ enum DemoMode {
         // switches and selection in grey, which is not what a screenshot of it should show. A
         // prompt (pairing, incoming file) first, then the tab, otherwise the panel keeps it.
         let wantsTab = ProcessInfo.processInfo.environment["ANDROMAC_DEMO_TAB"] != nil
+        // ANDROMAC_DEMO_MESSAGES=1 opens the Messages window on the invented conversations.
+        let wantsMessages = ProcessInfo.processInfo.environment["ANDROMAC_DEMO_MESSAGES"] == "1"
+        if wantsMessages { state.openMessagesWindow?() }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
             let prompt = NSApp.windows.first { $0.level == .floating && $0.isVisible }
-            let main = wantsTab
+            let main = wantsMessages
+                ? NSApp.windows.first { $0.identifier?.rawValue.contains(AndroMacApp.messagesWindowID) == true }
+                : wantsTab
                 ? NSApp.windows.first { $0.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true }
                 : nil
             (prompt ?? main)?.makeKeyAndOrderFront(nil)

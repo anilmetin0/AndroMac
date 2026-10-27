@@ -168,6 +168,7 @@ connects only when you tap **Connect** on it, so after turning it back on at the
 | Find my phone | Mac to phone | The phone rings at alarm volume and vibrates for up to 30 seconds. Found it, a second press, or the timeout stops it. |
 | Phone controls | Mac to phone | Ringer (ring, vibrate, silent) and media volume from the panel, plus a test notification. Silencing needs Do Not Disturb access on the phone. |
 | Files | Both ways | Share from the phone's share sheet, or drop files onto the Mac panel. The receiver is asked first, unless you turn on auto-accept. Files go to Downloads, are checked when they arrive, and are never opened for you. |
+| Messages | Both ways | SMS conversations in a Messages window on the Mac (⌘⇧M, or the message button on the phone's card): the 50 most recent conversations, the last 200 texts of each, replies and new texts sent through the phone. SMS only, no MMS, RCS or chat apps. Off until you turn it on in the phone's Settings → Messages. Nothing is stored on the Mac. |
 | Several phones | Mac | More than one phone can be connected at once. The panel shows them as tabs. Each one can be disconnected on its own and has its own clipboard switch. Settings → Devices lists every phone with its IP address and when it was last seen, and is where you forget one. |
 | Several Macs | Phone | A phone can remember more than one Mac and switch between them in Settings → Connection. |
 | Verification codes | Mac | When a notification contains a one-time code, the Mac notification gets Copy code and the panel shows a copy button for it. A code needs a word such as code, OTP, kod or şifre near it. Copied codes do not go into the clipboard history. |
@@ -175,7 +176,7 @@ connects only when you tap **Connect** on it, so after turning it back on at the
 | Screen mirroring | Phone to Mac | The phone's screen in a window, with mouse, keyboard and sound, over Wireless debugging or USB. See [Screen mirroring](#screen-mirroring). |
 | Updates | Both | Each app checks once a day and installs updates itself. See [Updates](#updates). |
 
-Not included: SMS and access over the internet. LAN sync needs the phone and Mac on the same
+Not included: MMS, RCS and access over the internet. LAN sync needs the phone and Mac on the same
 local network. Bluetooth call control is separate and needs the phone paired with the Mac over Bluetooth.
 
 ### Send files from the Mac
@@ -263,7 +264,7 @@ Settings → Help → About. Copy the whole string into bug reports.
 
 | Screen | What is on it |
 |---|---|
-| Settings | **Connection** at the top. **Features**: Notifications, Clipboard, the **Media** and **Battery** switches, File transfer and Calls on your Mac. **App**: Permissions, Language (Android 13 and later) and Updates. **Help**: Setup guide, Connection help and About. At the bottom, **Reset AndroMac** erases the pairings, all settings and the clipboard history, after asking first. |
+| Settings | **Connection** at the top. **Features**: Notifications, Clipboard, the **Media** and **Battery** switches, File transfer, Messages and Calls on your Mac. **App**: Permissions, Language (Android 13 and later) and Updates. **Help**: Setup guide, Connection help and About. At the bottom, **Reset AndroMac** erases the pairings, all settings and the clipboard history, after asking first. |
 | Clipboard history | The last 20 texts sent to or received from the Mac. Tap to copy, or tap the send button to send again. Kept in memory only; sensitive clips are not saved. |
 | Permissions | Every permission this Android version has, grouped as Required, Recommended and Optional, each marked granted or with an **Allow** button. Tap one to open the system screen for it. |
 | Connection | The connection state, the saved Macs with their last address, **Connect automatically**, **Connect** or **Disconnect**, and **Forget this Mac**. |
@@ -273,6 +274,7 @@ Settings → Help → About. Copy the whole string into bug reports.
 | Connection help | Live diagnostics and common problems. Open it with the **ⓘ** button or **I can't connect**. |
 | Updates | See [Updates](#updates). |
 | File transfer | **Receive files from the Mac** and **Accept files automatically**. Files go to Downloads. To send, use any app's share sheet. |
+| Messages | Turns Messages on the Mac on or off (off by default) and asks for SMS access. Contacts access is optional and only puts names to numbers. |
 | Calls on your Mac | Asks for Nearby devices. Once it is allowed, the row opens Android's Bluetooth settings. See [Bluetooth calls](#bluetooth-calls). |
 | Setup guide | The first-launch setup again. See [First launch](#first-launch). |
 | Language | Android's per-app language picker, with English and Turkish. |

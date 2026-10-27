@@ -16,6 +16,7 @@ import android.widget.TextView
 import dev.andromac.R
 import dev.andromac.core.Store
 import dev.andromac.feature.NotificationRelay
+import dev.andromac.feature.SmsBridge
 import dev.andromac.net.LinkService
 
 /**
@@ -28,6 +29,7 @@ import dev.andromac.net.LinkService
  * and falls back to [settingsIntent] once Android stops showing it. [minSdk] is where the
  * permission starts to exist: below it the entry is left out and counts as granted. The names are
  * strings rather than the `Manifest.permission` fields, which only exist from that same API level.
+ * [listed] false keeps an entry off the shared lists; the one screen that needs it asks for it.
  */
 enum class Permission(
     val titleRes: Int,
@@ -35,6 +37,7 @@ enum class Permission(
     val kind: Kind,
     val runtime: String? = null,
     private val minSdk: Int = 0,
+    val listed: Boolean = true,
 ) {
 
     /** Android 17+: without it the phone cannot find or reach the Mac at all. */
@@ -89,6 +92,22 @@ enum class Permission(
         override fun settingsIntent(ctx: Context): Intent = appDetails(ctx)
     },
 
+    /** Messages on the Mac (feature/SmsBridge.kt): reading and sending, one Android dialog for both. */
+    SMS(
+        R.string.setup_sms_title, R.string.setup_sms_note, Kind.OPTIONAL, "android.permission.READ_SMS",
+    ) {
+        override val runtimes = listOf("android.permission.READ_SMS", "android.permission.SEND_SMS")
+        override fun settingsIntent(ctx: Context): Intent = appDetails(ctx)
+    },
+
+    /** Only names for the numbers in Messages, so it is asked for there and not listed elsewhere. */
+    CONTACTS(
+        R.string.setup_contacts_title, R.string.setup_contacts_note, Kind.OPTIONAL,
+        "android.permission.READ_CONTACTS", listed = false,
+    ) {
+        override fun settingsIntent(ctx: Context): Intent = appDetails(ctx)
+    },
+
     DND(R.string.setup_dnd_title, R.string.setup_dnd_note, Kind.OPTIONAL) {
         /** Without it Android refuses to let the Mac silence the phone. */
         override fun granted(ctx: Context): Boolean =
@@ -112,9 +131,12 @@ enum class Permission(
     /** Whether this Android version has the permission at all. */
     val applies: Boolean get() = Build.VERSION.SDK_INT >= minSdk
 
+    /** What the runtime dialog asks for: [runtime], plus any that Android grants with it. */
+    open val runtimes: List<String> get() = listOfNotNull(runtime)
+
     /** A runtime permission is granted when Android says so; the others override this. */
     open fun granted(ctx: Context): Boolean =
-        !applies || runtime == null || ctx.checkSelfPermission(runtime) == PackageManager.PERMISSION_GRANTED
+        !applies || runtimes.all { ctx.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }
 
     abstract fun settingsIntent(ctx: Context): Intent
 
@@ -128,7 +150,7 @@ enum class Permission(
     companion object {
         /** Every permission this Android version has, in order. */
         fun current(kind: Kind? = null): List<Permission> =
-            entries.filter { it.applies && (kind == null || it.kind == kind) }
+            entries.filter { it.listed && it.applies && (kind == null || it.kind == kind) }
 
         fun missing(ctx: Context): List<Permission> = current().filter { !it.granted(ctx) }
         fun missingRequired(ctx: Context): List<Permission> = missing(ctx).filter { it.kind == Kind.REQUIRED }
@@ -153,16 +175,27 @@ enum class Permission(
  * so the app remembers what it asked for: asked before and no rationale means the user denied it
  * for good, and only Settings can change that now.
  */
-fun Activity.grant(permission: Permission) {
-    val runtime = permission.runtime
+fun Activity.grant(permission: Permission) = grant(listOf(permission))
+
+/**
+ * Several at once, in one request: Android shows their dialogs one after another. Settings, for
+ * the first missing one, only when none of them can still be asked for.
+ */
+fun Activity.grant(permissions: List<Permission>) {
+    val missing = permissions.filter { !it.granted(this) }.ifEmpty { return }
     val store = Store(this)
-    if (runtime != null && (runtime !in store.permissionsAsked || shouldShowRequestPermissionRationale(runtime))) {
-        store.permissionsAsked += runtime
-        requestPermissions(arrayOf(runtime), Permission.REQ_GRANT)
+    val askable = missing.filter { p ->
+        val runtime = p.runtime
+        runtime != null && (runtime !in store.permissionsAsked || shouldShowRequestPermissionRationale(runtime))
+    }
+    if (askable.isNotEmpty()) {
+        store.permissionsAsked += askable.mapNotNull { it.runtime }
+        requestPermissions(askable.flatMap { it.runtimes }.toTypedArray(), Permission.REQ_GRANT)
         return
     }
     // Some builds drop one of these screens (the battery exemption most often); the app's own page is always there.
-    runCatching { startActivity(permission.settingsIntent(this)) }
+    val first = missing.first()
+    runCatching { startActivity(first.settingsIntent(this)) }
         .onFailure { startActivity(Permission.appDetails(this)) }
 }
 
@@ -173,6 +206,10 @@ fun Activity.grant(permission: Permission) {
 fun Activity.onPermissionsResult(permissions: Array<out String>, grantResults: IntArray) {
     val local = permissions.indexOf(Permission.LOCAL_NETWORK.runtime)
     if (local >= 0 && grantResults.getOrNull(local) == PackageManager.PERMISSION_GRANTED) LinkService.start(this)
+    // Granting SMS access, wherever it was asked, is the opt-in: Messages turns on with it.
+    val sms = permissions.indexOf(Permission.SMS.runtime)
+    if (sms >= 0 && grantResults.getOrNull(sms) == PackageManager.PERMISSION_GRANTED) Store(this).sms = true
+    if (sms >= 0 || Permission.CONTACTS.runtime in permissions) SmsBridge.settingChanged()
 }
 
 /**

@@ -5,6 +5,8 @@
 "%@ wants to send you a file" = "%@ wants to send you a file";
 "%@'s battery is low" = "%@'s battery is low";
 "%@, %@" = "%@, %@";
+"%@, %@: %@" = "%@, %@: %@";
+"%@, unread, %@: %@" = "%@, unread, %@: %@";
 "%lld" = "%lld";
 "%lld / %lld" = "%lld / %lld";
 "%lld entries" = "%lld entries";
@@ -27,6 +29,7 @@
 "Allow access" = "Allow access";
 "Allow Do Not Disturb access on the phone to silence it" = "Allow Do Not Disturb access on the phone to silence it";
 "Allow microphone access in System Settings to use call audio on your Mac" = "Allow microphone access in System Settings to use call audio on your Mac";
+"Allow SMS access on your phone" = "Allow SMS access on your phone";
 "Allow USB debugging on the phone." = "Allow USB debugging on the phone.";
 "Allowed" = "Allowed";
 "Android Emulator" = "Android Emulator";
@@ -58,6 +61,7 @@
 "Calls" = "Calls";
 "Calls on your Mac" = "Calls on your Mac";
 "Can't connect" = "Can't connect";
+"Can't reply to this sender" = "Can't reply to this sender";
 "Cancel" = "Cancel";
 "charging" = "charging";
 "Check for updates" = "Check for updates";
@@ -142,6 +146,7 @@
 "Installing and restarting…" = "Installing and restarting…";
 "Installing. AndroMac will restart itself." = "Installing. AndroMac will restart itself.";
 "Instant with \"Display over other apps\" allowed on the phone, otherwise the phone asks first." = "Instant with \"Display over other apps\" allowed on the phone, otherwise the phone asks first.";
+"Invalid number" = "Invalid number";
 "It is saved to your Downloads folder and never opened automatically." = "It is saved to your Downloads folder and never opened automatically.";
 "Keep the phone awake while plugged in" = "Keep the phone awake while plugged in";
 "Keychain" = "Keychain";
@@ -157,6 +162,7 @@
 "macOS could not open Bluetooth call audio. Continue the call on your phone." = "macOS could not open Bluetooth call audio. Continue the call on your phone.";
 "Messages" = "Messages";
 "Messages / hour" = "Messages / hour";
+"Messages is off on the phone" = "Messages is off on the phone";
 "Metrics" = "Metrics";
 "Microphone" = "Microphone";
 "Mirror notifications" = "Mirror notifications";
@@ -167,18 +173,24 @@
 "Network" = "Network";
 "Never checked" = "Never checked";
 "Never send a concealed clipboard" = "Never send a concealed clipboard";
+"New message" = "New message";
 "Next" = "Next";
 "Nightly builds" = "Nightly builds";
 "No apps match your search." = "No apps match your search.";
+"No conversation selected" = "No conversation selected";
 "No entries match your search." = "No entries match your search.";
 "no local network" = "no local network";
+"No messages" = "No messages";
 "No notifications match your search." = "No notifications match your search.";
 "No notifications yet" = "No notifications yet";
+"No service" = "No service";
+"No SMS access on the phone" = "No SMS access on the phone";
 "None paired over Bluetooth" = "None paired over Bluetooth";
 "not charging" = "not charging";
 "Not connected" = "Not connected";
 "Not installed" = "Not installed";
 "Not paired" = "Not paired";
+"Not sent" = "Not sent";
 "Not set up" = "Not set up";
 "Nothing copied yet" = "Nothing copied yet";
 "Notifications" = "Notifications";
@@ -190,6 +202,7 @@
 "OK" = "OK";
 "On the phone, open Wireless debugging → Pair device with pairing code, and enter the code here." = "On the phone, open Wireless debugging → Pair device with pairing code, and enter the code here.";
 "Only when I ask" = "Only when I ask";
+"Open" = "Open";
 "Open AndroMac" = "Open AndroMac";
 "Open AndroMac on the phone to pair it." = "Open AndroMac on the phone to pair it.";
 "Open AndroMac on the phone, on the same Wi‑Fi." = "Open AndroMac on the phone, on the same Wi‑Fi.";
@@ -215,6 +228,8 @@
 "Pause" = "Pause";
 "Permissions" = "Permissions";
 "Phone" = "Phone";
+"Phone not connected" = "Phone not connected";
+"Phone number" = "Phone number";
 "Phone volume" = "Phone volume";
 "Play" = "Play";
 "Play a sound for mirrored notifications" = "Play a sound for mirrored notifications";
@@ -259,6 +274,7 @@
 "Send to Android" = "Send to Android";
 "Send to phone" = "Send to phone";
 "Send to the phone automatically when I copy on the Mac" = "Send to the phone automatically when I copy on the Mac";
+"Sending…" = "Sending…";
 "Sent to phone" = "Sent to phone";
 "Settings" = "Settings";
 "Settings…" = "Settings…";
@@ -283,6 +299,7 @@
 "System" = "System";
 "Tap \"Pair\" on the phone" = "Tap \"Pair\" on the phone";
 "Tap the AndroMac notification on your phone." = "Tap the AndroMac notification on your phone.";
+"Text message" = "Text message";
 "Text you copy on either device appears here." = "Text you copy on either device appears here.";
 "The code did not match. Open a new code on the phone and try again." = "The code did not match. Open a new code on the phone and try again.";
 "The download could not be opened." = "The download could not be opened.";
@@ -305,13 +322,16 @@
 "This release has no macOS build to install." = "This release has no macOS build to install.";
 "Title only" = "Title only";
 "Title only leaves the content on the phone." = "Title only leaves the content on the phone.";
+"To" = "To";
 "To use it again, click Connect here, then tap Connect on the phone." = "To use it again, click Connect here, then tap Connect on the phone.";
 "To use it with this Mac again, pair it again." = "To use it with this Mac again, pair it again.";
+"To:" = "To:";
 "Traffic" = "Traffic";
 "Try again" = "Try again";
 "Turn off the phone's screen while mirroring" = "Turn off the phone's screen while mirroring";
 "Turn on Bluetooth on your Mac, then try again." = "Turn on Bluetooth on your Mac, then try again.";
 "Turn on Bluetooth on your phone, then try again." = "Turn on Bluetooth on your phone, then try again.";
+"Turn on Messages on your phone" = "Turn on Messages on your phone";
 "Turn on what you plan to use" = "Turn on what you plan to use";
 "Turn on Wireless debugging on the phone, or connect it with a USB cable." = "Turn on Wireless debugging on the phone, or connect it with a USB cable.";
 "unknown" = "unknown";
@@ -329,5 +349,6 @@
 "Waiting for the Keychain to unlock" = "Waiting for the Keychain to unlock";
 "Welcome to AndroMac" = "Welcome to AndroMac";
 "You're all set" = "You're all set";
+"You, %@: %@" = "You, %@: %@";
 "Your Android phone's notifications, clipboard, files and calls on your Mac" = "Your Android phone's notifications, clipboard, files and calls on your Mac";
 "Your phone's battery is low" = "Your phone's battery is low";

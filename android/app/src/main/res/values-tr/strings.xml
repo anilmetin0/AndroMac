@@ -76,6 +76,10 @@
     <string name="setup_overlay_note">Mac, telefona dokunmadan panoyu okuyabilir</string>
     <string name="setup_bt_title">Mac\'te aramalar</string>
     <string name="setup_bt_note">Aramaları Bluetooth ile Mac\'ten yanıtla</string>
+    <string name="setup_sms_title">SMS</string>
+    <string name="setup_sms_note">Mac\'ten SMS oku ve gönder</string>
+    <string name="setup_contacts_title">Kişiler</string>
+    <string name="setup_contacts_note">Numara yerine isim göster</string>
 
     <!-- izinler -->
     <string name="permissions_title">İzinler</string>
@@ -171,6 +175,13 @@
     <string name="language_system">Sistem</string>
 
     <string name="settings_files">Dosya aktarımı</string>
+    <string name="sms_title">Mesajlar</string>
+    <string name="sms_intro">Yalnızca SMS; MMS ve sohbet uygulamaları dahil değil. Mac\'te hiçbir şey saklanmaz.</string>
+    <string name="sms_enable">Mac\'te mesajlar</string>
+    <string name="sms_enable_note">Mac\'te konuşmalar ve yanıtlar</string>
+    <string name="sms_access">Erişim</string>
+    <string name="sms_summary_on">Açık</string>
+    <string name="sms_summary_allow">SMS iznini ver</string>
     <string name="file_summary_ask">Kaydetmeden önce sor</string>
     <string name="file_summary_auto">Otomatik kabul et</string>
 

@@ -37,6 +37,7 @@ import dev.andromac.feature.FindPhone
 import dev.andromac.feature.IconProvider
 import dev.andromac.feature.MediaBridge
 import dev.andromac.feature.NotificationRelay
+import dev.andromac.feature.SmsBridge
 import dev.andromac.feature.SystemBridge
 import dev.andromac.ui.ClipHelperActivity
 import dev.andromac.ui.MainActivity
@@ -65,6 +66,7 @@ class LinkService : Service() {
     private lateinit var icons: IconProvider
     private lateinit var media: MediaBridge
     private lateinit var system: SystemBridge
+    private lateinit var sms: SmsBridge
 
     /**
      * Wake-up signal for the link thread. A permit released by [wake] before the thread
@@ -96,6 +98,7 @@ class LinkService : Service() {
         icons = IconProvider(this)
         media = MediaBridge(this, store)
         system = SystemBridge(this)
+        sms = SmsBridge(this, store)
         createChannels()
         startForeground(FGS_ID, buildNotification(getString(R.string.fgs_starting), false))
         // A process death during the 30 s alarm leaves the alarm stream pinned at maximum.
@@ -170,6 +173,7 @@ class LinkService : Service() {
         wake()
         battery.stop()
         system.close()
+        sms.close()
         netCallback?.let { runCatching { getSystemService(ConnectivityManager::class.java).unregisterNetworkCallback(it) } }
         screenReceiver?.let { runCatching { unregisterReceiver(it) } }
         Link.detach()
@@ -476,6 +480,7 @@ class LinkService : Service() {
         battery.start()
         media.start()
         system.start()
+        sms.start()
         NotificationRelay.pushExisting()
 
         try {
@@ -496,6 +501,7 @@ class LinkService : Service() {
             battery.stop()
             media.stop()
             system.stop()
+            sms.stop()
             // If the link dropped, no second message will ever arrive to silence the alarm.
             FindPhone.stop(this)
             // Nothing is resumed: temporary files go, the send queue is emptied (PROTOCOL §5).
@@ -535,6 +541,13 @@ class LinkService : Service() {
             )
             Protocol.T_FIND_PHONE -> FindPhone.start(this)
             Protocol.T_BT_PAIR -> BluetoothPair.request(this, msg.optString("addr"), store.pairedName)
+            // A `thread` that is not a number is no conversation at all: nothing to answer.
+            Protocol.T_SMS_REQUEST -> when (val thread = msg.opt("thread")) {
+                null -> sms.request(null)
+                is Number -> sms.request(thread.toLong())
+                else -> Unit
+            }
+            Protocol.T_SMS_SEND -> sms.send(this, msg.optString("id"), msg.optString("to"), msg.optString("body"))
             Protocol.T_MEDIA_CONTROL -> media.control(msg.optString("cmd"))
             Protocol.T_SYSTEM_CONTROL -> system.control(msg)
             Protocol.T_CLIPBOARD_REQUEST -> clipboard.macAskedForClipboard()

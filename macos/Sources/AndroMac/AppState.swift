@@ -171,6 +171,8 @@ final class AppState: ObservableObject {
     /// The scene's `openWindow` for the main window, handed over by the menu bar label so the
     /// AppKit side (the status item's right-click menu) can open it too.
     var openMainWindow: (() -> Void)?
+    /// The same for the Messages window.
+    var openMessagesWindow: (() -> Void)?
 
     /// Settings, on the section last shown if the window was already there.
     func showSettings() {
@@ -182,15 +184,33 @@ final class AppState: ObservableObject {
     /// making it key. When the window closes, AppDelegate returns the policy to .accessory.
     func showMainWindow(_ tab: MainWindow.Tab) {
         requestedTab = tab
+        present(AndroMacApp.mainWindowID) { self.openMainWindow?() }
+    }
+
+    /// The Messages window, on the phone the panel has open (`Messages.follow`).
+    func showMessages() {
+        present(AndroMacApp.messagesWindowID) { self.openMessagesWindow?() }
+    }
+
+    private func present(_ id: String, open: @escaping @MainActor () -> Void) {
         Task { @MainActor in
             NSApp.setActivationPolicy(.regular)
             try? await Task.sleep(for: .milliseconds(100))
             NSApp.activate(ignoringOtherApps: true)
-            openMainWindow?()
+            open()
             try? await Task.sleep(for: .milliseconds(200))
             NSApp.windows
-                .first { $0.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true }?
+                .first { $0.identifier?.rawValue.contains(id) == true }?
                 .makeKeyAndOrderFront(nil)
+        }
+    }
+
+    /// Whether one of the app's own windows is still on screen, so closing another does not take
+    /// the Dock icon away from it.
+    static func appWindowVisible(except closing: NSWindow? = nil) -> Bool {
+        NSApp.windows.contains { window in
+            guard window !== closing, window.isVisible, let id = window.identifier?.rawValue else { return false }
+            return id.contains(AndroMacApp.mainWindowID) || id.contains(AndroMacApp.messagesWindowID)
         }
     }
     /// Published separately so the menu bar label is redrawn.
