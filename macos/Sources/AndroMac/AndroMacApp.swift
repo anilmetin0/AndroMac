@@ -34,6 +34,13 @@ struct AndroMacApp: App {
                 Button("Settings…") { state.showSettings() }
                     .keyboardShortcut(",", modifiers: .command)
             }
+            // ⌘Q closes the windows like ⌘W, and AndroMac keeps running in the menu bar. Quitting is
+            // in the menu bar icon: the panel's power button or a right click. Logout, shutdown and
+            // updates call `terminate` directly and are not affected.
+            CommandGroup(replacing: .appTermination) {
+                Button("Close AndroMac Windows") { AppState.closeAppWindows() }
+                    .keyboardShortcut("q", modifiers: .command)
+            }
             CommandGroup(replacing: .help) {
                 Link("AndroMac Help", destination: URL(string: "https://github.com/anilmetin0/AndroMac#readme")!)
                 Link("AndroMac on GitHub", destination: Release.repositoryURL)
@@ -168,7 +175,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(withTitle: String(localized: "Open AndroMac"), action: #selector(openMain), keyEquivalent: "")
         menu.addItem(withTitle: String(localized: "Settings…"), action: #selector(openSettings), keyEquivalent: ",")
         menu.addItem(.separator())
-        menu.addItem(withTitle: String(localized: "Quit AndroMac"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        menu.addItem(withTitle: String(localized: "Quit AndroMac"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         for item in menu.items where item.action != #selector(NSApplication.terminate(_:)) { item.target = self }
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: view.bounds.maxY + 4), in: view)
     }

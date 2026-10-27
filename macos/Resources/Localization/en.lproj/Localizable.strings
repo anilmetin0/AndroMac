@@ -76,6 +76,7 @@
 "Clear the clipboard history?" = "Clear the clipboard history?";
 "Clear the notification history?" = "Clear the notification history?";
 "Clipboard" = "Clipboard";
+"Close AndroMac Windows" = "Close AndroMac Windows";
 "Connect" = "Connect";
 "Connect a phone" = "Connect a phone";
 "Connect automatically" = "Connect automatically";
@@ -153,8 +154,8 @@
 "Keychain access denied — restart the app and allow it" = "Keychain access denied — restart the app and allow it";
 "Keychain access denied. Restart the app and allow it." = "Keychain access denied. Restart the app and allow it.";
 "Language" = "Language";
-"Last seen %@" = "Last seen %@";
 "last seen %@" = "last seen %@";
+"Last seen %@" = "Last seen %@";
 "Later" = "Later";
 "Lets you talk on calls from the Mac" = "Lets you talk on calls from the Mac";
 "listener was cancelled" = "listener was cancelled";

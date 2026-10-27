@@ -205,6 +205,15 @@ final class AppState: ObservableObject {
         }
     }
 
+    /// ⌘Q: every titled window closes, which hands the Dock icon back (see `AppDelegate`). The
+    /// menu bar panel is not titled and stays.
+    static func closeAppWindows() {
+        for window in NSApp.windows where window.isVisible && window.styleMask.contains(.titled) {
+            window.close()
+        }
+        NSApp.setActivationPolicy(.accessory)
+    }
+
     /// Whether one of the app's own windows is still on screen, so closing another does not take
     /// the Dock icon away from it.
     static func appWindowVisible(except closing: NSWindow? = nil) -> Bool {

@@ -286,7 +286,8 @@ düzeyini gösterir. Altında telefonu çaldırma, test bildirimi gönderme ve e
 düğmeleri, bir de **Panomu buraya gönder**, **Otomatik bağlan**, **Cihaz ayarları…**,
 **Bağlantıyı kes** ve **Unut…**'u taşıyan **⋯** menüsü var. Sonra son pano kaydı ve en son dört bildirim gelir. Dosya göndermek için panele
 bırak. ⌘, Ayarlar'ı açar. Menü çubuğu simgesine sağ tıklayınca AndroMac'i aç, Ayarlar ve Çık
-çıkar.
+çıkar. ⌘Q pencereleri ⌘W gibi kapatır, AndroMac menü çubuğunda çalışmaya devam
+eder; çıkmak için oradaki Çık'ı ya da paneldeki güç düğmesini kullan.
 
 Pencerenin kenar çubuğunda üstte **Bildirimler**, **Pano** ve **Uygulamalar**, altında ayar
 sayfaları var.
