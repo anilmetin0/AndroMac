@@ -1,8 +1,10 @@
 # Weekly: moves the bundled scrcpy (and the adb it ships) to its latest release. The hash comes
 # from that release's SHA256SUMS.txt, the same source a manual bump uses; fetch-scrcpy.sh checks
-# it again when the app is built. A push made with GITHUB_TOKEN starts no workflow, so the build
-# is started by hand afterwards and publishes the nightly with the new scrcpy. A stable release
-# still needs VERSION raised.
+# it again when the app is built. main only takes commits whose builds passed, so the bump goes
+# through a pull request. A branch or pull request made with GITHUB_TOKEN starts no workflow, so
+# this job dispatches the build on the branch itself (a run off main publishes nothing), waits for
+# it, merges, and dispatches the build on main that publishes the nightly with the new scrcpy. A
+# stable release still needs VERSION raised.
 name: scrcpy
 
 on:
@@ -16,10 +18,12 @@ permissions:
 jobs:
   bump:
     runs-on: ubuntu-26.04
-    timeout-minutes: 10
+    timeout-minutes: 45
     permissions:
       contents: write
       actions: write
+      pull-requests: write
+      checks: read
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -41,6 +45,24 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "fix(macos): bundle scrcpy $VERSION"
-          git push origin HEAD:main
+          branch="bot/scrcpy-$VERSION"
+          title="fix(macos): bundle scrcpy $VERSION"
+          git switch -c "$branch"
+          git commit -am "$title"
+          git push --force origin "$branch"
+          sha="$(git rev-parse HEAD)"
+          number="$(gh pr list --head "$branch" --state open --json number --jq '.[0].number // empty')"
+          if [[ -z "$number" ]]; then
+            gh pr create --base main --head "$branch" --title "$title" \
+              --body "scrcpy $VERSION, checked against the release's SHA256SUMS.txt. Opened and merged by the scrcpy workflow once the builds pass."
+            number="$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')"
+          fi
+          gh workflow run build.yml --ref "$branch"
+          # The dispatched run needs a moment to register its check runs on the commit.
+          for _ in $(seq 30); do
+            [[ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$sha/check-runs" --jq '.total_count')" -gt 0 ]] && break
+            sleep 10
+          done
+          gh pr checks "$number" --watch --fail-fast --interval 30
+          gh pr merge "$number" --squash --delete-branch --match-head-commit "$sha"
           gh workflow run build.yml --ref main

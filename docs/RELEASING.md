@@ -118,5 +118,9 @@ Dependabot opens weekly pull requests for the workflow actions and the Gradle se
 `.github/workflows/dependabot.yml` merges one as soon as the build has passed on its head commit.
 `.github/workflows/scrcpy.yml` checks every Tuesday for a new scrcpy release, which also brings
 its adb. It updates the pinned version and hash in `macos/scripts/fetch-scrcpy.sh` and the
-versions in `THIRD-PARTY-NOTICES.md`, commits to `main` and starts the build, so the nightly
-carries it. A stable release with it still takes a raised `VERSION`.
+versions in `THIRD-PARTY-NOTICES.md`, opens a pull request from `bot/scrcpy-<version>`, starts the
+build on that branch, merges once it passes and starts the build on `main`, so the nightly carries
+it. A stable release with it still takes a raised `VERSION`.
+
+`main` refuses force-pushes and deletion, and only takes commits whose `macOS · verify + .app` and
+`Android · APK` checks passed (repository rulesets). Pull requests merge by squash only.
