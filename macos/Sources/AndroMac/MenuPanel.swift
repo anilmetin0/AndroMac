@@ -9,6 +9,7 @@ import UniformTypeIdentifiers
 /// a separate window ([MainWindow]): what syncs is decided once, not at every glance.
 struct MenuPanel: View {
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var state: AppState
     @ObservedObject private var history = NotificationHistory.shared
     @Environment(\.openWindow) private var openWindow
@@ -16,6 +17,7 @@ struct MenuPanel: View {
     @ObservedObject private var updates = UpdateCheck.shared
     @ObservedObject private var updater = Updater.shared
     @ObservedObject private var transfer = FileTransfer.shared
+    @ObservedObject private var calls = BluetoothCalls.shared
     /// True for a moment after ⌘C copied the phone's last clipboard.
     @State private var copiedLast = false
     /// The notification row unfolded to its whole text; one at a time.
@@ -34,6 +36,12 @@ struct MenuPanel: View {
                 status.padding(.horizontal, Theme.Space.medium)
             }
             if let release = updates.available { update(release).padding(.horizontal, Theme.Space.medium) }
+            if calls.connected {
+                PanelCard {
+                    BluetoothCallControls()
+                    if let error = calls.error { Text(error).font(Theme.Font.label).foregroundStyle(.red) }
+                }
+            }
             // Mirroring into a Notification Center that refuses us is the quietest failure the app
             // has, so it is said here, once, with the switch one click away.
             if state.notificationsAuthorized == false {
@@ -63,8 +71,8 @@ struct MenuPanel: View {
                 PanelCard { onboarding }
             }
 
-            // Every line outside a card starts where the text inside a card does.
-            footer.padding(.horizontal, Theme.Space.medium)
+            // Anchor utility controls to the panel edges, separate from card text insets.
+            footer.frame(maxWidth: .infinity)
         }
         // The same inset on all four sides. Linked against the macOS 26+ SDK the window adds no
         // inset of its own: on a capture of the real panel the first card sat exactly this far below
@@ -85,7 +93,7 @@ struct MenuPanel: View {
                 .padding(-28)
                 .allowsHitTesting(false)
         }
-        .animation(.easeOut(duration: 0.18), value: state.headline)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: state.headline)
         // Opening the panel is the Mac-side "app opened" moment; the check itself is opt-in and daily.
         .onAppear {
             NotificationMirror.shared.refreshAuthorization()
@@ -236,35 +244,8 @@ struct MenuPanel: View {
         VStack(alignment: .leading, spacing: Theme.Space.small) {
             Text("Connect a phone")
                 .font(Theme.Font.heading)
-
-            OnboardingStep(
-                number: 1,
-                title: String(localized: "Install AndroMac on the phone and open it"),
-                detail: nil,
-                done: false
-            )
-            OnboardingStep(
-                number: 2,
-                title: String(localized: "Put both devices on the same Wi-Fi network"),
-                detail: NetworkInfo.localIPv4().map { String(localized: "This Mac: \($0)") }
-                    ?? String(localized: "This Mac has no local network"),
-                done: NetworkInfo.localIPv4() != nil
-            )
-            OnboardingStep(
-                number: 3,
-                title: String(localized: "Tap \"Pair\" on the phone"),
-                detail: isListening
-                    ? String(localized: "This Mac is visible on the network")
-                    : String(localized: "Preparing to broadcast…"),
-                done: isListening
-            )
+            PairSteps()
         }
-    }
-
-    private var isListening: Bool {
-        if case .listening = state.status { return true }
-        if case .connected = state.status { return true }
-        return false
     }
 
     // MARK: clipboard

@@ -33,6 +33,7 @@ On first launch:
 1. Answer **Always Allow** to the Keychain prompt. If you decline, the app still runs and the panel
    tells you it is using a temporary key.
 2. Answer **Allow** to the Local Network prompt. Without it the phone cannot find the Mac.
+   The [welcome window](#first-launch) asks for it too.
 3. AndroMac lives in the menu bar, not the Dock. Click the phone icon to open the panel.
 4. Optional: Settings → General → **Open at login**.
 
@@ -48,23 +49,25 @@ gh release download --repo anilmetin0/AndroMac --pattern '*-android.apk'
 adb install AndroMac-*-android.apk
 ```
 
-Then open AndroMac and grant permissions:
+Then open AndroMac. The [setup](#first-launch) walks you through the permissions:
 
-1. The app asks for the notification permission right away, and then offers the notification
-   access screen.
-2. While a required permission is missing, a card at the top of the main screen names it. Tap a
+1. While a required permission is missing, a card at the top of the main screen names it. Tap a
    line to open the right system screen. The cross hides the card until something else goes
-   missing. The full list is in Settings → Permissions:
+   missing. The full list is in Settings → Permissions, grouped as Required, Recommended and
+   Optional:
    - **Local network access**, required on Android 17 and later. Without it the phone cannot find
      or reach the Mac. Android lists it under Nearby devices.
-   - **Allow notifications**, required, for the app's own notifications.
+   - **AndroMac notifications**, required on Android 13 and later, for the app's own
+     notifications.
    - **Notification access**, required, for notification mirroring and music info.
-   - **Battery optimization**, recommended, so Android does not cut the connection while the
+   - **Unrestricted battery**, recommended, so Android does not cut the connection while the
      screen is off.
+   - **Calls on your Mac**, optional, the Nearby devices permission that lets the phone pair with
+     the Mac over Bluetooth for [calls](#bluetooth-calls). Android 12 and later.
    - **Do Not Disturb access**, optional, so the Mac can silence the phone.
    - **Display over other apps**, optional, so the Mac can fetch the phone's clipboard without
      you tapping a notification first.
-3. On Android 13 and later the notification access switch is greyed out for apps installed from a
+2. On Android 13 and later the notification access switch is greyed out for apps installed from a
    file. Try it once, then go to **Settings → Apps → AndroMac → ⋮ → Allow restricted settings**
    and try again.
 
@@ -73,6 +76,22 @@ releases page. Add `https://github.com/anilmetin0/AndroMac` as an app, or open
 [obtainium://add/github.com/anilmetin0/AndroMac](obtainium://add/https://github.com/anilmetin0/AndroMac)
 on the phone. Obtainium follows stable releases. For nightly builds, turn on **Nightly builds** in
 the app's update settings instead.
+
+### First launch
+
+Each app opens a short setup once, when it has no pairing yet. **Skip** leaves it at any step, and
+the permissions you skipped stay in Settings.
+
+On the Mac, a welcome window opens in the middle of the screen. It goes through **Allow access**
+(Notifications, Local Network, and Bluetooth and Microphone for calls),
+**Connect your phone**, **Calls on your Mac** and a summary. **Allow** on a row either asks
+for the permission or opens the matching System Settings pane. Open it again with Settings →
+General → **Show welcome again**.
+
+On the phone, the setup goes through a welcome, **Required permissions**, **Recommended** and
+**Optional** (Calls on your Mac, Do Not Disturb access, Display over other apps), then **Connect to
+your Mac**. A step whose permissions are all granted is skipped. Open it again with Settings →
+Help → **Setup guide**.
 
 ### Updates
 
@@ -110,7 +129,7 @@ While unpaired, both apps show a short checklist so you can see which step is st
 
 If it still does not connect, **I can't connect** at the bottom of the checklist opens a live
 diagnostics screen: the phone's address, whether the Mac was seen, the connection state, the app
-version, and fixes for common problems. Settings → Network on the Mac shows the same information.
+version, and fixes for common problems. Settings → Advanced on the Mac shows the Mac's address and the Bonjour service.
 
 On the Mac, the pairing window always starts on **Reject**, so a phone can only pair after you
 click **Pair**.
@@ -137,7 +156,7 @@ connects only when you tap **Connect** on it, so after turning it back on at the
 
 | Feature | Direction | What it does |
 |---|---|---|
-| Battery | Phone to Mac | Level, charging state and temperature. Optional percentage in the menu bar, and a warning when the level drops below the threshold you set in Settings → Sync. |
+| Battery | Phone to Mac | Level, charging state and temperature. Optional percentage in the menu bar, and a warning when the level drops below the threshold you set in Settings → Devices. |
 | Clipboard | Mac to phone | Sent as you copy (Settings → Clipboard), or by hand with Send to phone in the clipboard history. If the phone cannot write to the clipboard in the background, it shows a notification with a Paste button. Text that a password manager marks as hidden is never sent. |
 | Clipboard | Phone to Mac | The Mac asks for it when you open the panel. The phone also sends it whenever you open AndroMac on the phone. You can send it yourself with the Quick Settings tile, the notification button, or the share sheet. See [why it works this way](#why-the-phone-clipboard-is-fetched). |
 | Clipboard history | Mac | The last 50 entries from both sides. Search, click to copy, right-click to send back to the phone or delete. |
@@ -156,8 +175,47 @@ connects only when you tap **Connect** on it, so after turning it back on at the
 | Screen mirroring | Phone to Mac | The phone's screen in a window, with mouse, keyboard and sound, over Wireless debugging or USB. See [Screen mirroring](#screen-mirroring). |
 | Updates | Both | Each app checks once a day and installs updates itself. See [Updates](#updates). |
 
-Not included: SMS, calls, and access over the internet. The phone and the Mac have to be on the
-same local network.
+Not included: SMS and access over the internet. LAN sync needs the phone and Mac on the same
+local network. Bluetooth call control is separate and needs the phone paired with the Mac over Bluetooth.
+
+### Send files from the Mac
+
+In Finder, select up to 50 files, right-click and choose **Share → AndroMac**. Choose the phone
+in AndroMac and click **Send**. If the share target is hidden, enable AndroMac under
+**System Settings → General → Login Items & Extensions → Sharing** (the location varies by macOS version).
+
+For a quick send, drag files to the top edge of the screen or onto AndroMac's menu bar icon.
+Drop them on **Send to Android**. The target names the phone currently selected in the panel;
+dropping sends immediately to that phone. With no connected phone it cannot accept a drop.
+The existing panel drop and file picker also work. Folders and files larger than 4 GiB cannot be sent.
+The phone still asks before receiving unless its **Accept files automatically** setting is on.
+
+### Bluetooth calls
+
+The Mac handles calls over Bluetooth, so the phone has to be paired with it once. AndroMac can do
+that for you:
+
+1. On the phone, allow **Calls on your Mac** (Nearby devices) in Settings → Features or Settings →
+   Permissions.
+2. On the Mac, open **Settings → Calls** and click **Pair** next to the phone. The button shows
+   while the phone is connected to AndroMac and its app version supports it. The welcome window has
+   the same button.
+3. The phone shows a notification naming your Mac. Tap it: the phone starts the Bluetooth pairing,
+   asking for Nearby devices first if needed. Both screens show the same code; confirm it on both.
+   The Mac then connects calls by itself.
+
+Nothing pairs until you tap that notification, so a Mac cannot pair the phone with something else.
+Pairing gives up after two minutes. To pair by hand instead, pair the phone in macOS Bluetooth settings
+(**Bluetooth settings…** in Settings → Calls opens them), click **Refresh**, choose the phone and
+click **Connect**.
+
+Incoming calls appear in the panel and in Notification Center, with **Answer** and **Decline**.
+During a call, use **End call**, **Use Mac audio** or **Use phone audio**.
+
+Mac audio needs microphone permission and a working Bluetooth SCO audio channel. Some macOS
+and phone combinations reject this channel even when call control connects. AndroMac reports
+the failure and returns audio to the phone. Two-way microphone and speaker audio needs a hardware
+test on your Mac and phone; a connected call-control session alone does not prove it works.
 
 ### Screen mirroring
 
@@ -201,20 +259,22 @@ pairing checklist shows until the phone is paired. After that, the **ⓘ** butto
 opens it with the live diagnostics. Everything else is under **Settings** in the top bar.
 
 The version appears as `1.1.0 (12 · abc1234)`: version, build number and commit. It is in
-Settings → About. Copy the whole string into bug reports.
+Settings → Help → About. Copy the whole string into bug reports.
 
 | Screen | What is on it |
 |---|---|
-| Settings | Connection, Notifications, Clipboard, File transfer, Permissions, Language, Updates and About. At the bottom, **Reset AndroMac** erases the pairings, all settings and the clipboard history, after asking first. |
+| Settings | **Connection** at the top. **Features**: Notifications, Clipboard, the **Media** and **Battery** switches, File transfer and Calls on your Mac. **App**: Permissions, Language (Android 13 and later) and Updates. **Help**: Setup guide, Connection help and About. At the bottom, **Reset AndroMac** erases the pairings, all settings and the clipboard history, after asking first. |
 | Clipboard history | The last 20 texts sent to or received from the Mac. Tap to copy, or tap the send button to send again. Kept in memory only; sensitive clips are not saved. |
-| Permissions | All six permissions, each marked granted or not, and whether it is required. Tap one to open the system screen for it. |
+| Permissions | Every permission this Android version has, grouped as Required, Recommended and Optional, each marked granted or with an **Allow** button. Tap one to open the system screen for it. |
 | Connection | The connection state, the saved Macs with their last address, **Connect automatically**, **Connect** or **Disconnect**, and **Forget this Mac**. |
 | Notification settings | **App filter**, **Silent notifications**, and **Only while the phone is locked**, plus a list of what is always skipped. |
 | App filter | Full, Title only or Off for every app the phone has seen. |
 | Clipboard settings | Incoming: **Write to the clipboard**, **Show a notification**. Outgoing: **Never send sensitive content**. Plus **Send clipboard to Mac**. |
 | Connection help | Live diagnostics and common problems. Open it with the **ⓘ** button or **I can't connect**. |
 | Updates | See [Updates](#updates). |
-| Files | **Receive files from the Mac** and **Accept files automatically**. Files go to Downloads. To send, use any app's share sheet. |
+| File transfer | **Receive files from the Mac** and **Accept files automatically**. Files go to Downloads. To send, use any app's share sheet. |
+| Calls on your Mac | Asks for Nearby devices. Once it is allowed, the row opens Android's Bluetooth settings. See [Bluetooth calls](#bluetooth-calls). |
+| Setup guide | The first-launch setup again. See [First launch](#first-launch). |
 | Language | Android's per-app language picker, with English and Turkish. |
 
 ### On the Mac
@@ -235,18 +295,16 @@ by the settings pages.
 | Notifications | Notification history, with search and a clear button. |
 | Clipboard | Clipboard history. Click to copy, right-click to send back or delete. |
 | Apps | Full, Title only or Off for every app on the phone. |
-| General | **Open at login**, **Show battery percentage in the menu bar**, and **Language** (System, English, Turkish; needs a restart). **Reset AndroMac…** erases the paired phones, both histories, every setting and this Mac's key, then restarts. Every phone has to pair again. |
-| Sync | The four sync switches, the low-battery alert and its threshold (10, 15, 20 or 30 percent). |
-| Clipboard | Whether the Mac's clipboard is sent automatically or by hand, and whether opening the panel fetches the phone's clipboard. |
-| Notifications | **Play a sound for mirrored notifications**, and how many entries the history holds. |
+| General | **Open at login**, **Show battery percentage in the menu bar**, and **Language** (System, English, Turkish; needs a restart). The app version, and **Show welcome again**. **Reset AndroMac…** erases the paired phones, both histories, every setting and this Mac's key, then restarts. Every phone has to pair again. |
+| Devices | This Mac's name, then every paired phone with its status, local IP address and when it was last seen, **Connect automatically** and **Forget**. **Battery and media** has the switches for the phone's battery and what is playing, the low-battery alert and its threshold (10, 15, 20 or 30 percent). A QR code for the releases page installs the APK on the phone. |
+| Notifications | **Mirror notifications**, **Play a sound for mirrored notifications**, and the number of entries in the history. |
+| Clipboard | **Sync clipboard**, whether the Mac's clipboard is sent automatically or by hand, **Never send a concealed clipboard**, and whether opening the panel fetches the phone's clipboard. |
 | Files | **Receive files** and **Accept files automatically**. |
+| Calls | **Pair** for the connected phone, then the Bluetooth phone, **Bluetooth settings…**, **Refresh** and **Connect**. See [Bluetooth calls](#bluetooth-calls). |
 | Screen mirroring | Sound, phone screen off, stay awake, resolution limit. |
-| Devices | Every paired phone with its status, local IP address and when it was last seen, with **Forget** for each. Also this Mac's name and the app version. |
-| Permissions | Notifications, Local Network and Keychain access, each with a button to the right System Settings pane. |
-| Network | The Mac's and the phone's addresses, with a shortcut to the Local Network permission. |
-| Updates | See [Updates](#updates). Also a QR code for the releases page, to install the APK on the phone. |
-| Metrics | Messages per hour, traffic and reconnects for each phone. |
-| Privacy | What is stored on this Mac and when it is deleted. |
+| Permissions | Notifications, Local Network, Bluetooth, Microphone and Keychain access, each with a button to the right System Settings pane. |
+| Updates | See [Updates](#updates). |
+| Advanced | The privacy note: everything stays on your local network, encrypted, and the optional update check is the only exception. **Network** has the Mac's address, the Bonjour service and a shortcut to the Local Network permission. **Metrics** has messages per hour, traffic and reconnects for each phone. |
 
 ## Troubleshooting
 
@@ -289,7 +347,7 @@ described in [SECURITY.md](../SECURITY.md), not in a public issue.
 ## Battery use
 
 The Mac does the work of keeping the connection alive, so the phone mostly waits. When idle,
-Settings → Metrics on the Mac should show about 30 messages per hour for each phone. If it shows
+Settings → Advanced → Metrics on the Mac should show about 30 messages per hour for each phone. If it shows
 many more, something is wrong; please open an issue. The details are in [ENERGY.md](ENERGY.md).
 
 ## Screenshots
@@ -302,6 +360,10 @@ many more, something is wrong; please open an issue. The details are in [ENERGY.
 <td align="center"><img src="images/android-settings.png" alt="Settings on Android" width="230"></td>
 </tr>
 <tr>
+<td colspan="2" align="center"><img src="images/android-setup.png" alt="The setup on Android, Required permissions" width="230"></td>
+<td colspan="2" align="center"><img src="images/macos-welcome.png" alt="The welcome window on macOS, Allow access" width="380"></td>
+</tr>
+<tr>
 <td colspan="2" align="center"><img src="images/android-pairing.png" alt="The pairing code on Android" width="230"></td>
 <td colspan="2" align="center"><img src="images/macos-pairing.png" alt="The pairing code window on macOS" width="380"></td>
 </tr>
@@ -312,7 +374,7 @@ many more, something is wrong; please open an issue. The details are in [ENERGY.
 <td colspan="4" align="center"><img src="images/macos-settings.png" alt="Settings on macOS, Devices" width="640"></td>
 </tr>
 <tr>
-<td colspan="4" align="center"><img src="images/macos-settings-sync.png" alt="Settings on macOS, Sync" width="640"></td>
+<td colspan="4" align="center"><img src="images/macos-settings-calls.png" alt="Settings on macOS, Calls" width="640"></td>
 </tr>
 </table>
 

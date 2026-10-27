@@ -34,5 +34,9 @@
 	<string>MIT licence · github.com/anilmetin0/AndroMac</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>To find your Android phone on this network and connect to it.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>To answer calls from your paired Android phone.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>To use your Mac microphone for phone calls over Bluetooth.</string>
 </dict>
 </plist>

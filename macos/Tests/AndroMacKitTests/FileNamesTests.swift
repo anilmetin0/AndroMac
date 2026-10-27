@@ -45,6 +45,24 @@ struct FileNamesTests {
         #expect(cut.dropLast(4).allSatisfy { $0 == "ş" })
     }
 
+    @Test func partNameFitsInOnePathComponent() {
+        #expect(FileNames.partName("photo.jpg", tag: "abcd1234") == ".photo.jpg.abcd1234.part")
+
+        // A sanitized name may use all 255 bytes; the temp name around it must still fit.
+        for count in [240, 241, 255] {
+            let base = String(repeating: "a", count: count - 4) + ".jpg"
+            let part = FileNames.partName(base, tag: "abcd1234")
+            #expect(part.utf8.count <= FileNames.maxBytes)
+            #expect(part.hasPrefix(".a") && part.hasSuffix(".abcd1234.part"))
+        }
+
+        // Cut on a character boundary: no replacement character from a split scalar.
+        let turkish = FileNames.sanitize(String(repeating: "ş", count: 200) + ".png")
+        let part = FileNames.partName(turkish, tag: "abcd1234")
+        #expect(part.utf8.count <= FileNames.maxBytes)
+        #expect(!part.contains("\u{FFFD}"))
+    }
+
     @Test func collisionSuffixGoesBeforeTheExtension() {
         var taken: Set<String> = ["photo.jpg", "photo (2).jpg"]
         #expect(FileNames.unique("photo.jpg") { taken.contains($0) } == "photo (3).jpg")

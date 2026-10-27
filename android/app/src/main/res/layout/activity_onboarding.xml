@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The setup flow: welcome, the permissions in three groups, then the connection guide. One
+    layout for every step; OnboardingActivity fills the title, the body and either the permission
+    rows or the guide. The progress and Skip stay on top, the one forward action at the bottom
+    within thumb reach. Each step is centred both ways; the cards keep the 16dp side margin of
+    every other screen.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/onboardingRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:baselineAligned="false"
+        android:paddingStart="32dp"
+        android:paddingEnd="12dp">
+
+        <!-- One pill per step, added in code; the current one is wider and in primary. -->
+        <LinearLayout
+            android:id="@+id/onboardingProgress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:importantForAccessibility="yes" />
+
+        <Button
+            android:id="@+id/onboardingSkip"
+            style="@style/TextButton"
+            android:layout_gravity="center_vertical"
+            android:text="@string/onboarding_skip" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/onboardingScroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbarStyle="outsideOverlay"
+        android:clipToPadding="false">
+
+        <!-- Stretched to the viewport (fillViewport), so every step sits centred between the top bar
+             and the button, and scrolls once it is taller than that. -->
+        <LinearLayout
+            android:id="@+id/onboardingContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="24dp">
+
+            <!-- Welcome only: the app's own icon, masked to the launcher's shape. -->
+            <ImageView
+                android:id="@+id/onboardingIcon"
+                android:layout_width="88dp"
+                android:layout_height="88dp"
+                android:layout_marginBottom="32dp"
+                android:src="@mipmap/ic_launcher"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:id="@+id/onboardingTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:gravity="center_horizontal"
+                android:accessibilityHeading="true"
+                android:textAppearance="@style/TextAppearance.AM.HeadlineMedium"
+                android:textColor="?android:attr/textColorPrimary" />
+
+            <TextView
+                android:id="@+id/onboardingBody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:gravity="center_horizontal"
+                android:textAppearance="@style/TextAppearance.AM.BodyLarge"
+                android:textColor="?android:attr/textColorSecondary" />
+
+            <!-- Permission steps: rows from item_permission.xml. -->
+            <LinearLayout
+                android:id="@+id/onboardingList"
+                style="@style/Card"
+                android:layout_marginTop="24dp" />
+
+            <!-- Last step: the same live connection guide the main screen shows while unpaired. -->
+            <LinearLayout
+                android:id="@+id/onboardingSectionGuide"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:orientation="vertical">
+                <include layout="@layout/view_onboarding" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/onboardingNext"
+        style="@style/PrimaryButton"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp" />
+</LinearLayout>

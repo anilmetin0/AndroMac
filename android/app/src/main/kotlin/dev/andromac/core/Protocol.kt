@@ -38,6 +38,8 @@ object Protocol {
     const val T_SYSTEM = "system"
     const val T_SYSTEM_CONTROL = "system_control"
     const val T_CLIPBOARD_REQUEST = "clipboard_request"
+    const val T_BT_PAIR = "bt_pair"
+    const val T_BT_PAIR_RESULT = "bt_pair_result"
 
     /** File transfer (PROTOCOL §5): one chunk per frame, 512 KiB raw is ~683 KiB as base64, under the 1 MiB frame cap. */
     const val FILE_CHUNK = 512 * 1024
@@ -70,7 +72,7 @@ object Protocol {
             JSONArray(
                 listOf(
                     "battery", "clipboard", "notification", "find_phone", "media", "file", "system",
-                    "debugging",
+                    "debugging", "bt_pair",
                 )
             ),
         )
@@ -187,6 +189,12 @@ object Protocol {
         .put("active", false)
 
     fun pong() = JSONObject().put("t", T_PONG)
+
+    /** [name]: the phone's Bluetooth name, so the Mac can tell it apart in its paired list. */
+    fun btPairResult(state: String, name: String) = JSONObject()
+        .put("t", T_BT_PAIR_RESULT)
+        .put("state", state)
+        .apply { if (name.isNotEmpty()) put("name", name.take(64)) }
 
     // --- file transfer, PROTOCOL §5 `file_*` ---
 

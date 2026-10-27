@@ -197,7 +197,8 @@ ignored silently for forward compatibility. Unknown fields are ignored too.
 ### `hello`, once from each side at the start of a connection
 ```json
 {"t":"hello","name":"Pixel 9","platform":"android","proto":3,
- "caps":["battery","clipboard","notification","find_phone","media","file","system","debugging"]}
+ "caps":["battery","clipboard","notification","find_phone","media","file","system","debugging",
+         "bt_pair"]}
 ```
 
 The phone's `hello` also carries `"auto_connect":{"on":true,"ts":1750000000000}` (`ts` in ms, 0
@@ -389,10 +390,10 @@ signature and drops anything above 512 KiB.
 {"t":"sleep"}
 ```
 Sent to every phone when the Mac is about to sleep. The phone closes the session, goes to the top of
-its backoff ladder and runs no mDNS browse until the network changes, the screen comes on or a
-session comes up again. A sleeping Mac answers neither a dial nor a browse, so without this message
-each phone would spend the night on the ladder. The cost is a reconnect of up to one ladder step
-(300 s) after the Mac wakes, or at once when the phone is picked up.
+its backoff ladder. A cached endpoint is still tried; on the known LAN, every fourth attempt
+also browses mDNS. This bounded browse lets a relaunched Mac with a new port be found even if
+no screen or network event arrives. Network and screen events reset the ladder. With a working
+cached endpoint, reconnection takes up to one ladder step (300 s) after the Mac wakes.
 
 ### `ping` / `pong`
 ```json
@@ -402,6 +403,8 @@ each phone would spend the night on the ladder. The cost is a reconnect of up to
 Only macOS sends `ping`, because it is the side on wall power. Android only answers and runs no
 timer of its own. The interval is 240 s, and it is per session: with several phones connected the
 Mac runs one timer each, so N phones cost N pings from the Mac and still nothing on any phone.
+The Mac requires a pong within 20 s of sending a probe, including a probe after wake. A missing
+pong closes only that session; a replaced session is protected from the old probe's timeout.
 
 ### `find_phone`, macOS → Android
 ```json
@@ -412,6 +415,28 @@ high-priority notification. It lasts at most 30 s. The "Found it" action on the 
 dismissing the notification, opening the app, losing the connection, or a second `find_phone`
 (it toggles) stops it at once. The Mac panel shows the button if the phone advertised
 `find_phone` in its `caps`.
+
+### `bt_pair`, macOS → Android
+```json
+{"t":"bt_pair","addr":"F0:B2:14:BC:07:B9"}
+```
+Asks the phone to bond with the Mac over Bluetooth, for call control (HFP). Android does not give
+apps the phone's own Bluetooth address, so the phone dials the Mac's address it receives here.
+The phone checks the address format and starts no scan. It bonds only after the user taps the
+notification that names the paired Mac, so a paired Mac cannot steer the phone into bonding with
+another device. While one request is waiting or bonding, further `bt_pair` messages are ignored.
+Android and macOS then show the same pairing code and the user confirms it on both. The Mac
+sends this only if the phone advertised `bt_pair` in its `caps`.
+
+### `bt_pair_result`, Android → macOS
+```json
+{"t":"bt_pair_result","state":"bonded","name":"Galaxy S24+"}
+```
+`state` is `confirm` (the notification is up, or the user tapped it and the bond started; the Mac
+restarts its 125 s wait each time), `bonded`, `failed` or `bluetooth_off`. `name` is the phone's
+Bluetooth name, sent with `bonded`. The phone gives up 120 s after the tap with `failed`; it holds
+a single delayed callback for that, no timer. The Mac ignores a result from any phone other than
+the one it asked.
 
 ### `media`, Android → macOS
 ```json
@@ -530,6 +555,7 @@ These rules are part of the protocol, and both implementations must follow them:
 3. `notification` is fully event driven (`NotificationListenerService`), with no polling.
 4. While a connection is up, the mDNS browse is off. A network event
    (`ConnectivityManager.NetworkCallback`) triggers reconnection; nothing polls.
+   Losing the LAN a socket is bound to closes it immediately, including during a handshake.
 5. Reconnect backoff: 1s, 2s, 5s, 15s, 60s, then a 300s ceiling. While the screen is on and the
    phone is on the Mac's network, the ceiling is 60s.
 6. The notification filter and content redaction run on the phone. A notification from an app the

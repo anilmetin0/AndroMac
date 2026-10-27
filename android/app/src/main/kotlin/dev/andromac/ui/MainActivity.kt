@@ -3,11 +3,10 @@ package dev.andromac.ui
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
-import android.widget.ImageView
+import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import dev.andromac.R
@@ -62,7 +61,7 @@ class MainActivity : Activity() {
         bindNavRow(R.id.statusCard) { if (hasMacs()) open(ConnectionActivity::class.java) }
 
         for ((permission, rowId) in permissionRows) {
-            bindNavRow(rowId) { startActivity(permission.settingsIntent(this)) }
+            bindNavRow(rowId) { grant(permission) }
         }
         findViewById<View>(R.id.permissionDismiss).setOnClickListener {
             // Dismissal is remembered against what is missing right now, so the card stays gone
@@ -71,7 +70,7 @@ class MainActivity : Activity() {
             renderPermissions()
         }
 
-        bindNavRow(R.id.rowHelp) { open(HelpActivity::class.java) }
+        bindConnectionGuide()
         bindNavRow(R.id.updateCard) { open(UpdateSettingsActivity::class.java) }
         bindNavRow(R.id.rowClipHistory) { open(ClipboardHistoryActivity::class.java) }
         bindNavRow(R.id.rowSendClip) { sendClipboard() }
@@ -82,22 +81,27 @@ class MainActivity : Activity() {
             store.syncNotifications = it
         }
         bindSwitchRow(R.id.rowMedia, R.id.swMedia, store.syncMedia) {
+            // onResume moving the switch to a value set in Settings is no change made here.
+            if (it == store.syncMedia) return@bindSwitchRow
             store.syncMedia = it
             MediaBridge.settingChanged()      // apply immediately if connected, do not wait for a reconnect
         }
 
-        // Ask for what can be asked for. Notification access has no runtime dialog, it is a
-        // settings screen, so it is offered once, right after this, in [offerNotificationAccess].
-        val ask = buildList {
-            if (Build.VERSION.SDK_INT >= 37 && !Permission.LOCAL_NETWORK.granted(this@MainActivity)) {
-                add(android.Manifest.permission.ACCESS_LOCAL_NETWORK)
-            }
-            if (Build.VERSION.SDK_INT >= 33 && !Permission.POST_NOTIFICATIONS.granted(this@MainActivity)) {
-                add(android.Manifest.permission.POST_NOTIFICATIONS)
-            }
+        // The setup flow asks for the permissions, once, on the first launch. A phone paired
+        // before the flow existed has been through that already.
+        if (!store.onboardingDone) {
+            if (store.isPaired) store.onboardingDone = true
+            else if (savedInstanceState == null) open(OnboardingActivity::class.java)
         }
-        if (ask.isNotEmpty()) requestPermissions(ask.toTypedArray(), REQ_POST_NOTIF)
+        pairRequested = intent.getBooleanExtra(EXTRA_PAIR, false)
         LinkService.start(this)
+    }
+
+    /** The setup flow's last step comes back here to pick the Mac. */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pairRequested = intent.getBooleanExtra(EXTRA_PAIR, false)
     }
 
     override fun onStart() {
@@ -112,21 +116,23 @@ class MainActivity : Activity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         render(Link.state)
-        // The link thread dialled while the dialog was up, failed, and is waiting out its
-        // backoff. With the permission in place, the next attempt should not wait for that.
-        // The string, not the API 37 field: an inlined constant, harmless below 37 (never asked there).
-        val local = permissions.indexOf("android.permission.ACCESS_LOCAL_NETWORK")
-        if (local >= 0 && grantResults.getOrNull(local) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            LinkService.start(this)
-        }
-        if (requestCode == REQ_POST_NOTIF) offerNotificationAccess()
+        onPermissionsResult(permissions, grantResults)
     }
 
     override fun onResume() {
         super.onResume()
         FindPhone.stop(this)        // opening the app means they found the phone
         render(Link.state)          // permissions may have changed while away in Settings
-        offerNotificationAccess()
+        // The same switches are in Settings, Features: show what was set there.
+        findViewById<Switch>(R.id.swNotifications).isChecked = store.syncNotifications
+        findViewById<Switch>(R.id.swClipboard).isChecked = store.syncClipboard
+        findViewById<Switch>(R.id.swMedia).isChecked = store.syncMedia
+        findViewById<Switch>(R.id.swBattery).isChecked = store.syncBattery
+        if (pairRequested) {
+            pairRequested = false
+            intent.removeExtra(EXTRA_PAIR)      // a rotation must not open the picker again
+            if (chooserDialog?.isShowing != true) pickMac(store) { chooserDialog = it }
+        }
         // At most daily, and only when the app is opened: the phone never polls (ENERGY rule 1).
         // A check that starts now offers when it is done; the stored result may be stale.
         val checking = runUpdateCheckIfDue(store) {
@@ -243,51 +249,11 @@ class MainActivity : Activity() {
 
     private fun hasMacs() = store.isPaired || store.savedMacs.isNotEmpty()
 
-    /**
-     * The connection guide. Visible only while unpaired, and it shows the LIVE state of every
-     * step: which step is stuck, rather than "cannot connect".
-     */
+    /** The connection guide, only while unpaired (ConnectionGuide.kt). */
     private fun renderOnboarding() {
         val visible = !store.isPaired
         findViewById<View>(R.id.onboardingSection).visibility = if (visible) View.VISIBLE else View.GONE
-        if (!visible) return
-
-        val macSeen = Link.macSeenOnNetwork
-        step(R.id.step1Icon, R.id.step1Status, macSeen,
-            getString(if (macSeen) R.string.onboarding_step1_found else R.string.onboarding_step1_missing))
-
-        val ip = NetworkInfo.localIpv4()
-        step(R.id.step2Icon, R.id.step2Status, ip != null,
-            if (ip != null) getString(R.string.onboarding_step2_ok, ip)
-            else getString(R.string.onboarding_step2_none))
-
-        val ready = macSeen && ip != null
-        step(R.id.step3Icon, R.id.step3Status, false,
-            getString(if (ready) R.string.onboarding_step3_ready else R.string.onboarding_step3_waiting))
-    }
-
-    private fun step(iconId: Int, statusId: Int, done: Boolean, status: String) {
-        findViewById<ImageView>(iconId).setImageResource(
-            if (done) R.drawable.ic_step_done else R.drawable.ic_step_pending
-        )
-        findViewById<TextView>(statusId).text = status
-    }
-
-    /**
-     * Notification access cannot be requested from code, only opened, so this offers it once,
-     * with the reason. Asking at every launch would be nagging; the card is still there for later.
-     */
-    private fun offerNotificationAccess() {
-        if (Permission.NOTIFICATION_ACCESS.granted(this) || store.notificationAccessOffered) return
-        store.notificationAccessOffered = true
-        AlertDialog.Builder(this)
-            .setTitle(R.string.setup_notif_title)
-            .setMessage(R.string.setup_notif_prompt)
-            .setPositiveButton(R.string.setup_open_settings) { _, _ ->
-                startActivity(Permission.NOTIFICATION_ACCESS.settingsIntent(this))
-            }
-            .setNegativeButton(R.string.setup_later, null)
-            .show()
+        if (visible) renderConnectionGuide()
     }
 
     private val permissionRows = mapOf(
@@ -298,7 +264,7 @@ class MainActivity : Activity() {
 
     /**
      * The permission card: only while a REQUIRED permission is missing, one row per missing one,
-     * tappable to grant it and dismissible with the cross. A mirror that relays nothing is the one
+     * tappable to grant it (the dialog where Android has one) and dismissible with the cross. A mirror that relays nothing is the one
      * state worth interrupting for; the full list lives in Settings, Permissions.
      */
     private fun renderPermissions() {
@@ -431,9 +397,12 @@ class MainActivity : Activity() {
         findViewById<TextView>(R.id.pairNote).text = note
     }
 
-    private companion object {
-        const val REQ_POST_NOTIF = 1
+    /** The setup flow asked for the Mac picker; it opens once this screen is in front. */
+    private var pairRequested = false
+
+    companion object {
+        const val EXTRA_PAIR = "pair"
         /** The launch offer was made (or an automatic install started) in this process. */
-        var updateOffered = false
+        private var updateOffered = false
     }
 }

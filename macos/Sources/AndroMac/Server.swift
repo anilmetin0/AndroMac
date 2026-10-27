@@ -20,6 +20,8 @@ actor Server {
     /// another, and a reconnect replaces only its own row.
     private var sessions: [String: Session] = [:]
     private var pingTasks: [String: Task<Void, Never>] = [:]
+    private var probeTasks: [String: Task<Void, Never>] = [:]
+    private var probes: [String: UUID] = [:]
     private var serveTasks: [String: Task<Void, Never>] = [:]
     private var wakeObserver: NSObjectProtocol?
     private var sleepObserver: NSObjectProtocol?
@@ -138,6 +140,8 @@ actor Server {
             self.wakeObserver = nil
         }
         for task in pingTasks.values { task.cancel() }
+        for task in probeTasks.values { task.cancel() }
+        probeTasks.removeAll(); probes.removeAll()
         for task in serveTasks.values { task.cancel() }
         pingTasks.removeAll(); serveTasks.removeAll()
         // Out of the table before the first `await`, so a read loop ending meanwhile finds no row
@@ -235,9 +239,21 @@ actor Server {
     }
 
     private func pingAfterWake() async {
-        guard !sessions.isEmpty else { return }
-        // Every phone, not just one: they all went stale over the same sleep.
-        await send(["t": "ping"])
+        // A successful TCP write only means bytes entered a local buffer. Require the pong,
+        // otherwise a half-open link can keep the UI green indefinitely after wake or Wi-Fi loss.
+        for id in Array(sessions.keys) { await probe(id) }
+    }
+
+    private func probe(_ deviceID: String) async {
+        guard let session = sessions[deviceID], probes[deviceID] == nil else { return }
+        let token = UUID()
+        probes[deviceID] = token
+        probeTasks[deviceID] = Task {
+            do { try await Task.sleep(for: .seconds(20)) } catch { return }
+            guard self.probes[deviceID] == token, self.sessions[deviceID] === session else { return }
+            await self.closeSession(deviceID)
+        }
+        _ = await send(["t": "ping"], to: deviceID)
     }
 
     // MARK: connection
@@ -527,7 +543,7 @@ actor Server {
                 // inside the phone's 300 s read timeout.
                 try? await Task.sleep(for: pingInterval, tolerance: .seconds(15))
                 if Task.isCancelled { return }
-                _ = await self.send(["t": "ping"], to: deviceID)
+                await self.probe(deviceID)
             }
         }
 
@@ -538,6 +554,7 @@ actor Server {
         while !Task.isCancelled {
             do {
                 let (msg, bytes) = try await session.receiveCounted()
+                guard sessions[deviceID] === session else { break }
                 await handle(msg, bytes: bytes, from: deviceID)
             } catch {
                 NSLog("AndroMac: session ended — \(error.localizedDescription)")
@@ -554,6 +571,8 @@ actor Server {
         // Out of the tables before the first `await`: the actor is reentrant, and a new session
         // for the same phone installed during the close must not be the one removed here.
         pingTasks[deviceID]?.cancel(); pingTasks[deviceID] = nil
+        probeTasks[deviceID]?.cancel(); probeTasks[deviceID] = nil
+        probes[deviceID] = nil
         let session = sessions.removeValue(forKey: deviceID)
         serveTasks[deviceID] = nil
         // "Last seen" is when it left, not when it came: a phone connected all day was seen just now.
@@ -590,7 +609,8 @@ actor Server {
             await send(["t": "pong"], to: deviceID)
 
         case "pong":
-            break
+            probeTasks[deviceID]?.cancel(); probeTasks[deviceID] = nil
+            probes[deviceID] = nil
 
         case "hello":
             let name = clip(msg["name"], 64).isEmpty ? "Android" : clip(msg["name"], 64)
@@ -626,6 +646,10 @@ actor Server {
                 AppState.shared.update(deviceID: deviceID, name: name) { $0.battery = b }
             }
             await checkLowBattery(b, from: deviceID)
+
+        case "bt_pair_result":
+            let state = clip(msg["state"], 32), name = clip(msg["name"], 64)
+            await MainActor.run { BluetoothCalls.shared.pairResult(state, name: name, from: deviceID) }
 
         case "clipboard":
             // Capped like the phone caps what it sends (PROTOCOL §5): the history keeps 50 of these.

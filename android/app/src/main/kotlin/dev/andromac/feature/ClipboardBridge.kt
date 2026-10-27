@@ -156,9 +156,6 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
         return sensitive
     }
 
-    private fun isSensitive(description: ClipDescription?): Boolean =
-        description?.extras?.getBoolean(EXTRA_IS_SENSITIVE) == true
-
     private fun notifyPastable(text: String) {
         val paste = PendingIntent.getActivity(
             context, 2,
@@ -194,6 +191,11 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
     companion object {
         /** `ClipDescription.EXTRA_IS_SENSITIVE`, spelled out so it can be read below API 33. */
         private const val EXTRA_IS_SENSITIVE = "android.content.extra.IS_SENSITIVE"
+
+        /** The clip is marked as a password or a code; the share confirmation hides its text. */
+        fun isSensitive(description: ClipDescription?): Boolean =
+            description?.extras?.getBoolean(EXTRA_IS_SENSITIVE) == true
+
         private const val CLIP_NOTIF_ID = 2
         private const val CLIP_REQUEST_ID = 6
         /** The Mac is waiting for an answer now; an hour later the button means nothing. */

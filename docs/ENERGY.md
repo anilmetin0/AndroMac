@@ -35,7 +35,7 @@ Every design decision was made against the question "who wakes up, and how often
 | 18 | A network the Mac was never reached on gets the slow ladder. The Mac's network is remembered as prefix and gateway. On any other network the 60 s screen-on ceiling does not apply, and mDNS runs once per network event instead of every 4th attempt. | `LinkService.onMacNetwork` |
 | 19 | An identical re-post of a notification is not sent. If the title, text, actions and tier match what the Mac already shows, no message goes out; only the reconnect push resends it, silently. | `NotificationRelay.send` |
 | 20 | The ongoing status notification is re-posted only when its text changes, not on every loop cycle. | `LinkService.note` |
-| 21 | The Mac says when it goes to sleep (`sleep`, PROTOCOL §5). The phone parks at the top of its ladder with no mDNS until a network or screen event, so it does not redial a sleeping Mac all night. | `Server.installWakeObserver` / `LinkService` |
+| 21 | The Mac says when it goes to sleep (`sleep`, PROTOCOL §5). The phone goes to the 300 s ladder ceiling. With a cached endpoint on the known LAN, mDNS runs only every fourth attempt so a changed Mac port cannot strand the phone indefinitely. A network or screen event resets the ladder. | `Server.installWakeObserver` / `LinkService` / `ReconnectPolicy` |
 | 22 | The clipboard request goes to one phone, and only while its screen is on. Opening the panel asks the phone the panel shows, at most every 10 s. A phone with its screen off ignores the request, so it launches no activity and posts no notification from a pocket. | `ClipboardWatcher.requestFromPhones` / `ClipboardBridge.macAskedForClipboard` |
 | 23 | Turning the screen on dials only on the Mac's network, and the cached address is only tried there. | `LinkService` screen receiver, `dial` |
 | 24 | Only a volume or Wireless debugging setting wakes `SystemBridge`, and a media update that only changes the position schedules nothing. | `SystemBridge.settingsWatcher`, `MediaBridge.callback` |
@@ -68,9 +68,9 @@ ping-pong in an environment like this one.
 
 ## Measurement
 
-### From inside the app (Mac → Settings → Metrics)
+### From inside the app (Mac → Settings → Advanced → Metrics)
 
-The Metrics tab puts numbers on the rules above. It shows uptime, messages sent and received,
+The Metrics section puts numbers on the rules above. It shows uptime, messages sent and received,
 messages per hour, total traffic, reconnect count, and the three most frequent incoming message
 types.
 

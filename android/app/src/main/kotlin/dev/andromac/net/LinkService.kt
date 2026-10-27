@@ -24,6 +24,7 @@ import dev.andromac.core.Link
 import dev.andromac.core.MacPick
 import dev.andromac.core.NetworkInfo
 import dev.andromac.core.Protocol
+import dev.andromac.core.ReconnectPolicy
 import dev.andromac.core.Session
 import dev.andromac.core.Store
 import dev.andromac.core.UntrustedPeerException
@@ -31,6 +32,7 @@ import dev.andromac.feature.BatteryReporter
 import dev.andromac.feature.ClipboardBridge
 import dev.andromac.feature.ConnectionTile
 import dev.andromac.feature.FileTransfer
+import dev.andromac.feature.BluetoothPair
 import dev.andromac.feature.FindPhone
 import dev.andromac.feature.IconProvider
 import dev.andromac.feature.MediaBridge
@@ -50,8 +52,8 @@ import java.util.concurrent.TimeUnit
  * The foreground service that owns the single long-lived link.
  *
  * Energy contract (PROTOCOL §6):
- *  - No periodic timers at all. Waiting goes through [lock].wait(); wake-ups come either
- *    from a network event or from the user.
+ *  - No periodic background jobs. Waiting uses a semaphore; network and user events interrupt
+ *    the reconnect backoff. A live session blocks on reads.
  *  - While connected, the mDNS scan is off.
  *  - The read loop blocks; liveness comes from the Mac's ping plus SO_TIMEOUT.
  */
@@ -80,6 +82,9 @@ class LinkService : Service() {
     private var netCallback: ConnectivityManager.NetworkCallback? = null
     /** The open session. If onDestroy does not close the socket, the read loop lives on for another 300 s. */
     @Volatile private var current: Session? = null
+    /** Includes an in-progress TCP connect or handshake, so network loss can interrupt it too. */
+    private data class BoundSocket(val socket: Socket, val network: Network?)
+    @Volatile private var connection: BoundSocket? = null
 
     override fun onBind(intent: Intent?) = null
 
@@ -111,14 +116,22 @@ class LinkService : Service() {
                 pairingRequested = true
                 notOurs.clear()              // "not ours" was measured against the old pin
                 current?.close()             // pairing another Mac while connected to one
+                runCatching { connection?.socket?.close() }
                 restartLadder()
             }
-            ACTION_CONNECT -> { connectRequested = true; restartLadder() }
+            ACTION_CONNECT -> {
+                connectRequested = true
+                // Explicit recovery must break a half-open read, not only wake the backoff wait.
+                current?.close()
+                runCatching { connection?.socket?.close() }
+                restartLadder()
+            }
             // Another saved Mac became the active one: drop the old link and dial the new pin.
             ACTION_SWITCH -> {
                 notOurs.clear()
                 connectRequested = true
                 current?.close()
+                runCatching { connection?.socket?.close() }
                 restartLadder()
             }
             // The notification action and the QS tile: the auto-connect switch, one tap away.
@@ -135,6 +148,9 @@ class LinkService : Service() {
                 restartLadder()
             }
         }
+        // Opening the app or changing the auto-connect switch is a recovery event too.
+        // Releasing a permit alone left discovery on an old failed-attempt rung.
+        if (intent?.action == null && current == null) restartLadder()
         // Never start a second worker: a START_STICKY restart can arrive while the old
         // thread is still winding down, which used to produce two parallel connections.
         if (!running && worker?.isAlive != true) {
@@ -149,6 +165,7 @@ class LinkService : Service() {
         running = false
         // The read blocks on the socket: running=false alone would not wake it for 300 s.
         current?.close()
+        runCatching { connection?.socket?.close() }
         worker?.interrupt()
         wake()
         battery.stop()
@@ -195,14 +212,16 @@ class LinkService : Service() {
      * data as the default route, still reaches the Mac.
      */
     private val lanNetworks: MutableSet<Network> = ConcurrentHashMap.newKeySet()
+    /** LAN networks whose first IPv4 address has already triggered a dial. */
+    private val addressed: MutableSet<Network> = ConcurrentHashMap.newKeySet()
 
     /** False if the network callback could not be registered: then nothing is gated on it. */
     @Volatile private var watchingNetworks = false
 
     /**
      * The Mac said it is going to sleep. Until the network changes, the screen comes on or a
-     * session comes up, the ladder stays at its ceiling and mDNS is not run: a sleeping Mac
-     * answers neither, and a night of 5-attempt bursts is exactly the waste this avoids.
+     * session comes up, the ladder stays at its ceiling. Discovery remains bounded but is not
+     * disabled forever: a Mac can wake with a new port after a relaunch.
      */
     @Volatile private var macAsleep = false
 
@@ -337,6 +356,8 @@ class LinkService : Service() {
                 forgetCachedEndpoint()
                 sleepBackoff()
                 continue
+            } finally {
+                if (connection?.socket === socket) connection = null
             }
         }
     }
@@ -376,8 +397,7 @@ class LinkService : Service() {
         // address it runs every cycle: there is nothing cheaper left that could make progress.
         // On a network where the Mac has never answered (the office, a café) the browse runs once
         // per network event, not every 4th attempt: the Mac is very likely not there at all.
-        val browse = !macAsleep &&
-            (cached == null || attempt == 0 || (onMacNetwork() && attempt % BROWSE_EVERY == 0))
+        val browse = ReconnectPolicy.shouldBrowse(cached != null, attempt, onMacNetwork())
         attempt++
         if (!browse) return null
         val paired = store.isPaired
@@ -422,9 +442,12 @@ class LinkService : Service() {
     }
 
     private fun connect(host: java.net.InetAddress, port: Int): Socket? {
+        if (!running) return null
         val socket = Socket()
         return try {
-            lanNetwork()?.bindSocket(socket)
+            val network = lanNetwork()
+            connection = BoundSocket(socket, network)
+            network?.bindSocket(socket)
             socket.tcpNoDelay = true
             socket.keepAlive = true
             socket.connect(InetSocketAddress(host, port), CONNECT_TIMEOUT_MS)
@@ -432,6 +455,7 @@ class LinkService : Service() {
         } catch (e: IOException) {
             Log.i(Link.TAG, "could not connect to $host:$port (${e.message})")
             runCatching { socket.close() }
+            if (connection?.socket === socket) connection = null
             null
         }
     }
@@ -510,6 +534,7 @@ class LinkService : Service() {
                 msg.optString("pkg"), msg.optInt("mode", -1),
             )
             Protocol.T_FIND_PHONE -> FindPhone.start(this)
+            Protocol.T_BT_PAIR -> BluetoothPair.request(this, msg.optString("addr"), store.pairedName)
             Protocol.T_MEDIA_CONTROL -> media.control(msg.optString("cmd"))
             Protocol.T_SYSTEM_CONTROL -> system.control(msg)
             Protocol.T_CLIPBOARD_REQUEST -> clipboard.macAskedForClipboard()
@@ -582,6 +607,28 @@ class LinkService : Service() {
 
             override fun onLost(network: Network) {
                 lanNetworks -= network
+                addressed -= network
+                val lost = connection?.takeIf { it.network == network }
+                if (lost != null) {
+                    // A socket bound to a vanished LAN cannot recover on the new one. Closing it
+                    // unblocks receive immediately instead of waiting out the 300 s read timeout.
+                    runCatching { lost.socket.close() }
+                    restartLadder()
+                } else if (lanNetworks.isEmpty()) {
+                    wake()
+                }
+            }
+
+            override fun onLinkPropertiesChanged(network: Network, properties: android.net.LinkProperties) {
+                // DHCP can finish after onAvailable: retry a failed early dial once, when the network
+                // first has an IPv4 address. Later address, route and DNS updates (IPv6 RAs, lease
+                // renewals) are not a new chance to reach the Mac and must not reset the ladder.
+                if (current == null && network in lanNetworks && network !in addressed &&
+                    properties.linkAddresses.any { it.address is java.net.Inet4Address }
+                ) {
+                    addressed += network
+                    onEvent()
+                }
             }
         }
         netCallback = cb
@@ -729,8 +776,6 @@ class LinkService : Service() {
         private const val READ_TIMEOUT_MS = 300_000
         /** The handshake budget both sides enforce (PROTOCOL §3). */
         private const val HANDSHAKE_TIMEOUT_MS = 10_000
-        /** One mDNS browse per this many failed attempts while an address is cached. */
-        private const val BROWSE_EVERY = 4
         /** Paired: how long to keep listening after the first Mac with our Mac's name answers. */
         private const val PAIRED_SETTLE_MS = 1_000L
         /** Repeated `onAvailable` events inside this window do not restart the ladder. */

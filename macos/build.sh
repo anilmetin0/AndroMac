@@ -80,6 +80,32 @@ if [[ -d Resources/Localization ]]; then
     cp -R Resources/Localization/*.lproj "$APP/Contents/Resources/"
 fi
 
+# Share extensions are native XPC executables; Foundation supplies their entry point.
+EXTENSION="$APP/Contents/PlugIns/AndroMacShare.appex"
+mkdir -p "$EXTENSION/Contents/MacOS" "$EXTENSION/Contents/Resources"
+OPT=(); [[ "$CONFIG" == release ]] && OPT=(-O)
+swiftc "${OPT[@]+"${OPT[@]}"}" -parse-as-library -application-extension -swift-version 6 \
+    -target "$(uname -m)-apple-macos14.0" -module-name AndroMacShare \
+    -Xlinker -e -Xlinker _NSExtensionMain ShareExtension/ShareViewController.swift \
+    -o "$EXTENSION/Contents/MacOS/AndroMacShare"
+cp ShareExtension/Info.plist "$EXTENSION/Contents/Info.plist"
+/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $ANDROMAC_VERSION" "$EXTENSION/Contents/Info.plist"
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${ANDROMAC_BUILD:-1}" "$EXTENSION/Contents/Info.plist"
+# The Share menu draws the icon at 16 and 32 points; the full set would add 1 MB to the extension.
+rm -rf build/ShareIcon.iconset && mkdir -p build/ShareIcon.iconset
+cp build/AppIcon.iconset/icon_{16x16,16x16@2x,32x32,32x32@2x}.png build/ShareIcon.iconset/
+iconutil -c icns build/ShareIcon.iconset -o "$EXTENSION/Contents/Resources/AppIcon.icns"
+/usr/libexec/PlistBuddy -c "Add :CFBundleIconFile string AppIcon" "$EXTENSION/Contents/Info.plist"
+cp -R Resources/Localization/*.lproj "$EXTENSION/Contents/Resources/"
+
+# Release bundles drop local symbols (about 1 MB from scrcpy alone); crash reports still name
+# exported functions. Debug builds keep them for the debugger.
+if [[ "$CONFIG" == release ]]; then
+    for binary in "$APP/Contents/MacOS/"* "$EXTENSION/Contents/MacOS/AndroMacShare"; do
+        strip -x "$binary" 2>/dev/null || true
+    done
+fi
+
 # UserNotifications and Keychain require a signed bundle.
 #
 # An ad-hoc signature (`-`) produces a DIFFERENT identity on every build; macOS then treats the
@@ -100,6 +126,7 @@ SIGN=(codesign --force --sign "$IDENTITY" --timestamp=none)
 for helper in "$APP/Contents/MacOS/scrcpy" "$APP/Contents/MacOS/adb"; do
     [[ -f "$helper" ]] && "${SIGN[@]}" "$helper"
 done
+"${SIGN[@]}" --entitlements ShareExtension/entitlements.plist "$EXTENSION"
 "${SIGN[@]}" --identifier dev.andromac "$APP"
 echo "Signed with: $IDENTITY"
 [[ "$IDENTITY" == "-" ]] && echo "Note: ad-hoc signature. Answer Always Allow to the Keychain prompt."

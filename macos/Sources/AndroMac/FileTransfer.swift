@@ -66,6 +66,8 @@ final class FileTransfer: ObservableObject {
 
     // MARK: entry points (panel)
 
+    func canQueue(_ count: Int) -> Bool { count > 0 && queue.count + count <= maxQueue }
+
     /// Files are queued and offered one at a time (§5 step 1). Directories and anything above
     /// 4 GiB are skipped silently.
     func send(urls: [URL], to peer: String) {
@@ -233,11 +235,10 @@ final class FileTransfer: ObservableObject {
         guard size <= freeSpace() else { await reject(id, "no_space", to: peer); return }
 
         let name = FileNames.sanitize(msg["name"] as? String ?? "")
-        // `.<name>.part` must itself fit in a path component; the final name is the sanitized one.
-        let stem = String(decoding: name.utf8.prefix(FileNames.maxBytes - 6), as: UTF8.self)
+        // `partName` cuts the name so the temp component fits in 255 bytes.
         // A random suffix, and the file is created exclusively in `accept`: a sender-chosen name
         // must not be able to truncate and then delete a `.part` file that belongs to something else.
-        let part = downloads.appendingPathComponent(".\(stem).\(Self.newID().prefix(8)).part")
+        let part = downloads.appendingPathComponent(FileNames.partName(name, tag: String(Self.newID().prefix(8))))
         let inc = Incoming(id: id, peer: peer, name: name, size: size, part: part)
         incoming = inc
 

@@ -11,15 +11,49 @@ raised. Nightly builds list their commits instead.
 
 ### Added
 
+- Finder's Share menu can send files through AndroMac. A drop target appears when files are
+  dragged to the top edge of the screen; it sends to the phone named on the target.
+- Bluetooth call controls in Calls settings and the menu bar panel, with incoming-call
+  notifications. Mac audio is attempted through HFP; unsupported audio stays on the phone.
+
 - **Auto-connect on the Mac.** Each phone has a Connect automatically switch in the panel's More
   menu and in Settings → Devices. It is the same switch as the phone's: flip it on either side and
   the other follows as soon as the two are connected. A phone turned off on the Mac no longer
   redials all night.
+- **Welcome window and setup.** The first launch of the Mac app, with no phone paired, opens a
+  welcome window: it asks for Notifications, Local Network, Bluetooth and
+  Microphone one by one, then connects the phone and sets up calls. Settings → General → Show
+  welcome again opens it later. The phone has a matching setup: Required permissions,
+  Recommended, Optional, then Connect. Settings → Help → Setup guide opens it again.
+- **Bluetooth pairing for calls.** Pair in Settings → Calls, or in the welcome window, starts the
+  Bluetooth pairing from the phone. Both screens show the same code, and the Mac connects calls
+  once it is confirmed. The phone asks for a tap on its notification first.
+  Pairing in macOS Bluetooth settings still works.
+- Settings → Permissions on the Mac lists Notifications, Local Network, Bluetooth,
+  Microphone and Keychain. On the phone, Permissions is grouped as Required, Recommended and
+  Optional and has Calls on your Mac.
 
 ### Changed
 
+- Settings on the Mac are reorganized: General, Devices, Notifications, Clipboard, Files, Calls,
+  Screen mirroring, Permissions, Updates and Advanced. The Sync page is gone. Each sync switch is
+  now at the top of its own page, and Battery and media sit in Devices. Network, Metrics and the
+  privacy note moved into Advanced, and the QR code for the phone app moved to Devices.
+- Settings on the phone are grouped as Connection, Features, App and Help. Features has the Media
+  and Battery switches next to Notifications, Clipboard, File transfer and Calls on your Mac.
+- Reconnection closes sockets on LAN loss and checks ping replies on the Mac. Discovery can
+  recover a changed Mac port after sleep without toggling auto-connect.
+
 - Disconnect, on the Mac or on the phone, turns auto-connect off on both. The panel shows such a
   phone as "Auto-connect off", with Connect right beside it.
+
+### Fixed
+
+- Text shared to AndroMac from another app now asks before it replaces the Mac's clipboard, and
+  shows what will be copied (passwords stay hidden). Before, any app on the phone could change the
+  Mac's clipboard without the user seeing it.
+- A received file with a very long name no longer fails: the temporary download name now fits in
+  one path component.
 
 ## 1.5.1 - 2026-10-05
 

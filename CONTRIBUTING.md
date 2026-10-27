@@ -15,14 +15,14 @@ Open a [GitHub issue](https://github.com/anilmetin0/AndroMac/issues/new/choose) 
 report template. Include:
 
 - Both app versions, copied exactly as the apps show them, for example `1.1.0 (42 · e105e58)`.
-  The phone shows it in Settings → About, the Mac in Settings → Devices.
+  The phone shows it in Settings → About, the Mac in Settings → General.
 - The phone model and Android version, and the macOS version.
 - The steps that lead to the problem, what you expected, and what happened instead.
 - Logs, if you can get them. On the phone run `adb logcat -s AndroMac`, on the Mac
   `log stream --predicate 'senderImagePath CONTAINS "AndroMac"'`. Neither log carries message
   content or key material.
 - For a connection problem, the phone's **I can't connect** screen or the Mac's Settings →
-  Network page.
+  Advanced page.
 
 Do not report a security vulnerability in an issue. Follow [SECURITY.md](SECURITY.md) instead.
 
@@ -59,8 +59,9 @@ when `VERSION` is raised; [docs/RELEASING.md](docs/RELEASING.md) describes the p
 AndroMac is phones and Macs on one local network. A phone talks to one Mac at a time and can
 switch between the Macs it knows.
 
-Out of scope: SMS, call control and any access over the internet. A pull request that adds one of
-those will be closed however good the code is.
+Out of scope: SMS and access over the internet. Bluetooth call control uses macOS HFP and the
+phone's system Bluetooth pairing. Call audio depends on whether macOS can open the SCO channel;
+do not claim microphone or speaker support without testing both directions on hardware.
 
 ## Toolchain
 

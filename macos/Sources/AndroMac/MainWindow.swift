@@ -65,7 +65,7 @@ struct MainWindow: View {
     /// sidebar that scrolls moves its rows under the title bar when a click scrolls one into view.
     /// The minimum also overrides a shorter frame the window may have saved before.
     // ponytail: sized for the medium sidebar icon size; on "Large" the sidebar can still scroll.
-    static let minHeight: CGFloat = 566
+    static let minHeight: CGFloat = 536
 
     private func row(_ tab: Tab) -> some View {
         Label(tab.title, systemImage: tab.symbol).tag(tab)

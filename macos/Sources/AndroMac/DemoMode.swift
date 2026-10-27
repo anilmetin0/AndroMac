@@ -50,7 +50,7 @@ enum DemoMode {
                 media: AppState.Media(playing: true, title: "Sunlight", artist: "Hozier",
                                       album: "Unreal Unearth", app: "Spotify",
                                       pkg: "com.spotify.music"),
-                caps: ["clipboard", "media", "find_phone", "file", "system"],
+                caps: ["clipboard", "media", "find_phone", "file", "system", "bt_pair"],
                 lastClipboard: "https://github.com/anilmetin0/AndroMac",
                 system: AppState.PhoneSystem(ringer: "vibrate", volume: 9, volumeMax: 15,
                                              canSilence: true),
@@ -70,6 +70,14 @@ enum DemoMode {
             state.devices.removeAll { $0.id == tablet.id }
         }
         state.focusedDeviceID = phone.id
+        // ANDROMAC_DEMO_UNPAIRED=1 starts with nothing paired: the panel's setup card and the
+        // welcome window's pairing steps.
+        if ProcessInfo.processInfo.environment["ANDROMAC_DEMO_UNPAIRED"] == "1" {
+            Store.shared.pairedDevices = []
+            state.devices = []
+            state.focusedDeviceID = nil
+            state.status = .listening
+        }
         state.refocus()
 
         // Oldest first: `add` puts each one on top, so the list ends up newest first, as it would be.
@@ -109,7 +117,7 @@ enum DemoMode {
         // by actually pairing a phone.
         if ProcessInfo.processInfo.environment["ANDROMAC_DEMO_PAIRING"] == "1" {
             state.pairing = AppState.PairingRequest(
-                peerKey: key(0x33), peerName: "Pixel 9", sas: "428 517", isFirstDevice: true,
+                peerKey: key(0x33), peerName: "Pixel 9", sas: "123 456", isFirstDevice: true,
                 address: "192.168.1.63"
             )
         }
@@ -121,7 +129,7 @@ enum DemoMode {
 
     /// Newest first. The two pictures are drawn in code (`picture`), so no photo is in the repository.
     private static let notifications: [(app: String, pkg: String, title: String, text: String, image: String?)] = [
-        ("Messages", "com.google.android.apps.messaging", "Bank", "Your verification code is 481902", nil),
+        ("Messages", "com.google.android.apps.messaging", "Bank", "Your verification code is 123456", nil),
         ("Signal", "org.thoughtcrime.securesms", "Deniz", "Photo", "demo-beach"),
         ("Calendar", "com.google.android.calendar", "Standup", "In 10 minutes · Room B", nil),
         ("Photos", "com.google.android.apps.photos", "Memories", "A day at the coast, one year ago", "demo-sunset"),
@@ -243,6 +251,28 @@ enum DemoMode {
                 ? NSApp.windows.first { $0.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true }
                 : nil
             (prompt ?? main)?.makeKeyAndOrderFront(nil)
+            if ProcessInfo.processInfo.environment["ANDROMAC_DEMO_QUICKSEND"] == "1" {
+                QuickSend.shared.show()
+                // A keyable fixture for capturing the same view with native window screenshot tools.
+                // The actual drop panel stays nonactivating so Finder keeps ownership of a drag.
+                let preview = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 320, height: 96),
+                                       styleMask: [.titled], backing: .buffered, defer: false)
+                preview.title = String(localized: "Send to Android")
+                preview.contentView = NSHostingView(rootView: QuickSendLabel().environmentObject(state))
+                preview.center()
+                preview.makeKeyAndOrderFront(nil)
+                held.append(preview)
+            }
+            if let path = ProcessInfo.processInfo.environment["ANDROMAC_DEMO_SHARE"] {
+                FileSending.share([URL(fileURLWithPath: path)])
+            }
+            // ANDROMAC_DEMO_ONBOARDING=welcome, permissions, pair, calls or done opens the welcome
+            // window on that page, on top of the rest.
+            if let page = ProcessInfo.processInfo.environment["ANDROMAC_DEMO_ONBOARDING"] {
+                OnboardingWindow.show(at: OnboardingView.Step(rawValue: page) ?? .welcome)
+                // Brought forward again once the main window has settled, or that one keeps the focus.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { OnboardingWindow.show() }
+            }
         }
     }
 

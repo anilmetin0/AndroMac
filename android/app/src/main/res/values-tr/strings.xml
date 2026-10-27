@@ -29,6 +29,21 @@
     <string name="onboarding_step3_waiting">Önceki adımları tamamla</string>
     <string name="onboarding_help">Bağlanamıyorum</string>
 
+    <!-- setup flow -->
+    <string name="onboarding_skip">Geç</string>
+    <string name="onboarding_start">Başla</string>
+    <string name="onboarding_next">İleri</string>
+    <string name="onboarding_done">Bitti</string>
+    <string name="onboarding_progress">Adım %1$d / %2$d</string>
+    <string name="onboarding_welcome_title">Telefonun, Mac\'inde</string>
+    <string name="onboarding_welcome_body">Bildirimler, pano, dosyalar ve aramalar, yerel ağında</string>
+    <string name="onboarding_required_title">Gerekli izinler</string>
+    <string name="onboarding_required_body">Bunlar olmadan AndroMac bağlanamaz, bildirimleri de aktaramaz</string>
+    <string name="onboarding_recommended_title">Önerilen</string>
+    <string name="onboarding_optional_title">İsteğe bağlı</string>
+    <string name="onboarding_optional_body">Yalnızca kullanacaklarını aç</string>
+    <string name="onboarding_connect_title">Mac\'ine bağlan</string>
+
     <!-- help screen -->
     <string name="help_title">Bağlantı yardımı</string>
     <string name="help_section_state">Şu anki durum</string>
@@ -46,22 +61,21 @@
 
     <!-- setup -->
     <string name="setup_notif_title">Bildirim erişimi</string>
-    <string name="setup_notif_note">Bildirimleri Mac\'e aynalamak için gerekli. APK\'yı dosyadan kurduysan anahtar gri gelebilir; uygulama bilgisi ekranında ⋮ → Kısıtlı ayarlara izin ver.</string>
+    <string name="setup_notif_note">Bildirimleri Mac\'ine aktarır. Gri görünüyorsa: Uygulama bilgisi → ⋮ → Kısıtlı ayarlara izin ver</string>
     <string name="permission_banner_title">AndroMac bir izin istiyor</string>
     <string name="permission_banner_dismiss">Kapat</string>
-    <string name="setup_local_network_title">Yerel ağ erişimine izin ver</string>
-    <string name="setup_local_network_note">Verilmezse telefon Mac\'inizi bulamaz ve ona bağlanamaz. Android bunu Yakındaki cihazlar altında gösterir.</string>
-    <string name="setup_post_notif_title">Bildirimlere izin ver</string>
-    <string name="setup_post_notif_note">Verilmezse durum bildirimi ve Mac panosu bildirimi hiç görünmez.</string>
-    <string name="setup_battery_title">Pil optimizasyonu</string>
-    <string name="setup_battery_note">Muaf tutulmazsa sistem bağlantıyı kesebilir.</string>
+    <string name="setup_local_network_title">Yerel ağ erişimi</string>
+    <string name="setup_local_network_note">Mac\'ini bulur ve ona bağlanır. Android bunu Yakındaki cihazlar altında gösterir</string>
+    <string name="setup_post_notif_title">AndroMac bildirimleri</string>
+    <string name="setup_post_notif_note">Bağlantı durumu ve Mac\'in panosu için</string>
+    <string name="setup_battery_title">Sınırsız pil kullanımı</string>
+    <string name="setup_battery_note">Bağlantının kopmasını önler</string>
     <string name="setup_dnd_title">Rahatsız Etmeyin erişimi</string>
-    <string name="setup_dnd_note">Telefonu Mac\'ten sessize almanı sağlar.</string>
+    <string name="setup_dnd_note">Telefonu Mac\'ten sessize al</string>
     <string name="setup_overlay_title">Diğer uygulamaların üzerinde göster</string>
-    <string name="setup_overlay_note">Mac\'in, sen bildirime dokunmadan telefonun panosunu okumasını sağlar.</string>
-    <string name="setup_notif_prompt">AndroMac bildirimlerinizi Mac\'e aktarır; Android buna yalnızca bildirim erişimiyle izin verir. Ayarlar ekranını açın ve AndroMac\'i açın.</string>
-    <string name="setup_open_settings">Ayarları aç</string>
-    <string name="setup_later">Sonra</string>
+    <string name="setup_overlay_note">Mac, telefona dokunmadan panoyu okuyabilir</string>
+    <string name="setup_bt_title">Mac\'te aramalar</string>
+    <string name="setup_bt_note">Aramaları Bluetooth ile Mac\'ten yanıtla</string>
 
     <!-- izinler -->
     <string name="permissions_title">İzinler</string>
@@ -71,7 +85,7 @@
         <item quantity="other">%d izin verilmedi</item>
     </plurals>
     <string name="permission_granted">Verildi</string>
-    <string name="permission_not_granted">Verilmedi</string>
+    <string name="permission_allow">İzin ver</string>
     <string name="permission_required">Zorunlu</string>
     <string name="permission_recommended">Önerilir</string>
     <string name="permission_optional">İsteğe bağlı</string>
@@ -107,7 +121,12 @@
     <string name="settings_clipboard">Pano</string>
     <string name="settings_language">Dil</string>
     <string name="settings_updates">Güncellemeler</string>
-    <string name="updates_summary_off">Kapalı</string>
+    <string name="settings_setup">Kurulum rehberi</string>
+    <string name="section_features">Özellikler</string>
+    <string name="section_help">Yardım</string>
+    <string name="summary_off">Kapalı</string>
+    <string name="calls_summary_ready">Yakındaki cihazlar izni verildi</string>
+    <string name="calls_summary_allow">Yakındaki cihazlar iznini ver</string>
     <string name="update_card_title">Güncelleme var</string>
     <string name="update_card_body">AndroMac %1$s · kurmak için dokun</string>
 
@@ -152,7 +171,6 @@
     <string name="language_system">Sistem</string>
 
     <string name="settings_files">Dosya aktarımı</string>
-    <string name="file_summary_off">Kapalı</string>
     <string name="file_summary_ask">Kaydetmeden önce sor</string>
     <string name="file_summary_auto">Otomatik kabul et</string>
 
@@ -340,4 +358,8 @@
     <string name="pair_choose_title">Bir Mac seçin</string>
     <string name="pair_search_again">Yeniden ara</string>
     <string name="pair_searching">Bu ağdaki Mac\'ler aranıyor…</string>
+    <string name="bt_pair_channel">Bluetooth eşleştirme</string>
+    <string name="bt_pair_title">%1$s ile eşleştir</string>
+    <string name="bt_pair_text">Mac\'te aramalar için dokunup eşleştir</string>
+    <string name="share_text_title">Bu metin Mac\'in panosuna kopyalansın mı?</string>
 </resources>

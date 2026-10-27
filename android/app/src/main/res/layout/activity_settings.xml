@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Every detail screen, one row each with a one-line summary of what is configured there. -->
+<!--
+    Every detail screen, one row each with a one-line summary of what is set there. Grouped the
+    way people look for them: the Mac, what is mirrored, how the app itself behaves, and help.
+    Features carries the same four switches as the main screen, in the same order.
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/scrollRoot"
     android:layout_width="match_parent"
@@ -39,7 +43,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <TextView style="@style/SectionLabel" android:text="@string/section_sync" />
+        <TextView style="@style/SectionLabel" android:text="@string/section_features" />
 
         <LinearLayout style="@style/Card">
 
@@ -67,6 +71,24 @@
                 <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
 
+            <LinearLayout android:id="@+id/rowMedia" style="@style/Row">
+                <TextView
+                    style="@style/RowTitle"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="@string/sync_media" />
+                <Switch android:id="@+id/swMedia" style="@style/RowSwitch" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/rowBattery" style="@style/Row">
+                <TextView
+                    style="@style/RowTitle"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="@string/sync_battery" />
+                <Switch android:id="@+id/swBattery" style="@style/RowSwitch" />
+            </LinearLayout>
+
             <LinearLayout android:id="@+id/rowFiles" style="@style/Row">
                 <LinearLayout
                     android:layout_width="0dp"
@@ -75,6 +97,19 @@
                     android:orientation="vertical">
                     <TextView style="@style/RowTitle" android:text="@string/settings_files" />
                     <TextView android:id="@+id/fileSummary" style="@style/RowSubtitle" />
+                </LinearLayout>
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
+            </LinearLayout>
+
+            <!-- The Mac pairs over Bluetooth when it asks (feature/BluetoothPair.kt); Android needs Nearby devices for that. -->
+            <LinearLayout android:id="@+id/rowCalls" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/setup_bt_title" />
+                    <TextView android:id="@+id/callsSummary" style="@style/RowSubtitle" />
                 </LinearLayout>
                 <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>
@@ -117,6 +152,33 @@
                     android:orientation="vertical">
                     <TextView style="@style/RowTitle" android:text="@string/settings_updates" />
                     <TextView android:id="@+id/updatesSummary" style="@style/RowSubtitle" />
+                </LinearLayout>
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView style="@style/SectionLabel" android:text="@string/section_help" />
+
+        <LinearLayout style="@style/Card">
+
+            <LinearLayout android:id="@+id/rowSetup" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/settings_setup" />
+                </LinearLayout>
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/rowHelp" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/help_title" />
                 </LinearLayout>
                 <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
             </LinearLayout>

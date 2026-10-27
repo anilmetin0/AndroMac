@@ -42,17 +42,15 @@ struct SettingsList: View {
         Form {
             switch section {
             case .general: general
-            case .sync: sync
-            case .clipboard: clipboard
-            case .notifications: notifications
-            case .files: files
-            case .mirroring: mirroring
             case .devices: devices
+            case .notifications: notifications
+            case .clipboard: clipboard
+            case .files: files
+            case .calls: BluetoothCallSettings()
+            case .mirroring: mirroring
             case .permissions: permissions
-            case .network: network
             case .updates: updatesSection
-            case .metrics: metrics
-            case .privacy: privacy
+            case .advanced: advanced
             }
         }
         .formStyle(.grouped)
@@ -128,6 +126,9 @@ struct SettingsList: View {
                     .accessibilityLabel("AndroMac on GitHub")
                 }
             }
+            LabeledContent("Setup") {
+                Button("Show welcome again") { OnboardingWindow.show() }
+            }
         }
 
         Section {
@@ -148,48 +149,15 @@ struct SettingsList: View {
         }
     }
 
-    // What the phone and the Mac share at all. These four used to sit in the menu bar
-    // panel, where they were four switches in the way of a glance; they are decided once
-    // and then left alone, which is what a settings screen is for.
-    @ViewBuilder
-    private var sync: some View {
+    // Each page opens with its own sync switch: off, the phone never sends that kind of message.
+    // They used to share a "Sync" page, apart from the settings they turn off.
+    private var clipboard: some View {
         Section {
-            Toggle("Battery", isOn: $syncBattery)
-                .onChange(of: syncBattery) { _, v in Store.shared.syncBattery = v }
-            Toggle("Clipboard", isOn: $syncClipboard)
+            Toggle("Sync clipboard", isOn: $syncClipboard)
                 .onChange(of: syncClipboard) { _, v in
                     Store.shared.syncClipboard = v
                     Task { await ClipboardWatcher.shared.refresh() }
                 }
-            Toggle("Notifications", isOn: $syncNotifications)
-                .onChange(of: syncNotifications) { _, v in Store.shared.syncNotifications = v }
-            Toggle("Media", isOn: $syncMedia)
-                .onChange(of: syncMedia) { _, v in
-                    Store.shared.syncMedia = v
-                    // Drop the row immediately when switched off: the phone sends no more
-                    // updates, and leaving the last track on screen would be stale information.
-                    if !v { state.media = nil }
-                }
-        } header: {
-            Text("What syncs")
-        } footer: {
-            Text("Off here, the phone never sends it.").formNote()
-        }
-
-        Section("Battery") {
-            Toggle("Alert me on low battery", isOn: $lowBatteryAlert)
-                .onChange(of: lowBatteryAlert) { _, v in Store.shared.lowBatteryAlert = v }
-            Picker("Alert threshold", selection: $lowBatteryThreshold) {
-                ForEach([10, 15, 20, 30], id: \.self) { Text("\($0)%").tag($0) }
-            }
-            .pickerStyle(.segmented)
-            .disabled(!lowBatteryAlert)
-            .onChange(of: lowBatteryThreshold) { _, v in Store.shared.lowBatteryThreshold = v }
-        }
-    }
-
-    private var clipboard: some View {
-        Section {
             Picker("Send automatically", selection: $clipboardAutoSend) {
                 Text("Automatically, when I copy").tag(true)
                 Text("Only when I ask").tag(false)
@@ -216,7 +184,10 @@ struct SettingsList: View {
 
     private var notifications: some View {
         Section {
+            Toggle("Mirror notifications", isOn: $syncNotifications)
+                .onChange(of: syncNotifications) { _, v in Store.shared.syncNotifications = v }
             Toggle("Play a sound for mirrored notifications", isOn: $notificationSound)
+                .disabled(!syncNotifications)
                 .onChange(of: notificationSound) { _, v in Store.shared.notificationSound = v }
             LabeledContent("History",
                            value: String(localized: "\(NotificationHistory.shared.entries.count) entries"))
@@ -320,22 +291,6 @@ struct SettingsList: View {
                     .foregroundStyle(installFailed ? .red : .secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            // The APK has to get onto the phone somehow, and typing a GitHub URL on a phone
-            // keyboard is the worst part of setting this up. The code is drawn locally from a
-            // constant; it fetches nothing and works with the update check switched off.
-            LabeledContent {
-                QRCode(Release.latestURL)
-            } label: {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Get the app on the phone")
-                    Text("Scan to open the releases page and download the APK.")
-                        .font(Theme.Font.label)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-        } header: {
-            Text("Updates")
         } footer: {
             Text("Asks api.github.com once a day, sending only the app version.").formNote()
         }
@@ -390,65 +345,56 @@ struct SettingsList: View {
                 }
             }
         }
+
+        // What every phone reports about itself; off, the phone never sends it.
+        Section("Battery and media") {
+            Toggle("Show the phone's battery", isOn: $syncBattery)
+                .onChange(of: syncBattery) { _, v in Store.shared.syncBattery = v }
+            Toggle("Alert me on low battery", isOn: $lowBatteryAlert)
+                .disabled(!syncBattery)
+                .onChange(of: lowBatteryAlert) { _, v in Store.shared.lowBatteryAlert = v }
+            Picker("Alert threshold", selection: $lowBatteryThreshold) {
+                ForEach([10, 15, 20, 30], id: \.self) { Text("\($0)%").tag($0) }
+            }
+            .pickerStyle(.segmented)
+            .disabled(!syncBattery || !lowBatteryAlert)
+            .onChange(of: lowBatteryThreshold) { _, v in Store.shared.lowBatteryThreshold = v }
+            Toggle("Show what's playing", isOn: $syncMedia)
+                .onChange(of: syncMedia) { _, v in
+                    Store.shared.syncMedia = v
+                    // Drop the row immediately when switched off: the phone sends no more
+                    // updates, and leaving the last track on screen would be stale information.
+                    if !v { state.media = nil }
+                }
+        }
+
+        // The APK has to get onto the phone somehow, and typing a GitHub URL on a phone keyboard
+        // is the worst part of setting this up. The code is drawn locally from a constant; it
+        // fetches nothing and works with the update check switched off.
+        Section {
+            LabeledContent {
+                QRCode(Release.latestURL)
+            } label: {
+                Text("Get the app on the phone")
+                Text("Scan to download it from GitHub")
+            }
+        }
     }
 
-    /// The three macOS grants the app depends on, each with what it is for and a way to fix it.
-    /// Android's own grants are not repeated here: the phone is where they are changed.
+    /// The macOS grants, the same live list as the welcome window's. Android's own grants are not
+    /// repeated here: the phone is where they are changed.
     private var permissions: some View {
         Section {
-            PermissionRow(
-                title: String(localized: "Notifications"),
-                detail: String(localized: "Mirrored notifications appear in Notification Center."),
-                status: notificationStatus.0, tone: notificationStatus.1
-            ) {
-                if state.notificationsAuthorized == false {
-                    Button("Open System Settings") {
-                        Self.open("x-apple.systempreferences:com.apple.Notifications-Settings.extension")
-                    }
-                }
-            }
-            PermissionRow(
-                title: String(localized: "Local Network"),
-                detail: String(localized: "Needed to find the phone over Bonjour."),
-                status: networkStatus.0, tone: networkStatus.1
-            ) {
-                if !state.status.isLive {
-                    Button("Open System Settings") { Self.open(Self.localNetworkSettings) }
-                }
-            }
-            PermissionRow(
-                title: String(localized: "Keychain"),
-                detail: String(localized: "Holds this Mac's identity key."),
-                status: Store.shared.keychainDenied
-                    ? String(localized: "Denied") : String(localized: "Allowed"),
-                tone: Store.shared.keychainDenied ? .orange : .green
-            ) {
-                if Store.shared.keychainDenied {
-                    Button("Retry") {
-                        Store.shared.retryKeychain()
-                        Task { await Server.shared.stop(); await Server.shared.start() }
-                    }
-                }
-            }
+            PermissionList()
         } footer: {
-            Text("Android permissions are listed on the phone, in AndroMac → Permissions.").formNote()
+            Text("Android permissions are on the phone, in AndroMac → Permissions").formNote()
         }
-        .onAppear { NotificationMirror.shared.refreshAuthorization() }
+        .onAppear { SystemPermissions.shared.refresh() }
     }
 
-    private var network: some View {
-        Section {
-            LabeledContent("This Mac's address", value: NetworkInfo.localIPv4() ?? String(localized: "no local network"))
-            LabeledContent("Bonjour service", value: "_andromac._tcp")
-            Button("Open Local Network settings") { Self.open(Self.localNetworkSettings) }
-        } footer: {
-            Text("Both devices must be on the same subnet.").formNote()
-        }
-    }
-
-    private var metrics: some View { MetricsSection() }
-
-    private var privacy: some View {
+    /// What a bug report or a curious user asks for, and nobody changes day to day.
+    @ViewBuilder
+    private var advanced: some View {
         Section {
             // Said once, here, next to the one setting that can send anything off the machine.
             // It used to appear on the panel, in the footer and twice in this section, which is
@@ -462,31 +408,18 @@ struct SettingsList: View {
         } footer: {
             Text("Stored only on this Mac. Cleared when you forget all devices.").formNote()
         }
-    }
 
-    // MARK: permissions helpers
-
-    private static let localNetworkSettings =
-        "x-apple.systempreferences:com.apple.preference.security?Privacy_LocalNetwork"
-
-    private static func open(_ url: String) {
-        if let url = URL(string: url) { NSWorkspace.shared.open(url) }
-    }
-
-    private var notificationStatus: (String, Color) {
-        switch state.notificationsAuthorized {
-        case nil: return (String(localized: "Checking…"), .secondary)
-        case true?: return (String(localized: "Allowed"), .green)
-        case false?: return (String(localized: "Off"), .orange)
+        Section {
+            LabeledContent("This Mac's address", value: NetworkInfo.localIPv4() ?? String(localized: "no local network"))
+            LabeledContent("Bonjour service", value: "_andromac._tcp")
+            Button("Open Local Network settings") { SystemPermissions.openSettings(.localNetwork) }
+        } header: {
+            Text("Network")
+        } footer: {
+            Text("Both devices must be on the same subnet.").formNote()
         }
-    }
 
-    private var networkStatus: (String, Color) {
-        switch state.status {
-        case .failed: return (String(localized: "Blocked or no network"), .orange)
-        case .listening, .connected: return (String(localized: "Allowed"), .green)
-        case .stopped: return (String(localized: "Not started"), .secondary)
-        }
+        MetricsSection()
     }
 
     /// Fingerprint and reachability: enough to tell two phones of the same model apart, and to see
@@ -588,7 +521,7 @@ struct SettingsList: View {
     }
 }
 
-private extension View {
+extension View {
     /// A section footer: one quiet line, leading like System Settings (a grouped form centres or
     /// trails it otherwise).
     func formNote() -> some View {
@@ -599,76 +532,42 @@ private extension View {
     }
 }
 
-/// The sidebar entries, in display order.
+/// The sidebar entries, in display order: the app, the phones, one page per feature, then the
+/// pages people rarely open.
 enum SettingsSection: String, CaseIterable, Identifiable {
-    case general, sync, clipboard, notifications, files, mirroring, devices, permissions, network,
-         updates, metrics, privacy
+    case general, devices, notifications, clipboard, files, calls, mirroring, permissions, updates,
+         advanced
 
     var id: String { rawValue }
 
     var title: LocalizedStringKey {
         switch self {
         case .general: return "General"
-        case .sync: return "Sync"
-        case .clipboard: return "Clipboard"
-        case .notifications: return "Notifications"
-        case .files: return "Files"
-        case .mirroring: return "Screen mirroring"
         case .devices: return "Devices"
+        case .notifications: return "Notifications"
+        case .clipboard: return "Clipboard"
+        case .files: return "Files"
+        case .calls: return "Calls"
+        case .mirroring: return "Screen mirroring"
         case .permissions: return "Permissions"
-        case .network: return "Network"
         case .updates: return "Updates"
-        case .metrics: return "Metrics"
-        case .privacy: return "Privacy"
+        case .advanced: return "Advanced"
         }
     }
 
     var symbol: String {
         switch self {
         case .general: return "gearshape"
-        case .sync: return "arrow.triangle.2.circlepath"
-        // Not the list's own symbols: the sidebar has a Clipboard and a Notifications list above.
-        case .clipboard: return "clipboard"
-        case .notifications: return "bell.badge"
-        case .files: return "arrow.up.doc"
-        case .mirroring: return "rectangle.on.rectangle"
         case .devices: return "iphone"
+        // Not the list's own symbols: the sidebar has a Clipboard and a Notifications list above.
+        case .notifications: return "bell.badge"
+        case .clipboard: return "clipboard"
+        case .files: return "arrow.up.doc"
+        case .calls: return "phone"
+        case .mirroring: return "rectangle.on.rectangle"
         case .permissions: return "checkmark.shield"
-        case .network: return "network"
         case .updates: return "arrow.down.circle"
-        case .metrics: return "chart.line.uptrend.xyaxis"
-        case .privacy: return "lock.shield"
-        }
-    }
-}
-
-/// One system grant: what it is for on the left, a status pill and (when not granted) the way to
-/// fix it on the right.
-private struct PermissionRow<Action: View>: View {
-
-    let title: String
-    let detail: String
-    let status: String
-    let tone: Color
-    @ViewBuilder let action: Action
-
-    var body: some View {
-        LabeledContent {
-            HStack(spacing: Theme.Space.small) {
-                HStack(spacing: Theme.Space.tight) {
-                    Circle().fill(tone).frame(width: 7, height: 7)
-                    Text(status).font(Theme.Font.label)
-                }
-                action.controlSize(.small)
-            }
-        } label: {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                Text(detail)
-                    .font(Theme.Font.label)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+        case .advanced: return "gearshape.2"
         }
     }
 }
@@ -695,6 +594,8 @@ private struct MetricsSection: View {
                 )
             }
             Button("Reset counters") { stats.reset() }
+        } header: {
+            Text("Metrics")
         } footer: {
             Text("Idle baseline is about 30 messages per hour for each connected phone.").formNote()
         }

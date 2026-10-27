@@ -2,3 +2,5 @@
 
 "NSHumanReadableCopyright" = "Yerel ağ senkronizasyonu. Veri dışarı çıkmaz.";
 "NSLocalNetworkUsageDescription" = "Android telefonunu yerel ağda bulmak ve ona bağlanmak için. Veri bu ağdan dışarı çıkmaz.";
+"NSBluetoothAlwaysUsageDescription" = "Eşlenmiş Android telefonundaki aramaları yanıtlamak için.";
+"NSMicrophoneUsageDescription" = "Bluetooth aramalarında Mac mikrofonunu kullanmak için.";

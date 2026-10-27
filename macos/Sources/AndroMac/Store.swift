@@ -346,6 +346,13 @@ final class Store: @unchecked Sendable {
         set { write(newValue, "showBatteryInMenuBar") }
     }
 
+    /// The welcome window has had its one automatic showing (`OnboardingWindow.showOnFirstLaunch`).
+    /// Settings → General reopens it by hand.
+    var onboardingDone: Bool {
+        get { flag("onboardingDone", default: false) }
+        set { write(newValue, "onboardingDone") }
+    }
+
     /// Ask the phone for its clipboard when the panel opens. Default ON: it is the only way a copy
     /// made on the phone reaches the Mac without the user tapping something there, and the phone
     /// still answers only when it is unlocked and allowed to (see `ClipboardBridge` on Android).

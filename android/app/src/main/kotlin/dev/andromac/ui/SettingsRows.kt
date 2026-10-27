@@ -1,5 +1,6 @@
 package dev.andromac.ui
 
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
 import android.text.format.DateUtils
@@ -38,8 +39,15 @@ fun Activity.bindSwitchRow(rowId: Int, switchId: Int, initial: Boolean, set: (Bo
 /** Dims a row and makes it untappable while another toggle is off. */
 fun Activity.setRowEnabled(rowId: Int, enabled: Boolean) {
     findViewById<View>(rowId).apply {
+        val targetAlpha = if (enabled) 1f else 0.4f
+        if (isEnabled == enabled && alpha == targetAlpha) return@apply
         isEnabled = enabled
-        alpha = if (enabled) 1f else 0.4f
+        animate().cancel()
+        if (ValueAnimator.areAnimatorsEnabled() && isLaidOut) {
+            animate().alpha(targetAlpha).setDuration(150).start()
+        } else {
+            alpha = targetAlpha
+        }
     }
 }
 

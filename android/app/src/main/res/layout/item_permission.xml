@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One permission: name and reason on the left, Required/Optional and the live state on the right. -->
+<!-- One permission: name and reason on the left; Allow while it is missing, a check once granted. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     style="@style/Row"
+    android:paddingStart="16dp"
+    android:paddingEnd="12dp"
+    android:minHeight="72dp"
     android:baselineAligned="false">
 
     <LinearLayout
@@ -13,22 +16,16 @@
         <TextView android:id="@+id/permNote" style="@style/RowSubtitle" />
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:orientation="vertical"
-        android:gravity="end">
-        <TextView
-            android:id="@+id/permState"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.AM.LabelLarge" />
-        <TextView
-            android:id="@+id/permKind"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.AM.LabelMedium"
-            android:textColor="?android:attr/textColorSecondary" />
-    </LinearLayout>
+    <Button
+        android:id="@+id/permAllow"
+        style="@style/CompactTonalButton"
+        android:text="@string/permission_allow" />
+
+    <ImageView
+        android:id="@+id/permGranted"
+        style="@style/RowIcon"
+        android:layout_marginEnd="4dp"
+        android:src="@drawable/ic_step_done"
+        android:contentDescription="@string/permission_granted"
+        android:visibility="gone" />
 </LinearLayout>

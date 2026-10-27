@@ -43,6 +43,13 @@ public enum FileNames {
         return "\(base) (\(UUID().uuidString.prefix(8)))\(ext)"
     }
 
+    /// The hidden temp file a download is written to: `.<name>.<tag>.part`. The name is cut so the
+    /// whole component stays within 255 bytes; only the final file keeps the full sanitized name.
+    public static func partName(_ name: String, tag: String) -> String {
+        let fixed = ".".utf8.count + ".\(tag).part".utf8.count
+        return ".\(cut(name, to: maxBytes - fixed)).\(tag).part"
+    }
+
     /// `("photo", ".jpg")`; a name without a dot has an empty extension.
     static func splitExtension(_ name: String) -> (stem: String, ext: String) {
         guard let dot = name.lastIndex(of: "."), dot != name.startIndex else { return (name, "") }
