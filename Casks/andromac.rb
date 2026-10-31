@@ -1,8 +1,8 @@
 # One stable release per version; the nightly builds published in between are prereleases the cask never
-# sees. The version here must equal the VERSION file (CI checks it). A re-published stable release
-# keeps the same file name, so the checksum is not pinned and SHA256SUMS.txt on the release page
-# carries it. The app updates itself. Apple Silicon only: CI builds arm64 and there is no Intel
-# build.
+# sees. The version here must equal the VERSION file (CI checks it). Raising it sets the checksum
+# back to :no_check; the cask workflow pins the release's checksum once it is built, and again
+# after a re-publish. The app updates itself. Apple Silicon only: CI builds arm64 and there is no
+# Intel build.
 #
 #   brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
 #   brew trust anilmetin0/andromac

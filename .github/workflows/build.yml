@@ -81,6 +81,7 @@ jobs:
       previous: ${{ steps.v.outputs.previous }}
       channel: ${{ steps.v.outputs.channel }}
       name: ${{ steps.v.outputs.name }}
+      released: ${{ steps.v.outputs.released }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -122,6 +123,7 @@ jobs:
             echo "previous=$previous"
             echo "channel=$channel"
             echo "name=$name"
+            echo "released=$([[ -n "$current" ]] && echo true || echo false)"
           } >> "$GITHUB_OUTPUT"
           echo "Version $version, build $build, commit $commit, channel $channel, notes from ${previous:-the start}"
 
@@ -169,12 +171,20 @@ jobs:
         run: python3 .github/scripts/test-dependency-review.py
 
       # The cask must stay installable; brew style catches a broken stanza before a user does, and
-      # its version has to follow VERSION or the download URL points at the previous release.
+      # its version has to follow VERSION or the download URL points at the previous release. Until
+      # v<VERSION> exists the checksum is :no_check: a pinned one would be the previous release's,
+      # and the cask workflow pins the new one once the release is built.
       - name: Homebrew casks
+        env:
+          RELEASED: ${{ needs.version.outputs.released }}
         run: |
           brew style Casks/*.rb
           grep -q "^  version \"$(cat VERSION)\"$" Casks/andromac.rb \
             || { echo "::error::Casks/andromac.rb version does not match VERSION"; exit 1; }
+          if [[ "$RELEASED" != "true" ]] && ! grep -qx '  sha256 :no_check' Casks/andromac.rb; then
+            echo "::error::Casks/andromac.rb pins a checksum for a version that is not released yet; use sha256 :no_check"
+            exit 1
+          fi
 
       # Every .lproj must be complete; a missing key means a translation PR is unfinished.
       - name: Localization files complete

@@ -1,0 +1,90 @@
+# After every successful build on main: pins the stable release's DMG checksum in
+# Casks/andromac.rb, so Homebrew verifies the download. The checksum exists only once the
+# release is built, so it lands in a commit after the release one, and a re-published release
+# ([stable]) gets a new one the same way. Nothing changes when the cask already carries it, so
+# the nightly pushes in between leave it alone.
+#
+# The hash comes from the release's SHA256SUMS.txt and is checked against the DMG the release
+# serves. main only takes commits whose builds passed, and a branch or pull request made with
+# GITHUB_TOKEN starts no workflow, so this job dispatches the build on its branch, waits for it
+# and merges. The merge starts no build: the app did not change, so no nightly follows it.
+#
+# andromac@nightly stays unpinned: its DMG changes on every push under the same URL.
+name: cask
+
+on:
+  workflow_run:
+    workflows: [build]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cask
+  cancel-in-progress: false
+
+jobs:
+  pin:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      actions: write
+      pull-requests: write
+      checks: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+      - name: Checksum
+        id: sum
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          dmg="AndroMac-$version-macOS-arm64.dmg"
+          dir="$RUNNER_TEMP/release"
+          if ! gh release download "v$version" --pattern SHA256SUMS.txt --pattern "$dmg" --dir "$dir"; then
+            echo "No v$version release with $dmg yet; nothing to pin."
+            exit 0
+          fi
+          sha="$(awk -v f="$dmg" '{ n = $2; sub(/^\*/, "", n) } n == f { print $1 }' "$dir/SHA256SUMS.txt")"
+          [[ "$sha" =~ ^[0-9a-f]{64}$ ]] || { echo "::error::SHA256SUMS.txt of v$version has no hash for $dmg"; exit 1; }
+          (cd "$dir" && echo "$sha  $dmg" | sha256sum -c -)
+          if grep -qx "  sha256 \"$sha\"" Casks/andromac.rb; then
+            echo "Casks/andromac.rb already pins $sha."
+            exit 0
+          fi
+          sed -i -E "s/^  sha256 .*/  sha256 \"$sha\"/" Casks/andromac.rb
+          grep -qx "  sha256 \"$sha\"" Casks/andromac.rb || { echo "::error::no sha256 line in Casks/andromac.rb"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Commit and build
+        if: steps.sum.outputs.version != ''
+        env:
+          VERSION: ${{ steps.sum.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          branch="bot/cask-$VERSION"
+          title="chore(cask): pin the $VERSION checksum"
+          git switch -c "$branch"
+          git commit -am "$title"
+          git push --force origin "$branch"
+          sha="$(git rev-parse HEAD)"
+          number="$(gh pr list --head "$branch" --state open --json number --jq '.[0].number // empty')"
+          if [[ -z "$number" ]]; then
+            gh pr create --base main --head "$branch" --title "$title" \
+              --body "The checksum of AndroMac-$VERSION-macOS-arm64.dmg, from the v$VERSION release's SHA256SUMS.txt and checked against the DMG it serves. Opened and merged by the cask workflow once the builds pass."
+            number="$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')"
+          fi
+          gh workflow run build.yml --ref "$branch"
+          # The dispatched run needs a moment to register its check runs on the commit.
+          for _ in $(seq 30); do
+            [[ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$sha/check-runs" --jq '.total_count')" -gt 0 ]] && break
+            sleep 10
+          done
+          gh pr checks "$number" --watch --fail-fast --interval 30
+          gh pr merge "$number" --squash --delete-branch --match-head-commit "$sha"

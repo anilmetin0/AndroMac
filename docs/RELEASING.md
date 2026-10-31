@@ -12,7 +12,8 @@ every push and pull request; only a push to `main` publishes at the end.
 3. `swift test` and `./gradlew :vectors:test`: the unit tests on both sides.
 4. `./gradlew :app:lintDebug`: Android lint.
 5. `macos/scripts/update-strings.sh --check`: every localization key exists in every language.
-6. `brew style Casks/*.rb`, and the cask's version equals `VERSION`.
+6. `brew style Casks/*.rb`, the cask's version equals `VERSION`, and its checksum is
+   `:no_check` until `v<VERSION>` exists.
 7. The macOS bundle and the Android APK are built and uploaded as workflow artifacts.
 8. `actionlint` checks the workflows, with shellcheck on every `run:` block, and `shellcheck`
    checks every shell script; both at warning level. `.github/actionlint.yaml` names the runner
@@ -70,7 +71,8 @@ section. The header may carry a date (`## 1.2.0 - 2026-10-01`); only the version
 1. Pick the version. Patch for fixes, minor for features, major for a protocol break that makes
    old and new builds refuse each other.
 2. Rename `## Unreleased` to `## <version> - <date>` in `CHANGELOG.md` and `CHANGELOG.tr.md`.
-3. Write the version into `VERSION` (one line, no `v`) and into `Casks/andromac.rb`.
+3. Write the version into `VERSION` (one line, no `v`) and into `Casks/andromac.rb`, and set the
+   cask's `sha256` to `:no_check`.
 4. Commit as `chore(release): <version>` and push to `main`. That push publishes the stable
    release as Latest; the pushes after it publish nightly builds until the next version.
 5. Watch the run with `gh run watch`, then check the release page.
@@ -83,8 +85,13 @@ commit message of the push, or run the workflow on `main` from the Actions tab w
 
 - `Casks/andromac.rb` carries the version and downloads
   `releases/download/v<VERSION>/AndroMac-<VERSION>-macOS-arm64.dmg`. It changes with `VERSION`,
-  and CI fails when the two disagree. The checksum is not pinned (`sha256 :no_check`);
-  `SHA256SUMS.txt` on the release page carries it. The cask declares `auto_updates true`: the
+  and CI fails when the two disagree. After each successful build on `main`,
+  `.github/workflows/cask.yml` compares the cask's `sha256` with the DMG of the `v<VERSION>`
+  release (its `SHA256SUMS.txt`, checked against the file). When they differ, after a new
+  version or a re-published one, it opens `bot/cask-<VERSION>`, builds it and merges it as
+  `chore(cask): pin the <VERSION> checksum`. That merge starts no build. Until it lands, the
+  cask installs unverified, as before. `andromac@nightly` stays `:no_check`: its DMG changes on
+  every push under one URL. The cask declares `auto_updates true`: the
   app updates itself, through `brew upgrade` when Homebrew installed it.
 - Obtainium keys on the tag name, which changes once per version, so it sees each stable release
   without extra options. The nightly release keeps one tag, so Obtainium may not notice a new
