@@ -254,6 +254,9 @@ final class QuickSend {
         let point = NSEvent.mouseLocation
         guard let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }),
               point.y >= screen.frame.maxY - 40 else { return }
+        // A drag fires this at the display's refresh rate; once the target shows on this screen,
+        // there is no pasteboard to ask and nothing to move.
+        if let panel, panel.isVisible, panel.screen == screen, dismissal?.isCancelled ?? true { return }
         let board = NSPasteboard(name: .drag)
         guard board.changeCount != seenDrag,
               board.canReadObject(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) else { return }

@@ -57,7 +57,13 @@ final class Messages: ObservableObject {
     @Published private(set) var messages: [SMS.Message] = []
     @Published private(set) var conversationLoading = false
     @Published private(set) var outgoing: [Outgoing] = []
-    @Published var draft = ""
+    /// Kept apart from the model, so a keystroke redraws the composer and not the whole window.
+    let draft = Draft()
+
+    @MainActor
+    final class Draft: ObservableObject {
+        @Published var text = ""
+    }
 
     private var isOpen = false
     private var watch: AnyCancellable?
@@ -89,7 +95,7 @@ final class Messages: ObservableObject {
     private func reset() {
         phoneName = ""
         threads = []; messages = []; outgoing = []
-        selection = nil; composingNew = false; newNumber = ""; draft = ""
+        selection = nil; composingNew = false; newNumber = ""; draft.text = ""
         conversationLoading = false; selectWhenListed = nil
     }
 
@@ -116,6 +122,7 @@ final class Messages: ObservableObject {
         selection = thread
         composingNew = false
         newNumber = ""
+        draft.text = ""         // a reply typed for one conversation must not go to the next
         messages = []
         conversationLoading = thread != nil
         if let thread { request(thread: thread) }
@@ -126,6 +133,7 @@ final class Messages: ObservableObject {
         messages = []
         conversationLoading = false
         newNumber = ""
+        draft.text = ""
         composingNew = true
     }
 
@@ -137,7 +145,7 @@ final class Messages: ObservableObject {
     }
 
     var canReply: Bool { SMS.isValidAddress(address) }
-    var canSend: Bool { phase == .ready && canReply && SMS.sendable(draft) != nil }
+    var canSend: Bool { phase == .ready && canReply && SMS.sendable(draft.text) != nil }
 
     /// The phone's messages, then this window's own texts the phone does not list yet.
     var bubbles: [Bubble] {
@@ -173,7 +181,7 @@ final class Messages: ObservableObject {
     // MARK: sending
 
     func send() {
-        guard canSend, let body = SMS.sendable(draft) else { return }
+        guard canSend, let body = SMS.sendable(draft.text) else { return }
         let to = address
         if composingNew {
             if let known = threads.first(where: { SMS.sameNumber($0.address, to) }) {
@@ -184,7 +192,7 @@ final class Messages: ObservableObject {
         }
         let item = Outgoing(id: SMS.newID(), to: to, body: body, date: Date(), thread: selection, state: .pending)
         outgoing.append(item)
-        draft = ""
+        draft.text = ""
         transmit(item)
     }
 
@@ -216,7 +224,15 @@ final class Messages: ObservableObject {
         case .noPermission: phase = .noPermission
         case .ok: phase = .ready
         }
-        threads = list.threads
+        var listed = list.threads
+        // The open conversation can fall out of the newest 50 the phone lists. Kept at the end, it
+        // still has its number, so it can still be replied to. A shorter list means it was deleted.
+        if list.state == .ok, listed.count >= SMS.maxThreads, let selection,
+           !listed.contains(where: { $0.id == selection }),
+           let open = threads.first(where: { $0.id == selection }) {
+            listed.append(open)
+        }
+        threads = listed
         guard phase == .ready, let wanted = selectWhenListed,
               let match = threads.first(where: { SMS.sameNumber($0.address, wanted) }) else { return }
         selectWhenListed = nil
@@ -426,7 +442,6 @@ private struct ConversationView: View {
 
     @ObservedObject private var model = Messages.shared
     @FocusState private var numberFocused: Bool
-    @State private var composeHeight: CGFloat = ComposeField.minHeight
 
     var body: some View {
         let bubbles = model.bubbles
@@ -460,7 +475,7 @@ private struct ConversationView: View {
                 if model.conversationLoading && bubbles.isEmpty { ProgressView().controlSize(.small) }
             }
             Divider()
-            composer
+            Composer(model: model, draft: model.draft)
         }
         .onAppear { if model.composingNew { numberFocused = true } }
         .onChange(of: model.composingNew) { _, new in if new { numberFocused = true } }
@@ -504,8 +519,23 @@ private struct ConversationView: View {
 
     private var sender: String { model.selectedThread?.title ?? model.address }
 
+    /// The time alone today, the day and time before.
+    static func stamp(_ date: Date) -> String {
+        Calendar.current.isDateInToday(date)
+            ? date.formatted(date: .omitted, time: .shortened)
+            : date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute())
+    }
+}
+
+/// The reply field and Send. It watches the draft, which the rest of the conversation does not.
+private struct Composer: View {
+
+    @ObservedObject var model: Messages
+    @ObservedObject var draft: Messages.Draft
+    @State private var composeHeight: CGFloat = ComposeField.minHeight
+
     @ViewBuilder
-    private var composer: some View {
+    var body: some View {
         if !model.canReply && !model.composingNew {
             Text("Can't reply to this sender")
                 .font(Theme.Font.body)
@@ -514,7 +544,7 @@ private struct ConversationView: View {
                 .padding(Theme.inset)
         } else {
             HStack(alignment: .bottom, spacing: Theme.Space.small) {
-                ComposeField(text: $model.draft, height: $composeHeight,
+                ComposeField(text: $draft.text, height: $composeHeight,
                              placeholder: String(localized: "Text message"),
                              focusKey: "\(model.selection ?? -1)", focusNow: !model.composingNew,
                              submit: model.send)
@@ -540,7 +570,7 @@ private struct ConversationView: View {
     /// Only near the limit, where it helps.
     @ViewBuilder
     private var counter: some View {
-        let count = model.draft.utf16.count
+        let count = draft.text.utf16.count
         if count > SMS.maxBody - 200 {
             Text(verbatim: "\(count)/\(SMS.maxBody)")
                 .font(Theme.Font.caption.monospacedDigit())
@@ -548,13 +578,6 @@ private struct ConversationView: View {
                 .padding(.trailing, Theme.inset + 32)
                 .padding(.top, Theme.Space.hair)
         }
-    }
-
-    /// The time alone today, the day and time before.
-    static func stamp(_ date: Date) -> String {
-        Calendar.current.isDateInToday(date)
-            ? date.formatted(date: .omitted, time: .shortened)
-            : date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute())
     }
 }
 

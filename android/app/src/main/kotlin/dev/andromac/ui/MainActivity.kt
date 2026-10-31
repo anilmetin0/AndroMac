@@ -16,7 +16,6 @@ import dev.andromac.core.Store
 import dev.andromac.feature.ClipHistory
 import dev.andromac.feature.ClipboardBridge
 import dev.andromac.feature.FindPhone
-import dev.andromac.feature.MediaBridge
 import dev.andromac.feature.UpdateCheck
 import dev.andromac.feature.Updater
 import dev.andromac.net.LinkService
@@ -75,17 +74,11 @@ class MainActivity : Activity() {
         bindNavRow(R.id.rowClipHistory) { open(ClipboardHistoryActivity::class.java) }
         bindNavRow(R.id.rowSendClip) { sendClipboard() }
 
-        bindSwitchRow(R.id.rowBattery, R.id.swBattery, store.syncBattery) { store.syncBattery = it }
         bindSwitchRow(R.id.rowClipboard, R.id.swClipboard, store.syncClipboard) { store.syncClipboard = it }
         bindSwitchRow(R.id.rowNotifications, R.id.swNotifications, store.syncNotifications) {
             store.syncNotifications = it
         }
-        bindSwitchRow(R.id.rowMedia, R.id.swMedia, store.syncMedia) {
-            // onResume moving the switch to a value set in Settings is no change made here.
-            if (it == store.syncMedia) return@bindSwitchRow
-            store.syncMedia = it
-            MediaBridge.settingChanged()      // apply immediately if connected, do not wait for a reconnect
-        }
+        bindMediaAndBatterySwitches(store)
 
         // The setup flow asks for the permissions, once, on the first launch. A phone paired
         // before the flow existed has been through that already.
@@ -93,8 +86,18 @@ class MainActivity : Activity() {
             if (store.isPaired) store.onboardingDone = true
             else if (savedInstanceState == null) open(OnboardingActivity::class.java)
         }
+        if (store.onboardingDone && savedInstanceState == null) askLocalNetworkOnce()
         pairRequested = intent.getBooleanExtra(EXTRA_PAIR, false)
         LinkService.start(this)
+    }
+
+    /**
+     * A phone set up before Android required local network access (an OS update to 17) never saw
+     * that dialog, and without it the link cannot reach the Mac. Asked once, as a dialog only; after
+     * a "no" the permission card stays the way to Settings.
+     */
+    private fun askLocalNetworkOnce() {
+        askOnce(Permission.LOCAL_NETWORK)
     }
 
     /** The setup flow's last step comes back here to pick the Mac. */

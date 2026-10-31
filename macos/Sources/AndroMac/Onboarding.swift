@@ -10,6 +10,7 @@ import SwiftUI
 @MainActor
 enum OnboardingWindow {
 
+    static let windowID = "andromac-welcome"
     private static var window: NSWindow?
     private static let delegate = Delegate()
 
@@ -34,6 +35,7 @@ enum OnboardingWindow {
             backing: .buffered, defer: false
         )
         window.title = String(localized: "Welcome to AndroMac")
+        window.identifier = NSUserInterfaceItemIdentifier(Self.windowID)
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.isReleasedWhenClosed = false
@@ -70,15 +72,16 @@ enum OnboardingWindow {
 
     static func close() { window?.close() }
 
-    fileprivate static func closed() {
+    fileprivate static func closed(_ closing: NSWindow?) {
         Store.shared.onboardingDone = true
         window = nil
-        if !AppState.appWindowVisible() && !DemoMode.isOn { NSApp.setActivationPolicy(.accessory) }
+        if !AppState.appWindowVisible(except: closing) && !DemoMode.isOn { NSApp.setActivationPolicy(.accessory) }
     }
 
     private final class Delegate: NSObject, NSWindowDelegate {
         func windowWillClose(_ notification: Notification) {
-            MainActor.assumeIsolated { OnboardingWindow.closed() }
+            let closing = notification.object as? NSWindow
+            MainActor.assumeIsolated { OnboardingWindow.closed(closing) }
         }
     }
 }
