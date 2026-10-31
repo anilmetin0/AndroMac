@@ -1,5 +1,6 @@
-# Every push and pull request: crypto + handshake verification, unit tests, localization check,
-# Homebrew cask lint, Android lint, macOS .app and Android APK builds.
+# Every push and pull request: workflow and shell script lint, crypto + handshake verification,
+# unit tests, localization check, Homebrew cask lint, Android lint, macOS .app and Android APK
+# builds.
 #
 # Actions are pinned by commit SHA (Dependabot bumps them with the tag in the comment). The
 # signing keys (APK keystore, Mac certificate) are only ever decoded on main, for the build that
@@ -49,6 +50,28 @@ env:
   ANDROID_PACKAGES: "platforms;android-37.0 build-tools;36.0.0"
 
 jobs:
+  # The workflows and every shell script: actionlint (with shellcheck on each run: block) and
+  # shellcheck on scripts/*.sh, at warning level.
+  lint:
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: actionlint
+        env:
+          ACTIONLINT: "1.7.12"
+          ACTIONLINT_SHA256: "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
+          SHELLCHECK_OPTS: "-S warning"
+        run: |
+          tarball="actionlint_${ACTIONLINT}_linux_amd64.tar.gz"
+          curl -fsSL -o "$RUNNER_TEMP/$tarball" "https://github.com/rhysd/actionlint/releases/download/v$ACTIONLINT/$tarball"
+          echo "$ACTIONLINT_SHA256  $RUNNER_TEMP/$tarball" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/$tarball" -C "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint" -color
+      - name: shellcheck
+        run: git ls-files -z '*.sh' | xargs -0 shellcheck -S warning
+
   version:
     runs-on: ubuntu-26.04
     outputs:
@@ -184,6 +207,7 @@ jobs:
           # codesign looks identities up through the search list, and an untrusted self-signed
           # certificate is not found by name; the keychain goes on the list and the certificate
           # is named by its SHA-1.
+          # shellcheck disable=SC2046 # the list is meant to split into one argument per keychain
           security list-keychains -d user -s "$kc" $(security list-keychains -d user | tr -d '"')
           sha1="$(security find-certificate -c "AndroMac Self-Signed" -Z "$kc" | awk '/SHA-1/ {print $NF}')"
           [ -n "$sha1" ] || { echo "::error::the imported certificate was not found"; exit 1; }
@@ -299,7 +323,7 @@ jobs:
   release:
     name: GitHub Release
     if: needs.version.outputs.channel != 'none'
-    needs: [version, macos, android]
+    needs: [version, lint, macos, android]
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     permissions:

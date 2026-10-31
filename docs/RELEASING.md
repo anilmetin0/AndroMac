@@ -14,6 +14,9 @@ every push and pull request; only a push to `main` publishes at the end.
 5. `macos/scripts/update-strings.sh --check`: every localization key exists in every language.
 6. `brew style Casks/*.rb`, and the cask's version equals `VERSION`.
 7. The macOS bundle and the Android APK are built and uploaded as workflow artifacts.
+8. `actionlint` checks the workflows, with shellcheck on every `run:` block, and `shellcheck`
+   checks every shell script; both at warning level. `.github/actionlint.yaml` names the runner
+   labels newer than actionlint's own list. A release waits for this job too.
 
 A pull request, or a push to any other branch, stops there. A push to `main` continues to the
 release job, on one of two channels.
