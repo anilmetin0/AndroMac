@@ -7,7 +7,7 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaral
 `## Unreleased` altına yazılır; `VERSION` yükseltilince o bölüm yeni sürümün bölümü olur. Beta
 derlemeler bunun yerine commit'lerini listeler.
 
-## Unreleased
+## 1.6.0 - 2026-10-31
 
 ### Eklenenler
 
@@ -18,7 +18,6 @@ derlemeler bunun yerine commit'lerini listeler.
   sürüklenince bırakma alanı açılır ve üzerinde adı yazan telefona gönderir.
 - Aramalar ayarlarında ve menü çubuğu panelinde Bluetooth arama denetimleri, gelen arama bildirimi.
   HFP ile Mac'e ses aktarımı denenir; sistem desteklemiyorsa ses telefonda kalır.
-
 - **Mac'te otomatik bağlanma.** Her telefonun panelde Diğer menüsünde ve Ayarlar → Cihazlar'da bir
   Otomatik bağlan anahtarı var. Telefondaki anahtarla aynı: hangi tarafta değiştirirsen, iki taraf
   bağlanır bağlanmaz öbürü de aynı değere geçiyor. Mac'te kapatılan telefon artık bütün gece yeniden
@@ -41,7 +40,6 @@ derlemeler bunun yerine commit'lerini listeler.
 
 - ⌘Q, AndroMac pencerelerini ⌘W gibi kapatır; uygulama menü çubuğunda çalışmaya devam eder. Çıkış
   menü çubuğu simgesinin sağ tık menüsünde ve paneldeki güç düğmesinde.
-
 - Mac'te ayarlar yeniden düzenlendi: Genel, Cihazlar, Bildirimler, Pano, Dosyalar, Aramalar, Ekran
   yansıtma, İzinler, Güncellemeler ve Gelişmiş. Eşitleme sayfası kalktı. Her eşitleme anahtarı kendi
   sayfasının en üstünde, Pil ve medya ise Cihazlar'da. Ağ, Ölçümler ve gizlilik notu Gelişmiş'e,
@@ -51,7 +49,6 @@ derlemeler bunun yerine commit'lerini listeler.
   var.
 - Ağ kaybolunca eski soket kapanır; Mac ping yanıtlarını denetler. Uyku sonrasında Mac'in
   portu değişse de otomatik bağlantıyı kapatıp açmadan yeniden keşfedilebilir.
-
 - Bağlantıyı kes, Mac'te de telefonda da, otomatik bağlanmayı iki tarafta kapatıyor. Panel böyle
   bir telefonu "Otomatik bağlanma kapalı" diye gösteriyor ve yanında Bağlan düğmesi var.
 
