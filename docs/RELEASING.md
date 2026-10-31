@@ -88,8 +88,9 @@ commit message of the push, or run the workflow on `main` from the Actions tab w
   and CI fails when the two disagree. After each successful build on `main`,
   `.github/workflows/cask.yml` compares the cask's `sha256` with the DMG of the `v<VERSION>`
   release (its `SHA256SUMS.txt`, checked against the file). When they differ, after a new
-  version or a re-published one, it opens `bot/cask-<VERSION>`, builds it and merges it as
-  `chore(cask): pin the <VERSION> checksum`. That merge starts no build. Until it lands, the
+  version or a re-published one, it commits `chore(cask): pin the <VERSION> checksum` to
+  `bot/cask-<VERSION>`, builds it there, fast-forwards `main` to it and deletes the branch, with
+  no pull request. That push starts no build. Until it lands, the
   cask installs unverified, as before. `andromac@nightly` stays `:no_check`: its DMG changes on
   every push under one URL. The cask declares `auto_updates true`: the
   app updates itself, through `brew upgrade` when Homebrew installed it.
