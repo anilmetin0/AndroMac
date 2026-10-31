@@ -329,9 +329,7 @@ struct SettingsList: View {
                 if state.devices.first(where: { $0.id == device.id })?.caps.contains("sms") == true {
                     LabeledContent("Messages") {
                         Button("Open") {
-                            state.focusedDeviceID = device.id
-                            state.refocus()
-                            state.showMessages()
+                            state.showMessages(for: device.id)
                         }
                         .controlSize(.small)
                     }

@@ -187,6 +187,13 @@ final class AppState: ObservableObject {
         present(AndroMacApp.mainWindowID) { self.openMainWindow?() }
     }
 
+    /// The Messages window on one phone: the window follows the focused phone (`Messages.follow`).
+    func showMessages(for deviceID: String) {
+        focusedDeviceID = deviceID
+        refocus()
+        showMessages()
+    }
+
     /// The Messages window, on the phone the panel has open (`Messages.follow`).
     func showMessages() {
         present(AndroMacApp.messagesWindowID) { self.openMessagesWindow?() }
@@ -215,11 +222,12 @@ final class AppState: ObservableObject {
     }
 
     /// Whether one of the app's own windows is still on screen, so closing another does not take
-    /// the Dock icon away from it.
+    /// the Dock icon away from it. The welcome window counts too: it asked for the Dock icon itself.
     static func appWindowVisible(except closing: NSWindow? = nil) -> Bool {
         NSApp.windows.contains { window in
             guard window !== closing, window.isVisible, let id = window.identifier?.rawValue else { return false }
             return id.contains(AndroMacApp.mainWindowID) || id.contains(AndroMacApp.messagesWindowID)
+                || id == OnboardingWindow.windowID
         }
     }
     /// Published separately so the menu bar label is redrawn.

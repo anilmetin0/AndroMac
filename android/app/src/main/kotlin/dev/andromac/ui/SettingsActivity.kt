@@ -13,7 +13,6 @@ import android.widget.Switch
 import android.widget.TextView
 import dev.andromac.R
 import dev.andromac.core.Store
-import dev.andromac.feature.MediaBridge
 import dev.andromac.feature.UpdateCheck
 
 /**
@@ -33,12 +32,7 @@ class SettingsActivity : Activity() {
         bindNavRow(R.id.rowConnection) { open(ConnectionActivity::class.java) }
         bindNavRow(R.id.rowNotifSettings) { open(NotificationSettingsActivity::class.java) }
         bindNavRow(R.id.rowClipSettings) { open(ClipboardSettingsActivity::class.java) }
-        bindSwitchRow(R.id.rowMedia, R.id.swMedia, store.syncMedia) {
-            if (it == store.syncMedia) return@bindSwitchRow     // onResume re-reading it is no change
-            store.syncMedia = it
-            MediaBridge.settingChanged()      // apply immediately if connected, do not wait for a reconnect
-        }
-        bindSwitchRow(R.id.rowBattery, R.id.swBattery, store.syncBattery) { store.syncBattery = it }
+        bindMediaAndBatterySwitches(store)
         bindNavRow(R.id.rowFiles) { open(FileSettingsActivity::class.java) }
         bindNavRow(R.id.rowSms) { open(SmsSettingsActivity::class.java) }
         // Missing, the row asks for Nearby devices; granted, it opens the Bluetooth pairings.

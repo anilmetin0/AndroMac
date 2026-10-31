@@ -59,7 +59,7 @@ when `VERSION` is raised; [docs/RELEASING.md](docs/RELEASING.md) describes the p
 AndroMac is phones and Macs on one local network. A phone talks to one Mac at a time and can
 switch between the Macs it knows.
 
-Out of scope: SMS and access over the internet. Bluetooth call control uses macOS HFP and the
+Out of scope: MMS, RCS and access over the internet. Bluetooth call control uses macOS HFP and the
 phone's system Bluetooth pairing. Call audio depends on whether macOS can open the SCO channel;
 do not claim microphone or speaker support without testing both directions on hardware.
 
@@ -71,9 +71,9 @@ do not claim microphone or speaker support without testing both directions on ha
 | Xcode | 26 or later, for the Swift 6.2 toolchain |
 | JDK | 25 |
 | Android SDK | platform 37 (Android 17), build-tools 36.0.0 |
-| Gradle | 9.7.1, through the wrapper, downloaded automatically |
-| Android Gradle Plugin | 9.4.1, with its built-in Kotlin |
-| Kotlin | 2.4.20, for the plain-JVM `vectors` module only |
+| Gradle | 9.8.2, through the wrapper, downloaded automatically |
+| Android Gradle Plugin | 9.5.0, with its built-in Kotlin |
+| Kotlin | 2.4.21, for the plain-JVM `vectors` module only |
 | Python 3 | only for `macos/scripts/update-strings.sh` |
 
 The Android build targets Java 21 bytecode and `minSdk` 29, which is Android 10.

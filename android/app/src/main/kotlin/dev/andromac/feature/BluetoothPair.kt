@@ -70,6 +70,8 @@ object BluetoothPair {
         if (device.bondState == BluetoothDevice.BOND_BONDED) { report(STATE_BONDED, name); return }
 
         stopWatching(app)
+        // stopWatching cleared it; a bt_pair that arrives while this bond runs is dropped too.
+        busyUntil = SystemClock.elapsedRealtime() + TIMEOUT_MS
         val r = object : BroadcastReceiver() {
             override fun onReceive(c: Context, i: Intent) {
                 @Suppress("DEPRECATION")    // the typed overload is API 33; minSdk is 29

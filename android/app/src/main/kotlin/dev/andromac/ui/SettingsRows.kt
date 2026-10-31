@@ -9,6 +9,8 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Switch
 import android.widget.TextView
 import dev.andromac.R
+import dev.andromac.core.Store
+import dev.andromac.feature.MediaBridge
 
 /**
  * Helpers for binding a settings row.
@@ -34,6 +36,17 @@ fun Activity.bindSwitchRow(rowId: Int, switchId: Int, initial: Boolean, set: (Bo
     // Writing here as well made every tap save the preference twice.
     findViewById<View>(rowId).setOnClickListener { toggle.isChecked = !toggle.isChecked }
     toggle.setOnCheckedChangeListener { _, checked -> set(checked) }
+}
+
+/** Media and Battery sit on the main screen and in Settings; both screens bind them here. */
+fun Activity.bindMediaAndBatterySwitches(store: Store) {
+    bindSwitchRow(R.id.rowMedia, R.id.swMedia, store.syncMedia) {
+        // onResume moving the switch to a value set on the other screen is no change made here.
+        if (it == store.syncMedia) return@bindSwitchRow
+        store.syncMedia = it
+        MediaBridge.settingChanged()      // apply immediately if connected, do not wait for a reconnect
+    }
+    bindSwitchRow(R.id.rowBattery, R.id.swBattery, store.syncBattery) { store.syncBattery = it }
 }
 
 /** Dims a row and makes it untappable while another toggle is off. */

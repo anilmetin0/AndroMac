@@ -200,6 +200,20 @@ fun Activity.grant(permissions: List<Permission>) {
 }
 
 /**
+ * The runtime dialog for [permission], only if it was never asked for: no Settings fallback, so a
+ * launch never pushes the user into Settings. Returns whether the dialog was requested.
+ */
+fun Activity.askOnce(permission: Permission): Boolean {
+    val runtime = permission.runtime ?: return false
+    if (!permission.applies || permission.granted(this)) return false
+    val store = Store(this)
+    if (runtime in store.permissionsAsked) return false
+    store.permissionsAsked += runtime
+    requestPermissions(permission.runtimes.toTypedArray(), Permission.REQ_GRANT)
+    return true
+}
+
+/**
  * The link thread dialled while the dialog was up, failed, and is waiting out its backoff. With
  * local network access in place, the next attempt should not wait for that.
  */
