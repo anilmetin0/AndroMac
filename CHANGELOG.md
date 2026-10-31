@@ -7,7 +7,7 @@ The `## <version>` section matching the `VERSION` file is the notes of that stab
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Nightly builds list their commits instead.
 
-## Unreleased
+## 1.6.0 - 2026-10-31
 
 ### Added
 
@@ -18,7 +18,6 @@ raised. Nightly builds list their commits instead.
   dragged to the top edge of the screen; it sends to the phone named on the target.
 - Bluetooth call controls in Calls settings and the menu bar panel, with incoming-call
   notifications. Mac audio is attempted through HFP; unsupported audio stays on the phone.
-
 - **Auto-connect on the Mac.** Each phone has a Connect automatically switch in the panel's More
   menu and in Settings → Devices. It is the same switch as the phone's: flip it on either side and
   the other follows as soon as the two are connected. A phone turned off on the Mac no longer
@@ -40,7 +39,6 @@ raised. Nightly builds list their commits instead.
 
 - ⌘Q closes AndroMac's windows like ⌘W and the app keeps running in the menu bar. Quit is in
   the menu bar icon's right-click menu and the panel's power button.
-
 - Settings on the Mac are reorganized: General, Devices, Notifications, Clipboard, Files, Calls,
   Screen mirroring, Permissions, Updates and Advanced. The Sync page is gone. Each sync switch is
   now at the top of its own page, and Battery and media sit in Devices. Network, Metrics and the
@@ -49,7 +47,6 @@ raised. Nightly builds list their commits instead.
   and Battery switches next to Notifications, Clipboard, File transfer and Calls on your Mac.
 - Reconnection closes sockets on LAN loss and checks ping replies on the Mac. Discovery can
   recover a changed Mac port after sleep without toggling auto-connect.
-
 - Disconnect, on the Mac or on the phone, turns auto-connect off on both. The panel shows such a
   phone as "Auto-connect off", with Connect right beside it.
 
