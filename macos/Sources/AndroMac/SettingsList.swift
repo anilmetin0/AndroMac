@@ -325,7 +325,7 @@ struct SettingsList: View {
                     get: { !device.paused },
                     set: { on in Task { await Server.shared.setAutoConnect(on, for: device.id) } }
                 ))
-                // The Messages window follows the panel's phone, so opening it here selects this one.
+                // Messages follows the panel's phone, so opening it here selects this one.
                 if state.devices.first(where: { $0.id == device.id })?.caps.contains("sms") == true {
                     LabeledContent("Messages") {
                         Button("Open") {
@@ -549,6 +549,9 @@ enum SettingsSection: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// The sections with a sidebar row; the rest open beside their list (`MainWindow.Tab.settings`).
+    static let sidebar = allCases.filter { MainWindow.Tab.setting($0).page == .setting($0) }
+
     var title: LocalizedStringKey {
         switch self {
         case .general: return "General"
@@ -568,7 +571,6 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         switch self {
         case .general: return "gearshape"
         case .devices: return "iphone"
-        // Not the list's own symbols: the sidebar has a Clipboard and a Notifications list above.
         case .notifications: return "bell.badge"
         case .clipboard: return "clipboard"
         case .files: return "arrow.up.doc"

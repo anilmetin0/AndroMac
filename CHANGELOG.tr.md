@@ -7,6 +7,14 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaral
 `## Unreleased` altına yazılır; `VERSION` yükseltilince o bölüm yeni sürümün bölümü olur. Beta
 derlemeler bunun yerine commit'lerini listeler.
 
+## Unreleased
+
+### Değişenler
+
+- **Mac'te tek pencere.** Mesajlar artık ana pencerenin bir sayfası; kenar çubuğunda Bildirimler,
+  Pano ve Uygulamalar'ın üstünde duruyor, ⌘⇧M yine açıyor. Bildirimler ve Pano ayarları aynı
+  adlı ayrı sayfalar yerine araç çubuğundan (⌥⌘I) listelerinin yanında açılıyor.
+
 ## 1.6.0 - 2026-10-31
 
 ### Eklenenler

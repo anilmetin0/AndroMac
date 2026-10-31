@@ -157,7 +157,7 @@ connects only when you tap **Connect** on it, so after turning it back on at the
 | Feature | Direction | What it does |
 |---|---|---|
 | Battery | Phone to Mac | Level, charging state and temperature. Optional percentage in the menu bar, and a warning when the level drops below the threshold you set in Settings → Devices. |
-| Clipboard | Mac to phone | Sent as you copy (Settings → Clipboard), or by hand with Send to phone in the clipboard history. If the phone cannot write to the clipboard in the background, it shows a notification with a Paste button. Text that a password manager marks as hidden is never sent. |
+| Clipboard | Mac to phone | Sent as you copy (the settings button on the Clipboard page), or by hand with Send to phone in the clipboard history. If the phone cannot write to the clipboard in the background, it shows a notification with a Paste button. Text that a password manager marks as hidden is never sent. |
 | Clipboard | Phone to Mac | The Mac asks for it when you open the panel. The phone also sends it whenever you open AndroMac on the phone. You can send it yourself with the Quick Settings tile, the notification button, or the share sheet. See [why it works this way](#why-the-phone-clipboard-is-fetched). |
 | Clipboard history | Mac | The last 50 entries from both sides. Search, click to copy, right-click to send back to the phone or delete. |
 | Notifications | Phone to Mac | They show up in Notification Center with the app's own icon. You can use their actions, including inline reply, from the Mac. Dismissing on one device dismisses on the other. |
@@ -168,7 +168,7 @@ connects only when you tap **Connect** on it, so after turning it back on at the
 | Find my phone | Mac to phone | The phone rings at alarm volume and vibrates for up to 30 seconds. Found it, a second press, or the timeout stops it. |
 | Phone controls | Mac to phone | Ringer (ring, vibrate, silent) and media volume from the panel, plus a test notification. Silencing needs Do Not Disturb access on the phone. |
 | Files | Both ways | Share from the phone's share sheet, or drop files onto the Mac panel. The receiver is asked first, unless you turn on auto-accept. Files go to Downloads, are checked when they arrive, and are never opened for you. |
-| Messages | Both ways | SMS conversations in a Messages window on the Mac (⌘⇧M, or the message button on the phone's card): the 50 most recent conversations, the last 200 texts of each, replies and new texts sent through the phone. SMS only, no MMS, RCS or chat apps. Off until you turn it on in the phone's Settings → Messages. Nothing is stored on the Mac. |
+| Messages | Both ways | SMS conversations on the Messages page of the Mac's window (⌘⇧M, or the message button on the phone's card): the 50 most recent conversations, the last 200 texts of each, replies and new texts sent through the phone. SMS only, no MMS, RCS or chat apps. Off until you turn it on in the phone's Settings → Messages. Nothing is stored on the Mac. |
 | Several phones | Mac | More than one phone can be connected at once. The panel shows them as tabs. Each one can be disconnected on its own and has its own clipboard switch. Settings → Devices lists every phone with its IP address and when it was last seen, and is where you forget one. |
 | Several Macs | Phone | A phone can remember more than one Mac and switch between them in Settings → Connection. |
 | Verification codes | Mac | When a notification contains a one-time code, the Mac notification gets Copy code and the panel shows a copy button for it. A code needs a word such as code, OTP, kod or şifre near it. Copied codes do not go into the clipboard history. |
@@ -290,18 +290,18 @@ onto the panel to send them. ⌘, opens Settings. Right-click the menu bar icon 
 Settings and Quit. ⌘Q closes the windows like ⌘W and AndroMac keeps running in the menu bar;
 to quit, use Quit there or the power button in the panel.
 
-The window has a sidebar with **Notifications**, **Clipboard** and **Apps** at the top, followed
-by the settings pages.
+The window has a sidebar with **Messages**, **Notifications**, **Clipboard** and **Apps** at the
+top, followed by the settings pages. On Notifications and Clipboard, the settings button in the
+toolbar (⌥⌘I) opens that page's settings beside the list.
 
 | Page | What is on it |
 |---|---|
-| Notifications | Notification history, with search and a clear button. |
-| Clipboard | Clipboard history. Click to copy, right-click to send back or delete. |
+| Messages | The phone's SMS conversations on the left, the open one on the right. ⌘N starts a new text, ⌘⇧M opens the page from anywhere. |
+| Notifications | Notification history, with search and a clear button. Its settings: **Mirror notifications**, **Play a sound for mirrored notifications**, and the number of entries in the history. |
+| Clipboard | Clipboard history. Click to copy, right-click to send back or delete. Its settings: **Sync clipboard**, whether the Mac's clipboard is sent automatically or by hand, **Never send a concealed clipboard**, and whether opening the panel fetches the phone's clipboard. |
 | Apps | Full, Title only or Off for every app on the phone. |
 | General | **Open at login**, **Show battery percentage in the menu bar**, and **Language** (System, English, Turkish; needs a restart). The app version, and **Show welcome again**. **Reset AndroMac…** erases the paired phones, both histories, every setting and this Mac's key, then restarts. Every phone has to pair again. |
 | Devices | This Mac's name, then every paired phone with its status, local IP address and when it was last seen, **Connect automatically** and **Forget**. **Battery and media** has the switches for the phone's battery and what is playing, the low-battery alert and its threshold (10, 15, 20 or 30 percent). A QR code for the releases page installs the APK on the phone. |
-| Notifications | **Mirror notifications**, **Play a sound for mirrored notifications**, and the number of entries in the history. |
-| Clipboard | **Sync clipboard**, whether the Mac's clipboard is sent automatically or by hand, **Never send a concealed clipboard**, and whether opening the panel fetches the phone's clipboard. |
 | Files | **Receive files** and **Accept files automatically**. |
 | Calls | **Pair** for the connected phone, then the Bluetooth phone, **Bluetooth settings…**, **Refresh** and **Connect**. See [Bluetooth calls](#bluetooth-calls). |
 | Screen mirroring | Sound, phone screen off, stay awake, resolution limit. |

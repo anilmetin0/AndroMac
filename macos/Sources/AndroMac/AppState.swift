@@ -168,11 +168,12 @@ final class AppState: ObservableObject {
 
     /// Which tab the window opened from the panel should show.
     @Published var requestedTab: MainWindow.Tab = .notifications
+    /// Whether a list shows its settings beside it (`MainWindow.Tab.settings`); the same switch for
+    /// every list, as the inspector is in Finder.
+    @Published var pageSettingsShown = false
     /// The scene's `openWindow` for the main window, handed over by the menu bar label so the
     /// AppKit side (the status item's right-click menu) can open it too.
     var openMainWindow: (() -> Void)?
-    /// The same for the Messages window.
-    var openMessagesWindow: (() -> Void)?
 
     /// Settings, on the section last shown if the window was already there.
     func showSettings() {
@@ -183,21 +184,20 @@ final class AppState: ObservableObject {
     /// single call; the order matters: Dock policy first, then activation, then the window, then
     /// making it key. When the window closes, AppDelegate returns the policy to .accessory.
     func showMainWindow(_ tab: MainWindow.Tab) {
-        requestedTab = tab
+        requestedTab = tab.page
+        if tab.page != tab { pageSettingsShown = true }
         present(AndroMacApp.mainWindowID) { self.openMainWindow?() }
     }
 
-    /// The Messages window on one phone: the window follows the focused phone (`Messages.follow`).
+    /// The Messages page on one phone: the page follows the focused phone (`Messages.follow`).
     func showMessages(for deviceID: String) {
         focusedDeviceID = deviceID
         refocus()
         showMessages()
     }
 
-    /// The Messages window, on the phone the panel has open (`Messages.follow`).
-    func showMessages() {
-        present(AndroMacApp.messagesWindowID) { self.openMessagesWindow?() }
-    }
+    /// The main window's Messages page, on the phone the panel has open (`Messages.follow`).
+    func showMessages() { showMainWindow(.messages) }
 
     private func present(_ id: String, open: @escaping @MainActor () -> Void) {
         Task { @MainActor in
@@ -226,8 +226,7 @@ final class AppState: ObservableObject {
     static func appWindowVisible(except closing: NSWindow? = nil) -> Bool {
         NSApp.windows.contains { window in
             guard window !== closing, window.isVisible, let id = window.identifier?.rawValue else { return false }
-            return id.contains(AndroMacApp.mainWindowID) || id.contains(AndroMacApp.messagesWindowID)
-                || id == OnboardingWindow.windowID
+            return id.contains(AndroMacApp.mainWindowID) || id == OnboardingWindow.windowID
         }
     }
     /// Published separately so the menu bar label is redrawn.

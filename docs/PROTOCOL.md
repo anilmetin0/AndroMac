@@ -460,7 +460,7 @@ not synced because that would require a timer (§6.10). If media sync is switche
 ### Messages (`sms_*`)
 
 The Mac shows the phone's SMS conversations and can send a text through the phone. Only SMS: no
-MMS, RCS or chat apps. Nothing is stored on the Mac; it asks again each time the Messages window
+MMS, RCS or chat apps. Nothing is stored on the Mac; it asks again each time the Messages page
 opens. The phone advertises `sms` in its `caps`. The Mac sends these only to a phone that did.
 
 #### `sms_request`, macOS → Android
@@ -513,7 +513,7 @@ is `off`, `no_permission`, `invalid`, `no_service` or `failed`.
 The SMS store changed (a text arrived or was sent), or Messages was turned on or off or its SMS
 access changed on the phone. The phone listens with a content observer
 while connected and Messages is on, and coalesces bursts into one message per second at most; no
-timer or polling. The Mac asks again only if its Messages window is open.
+timer or polling. The Mac asks again only if its Messages page is open.
 
 ### File transfer, bidirectional (`file_*`)
 

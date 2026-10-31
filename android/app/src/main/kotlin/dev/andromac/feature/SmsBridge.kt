@@ -142,7 +142,7 @@ class SmsBridge(context: Context, private val store: Store) {
     /**
      * Observe exactly while connected, on and allowed. Handler thread only. With [tellMac], a
      * switch or a grant may have changed the state on a live link: `sms_changed` makes an open
-     * Messages window ask again, and see the list or the new `off` / `no_permission`.
+     * Messages page ask again, and see the list or the new `off` / `no_permission`.
      */
     private fun apply(tellMac: Boolean = false) {
         val state = state()

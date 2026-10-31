@@ -26,7 +26,7 @@ struct AndroMacApp: App {
         Window("AndroMac", id: AndroMacApp.mainWindowID) {
             MainWindow().environmentObject(state)
         }
-        .defaultSize(width: 720, height: 640)
+        .defaultSize(width: 900, height: 640)
         .windowResizability(.contentMinSize)
         .commands {
             // ⌘, goes to Settings inside the main window; this app has no separate Settings scene.
@@ -41,6 +41,12 @@ struct AndroMacApp: App {
                 Button("Close AndroMac Windows") { AppState.closeAppWindows() }
                     .keyboardShortcut("q", modifiers: .command)
             }
+            // Messages is a page of the main window; ⌘⇧M still goes straight to it.
+            CommandGroup(before: .windowList) {
+                Button("Messages") { state.showMessages() }
+                    .keyboardShortcut("m", modifiers: [.command, .shift])
+                Divider()
+            }
             CommandGroup(replacing: .help) {
                 Link("AndroMac Help", destination: URL(string: "https://github.com/anilmetin0/AndroMac#readme")!)
                 Link("AndroMac on GitHub", destination: Release.repositoryURL)
@@ -48,17 +54,9 @@ struct AndroMacApp: App {
             }
         }
 
-        // The phone's texts, held in memory only while this window is open (see `Messages`).
-        Window("Messages", id: AndroMacApp.messagesWindowID) {
-            MessagesView()
-        }
-        .defaultSize(width: 780, height: 580)
-        .windowResizability(.contentMinSize)
-        .keyboardShortcut("m", modifiers: [.command, .shift])
     }
 
     static let mainWindowID = "main"
-    static let messagesWindowID = "messages"
 }
 
 /// The menu bar icon, plus the battery percentage when asked for.
@@ -81,7 +79,6 @@ private struct MenuBarLabel: View {
         .accessibilityLabel("AndroMac: " + state.headline)
         .onAppear {
             state.openMainWindow = { openWindow(id: AndroMacApp.mainWindowID) }
-            state.openMessagesWindow = { openWindow(id: AndroMacApp.messagesWindowID) }
         }
     }
 }
@@ -119,7 +116,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let window = note.object as? NSWindow
             MainActor.assumeIsolated {
                 guard let window, let id = window.identifier?.rawValue,
-                      id.contains(AndroMacApp.mainWindowID) || id.contains(AndroMacApp.messagesWindowID),
+                      id.contains(AndroMacApp.mainWindowID),
                       !AppState.appWindowVisible(except: window)
                 else { return }
                 NSApp.setActivationPolicy(.accessory)

@@ -7,7 +7,6 @@ struct ClipboardList: View {
 
     @ObservedObject private var history = ClipboardHistory.shared
     @State private var query = ""
-    @State private var autoSend = Store.shared.clipboardAutoSend
     @State private var copied: UUID?
     @State private var confirmClear = false
 
@@ -51,17 +50,6 @@ struct ClipboardList: View {
                     ? String(localized: "Text you copy on either device appears here.")
                     : String(localized: "No entries match your search.")
             )
-
-            Divider()
-
-            // The list runs to the window edge now, so this footer supplies its own inset.
-            Toggle("Send to the phone automatically when I copy on the Mac", isOn: $autoSend)
-                .onChange(of: autoSend) { _, v in Store.shared.clipboardAutoSend = v }
-                .toggleStyle(.switch)
-                .controlSize(.small)
-                .font(Theme.Font.body)
-                .padding(.horizontal, Theme.inset)
-                .padding(.vertical, Theme.Space.small)
         }
         .searchable(text: $query, prompt: "Search clipboard history")
         .navigationSubtitle(query.isEmpty ? Text(verbatim: "") : Text("\(filtered.count) / \(history.entries.count)"))

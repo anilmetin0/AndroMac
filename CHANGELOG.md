@@ -7,6 +7,15 @@ The `## <version>` section matching the `VERSION` file is the notes of that stab
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Nightly builds list their commits instead.
 
+## Unreleased
+
+### Changed
+
+- **One window on the Mac.** Messages is now a page of the main window, at the top of the sidebar
+  above Notifications, Clipboard and Apps; ⌘⇧M still opens it. The Notifications and Clipboard
+  settings open beside their lists from the toolbar (⌥⌘I) instead of as separate pages of the
+  same name.
+
 ## 1.6.0 - 2026-10-31
 
 ### Added

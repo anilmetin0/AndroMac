@@ -107,9 +107,13 @@ enum DemoMode {
         let section = SettingsSection(rawValue: ProcessInfo.processInfo.environment["ANDROMAC_DEMO_SETTINGS"] ?? "")
         switch ProcessInfo.processInfo.environment["ANDROMAC_DEMO_TAB"] {
         case "notifications": state.requestedTab = .notifications
-        case "settings": state.requestedTab = .setting(section ?? .general)
+        case "settings":
+            let tab = MainWindow.Tab.setting(section ?? .general)
+            state.requestedTab = tab.page
+            state.pageSettingsShown = tab.page != tab
         case "clipboard": state.requestedTab = .clipboard
         case "apps": state.requestedTab = .apps
+        case "messages": state.requestedTab = .messages
         default: break
         }
 
@@ -139,7 +143,7 @@ enum DemoMode {
 
     // MARK: messages
 
-    /// Invented conversations for the Messages window, newest first, as the phone sends them.
+    /// Invented conversations for the Messages page, newest first, as the phone sends them.
     static var smsThreads: [SMS.Thread] {
         let now = Date()
         return [
@@ -289,14 +293,9 @@ enum DemoMode {
         // switches and selection in grey, which is not what a screenshot of it should show. A
         // prompt (pairing, incoming file) first, then the tab, otherwise the panel keeps it.
         let wantsTab = ProcessInfo.processInfo.environment["ANDROMAC_DEMO_TAB"] != nil
-        // ANDROMAC_DEMO_MESSAGES=1 opens the Messages window on the invented conversations.
-        let wantsMessages = ProcessInfo.processInfo.environment["ANDROMAC_DEMO_MESSAGES"] == "1"
-        if wantsMessages { state.openMessagesWindow?() }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
             let prompt = NSApp.windows.first { $0.level == .floating && $0.isVisible }
-            let main = wantsMessages
-                ? NSApp.windows.first { $0.identifier?.rawValue.contains(AndroMacApp.messagesWindowID) == true }
-                : wantsTab
+            let main = wantsTab
                 ? NSApp.windows.first { $0.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true }
                 : nil
             (prompt ?? main)?.makeKeyAndOrderFront(nil)

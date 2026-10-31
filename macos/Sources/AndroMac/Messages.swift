@@ -3,10 +3,10 @@ import AppKit
 import Combine
 import SwiftUI
 
-/// The phone's SMS conversations, held only while the Messages window is open (PROTOCOL §5,
-/// Messages). Nothing is written to disk: closing the window drops every thread and message, and
-/// opening it asks the phone again. No timer and no polling: the phone says `sms_changed` and the
-/// window asks again only then (§6).
+/// The phone's SMS conversations, held only while the main window's Messages page is open
+/// (PROTOCOL §5, Messages). Nothing is written to disk: leaving the page drops every thread and
+/// message, and opening it asks the phone again. No timer and no polling: the phone says
+/// `sms_changed` and the page asks again only then (§6).
 @MainActor
 final class Messages: ObservableObject {
 
@@ -323,20 +323,31 @@ final class Messages: ObservableObject {
 
 // MARK: - window
 
-/// A two-pane window like a small Messages.app: conversations on the left, the open one on the right.
+/// The main window's Messages page, two panes like a small Messages.app: conversations on the
+/// left, the open one on the right. The texts are held only while the page is on screen.
 struct MessagesView: View {
 
     @ObservedObject private var model = Messages.shared
 
     var body: some View {
-        NavigationSplitView {
-            sidebar
-        } detail: {
+        HSplitView {
+            threadList
             detail
+                .frame(minWidth: 340, maxWidth: .infinity, maxHeight: .infinity)
+                .background(.background)
         }
         .navigationTitle(title)
         .navigationSubtitle(subtitle)
-        .frame(minWidth: 620, idealWidth: 780, minHeight: 420, idealHeight: 580)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button { model.startNew() } label: {
+                    Label("New message", systemImage: "square.and.pencil")
+                }
+                .help("New message")
+                .keyboardShortcut("n", modifiers: .command)
+                .disabled(model.phase != .ready)
+            }
+        }
         .onAppear { model.open() }
         .onDisappear { model.close() }
     }
@@ -351,28 +362,21 @@ struct MessagesView: View {
         return model.phoneName
     }
 
-    private var sidebar: some View {
+    private var threadList: some View {
         List(selection: Binding(get: { model.selection }, set: { model.select($0) })) {
             ForEach(model.threads) { thread in
                 ThreadRow(thread: thread).tag(thread.id)
             }
         }
+        .listStyle(.inset)
+        .scrollContentBackground(.hidden)
         .overlay {
             if model.phase == .loading { ProgressView().controlSize(.small) }
         }
         .emptyState(model.phase == .ready && model.threads.isEmpty, symbol: "message",
                     message: String(localized: "No messages"))
-        .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 360)
-        .toolbar {
-            ToolbarItem {
-                Button { model.startNew() } label: {
-                    Label("New message", systemImage: "square.and.pencil")
-                }
-                .help("New message")
-                .keyboardShortcut("n", modifiers: .command)
-                .disabled(model.phase != .ready)
-            }
-        }
+        .softScrollEdges()
+        .frame(minWidth: 220, idealWidth: 270, maxWidth: 360, maxHeight: .infinity)
     }
 
     @ViewBuilder

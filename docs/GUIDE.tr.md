@@ -155,7 +155,7 @@ tarafa hemen, değilken bir sonraki bağlantıda geçer. Kapalıyken telefon yal
 | Özellik | Yön | Ne yapar |
 |---|---|---|
 | Pil | Telefondan Mac'e | Seviye, şarj durumu ve sıcaklık. Menü çubuğunda isteğe bağlı yüzde; seviye Ayarlar → Cihazlar'da seçtiğin eşiğin altına düşünce bir uyarı. |
-| Pano | Mac'ten telefona | Kopyaladıkça gider (Ayarlar → Pano) ya da pano geçmişindeki Telefona gönder ile elle. Telefon arka planda panoya yazamıyorsa Yapıştır düğmeli bir bildirim gösterir. Parola yöneticisinin gizli işaretlediği metin hiç gönderilmez. |
+| Pano | Mac'ten telefona | Kopyaladıkça gider (Pano sayfasındaki ayarlar düğmesi) ya da pano geçmişindeki Telefona gönder ile elle. Telefon arka planda panoya yazamıyorsa Yapıştır düğmeli bir bildirim gösterir. Parola yöneticisinin gizli işaretlediği metin hiç gönderilmez. |
 | Pano | Telefondan Mac'e | Paneli açtığında Mac ister. Telefonda AndroMac'i açtığında da gider. Kendin göndermek için Hızlı Ayarlar karesi, bildirimdeki düğme ve paylaşım menüsü var. Bkz. [neden böyle çalışıyor](#telefonun-panosu-neden-isteniyor). |
 | Pano geçmişi | Mac | İki taraftan son 50 kayıt. Arama, tıklayınca kopyalama, sağ tıkla telefona geri gönderme ya da silme. |
 | Bildirimler | Telefondan Mac'e | Uygulamanın kendi ikonuyla Bildirim Merkezi'ne düşer. Yanıt dahil eylemlerini Mac'ten kullanabilirsin. Bir cihazda kapatınca diğerinde de kapanır. |
@@ -166,7 +166,7 @@ tarafa hemen, değilken bir sonraki bağlantıda geçer. Kapalıyken telefon yal
 | Telefonu bul | Mac'ten telefona | Telefon en fazla 30 saniye alarm sesiyle çalar ve titrer. "Buldum", ikinci bir basış ya da süre dolması durdurur. |
 | Telefon denetimleri | Mac'ten telefona | Panelden zil modu (zil, titreşim, sessiz) ve medya ses düzeyi, bir de test bildirimi. Sessize almak telefonda Rahatsız Etmeyin erişimi ister. |
 | Dosyalar | İki yön | Telefonda paylaşım menüsünden, Mac'te dosyaları panele bırakarak. Otomatik kabulü açmadıysan alıcıya önce sorulur. Dosyalar İndirilenler'e iner, gelince denetlenir ve kendiliğinden açılmaz. |
-| Mesajlar | İki yönlü | SMS konuşmaları Mac'te bir Mesajlar penceresinde (⌘⇧M ya da telefon kartındaki mesaj düğmesi): en son 50 konuşma, her birinin son 200 mesajı, telefon üzerinden yanıt ve yeni mesaj. Yalnızca SMS; MMS, RCS ve sohbet uygulamaları yok. Telefonda Ayarlar → Mesajlar'dan açılana kadar kapalı. Mac'te hiçbir şey saklanmaz. |
+| Mesajlar | İki yönlü | SMS konuşmaları Mac penceresinin Mesajlar sayfasında (⌘⇧M ya da telefon kartındaki mesaj düğmesi): en son 50 konuşma, her birinin son 200 mesajı, telefon üzerinden yanıt ve yeni mesaj. Yalnızca SMS; MMS, RCS ve sohbet uygulamaları yok. Telefonda Ayarlar → Mesajlar'dan açılana kadar kapalı. Mac'te hiçbir şey saklanmaz. |
 | Birden fazla telefon | Mac | Aynı anda birden fazla telefon bağlanabilir. Panel onları sekme olarak gösterir. Her birinin bağlantısı ayrı kesilebilir, her birinin kendi pano anahtarı var. Ayarlar → Cihazlar her telefonu IP adresi ve en son ne zaman görüldüğüyle listeler; unutma da oradan yapılır. |
 | Birden fazla Mac | Telefon | Telefon birden fazla Mac'i hatırlar, Ayarlar → Bağlantı'dan aralarında geçiş yapılır. |
 | Doğrulama kodları | Mac | Bildirimde tek kullanımlık kod varsa Mac bildiriminde Kodu kopyala çıkar, panel de kod için bir kopyalama düğmesi gösterir. Kodun yanında kod, şifre, OTP ya da code gibi bir sözcük olmalı. Kopyalanan kodlar pano geçmişine girmez. |
@@ -289,18 +289,18 @@ bırak. ⌘, Ayarlar'ı açar. Menü çubuğu simgesine sağ tıklayınca AndroM
 çıkar. ⌘Q pencereleri ⌘W gibi kapatır, AndroMac menü çubuğunda çalışmaya devam
 eder; çıkmak için oradaki Çık'ı ya da paneldeki güç düğmesini kullan.
 
-Pencerenin kenar çubuğunda üstte **Bildirimler**, **Pano** ve **Uygulamalar**, altında ayar
-sayfaları var.
+Pencerenin kenar çubuğunda üstte **Mesajlar**, **Bildirimler**, **Pano** ve **Uygulamalar**,
+altında ayar sayfaları var. Bildirimler ve Pano'da araç çubuğundaki ayarlar düğmesi (⌥⌘I) o
+sayfanın ayarlarını listenin yanında açar.
 
 | Sayfa | İçinde ne var |
 |---|---|
-| Bildirimler | Bildirim geçmişi; arama ve temizleme düğmesi. |
-| Pano | Pano geçmişi. Tıklayınca kopyalar, sağ tıkla geri gönderir ya da siler. |
+| Mesajlar | Solda telefonun SMS konuşmaları, sağda açık olan. ⌘N yeni mesaj başlatır, ⌘⇧M sayfayı her yerden açar. |
+| Bildirimler | Bildirim geçmişi; arama ve temizleme düğmesi. Ayarları: **Bildirimleri yansıt**, **Yansıtılan bildirimlerde ses çal** ve geçmişteki kayıt sayısı. |
+| Pano | Pano geçmişi. Tıklayınca kopyalar, sağ tıkla geri gönderir ya da siler. Ayarları: **Panoyu eşitle**, Mac'in panosunun otomatik mi elle mi gönderileceği, **Gizli işaretli panoyu asla gönderme** ve panel açılınca telefonun panosunun istenip istenmeyeceği. |
 | Uygulamalar | Telefondaki her uygulama için Tam, Sadece başlık ya da Kapalı. |
 | Genel | **Girişte başlat**, **Pil yüzdesini menü çubuğunda göster** ve **Dil** (Sistem, İngilizce, Türkçe; yeniden başlatma ister). Uygulama sürümü ve **Karşılama ekranını yeniden göster**. **AndroMac'i sıfırla…** eşleşmiş telefonları, iki geçmişi, bütün ayarları ve bu Mac'in anahtarını silip yeniden başlatır. Her telefonun yeniden eşleşmesi gerekir. |
 | Cihazlar | Bu Mac'in adı, sonra eşleşmiş her telefon; durumu, yerel IP adresi ve en son ne zaman görüldüğüyle, **Otomatik bağlan** ve **Unut** ile. **Pil ve medya** telefonun pili ile çalanı gösteren anahtarları, düşük pil uyarısını ve eşiğini (%10, %15, %20 ya da %30) taşır. Yayın sayfasının QR kodu APK'yı telefona kurmak için burada. |
-| Bildirimler | **Bildirimleri yansıt**, **Yansıtılan bildirimlerde ses çal** ve geçmişteki kayıt sayısı. |
-| Pano | **Panoyu eşitle**, Mac'in panosunun otomatik mi elle mi gönderileceği, **Gizli işaretli panoyu asla gönderme** ve panel açılınca telefonun panosunun istenip istenmeyeceği. |
 | Dosyalar | **Dosya al** ve **Dosyaları otomatik kabul et**. |
 | Aramalar | Bağlı telefon için **Eşleştir**, sonra Bluetooth telefonu, **Bluetooth ayarları…**, **Yenile** ve **Bağlan**. Bkz. [Bluetooth aramaları](#bluetooth-aramaları). |
 | Ekran yansıtma | Ses, telefon ekranını kapatma, uyanık tutma, çözünürlük sınırı. |
