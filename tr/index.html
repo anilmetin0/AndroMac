@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AndroMac: Android telefonun, Mac'inde</title>
-  <meta name="description" content="Android telefonunun bildirimleri, panosu, pili, müziği, dosyaları ve ekranı Wi-Fi üzerinden Mac'inde.">
+  <title>AndroMac: Android bildirimleri, SMS ve dosyalar Mac'te</title>
+  <meta name="description" content="Android bildirimlerini, SMS'leri, panoyu, dosyaları, aramaları ve ekranı Wi-Fi üzerinden Mac'e getiren ücretsiz, açık kaynak uygulama. Hesap ve bulut yok.">
   <link rel="canonical" href="https://anilmetin0.github.io/AndroMac/tr/">
   <link rel="alternate" hreflang="en" href="https://anilmetin0.github.io/AndroMac/">
   <link rel="alternate" hreflang="tr" href="https://anilmetin0.github.io/AndroMac/tr/">
   <link rel="alternate" hreflang="x-default" href="https://anilmetin0.github.io/AndroMac/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="AndroMac">
-  <meta property="og:title" content="AndroMac: Android telefonun, Mac'inde">
-  <meta property="og:description" content="Android telefonunun bildirimleri, panosu, dosyaları ve ekranı Wi-Fi üzerinden Mac'inde.">
+  <meta property="og:title" content="AndroMac: Android bildirimleri, SMS ve dosyalar Mac'te">
+  <meta property="og:description" content="Android telefonunun bildirimleri, SMS'leri, panosu, dosyaları, aramaları ve ekranı Wi-Fi üzerinden Mac'inde. Ücretsiz ve açık kaynak.">
   <meta property="og:url" content="https://anilmetin0.github.io/AndroMac/tr/">
   <meta property="og:image" content="https://anilmetin0.github.io/AndroMac/images/og.png?v=2">
   <meta property="og:image:width" content="1200">
@@ -32,6 +32,8 @@
   <script>try{const t=localStorage.getItem("theme");document.documentElement.dataset.theme=t==="dark"||t==="light"?t:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch{}</script>
   <script>if("IntersectionObserver"in window&&!matchMedia("(prefers-reduced-motion: reduce)").matches){const r=document.documentElement;r.classList.add("rv");addEventListener("load",()=>{if(!r.dataset.revealReady)r.classList.remove("rv")})}</script>
   <script src="../site.js" defer></script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "AndroMac", "url": "https://anilmetin0.github.io/AndroMac/tr/", "description": "Android bildirimlerini, SMS'leri, panoyu, dosyaları, aramaları ve ekranı Wi-Fi üzerinden Mac'e getiren ücretsiz, açık kaynak uygulama. Hesap ve bulut yok.", "applicationCategory": "UtilitiesApplication", "operatingSystem": "macOS 14 or later, Android 10 or later", "softwareVersion": "1.6.0", "license": "https://opensource.org/licenses/MIT", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "downloadUrl": "https://github.com/anilmetin0/AndroMac/releases/latest", "codeRepository": "https://github.com/anilmetin0/AndroMac", "inLanguage": "tr", "image": "https://anilmetin0.github.io/AndroMac/images/og.png?v=2", "author": {"@type": "Person", "name": "anilmetin0", "url": "https://github.com/anilmetin0"}}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "inLanguage": "tr", "mainEntity": [{"@type": "Question", "name": "AndroMac ücretsiz mi?", "acceptedAnswer": {"@type": "Answer", "text": "Evet. İki uygulama da MIT lisansıyla ücretsiz ve açık kaynak; hesap, reklam ya da bulut hizmeti yok. Telefon ile Mac, Wi-Fi ağında doğrudan birbirleriyle konuşur."}}, {"@type": "Question", "name": "Nasıl kurarım?", "acceptedAnswer": {"@type": "Answer", "text": "Mac'te dört Homebrew satırını Terminal'e yapıştır. Homebrew yoksa DMG'yi aç, AndroMac'i Uygulamalar klasörüne sürükle ve xattr satırını çalıştır. Telefonda APK'yı indir, Android sorarsa tarayıcıya kurulum izni ver. Sonra iki cihazda da AndroMac'i açıp eşleştir."}}, {"@type": "Question", "name": "macOS, AndroMac hasarlı ya da açılamıyor diyor", "acceptedAnswer": {"@type": "Answer", "text": "Uygulama kendi sertifikasıyla imzalı ama Apple'ın noter onayından geçmedi, bu yüzden macOS ilk açılışı engeller. Terminal'de bir kez şunu çalıştır: xattr -dr com.apple.quarantine /Applications/AndroMac.app Ya da uygulamayı açmayı dene, macOS engelledikten sonra Sistem Ayarları → Gizlilik ve Güvenlik'te Yine de Aç'a bas."}}, {"@type": "Question", "name": "Güncellemeler nasıl geliyor?", "acceptedAnswer": {"@type": "Answer", "text": "İki uygulama da günde bir kez yeni sürüm var mı diye bakar ve bulursa kurabilir. İki tarafta da Ayarlar → Güncellemeler'de denetimi kapatma, otomatik kurulum ve Nightly sürümler seçenekleri var. Mac uygulamasını Homebrew ile kurduysan brew upgrade --cask andromac komutu da yeni sürüme geçirir."}}, {"@type": "Question", "name": "Ekran yansıtma için ne gerekiyor?", "acceptedAnswer": {"@type": "Answer", "text": "Telefonda Kablosuz hata ayıklama açık olmalı. Geliştirici seçeneklerini açmak için Derleme numarasına yedi kez dokun, sonra Kablosuz hata ayıklamayı aç. USB hata ayıklama açıksa USB kablosu da iş görür. İlk seferde Mac panelindeki yansıtma düğmesine bas, telefondaki Cihazı eşleme koduyla eşle ekranında çıkan kodu gir. İşin bitince Kablosuz hata ayıklamayı kapat."}}, {"@type": "Question", "name": "AndroMac'i nasıl kaldırırım?", "acceptedAnswer": {"@type": "Answer", "text": "Mac'te brew uninstall --cask andromac komutunu çalıştır. DMG'den kurduysan uygulamayı Çöp Sepeti'ne sürükle. Telefonda da diğer uygulamalar gibi kaldır."}}]}</script>
 </head>
 <body>
 <a class="skip" href="#main">İçeriğe geç</a>
@@ -54,7 +56,7 @@
     <div class="wrap">
       <div>
         <h1>Android telefonun, Mac'inde</h1>
-        <p class="lede">Mac'te menü çubuğunda duran bir uygulama ve telefonunda onun Android eşi. Bildirimler, pano, dosyalar, müzik ve telefonun ekranı Wi-Fi üzerinden Mac'e gelir.</p>
+        <p class="lede">Mac'te menü çubuğunda duran bir uygulama ve telefonunda onun Android eşi. Bildirimler, mesajlar, aramalar, pano, dosyalar, müzik ve telefonun ekranı Wi-Fi üzerinden Mac'e gelir.</p>
         <p class="reqs">Apple Silicon Mac ve macOS 14 ya da üstü. Android 10 ya da üstü.</p>
         <div class="actions">
           <a class="btn" href="#mac">Mac'e kur</a>
@@ -86,7 +88,7 @@
         <div class="card" id="mac" data-reveal="rise">
           <h3>Mac</h3>
           <p class="sub">Apple Silicon, macOS 14 ya da üstü</p>
-          <p class="sub">Sürüm <span data-version>1.4.0</span></p>
+          <p class="sub">Sürüm <span data-version>1.6.0</span></p>
           <p class="label">Homebrew ile kurmak için Terminal'e yapıştır:</p>
           <div class="term"><pre id="brew" tabindex="0">brew tap anilmetin0/andromac https://github.com/anilmetin0/AndroMac
 brew trust anilmetin0/andromac
@@ -106,7 +108,7 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
         <div class="card" id="android" data-reveal="rise">
           <h3>Android</h3>
           <p class="sub">Android 10 ya da üstü</p>
-          <p class="sub">Sürüm <span data-version>1.4.0</span></p>
+          <p class="sub">Sürüm <span data-version>1.6.0</span></p>
           <div class="qr-box">
             <img class="qr" src="../images/qr-apk.svg" width="168" height="168" loading="lazy" alt="Son AndroMac APK'sını indiren QR kod">
             <ol class="apk-steps"><li>Kodu telefonun kamerasıyla okut</li><li>İnen APK'yı aç</li><li>Android sorarsa tarayıcıya kurulum izni ver</li></ol>
@@ -164,11 +166,14 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
         <li data-reveal="lift"><h3>Pano</h3><p>Bir cihazda kopyala, ötekinde yapıştır. Mac, içinde arama yapabileceğin bir pano geçmişi tutar.</p></li>
         <li data-reveal="lift"><h3>Pil</h3><p>Pil düzeyi ve şarj durumu menü çubuğunda durur, pil azalınca uyarı gelir.</p></li>
         <li data-reveal="lift"><h3>Müzik ve ses</h3><p>Müziği oynat, duraklat, parça geç. Zil modunu ve ses düzeyini değiştir, kaybolan telefonu çaldır.</p></li>
-        <li data-reveal="lift"><h3>Dosyalar</h3><p>İki yönde de dosya gönder. Her dosya SHA-256 ile doğrulandıktan sonra kaydedilir.</p></li>
+        <li data-reveal="lift"><h3>Dosyalar</h3><p>İki yönde de dosya gönder: Finder'ın Paylaş menüsünden, ekranın üst kenarındaki bırakma alanından ya da telefonun paylaşım menüsünden. Her dosya SHA-256 ile doğrulandıktan sonra kaydedilir.</p></li>
+        <li data-reveal="lift"><h3>Mesajlar</h3><p>SMS konuşmalarını Mac'te oku, yanıtla ya da yeni mesaj yaz; mesaj telefonun SIM'i üzerinden gider. Sen açana kadar kapalı.</p></li>
+        <li data-reveal="lift"><h3>Aramalar</h3><p>Gelen arama Mac'te görünür, Bluetooth üzerinden yanıtlar ya da reddedersin. Sesin Mac'e gelmesi macOS'un desteğine bağlı.</p></li>
         <li data-reveal="lift"><h3>Ekran yansıtma</h3><p>Telefonun ekranını Mac'te bir pencerede fare, klavye ve sesiyle kullan. Bunu uygulamayla gelen scrcpy yapar.</p></li>
         <li data-reveal="lift"><h3>Birden fazla telefon</h3><p>Bir Mac'e birden fazla telefon eşleştir, her birinin ayarları ayrı kalır.</p></li>
         <li data-reveal="lift"><h3>Güncellemeler</h3><p>İki uygulama da kendini günceller. Mac'e Homebrew ile kurduysan güncelleme de Homebrew'dan gelir. Nightly sürümler isteğe bağlı.</p></li>
-        <li data-reveal="lift"><h3>Yerel ağ</h3><p>Kendi Wi-Fi ağında çalışır, hesap açman gerekmez.</p></li>
+        <li data-reveal="lift"><h3>Gizli</h3><p>Kendi Wi-Fi ağında uçtan uca şifreli çalışır. Hesap yok, bulut yok.</p></li>
+        <li data-reveal="lift"><h3>Açık kaynak</h3><p>Ücretsiz ve MIT lisanslı. İki uygulamanın da kodu GitHub'da.</p></li>
       </ul>
     </div>
   </section>
@@ -248,6 +253,12 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
     <div class="wrap">
       <div class="head"><h2 id="faq-h">Sorular</h2></div>
       <div class="faq" data-reveal="lift">
+        <details>
+          <summary>AndroMac ücretsiz mi?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+          <div class="ans">
+            <p>Evet. İki uygulama da MIT lisansıyla ücretsiz ve açık kaynak; hesap, reklam ya da bulut hizmeti yok. Telefon ile Mac, Wi-Fi ağında doğrudan birbirleriyle konuşur.</p>
+          </div>
+        </details>
         <details>
           <summary>Nasıl kurarım?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
           <div class="ans">
