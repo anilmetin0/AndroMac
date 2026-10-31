@@ -76,23 +76,24 @@ section. The header may carry a date (`## 1.2.0 - 2026-10-01`); only the version
 4. Commit as `chore(release): <version>` and push to `main`. That push publishes the stable
    release as Latest; the pushes after it publish nightly builds until the next version.
 5. Watch the run with `gh run watch`, then check the release page.
+6. Run `scripts/pin-cask.sh`, commit as `chore(cask): pin the <version> checksum` and push to
+   `main`.
 
 To rebuild a stable release in place, for example after a broken asset, put `[stable]` in the
 commit message of the push, or run the workflow on `main` from the Actions tab with channel
-`stable`.
+`stable`. The DMG changes with it, so run step 6 again.
 
 ## Homebrew and Obtainium
 
 - `Casks/andromac.rb` carries the version and downloads
   `releases/download/v<VERSION>/AndroMac-<VERSION>-macOS-arm64.dmg`. It changes with `VERSION`,
-  and CI fails when the two disagree. After each successful build on `main`,
-  `.github/workflows/cask.yml` compares the cask's `sha256` with the DMG of the `v<VERSION>`
-  release (its `SHA256SUMS.txt`, checked against the file). When they differ, after a new
-  version or a re-published one, it commits `chore(cask): pin the <VERSION> checksum` to
-  `bot/cask-<VERSION>`, builds it there, fast-forwards `main` to it and deletes the branch, with
-  no pull request. That push starts no build. Until it lands, the
-  cask installs unverified, as before. `andromac@nightly` stays `:no_check`: its DMG changes on
-  every push under one URL. The cask declares `auto_updates true`: the
+  and CI fails when the two disagree. Its `sha256` is `:no_check` until `v<VERSION>` is
+  published, and CI fails when a new version carries a pinned one. `scripts/pin-cask.sh` then
+  pins the checksum from the release's `SHA256SUMS.txt`, after checking it against the DMG the
+  release serves. CI cannot make that commit: `main` takes only commits whose checks ran on a
+  push, and a push made with `GITHUB_TOKEN` starts no workflow. Until the checksum is pinned,
+  the cask installs unverified. `andromac@nightly` stays `:no_check`: its DMG changes on every
+  push under one URL. The cask declares `auto_updates true`: the
   app updates itself, through `brew upgrade` when Homebrew installed it.
 - Obtainium keys on the tag name, which changes once per version, so it sees each stable release
   without extra options. The nightly release keeps one tag, so Obtainium may not notice a new
@@ -134,4 +135,6 @@ build on that branch, merges once it passes and starts the build on `main`, so t
 it. A stable release with it still takes a raised `VERSION`.
 
 `main` refuses force-pushes and deletion, and only takes commits whose `macOS · verify + .app` and
-`Android · APK` checks passed (repository rulesets). Pull requests merge by squash only.
+`Android · APK` checks passed (repository rulesets). Checks from a run started by hand
+(`workflow_dispatch`) do not count; a new commit has to be pushed to another branch first, and
+`main` then fast-forwards to it once its run passes. Pull requests merge by squash only.

@@ -1,6 +1,6 @@
 # One stable release per version; the nightly builds published in between are prereleases the cask never
 # sees. The version here must equal the VERSION file (CI checks it). Raising it sets the checksum
-# back to :no_check; the cask workflow pins the release's checksum once it is built, and again
+# back to :no_check; scripts/pin-cask.sh pins the release's checksum once it is built, and again
 # after a re-publish. The app updates itself. Apple Silicon only: CI builds arm64 and there is no
 # Intel build.
 #

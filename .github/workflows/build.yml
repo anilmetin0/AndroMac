@@ -173,7 +173,7 @@ jobs:
       # The cask must stay installable; brew style catches a broken stanza before a user does, and
       # its version has to follow VERSION or the download URL points at the previous release. Until
       # v<VERSION> exists the checksum is :no_check: a pinned one would be the previous release's,
-      # and the cask workflow pins the new one once the release is built.
+      # and scripts/pin-cask.sh pins the new one once the release is built.
       - name: Homebrew casks
         env:
           RELEASED: ${{ needs.version.outputs.released }}
