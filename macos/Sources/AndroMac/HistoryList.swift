@@ -1,13 +1,13 @@
 import AppKit
 import SwiftUI
 
-// MARK: - Bildirimler
+// MARK: - Notifications
 
 struct HistoryList: View {
 
     @ObservedObject private var history = NotificationHistory.shared
-    @State private var query = ""
-    @State private var confirmClear = false
+    /// The window's search field, which belongs to the window rather than to the page.
+    let query: String
 
     private var filtered: [NotificationHistory.Entry] {
         let q = query.trimmingCharacters(in: .whitespaces).lowercased()
@@ -41,16 +41,8 @@ struct HistoryList: View {
                 ? String(localized: "Notifications from your phone appear here.")
                 : String(localized: "No notifications match your search.")
         )
-        .searchable(text: $query, prompt: "Search app, title or text")
         // A count says something only while a search narrows the list.
         .navigationSubtitle(query.isEmpty ? Text(verbatim: "") : Text("\(filtered.count) / \(history.entries.count)"))
-        .toolbar {
-            Button("Clear") { confirmClear = true }
-                .disabled(history.entries.isEmpty)
-        }
-        .confirmationDialog("Clear the notification history?", isPresented: $confirmClear) {
-            Button("Clear", role: .destructive) { history.clear() }
-        }
     }
 }
 

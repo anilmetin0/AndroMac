@@ -6,9 +6,9 @@ import SwiftUI
 struct ClipboardList: View {
 
     @ObservedObject private var history = ClipboardHistory.shared
-    @State private var query = ""
+    /// The window's search field, which belongs to the window rather than to the page.
+    let query: String
     @State private var copied: UUID?
-    @State private var confirmClear = false
 
     private var filtered: [ClipboardHistory.Entry] {
         let q = query.trimmingCharacters(in: .whitespaces).lowercased()
@@ -51,15 +51,7 @@ struct ClipboardList: View {
                     : String(localized: "No entries match your search.")
             )
         }
-        .searchable(text: $query, prompt: "Search clipboard history")
         .navigationSubtitle(query.isEmpty ? Text(verbatim: "") : Text("\(filtered.count) / \(history.entries.count)"))
-        .toolbar {
-            Button("Clear") { confirmClear = true }
-                .disabled(history.entries.isEmpty)
-        }
-        .confirmationDialog("Clear the clipboard history?", isPresented: $confirmClear) {
-            Button("Clear", role: .destructive) { history.clear() }
-        }
     }
 }
 

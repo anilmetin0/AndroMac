@@ -1,14 +1,15 @@
 import AppKit
 import SwiftUI
 
-// MARK: - Uygulamalar
+// MARK: - Apps
 
 struct AppsList: View {
 
     @ObservedObject private var modes = AppModes.shared
     /// Read so the list follows the tab: the apps shown are the focused phone's.
     @EnvironmentObject private var state: AppState
-    @State private var query = ""
+    /// The window's search field, which belongs to the window rather than to the page.
+    let query: String
 
     private var filtered: [AppModes.App] {
         _ = state.focusedDeviceID
@@ -46,7 +47,6 @@ struct AppsList: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .searchable(text: $query, prompt: "Search apps")
         .navigationSubtitle(query.isEmpty ? Text(verbatim: "") : Text("\(filtered.count) / \(modes.apps.count)"))
     }
 }
