@@ -1,10 +1,7 @@
-# Weekly: moves the bundled scrcpy (and the adb it ships) to its latest release. The hash comes
-# from that release's SHA256SUMS.txt, the same source a manual bump uses; fetch-scrcpy.sh checks
-# it again when the app is built. main only takes commits whose builds passed, so the bump goes
-# through a pull request. A branch or pull request made with GITHUB_TOKEN starts no workflow, so
-# this job dispatches the build on the branch itself (a run off main publishes nothing), waits for
-# it, merges, and dispatches the build on main that publishes the nightly with the new scrcpy. A
-# stable release still needs VERSION raised.
+# Weekly: looks for a new scrcpy release (which also brings its adb) and opens an issue for it.
+# scripts/bump-scrcpy.sh makes the change. The workflow cannot commit it: main only takes commits
+# whose checks ran on a push, a push made with GITHUB_TOKEN starts no workflow, and Actions may not
+# open pull requests in this repository.
 name: scrcpy
 
 on:
@@ -16,19 +13,17 @@ permissions:
   contents: read
 
 jobs:
-  bump:
+  check:
     runs-on: ubuntu-26.04
-    timeout-minutes: 45
+    timeout-minutes: 10
     permissions:
-      contents: write
-      actions: write
-      pull-requests: write
-      checks: read
+      contents: read
+      issues: write
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Bump
+      - name: Look for a new release
         id: bump
         run: |
           gh api repos/Genymobile/scrcpy/releases/latest > "$RUNNER_TEMP/release.json"
@@ -38,31 +33,15 @@ jobs:
             "https://github.com/Genymobile/scrcpy/releases/download/$tag/SHA256SUMS.txt"
           version="$(python3 .github/scripts/bump-scrcpy.py "$RUNNER_TEMP/SHA256SUMS.txt" < "$RUNNER_TEMP/release.json")"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-      - name: Commit and build
+      - name: Open an issue
         if: steps.bump.outputs.version != ''
         env:
           VERSION: ${{ steps.bump.outputs.version }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          branch="bot/scrcpy-$VERSION"
-          title="fix(macos): bundle scrcpy $VERSION"
-          git switch -c "$branch"
-          git commit -am "$title"
-          git push --force origin "$branch"
-          sha="$(git rev-parse HEAD)"
-          number="$(gh pr list --head "$branch" --state open --json number --jq '.[0].number // empty')"
-          if [[ -z "$number" ]]; then
-            gh pr create --base main --head "$branch" --title "$title" \
-              --body "scrcpy $VERSION, checked against the release's SHA256SUMS.txt. Opened and merged by the scrcpy workflow once the builds pass."
-            number="$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')"
+          title="Bundle scrcpy $VERSION"
+          if [[ -n "$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')" ]]; then
+            exit 0
           fi
-          gh workflow run build.yml --ref "$branch"
-          # The dispatched run needs a moment to register its check runs on the commit.
-          for _ in $(seq 30); do
-            [[ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$sha/check-runs" --jq '.total_count')" -gt 0 ]] && break
-            sleep 10
-          done
-          gh pr checks "$number" --watch --fail-fast --interval 30
-          gh pr merge "$number" --squash --delete-branch --match-head-commit "$sha"
-          gh workflow run build.yml --ref main
+          gh issue create --title "$title" --body "scrcpy $VERSION is out: https://github.com/Genymobile/scrcpy/releases/tag/v$VERSION
+
+          Run \`scripts/bump-scrcpy.sh\`, check the bundle with \`macos/scripts/fetch-scrcpy.sh\`, and commit the change as \`fix(macos): bundle scrcpy $VERSION\`."

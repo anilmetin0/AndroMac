@@ -129,10 +129,10 @@ a new Mac certificate means one more Keychain prompt for every user.
 Dependabot opens weekly pull requests for the workflow actions and the Gradle setup.
 `.github/workflows/dependabot.yml` merges one as soon as the build has passed on its head commit.
 `.github/workflows/scrcpy.yml` checks every Tuesday for a new scrcpy release, which also brings
-its adb. It updates the pinned version and hash in `macos/scripts/fetch-scrcpy.sh` and the
-versions in `THIRD-PARTY-NOTICES.md`, opens a pull request from `bot/scrcpy-<version>`, starts the
-build on that branch, merges once it passes and starts the build on `main`, so the nightly carries
-it. A stable release with it still takes a raised `VERSION`.
+its adb, and opens an issue for it. `scripts/bump-scrcpy.sh` updates the pinned version and hash
+in `macos/scripts/fetch-scrcpy.sh` and the versions in `THIRD-PARTY-NOTICES.md`; the commit goes
+to `main` like any other, so the nightly carries it. The workflow cannot make that commit for the
+same reason CI cannot pin the cask, and Actions may not open pull requests here. A stable release with it still takes a raised `VERSION`.
 
 `main` refuses force-pushes and deletion, and only takes commits whose `macOS · verify + .app` and
 `Android · APK` checks passed (repository rulesets). Checks from a run started by hand
