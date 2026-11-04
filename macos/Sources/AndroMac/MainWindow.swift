@@ -113,7 +113,7 @@ struct MainWindow: View {
                     }
                 }
             }
-            .modifier(PageSettings(tab: state.requestedTab, shown: $state.pageSettingsShown))
+            .modifier(PageSettings(state: state))
             .confirmationDialog(
                 clearTarget == .clipboard
                     ? LocalizedStringKey("Clear the clipboard history?")
@@ -184,16 +184,19 @@ private struct PageSearch: ViewModifier {
 /// down one inspector while the next was put up, and AppKit threw on the toolbar item they both
 /// add ("NSToolbar already contains an item"), which ended the app.
 private struct PageSettings: ViewModifier {
-    let tab: MainWindow.Tab
-    @Binding var shown: Bool
+    @ObservedObject var state: AppState
+
+    private var tab: MainWindow.Tab { state.requestedTab }
 
     func body(content: Content) -> some View {
         content
             .inspector(isPresented: Binding(
-                get: { shown && tab.settings != nil },
-                // Only a list with settings may change it: leaving for a page without them must
-                // not switch the inspector off for the next list.
-                set: { if tab.settings != nil { shown = $0 } }
+                get: { state.pageSettingsShown && state.requestedTab.settings != nil },
+                // The inspector writes back when it goes away with a page that has no settings
+                // (Apps, Messages), sometimes after the page already changed. Only a close
+                // while a list with settings is on screen is the user's: the page is read at the
+                // time of the write, not when the binding was made.
+                set: { if state.requestedTab.settings != nil { state.pageSettingsShown = $0 } }
             )) {
                 if let section = tab.settings {
                     SettingsList(section: section)
@@ -204,7 +207,7 @@ private struct PageSettings: ViewModifier {
             .toolbar {
                 if tab.settings != nil {
                     ToolbarItem(placement: .primaryAction) {
-                        Button { shown.toggle() } label: {
+                        Button { state.pageSettingsShown.toggle() } label: {
                             Label("Settings", systemImage: "slider.horizontal.3")
                         }
                         .help("Settings")

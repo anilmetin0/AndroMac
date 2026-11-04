@@ -7,6 +7,12 @@ The `## <version>` section matching the `VERSION` file is the notes of that stab
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Nightly builds list their commits instead.
 
+## Unreleased
+
+### Fixed
+
+- The settings beside Notifications or Clipboard stay open after a visit to Apps or Messages.
+
 ## 1.7.0 - 2026-11-04
 
 ### Changed
