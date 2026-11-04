@@ -37,6 +37,20 @@ actor Server {
     private let maxPendingHandshakes = 4
     private let handshakeTimeout: Duration = .seconds(10)
 
+    /// The port the listener was last ready on. A wake from sleep or a network change cancels the
+    /// listener, and a fresh `.any` port each time left the phone dialling a closed port from its
+    /// cached address. Reusing it keeps that one SYN working; `.any` again only if it is taken.
+    private static let portKey = "listenerPort"
+    private var preferredPort: NWEndpoint.Port? {
+        get {
+            let saved = UserDefaults.standard.integer(forKey: Self.portKey)
+            return UInt16(exactly: saved).flatMap { $0 == 0 ? nil : NWEndpoint.Port(rawValue: $0) }
+        }
+        set { UserDefaults.standard.set(Int(newValue?.rawValue ?? 0), forKey: Self.portKey) }
+    }
+    /// The listener in hand asked for `preferredPort`: if it fails, the port is given up.
+    private var onPreferredPort = false
+
     /// Listener rebuild delay; doubles on every failure, resets on .ready.
     private var restartDelay: Duration = .seconds(3)
 
@@ -104,10 +118,13 @@ actor Server {
 
         let params = NWParameters.tcp
         params.includePeerToPeer = false          // local network only; no AWDL/peer-to-peer
+        params.allowLocalEndpointReuse = true     // the saved port again right after a restart
         (params.defaultProtocolStack.transportProtocol as? NWProtocolTCP.Options)?.noDelay = true
 
         do {
-            let l = try NWListener(using: params, on: .any)
+            let port = preferredPort
+            let l = try NWListener(using: params, on: port ?? .any)
+            onPreferredPort = port != nil
             l.service = NWListener.Service(
                 name: store.deviceName, type: "_andromac._tcp", domain: nil, txtRecord: txt
             )
@@ -189,8 +206,11 @@ actor Server {
         switch state {
         case .ready:
             restartDelay = .seconds(3)
+            if let port = source.port { preferredPort = port }
             await MainActor.run { AppState.shared.status = .listening }
         case .failed(let e):
+            // Most likely the saved port is taken now: the next listener takes any free one.
+            if onPreferredPort { preferredPort = nil }
             await restartListener(reason: e.localizedDescription)
         case .waiting(let e):
             // With no network NWListener parks itself and returns to .ready ON ITS OWN once the

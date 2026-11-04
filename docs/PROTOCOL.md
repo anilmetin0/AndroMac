@@ -5,13 +5,15 @@ against it.
 
 ## 1. Discovery
 
-- macOS is the server. It advertises an `_andromac._tcp` Bonjour service on a dynamic port
-  (port 0, so the OS assigns one).
+- macOS is the server. It advertises an `_andromac._tcp` Bonjour service. The first listener
+  takes a port the OS assigns; every later one, after a relaunch, a wake from sleep or a network
+  change, asks for that same port again and takes a new one only if it is taken.
 - TXT records: `n=<device name>`, `v=3`. No key material: the Mac's static key is only sent
   inside the handshake (§2), so a Bonjour browse does not identify the machine beyond its name.
 - Android is the client. It browses with `NsdManager`.
 - Android stores the last successful `ip:port` and tries that first. It starts an mDNS browse only
-  if that fails.
+  if that fails. A refusal (`ECONNREFUSED`: the host is up, the port is closed) browses at once,
+  the first time a cached address gives one.
 - The browse stops as soon as a connection is established, because continuous mDNS scanning
   costs battery.
 
@@ -391,8 +393,8 @@ signature and drops anything above 512 KiB.
 ```
 Sent to every phone when the Mac is about to sleep. The phone closes the session, goes to the top of
 its backoff ladder. A cached endpoint is still tried; on the known LAN, every fourth attempt
-also browses mDNS. This bounded browse lets a relaunched Mac with a new port be found even if
-no screen or network event arrives. Network and screen events reset the ladder. With a working
+also browses mDNS, and so does the first refusal on that address. This bounded browse lets a Mac
+whose port did change be found even if no screen or network event arrives. Network and screen events reset the ladder. With a working
 cached endpoint, reconnection takes up to one ladder step (300 s) after the Mac wakes.
 
 ### `ping` / `pong`

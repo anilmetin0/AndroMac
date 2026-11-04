@@ -190,6 +190,10 @@ class LinkService : Service() {
     @Volatile private var lastLadderReset = 0L
     /** Failed dial attempts since the last network event, pairing request or live link. */
     @Volatile private var attempt = 0
+    /** The last [connect] failed with a refusal: the host is up, the port is closed. */
+    private var lastConnectRefused = false
+    /** The cached address that has already been refused once; a second refusal does not browse. */
+    private var refusedEndpoint: String? = null
     /** True when the socket in hand came from [Store.lastEndpoint] rather than from mDNS. */
     private var dialedFromCache = false
     /** Browsed Macs not dialled yet this round, best first ([MacPick.dialOrder]). Link thread only. */
@@ -306,6 +310,7 @@ class LinkService : Service() {
                     Link.macSeenOnNetwork = true
                     val host = s.inetAddress.hostAddress.orEmpty()
                     store.lastEndpoint = "$host:${s.port}"
+                    refusedEndpoint = null
                     store.macNetwork = networkKey()
                     store.seenMac(session.peerStaticPub, host)
                     serve(session, peerName)
@@ -381,6 +386,7 @@ class LinkService : Service() {
         if (attempt == 0) pending.clear()    // a network event or a request: browse afresh
         if (pending.isNotEmpty()) return dialPending()
         val cached = store.lastEndpoint
+        lastConnectRefused = false
         // The cached address belongs to the Mac's own LAN; on another network it is somebody
         // else's host, or nobody's.
         cached?.takeIf { onMacNetwork() }?.let { ep ->
@@ -401,7 +407,12 @@ class LinkService : Service() {
         // address it runs every cycle: there is nothing cheaper left that could make progress.
         // On a network where the Mac has never answered (the office, a café) the browse runs once
         // per network event, not every 4th attempt: the Mac is very likely not there at all.
-        val browse = ReconnectPolicy.shouldBrowse(cached != null, attempt, onMacNetwork())
+        // A refused SYN means the Mac is awake and its port moved: find the new one right away.
+        // The one refusal-triggered browse is only spent when nothing else would have browsed.
+        val scheduled = ReconnectPolicy.shouldBrowse(cached != null, attempt, onMacNetwork())
+        val refused = cached != null && lastConnectRefused && cached != refusedEndpoint
+        if (refused && !scheduled) refusedEndpoint = cached
+        val browse = scheduled || refused
         attempt++
         if (!browse) return null
         val paired = store.isPaired
@@ -446,6 +457,7 @@ class LinkService : Service() {
     }
 
     private fun connect(host: java.net.InetAddress, port: Int): Socket? {
+        lastConnectRefused = false
         if (!running) return null
         val socket = Socket()
         return try {
@@ -458,6 +470,7 @@ class LinkService : Service() {
             socket
         } catch (e: IOException) {
             Log.i(Link.TAG, "could not connect to $host:$port (${e.message})")
+            lastConnectRefused = ReconnectPolicy.isRefusal(e)
             runCatching { socket.close() }
             if (connection?.socket === socket) connection = null
             null
