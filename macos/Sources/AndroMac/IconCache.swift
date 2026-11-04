@@ -83,7 +83,7 @@ final class IconCache: ObservableObject {
         images[pkg] = NSImage(data: data)      // make the new icon appear immediately
         objectWillChange.send()
         // The panel and the history list observe the history, not this cache, so they are told
-        // too. ponytail: drop this once `AppIcon` observes IconCache.shared itself.
+        // too. Known limit: drop this once `AppIcon` observes IconCache.shared itself.
         NotificationHistory.shared.objectWillChange.send()
     }
 

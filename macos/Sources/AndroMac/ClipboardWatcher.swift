@@ -13,7 +13,7 @@ import Foundation
 /// battery should not be woken 1.4 times a second for nothing. The sleep carries a tolerance so
 /// the system can fold these wake-ups into others.
 ///
-/// ponytail: a fixed 0.7 s interval; if it ever shows up in a measurement, a CGEventTap for Cmd+C
+/// Known limit: a fixed 0.7 s interval; if it ever shows up in a measurement, a CGEventTap for Cmd+C
 /// replaces the poll.
 actor ClipboardWatcher {
 

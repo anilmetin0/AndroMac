@@ -13,7 +13,7 @@ import UserNotifications
 /// takes about a millisecond, and the protocol keeps at most `FileTransferMath.window` of them in
 /// flight, so the panel stays responsive. Every message goes out through `Server.send`, so the link counters see
 /// the file traffic like any other message.
-/// ponytail: main-actor disk I/O; move the chunk work to a detached task if the panel ever stutters.
+/// Known limit: main-actor disk I/O; move the chunk work to a detached task if the panel ever stutters.
 @MainActor
 final class FileTransfer: ObservableObject {
 

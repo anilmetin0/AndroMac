@@ -15,8 +15,6 @@ local.properties
 *.mobileprovision
 
 # Local tool output, never part of the project
-graphify-out/
-.code-review-graph/
 outputs/
 outputs-android/
 outputs-mac/

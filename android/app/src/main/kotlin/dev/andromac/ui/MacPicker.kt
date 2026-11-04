@@ -16,7 +16,7 @@ import dev.andromac.net.LinkService
  * in onStop.
  *
  * The browse runs here rather than in the link loop: picking needs a list, not a connection.
- * ponytail: on API 29-33 it can collide with a browse the service runs at the same moment
+ * Known limit: on API 29-33 it can collide with a browse the service runs at the same moment
  * (paired and searching), and a resolve there may fail; Search again covers it.
  */
 fun Activity.pickMac(store: Store, shown: (AlertDialog) -> Unit = {}) {

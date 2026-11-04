@@ -85,7 +85,7 @@ public struct PairedDevice: Codable, Identifiable, Sendable, Equatable {
     /// Last writer wins, and with neither change newer, off wins: both sides start on, so an off
     /// nobody dated (a phone's switch from before it was dated) was still turned off on purpose.
     /// The phone applies the same rule to the Mac's switch, so the two cannot settle apart.
-    // ponytail: wall clocks of two devices, both set from the network; seconds of skew only matter
+    // Known limit: wall clocks of two devices, both set from the network; seconds of skew only matter
     // for two flips seconds apart on both sides. A clock set by hand minutes off widens that window
     // as far; a shared change counter instead of times would close it.
     public func syncAutoConnect(phoneOn: Bool, changed phoneChanged: Date?) -> AutoConnectSync {

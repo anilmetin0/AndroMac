@@ -134,7 +134,6 @@
 "Both devices must be on the same subnet." = "İki cihaz da aynı alt ağda olmalı.";
 "Files are saved to Downloads. Auto-accept applies to every paired phone." = "Dosyalar İndirilenler'e kaydedilir. Otomatik kabul, eşleşmiş bütün telefonlar için geçerlidir.";
 "Idle baseline is about 30 messages per hour for each connected phone." = "Boştaki taban, bağlı her telefon için saatte yaklaşık 30 mesaj.";
-"Local network only" = "Yalnızca yerel ağ";
 "Send automatically" = "Otomatik gönder";
 "Stored only on this Mac. Cleared when you forget all devices." = "Yalnızca bu Mac'te saklanır. Bütün cihazları unutunca silinir.";
 
