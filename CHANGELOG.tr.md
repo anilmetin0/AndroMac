@@ -7,7 +7,7 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaral
 `## Unreleased` altına yazılır; `VERSION` yükseltilince o bölüm yeni sürümün bölümü olur. Beta
 derlemeler bunun yerine commit'lerini listeler.
 
-## Unreleased
+## 1.7.1 - 2026-11-04
 
 ### Düzeltilenler
 
