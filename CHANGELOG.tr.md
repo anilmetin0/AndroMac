@@ -7,13 +7,19 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaral
 `## Unreleased` altına yazılır; `VERSION` yükseltilince o bölüm yeni sürümün bölümü olur. Beta
 derlemeler bunun yerine commit'lerini listeler.
 
-## Unreleased
+## 1.7.0 - 2026-11-04
 
 ### Değişenler
 
 - **Mac'te tek pencere.** Mesajlar artık ana pencerenin bir sayfası; kenar çubuğunda Bildirimler,
   Pano ve Uygulamalar'ın üstünde duruyor, ⌘⇧M yine açıyor. Bildirimler ve Pano ayarları aynı
   adlı ayrı sayfalar yerine araç çubuğundan (⌥⌘I) listelerinin yanında açılıyor.
+
+### Düzeltilenler
+
+- Mac uykudan uyandıktan ya da ağ değiştirdikten sonra telefon dakikalarca bağlanmadan
+  bekleyebiliyordu; otomatik bağlanmayı kapatıp açmak gerekiyordu. Mac artık aynı portu
+  kullanıyor, telefon da eski adres bağlantıyı reddettiği anda Mac'i yeniden arıyor.
 
 ## 1.6.0 - 2026-10-31
 

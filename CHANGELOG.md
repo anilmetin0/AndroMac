@@ -7,7 +7,7 @@ The `## <version>` section matching the `VERSION` file is the notes of that stab
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Nightly builds list their commits instead.
 
-## Unreleased
+## 1.7.0 - 2026-11-04
 
 ### Changed
 
@@ -15,6 +15,12 @@ raised. Nightly builds list their commits instead.
   above Notifications, Clipboard and Apps; ⌘⇧M still opens it. The Notifications and Clipboard
   settings open beside their lists from the toolbar (⌥⌘I) instead of as separate pages of the
   same name.
+
+### Fixed
+
+- After the Mac woke from sleep or changed networks, the phone could wait minutes before
+  reconnecting, until auto-connect was turned off and on again. The Mac now keeps its port, and
+  the phone looks for the Mac again as soon as the old address refuses it.
 
 ## 1.6.0 - 2026-10-31
 
