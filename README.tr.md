@@ -61,8 +61,9 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app
 ```
 
 Uygulama Apple'ın noter onayından geçmediği için macOS'un açmasına izin vermek üzere `xattr`
-satırı bir kez gerekir. Bundan sonra uygulama kendini günceller; `brew upgrade --cask andromac` da
-çalışır.
+satırı bir kez gerekir.
+
+Uygulama kendini günceller. Homebrew ile elle güncellemek için: `brew upgrade --cask andromac`.
 
 Her yeni derlemeyi almak istersen bunun yerine `andromac@nightly` kur. Uygulama o zaman nightly
 sürümleri izler. Birini kurmak diğerini kaldırır.

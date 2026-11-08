@@ -61,8 +61,9 @@ brew install --cask andromac
 xattr -dr com.apple.quarantine /Applications/AndroMac.app
 ```
 
-The app is not notarized, so the `xattr` line is needed once to let macOS open it. After that the
-app updates itself, and `brew upgrade --cask andromac` works too.
+The app is not notarized, so the `xattr` line is needed once to let macOS open it.
+
+The app updates itself. To update manually with Homebrew: `brew upgrade --cask andromac`.
 
 To get every new build, install `andromac@nightly` instead. The app then follows the nightly
 builds. Installing one cask removes the other.
