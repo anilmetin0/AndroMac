@@ -97,6 +97,18 @@ if (changes) {
     .catch(() => {});
 }
 
+// Same total as the README badge: all release assets, including updates.
+// Keep the releases link usable if the count cannot be loaded.
+fetch("https://img.shields.io/github/downloads/anilmetin0/AndroMac/total.json")
+  .then((r) => (r.ok ? r.json() : Promise.reject()))
+  .then((badge) => {
+    if (typeof badge.message !== "string" || !/^\d+(?:[.,]\d+)?[kMGTB]?$/.test(badge.message)) return;
+    for (const el of document.querySelectorAll("[data-downloads]")) {
+      el.textContent = badge.message + " ";
+    }
+  })
+  .catch(() => {});
+
 // Star count next to the GitHub link; the link works without it.
 fetch("https://api.github.com/repos/anilmetin0/AndroMac")
   .then((r) => (r.ok ? r.json() : Promise.reject()))

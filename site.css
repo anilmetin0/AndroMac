@@ -120,6 +120,9 @@ p code, li code, dd code { font-size: .88em; background: color-mix(in srgb, var(
 .hero .lede { font-size: 1.2rem; color: var(--muted); margin-top: 20px; max-width: 34ch; }
 .reqs { margin-top: 20px; font-size: .95rem; color: var(--muted); }
 .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.download-count { margin-top: 16px; font-size: .9rem; color: var(--muted); }
+.download-count a { color: inherit; text-underline-offset: .2em; }
+.download-count [data-downloads] { font-weight: 700; font-variant-numeric: tabular-nums; }
 
 .stage {
   position: relative;
