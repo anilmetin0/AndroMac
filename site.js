@@ -110,12 +110,13 @@ fetch("https://img.shields.io/github/downloads/anilmetin0/AndroMac/total.json")
   .catch(() => {});
 
 // Star count next to the GitHub link; the link works without it.
-fetch("https://api.github.com/repos/anilmetin0/AndroMac")
+// Shields caches the count without using the visitor's anonymous GitHub API quota.
+fetch("https://img.shields.io/github/stars/anilmetin0/AndroMac.json")
   .then((r) => (r.ok ? r.json() : Promise.reject()))
-  .then((repo) => {
+  .then((badge) => {
     const box = document.querySelector(".stars");
-    if (!box || typeof repo.stargazers_count !== "number") return;
-    box.querySelector("[data-stars]").textContent = repo.stargazers_count.toLocaleString(document.documentElement.lang);
+    if (!box || typeof badge.message !== "string" || !/^\d+(?:[.,]\d+)?[kMGTB]?$/.test(badge.message)) return;
+    box.querySelector("[data-stars]").textContent = badge.message;
     box.hidden = false;
   })
   .catch(() => {});
