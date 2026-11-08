@@ -79,9 +79,13 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app
 
 ### Android
 
-Android 10 ve üstü. Telefonda [yayınları](https://github.com/anilmetin0/AndroMac/releases/latest) aç ve `AndroMac-<sürüm>-android.apk`
-dosyasına dokun. [Obtainium](https://github.com/ImranR98/Obtainium) da aynı sayfadan kurup
-güncelleyebilir. Ya da telefon adb ile bağlıyken Mac'ten kur:
+Android 10 ve üstü. Telefonunun kamerasıyla QR kodunu tara ya da [son APK'yı indir](https://anilmetin0.github.io/AndroMac/apk/).
+
+<a href="https://anilmetin0.github.io/AndroMac/apk/"><img src="docs/images/qr-apk.svg" width="180" height="180" alt="AndroMac'in son APK'sını indirmek için tara"></a>
+
+İndirilen APK'yı aç ve Android sorarsa tarayıcından kuruluma izin ver.
+[Obtainium](https://github.com/ImranR98/Obtainium) da [yayınlar](https://github.com/anilmetin0/AndroMac/releases/latest)
+sayfasından kurup güncelleyebilir. Ya da telefon adb ile bağlıyken Mac'ten kur:
 
 ```bash
 gh release download --repo anilmetin0/AndroMac --pattern '*-android.apk'

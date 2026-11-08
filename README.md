@@ -79,9 +79,13 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app
 
 ### Android
 
-Android 10 or later. On the phone, open [releases](https://github.com/anilmetin0/AndroMac/releases/latest) and tap
-`AndroMac-<version>-android.apk`. [Obtainium](https://github.com/ImranR98/Obtainium) can install
-and update it from the same page. Or install it from a Mac with the phone connected over adb:
+Android 10 or later. Scan the QR code with your phone's camera, or [download the latest APK](https://anilmetin0.github.io/AndroMac/apk/).
+
+<a href="https://anilmetin0.github.io/AndroMac/apk/"><img src="docs/images/qr-apk.svg" width="180" height="180" alt="Scan to download the latest AndroMac APK"></a>
+
+Open the downloaded APK and allow installs from your browser if Android asks.
+[Obtainium](https://github.com/ImranR98/Obtainium) can also install and update it from
+[releases](https://github.com/anilmetin0/AndroMac/releases/latest). Or install it from a Mac with the phone connected over adb:
 
 ```bash
 gh release download --repo anilmetin0/AndroMac --pattern '*-android.apk'
