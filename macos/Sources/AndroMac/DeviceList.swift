@@ -18,6 +18,9 @@ import SwiftUI
 struct DeviceList: View {
 
     @EnvironmentObject private var state: AppState
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The open segment's pill slides from one phone to the next, as a segmented control does.
+    @Namespace private var pill
 
     /// Re-read on each redraw: pairing and unpairing both change it, and it is a handful of items.
     /// `state.pairedDevicesChanged` is what makes that redraw happen after a write (see `Store`).
@@ -84,7 +87,7 @@ struct DeviceList: View {
                 .pickerStyle(.inline)
                 .labelsHidden()
             } label: {
-                DeviceSegment(device: selected, live: live(selected), selected: true)
+                DeviceSegment(device: selected, live: live(selected), selected: true, pill: pill)
             }
             .menuStyle(.button)
             .buttonStyle(.plain)
@@ -96,13 +99,15 @@ struct DeviceList: View {
                 ForEach(paired) { device in
                     let isOpen = device.id == selected?.id
                     Button { select(device.id) } label: {
-                        DeviceSegment(device: device, live: live(device), selected: isOpen)
+                        DeviceSegment(device: device, live: live(device), selected: isOpen, pill: pill)
                     }
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(isOpen ? .isSelected : [])
                 }
             }
             .padding(Theme.Space.hair)
+            // Only the pill moves: the cards below swap without animation, so the panel never resizes.
+            .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.82), value: selected?.id)
             // The track has the cards' corner, the open segment that corner minus the gap around
             // it: concentric with the panel like every other plate on it.
             .panelCard(Color.primary.opacity(0.06))
@@ -117,6 +122,7 @@ private struct DeviceSegment: View {
     let device: PairedDevice
     let live: AppState.DeviceState?
     let selected: Bool
+    let pill: Namespace.ID
 
     var body: some View {
         HStack(spacing: Theme.Space.tight) {
@@ -131,7 +137,7 @@ private struct DeviceSegment: View {
         .foregroundStyle(selected ? .primary : .secondary)
         .padding(.horizontal, Theme.Space.small)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background { if selected { pill } }
+        .background { if selected { pillShape.matchedGeometryEffect(id: "pill", in: pill) } }
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(DeviceCard.name(device, live))
@@ -140,7 +146,7 @@ private struct DeviceSegment: View {
     /// Glass on 26+, a quiet raised fill before. Either way it only paints: the segment's size
     /// does not depend on being selected.
     @ViewBuilder
-    private var pill: some View {
+    private var pillShape: some View {
         if #available(macOS 26.0, *) {
             let shape = RoundedRectangle(cornerRadius: Theme.Radius.card - Theme.Space.hair, style: .continuous)
             shape.fill(.clear).glassEffect(.regular.interactive(), in: shape)
@@ -280,19 +286,21 @@ private struct DeviceCard: View {
         return device.paused ? .secondary.opacity(0.5) : .orange
     }
 
+    /// One row of labelled tiles: icons alone left three bells side by side (ringer, ring, test)
+    /// and no way to tell them apart without hovering.
     private var actions: some View {
-        HStack(spacing: Theme.Space.small) {
+        HStack(spacing: Theme.Space.tight) {
             if live?.caps.contains("find_phone") == true {
-                IconButton(symbol: "bell.and.waves.left.and.right",
-                           label: String(localized: "Ring this phone")) {
+                ActionTile(symbol: "bell.and.waves.left.and.right", title: String(localized: "Ring"),
+                           help: String(localized: "Ring this phone")) {
                     Task { await Server.shared.send(["t": "find_phone"], to: device.id) }
                 }
             }
             // Proves the whole notification chain in one click: the phone posts a notification to
             // itself, its listener picks it up and it comes back here.
             if live?.caps.contains("system") == true {
-                IconButton(symbol: "bell.badge",
-                           label: String(localized: "Send a test notification from this phone")) {
+                ActionTile(symbol: "bell.badge", title: String(localized: "Test"),
+                           help: String(localized: "Send a test notification from this phone")) {
                     Task {
                         await Server.shared.send(
                             ["t": "system_control", "cmd": "test_notification"], to: device.id
@@ -301,22 +309,25 @@ private struct DeviceCard: View {
                 }
             }
             if live?.caps.contains("sms") == true {
-                IconButton(symbol: "message", label: String(localized: "Messages")) {
+                ActionTile(symbol: "message", title: String(localized: "Messages"),
+                           help: String(localized: "Open messages")) {
                     state.showMessages(for: device.id)
                 }
             }
             mirrorButton
             Spacer(minLength: 0)
-            more
+            ActionTile(symbol: "ellipsis", title: String(localized: "More"),
+                       help: String(localized: "More")) { PanelMenu.show(moreItems) }
         }
-        .glassGroup()
+        .glassGroup(spacing: Theme.Space.tight)
     }
 
     private var mirrorButton: some View {
         let running = mirror.phase(device.id) == .running
         let label = running ? String(localized: "Stop mirroring") : String(localized: "Mirror this phone's screen")
-        return IconButton(symbol: running ? "rectangle.on.rectangle.slash" : "rectangle.on.rectangle",
-                          label: label, active: running) {
+        return ActionTile(symbol: running ? "rectangle.on.rectangle.slash" : "rectangle.on.rectangle",
+                          title: running ? String(localized: "Stop") : String(localized: "Screen"),
+                          help: label, active: running) {
             mirror.toggle(deviceID: device.id, host: live?.host, title: title)
         }
         .disabled(mirror.phase(device.id).busy)
@@ -325,28 +336,30 @@ private struct DeviceCard: View {
     /// The per-phone switches, Disconnect and Forget: reachable, but out of the way of a glance.
     /// Disconnect only while the phone is connected.
     private var more: some View {
-        GlassMenuButton(symbol: "ellipsis", label: String(localized: "More")) {
-            var items: [PanelMenu.Item] = [
-                // Which phones get the Mac's clipboard is a per-device answer, so it belongs here.
-                .action(String(localized: "Send my clipboard here"), checked: device.receivesClipboard) {
-                    Store.shared.updateDevice(id: device.id) { $0.receivesClipboard.toggle() }
-                },
-                // The same switch as on the phone: flipping either flips both (PROTOCOL §3).
-                .action(String(localized: "Connect automatically"), checked: !device.paused) {
-                    let on = device.paused
-                    Task { await Server.shared.setAutoConnect(on, for: device.id) }
-                },
-                .action(String(localized: "Device settings…")) { state.showMainWindow(.setting(.devices)) },
-                .separator,
-            ]
-            // Only a phone on the line can be hung up on; offline, Disconnect did nothing visible.
-            if connected {
-                items.append(.action(String(localized: "Disconnect"), run: disconnect))
-            }
-            // The same as Forget in Settings, asked first: undoing it means pairing again.
-            items.append(.action(String(localized: "Forget…"), run: confirmForget))
-            return items
+        GlassMenuButton(symbol: "ellipsis", label: String(localized: "More")) { moreItems }
+    }
+
+    private var moreItems: [PanelMenu.Item] {
+        var items: [PanelMenu.Item] = [
+            // Which phones get the Mac's clipboard is a per-device answer, so it belongs here.
+            .action(String(localized: "Send my clipboard here"), checked: device.receivesClipboard) {
+                Store.shared.updateDevice(id: device.id) { $0.receivesClipboard.toggle() }
+            },
+            // The same switch as on the phone: flipping either flips both (PROTOCOL §3).
+            .action(String(localized: "Connect automatically"), checked: !device.paused) {
+                let on = device.paused
+                Task { await Server.shared.setAutoConnect(on, for: device.id) }
+            },
+            .action(String(localized: "Device settings…")) { state.showMainWindow(.setting(.devices)) },
+            .separator,
+        ]
+        // Only a phone on the line can be hung up on; offline, Disconnect did nothing visible.
+        if connected {
+            items.append(.action(String(localized: "Disconnect"), run: disconnect))
         }
+        // The same as Forget in Settings, asked first: undoing it means pairing again.
+        items.append(.action(String(localized: "Forget…"), run: confirmForget))
+        return items
     }
 
     private func confirmForget() {

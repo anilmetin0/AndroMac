@@ -43,6 +43,39 @@ struct IconButton: View {
     }
 }
 
+/// A labelled action on the device card: the symbol over a one-word name, so a row of them reads
+/// without hovering for tooltips. The full description stays in the tooltip and VoiceOver label.
+struct ActionTile: View {
+    let symbol: String
+    let title: String
+    let help: String
+    var active = false
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: Theme.Space.hair) {
+                Image(systemName: symbol)
+                    .font(Theme.Font.label)
+                    .frame(height: 14)
+                Text(title)
+                    .font(Theme.Font.caption)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+            }
+            .foregroundStyle(active ? Color.accentColor : Color.primary)
+            // One width for every tile, so a phone with two actions does not get two wide slabs.
+            .frame(width: 42)
+            .contentShape(Rectangle())
+        }
+        .buttonBorderShape(.roundedRectangle(radius: Theme.Radius.small + Theme.Space.hair))
+        .controlSize(.small)
+        .secondaryAction()
+        .help(help)
+        .accessibilityLabel(help)
+    }
+}
+
 /// A round glass button that opens a native menu. SwiftUI's `Menu` does not take the glass button
 /// style (it drew a flat disc), and glass laid over it swallowed its clicks; this is the same
 /// `IconButton` as every other panel action, with an `NSMenu` behind the click.
@@ -202,11 +235,12 @@ struct NotificationRow: View {
     /// scrolls inside the row past `openTextMax`.
     static func height(_ entry: NotificationHistory.Entry, open: Bool = false) -> CGFloat {
         if open { return iconSize + textHeight(entry) + actionsHeight + (entry.buttons.isEmpty ? 0 : NotificationActions.height(entry) + Theme.Space.tight) + 2 * Theme.Space.tight + Theme.Space.small }
-        return entry.image == nil ? 36 : pictureSize + Theme.Space.small
+        return 34
     }
 
-    static let pictureSize: CGFloat = 40
-    private static let iconSize: CGFloat = 24
+    /// Fits the folded row's height: a bigger picture made rows with one taller than the rest.
+    static let pictureSize: CGFloat = 26
+    private static let iconSize: CGFloat = 20
     private static let actionsHeight: CGFloat = 22
     private static let openTextMax: CGFloat = 180
     /// The open text starts under the app name: the icon and the gap after it.
