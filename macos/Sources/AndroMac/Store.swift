@@ -313,6 +313,18 @@ final class Store: @unchecked Sendable {
         set { write(min(50, max(5, newValue)), "lowBatteryThreshold") }
     }
 
+    /// Apps whose notifications reach the Mac without a banner, and apps left out of the history,
+    /// by package. The two are separate on purpose: a muted app's notifications still land in the
+    /// history. Read once by `AppModes`, which owns the live copy.
+    var bannerOffApps: Set<String> {
+        get { Set(defaults.stringArray(forKey: "bannerOffApps") ?? []) }
+        set { write(newValue.sorted(), "bannerOffApps") }
+    }
+    var historyOffApps: Set<String> {
+        get { Set(defaults.stringArray(forKey: "historyOffApps") ?? []) }
+        set { write(newValue.sorted(), "historyOffApps") }
+    }
+
     /// Whether a mirrored notification plays the system sound. `silent` ones never do.
     var notificationSound: Bool {
         get { flag("notificationSound", default: true) }

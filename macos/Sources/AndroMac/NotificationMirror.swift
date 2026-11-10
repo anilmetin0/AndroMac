@@ -69,6 +69,11 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         history.markActive(historyID)
         if silent, image == nil, history.contains(id: historyID, title: title, text: text, actions: actions) { return }
 
+        // The Mac's own per-app switches (Apps page): a banner and a history entry are separate,
+        // so an app muted here still lands in the history.
+        let banner = AppModes.shared.showsBanner(pkg)
+        let keep = AppModes.shared.keepsHistory(pkg)
+
         let content = UNMutableNotificationContent()
         content.title = redacted ? app : title
         content.subtitle = redacted ? "" : app
@@ -92,36 +97,44 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         // Every package without an icon on disk is asked for once per session, whatever this
         // notification attaches: the panel and the lists draw the icon too.
         if !pkg.isEmpty { IconCache.shared.requestIfMissing(pkg, from: peer) }
+        guard banner || keep else { return }
 
         // The picture: a new one, else the one this notification already had (a text-only update
         // brings none). Never on a redacted notification, and a stale one is deleted with the entry.
-        let imageName = redacted ? nil : (image.flatMap(history.saveImage) ?? history.image(forID: historyID) ?? history.image(forID: id))
+        // Saved only for the history; a banner alone takes the picture straight from the message.
+        let imageName = redacted || !keep ? nil : (image.flatMap(history.saveImage) ?? history.image(forID: historyID) ?? history.image(forID: id))
 
         // Attach the picture or avatar if there is one, the app icon otherwise. The temporary copy
         // is handed to UserNotifications and deleted after `add` completes (or right away if the
         // attachment cannot be built) — otherwise every notification would leave a file in /tmp.
         // The picture is decrypted into that temporary file only; UserNotifications needs a file.
         var temporaryFile: URL?
-        let pictureData = image?.data ?? history.imageData(named: imageName)
-        let picture = pictureData.flatMap { data in
-            imageName.flatMap { Self.temporaryFile(data, extension: ($0 as NSString).pathExtension) }
-        }
-        let icon = pkg.isEmpty ? nil : IconCache.shared.cachedURL(for: pkg).flatMap(Self.temporaryCopy(of:))
-        if picture != nil, let icon { try? FileManager.default.removeItem(at: icon) }
-        if let copy = picture ?? icon {
-            if let attachment = try? UNNotificationAttachment(identifier: "image", url: copy) {
-                content.attachments = [attachment]
-                temporaryFile = copy
-            } else {
-                try? FileManager.default.removeItem(at: copy)
+        if banner {
+            let pictureData = redacted ? nil : image?.data ?? history.imageData(named: imageName)
+            let pictureExtension = image?.fileExtension ?? imageName.map { ($0 as NSString).pathExtension }
+            let picture = pictureData.flatMap { data in
+                pictureExtension.flatMap { Self.temporaryFile(data, extension: $0) }
+            }
+            let icon = pkg.isEmpty ? nil : IconCache.shared.cachedURL(for: pkg).flatMap(Self.temporaryCopy(of:))
+            if picture != nil, let icon { try? FileManager.default.removeItem(at: icon) }
+            if let copy = picture ?? icon {
+                if let attachment = try? UNNotificationAttachment(identifier: "image", url: copy) {
+                    content.attachments = [attachment]
+                    temporaryFile = copy
+                } else {
+                    try? FileManager.default.removeItem(at: copy)
+                }
             }
         }
 
-        history.add(
-            .init(id: id, app: app, pkg: pkg, title: title, text: text, date: Date(), image: imageName, peer: peer, actions: actions),
-            silent: silent
-        )
+        if keep {
+            history.add(
+                .init(id: id, app: app, pkg: pkg, title: title, text: text, date: Date(), image: imageName, peer: peer, actions: actions),
+                silent: silent
+            )
+        }
 
+        guard banner else { return }
         let iconToRemove = temporaryFile
         center.add(UNNotificationRequest(identifier: Self.identifier(id, peer: peer), content: content, trigger: nil)) { error in
             if let error { NSLog("AndroMac: could not present the notification — \(error.localizedDescription)") }
@@ -281,8 +294,8 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
             await MainActor.run { _ = NSWorkspace.shared.open(url) }
 
         case Self.muteIdentifier:
-            guard !pkg.isEmpty else { return }
-            await AppModes.shared.set(.off, for: pkg, on: peer)
+            // Banners off on this Mac; the notifications still reach the history.
+            await AppModes.shared.setBanner(false, for: pkg)
 
         case UNNotificationDismissActionIdentifier:
             // Keep actionable notifications on the phone so history can still invoke them.

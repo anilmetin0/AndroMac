@@ -6,6 +6,7 @@
 "%@'s battery is low" = "%@'s battery is low";
 "%@, %@" = "%@, %@";
 "%@, %@: %@" = "%@, %@: %@";
+"%@, sent from phone" = "%@, sent from phone";
 "%@, unread, %@: %@" = "%@, unread, %@: %@";
 "%lld" = "%lld";
 "%lld / %lld" = "%lld / %lld";
@@ -44,6 +45,7 @@
 "Another phone wants to pair" = "Another phone wants to pair";
 "Answer" = "Answer";
 "Answer calls with the Mac's microphone and speakers" = "Answer calls with the Mac's microphone and speakers";
+"App" = "App";
 "Apps" = "Apps";
 "Apps appear here after their first notification." = "Apps appear here after their first notification.";
 "Ask the phone for its clipboard when the panel opens" = "Ask the phone for its clipboard when the panel opens";
@@ -51,6 +53,7 @@
 "Auto-connect off" = "Auto-connect off";
 "Automatically, when I copy" = "Automatically, when I copy";
 "Back" = "Back";
+"Banner" = "Banner";
 "Battery %lld%%, %@" = "Battery %lld%%, %@";
 "Battery and media" = "Battery and media";
 "Bluetooth" = "Bluetooth";
@@ -212,6 +215,7 @@
 "Open device settings" = "Open device settings";
 "Open link" = "Open link";
 "Open Local Network settings" = "Open Local Network settings";
+"Open messages" = "Open messages";
 "Open notification history" = "Open notification history";
 "Open Notification settings" = "Open Notification settings";
 "Open on phone" = "Open on phone";
@@ -262,6 +266,7 @@
 "Scan to download it from GitHub" = "Scan to download it from GitHub";
 "Scan to get the app" = "Scan to get the app";
 "scrcpy" = "scrcpy";
+"Screen" = "Screen";
 "Screen mirroring" = "Screen mirroring";
 "Screen mirroring needs scrcpy: brew install scrcpy" = "Screen mirroring needs scrcpy: brew install scrcpy";
 "Screen mirroring stopped unexpectedly." = "Screen mirroring stopped unexpectedly.";
@@ -275,6 +280,7 @@
 "Send to Android" = "Send to Android";
 "Send to phone" = "Send to phone";
 "Sending…" = "Sending…";
+"Sent from phone" = "Sent from phone";
 "Sent to phone" = "Sent to phone";
 "Settings" = "Settings";
 "Settings…" = "Settings…";
@@ -293,12 +299,14 @@
 "Skip this version" = "Skip this version";
 "Status" = "Status";
 "Step %lld of %lld" = "Step %lld of %lld";
+"Stop" = "Stop";
 "Stop mirroring" = "Stop mirroring";
 "Stored only on this Mac. Cleared when you forget all devices." = "Stored only on this Mac. Cleared when you forget all devices.";
 "Sync clipboard" = "Sync clipboard";
 "System" = "System";
 "Tap \"Pair\" on the phone" = "Tap \"Pair\" on the phone";
 "Tap the AndroMac notification on your phone." = "Tap the AndroMac notification on your phone.";
+"Test" = "Test";
 "Text message" = "Text message";
 "Text you copy on either device appears here." = "Text you copy on either device appears here.";
 "The code did not match. Open a new code on the phone and try again." = "The code did not match. Open a new code on the phone and try again.";
@@ -321,7 +329,7 @@
 "This phone does not support Bluetooth call control" = "This phone does not support Bluetooth call control";
 "This release has no macOS build to install." = "This release has no macOS build to install.";
 "Title only" = "Title only";
-"Title only leaves the content on the phone." = "Title only leaves the content on the phone.";
+"Title only leaves the content on the phone; Off keeps the whole notification there. Banner and History apply on this Mac." = "Title only leaves the content on the phone; Off keeps the whole notification there. Banner and History apply on this Mac.";
 "To" = "To";
 "To use it again, click Connect here, then tap Connect on the phone." = "To use it again, click Connect here, then tap Connect on the phone.";
 "To use it with this Mac again, pair it again." = "To use it with this Mac again, pair it again.";

@@ -232,7 +232,6 @@
 "Pair only if you are adding a phone and the code matches. A reinstalled app arrives as a new phone." = "Yalnızca bir telefon ekliyorsanız ve kod aynıysa eşleştirin. Yeniden yüklenen uygulama yeni bir telefon olarak gelir.";
 "Ringer" = "Zil modu";
 "Text you copy on either device appears here." = "İki cihazdan birinde kopyaladığınız metin burada görünür.";
-"Title only leaves the content on the phone." = "Sadece başlık, içeriği telefonda bırakır.";
 "Send a test notification from this phone" = "Bu telefondan test bildirimi gönder";
 
 "AndroMac was updated to %@" = "AndroMac %@ sürümüne güncellendi";
@@ -390,3 +389,12 @@
 "You, %@: %@" = "Sen, %@: %@";
 
 "Close AndroMac Windows" = "AndroMac Pencerelerini Kapat";
+"%@, sent from phone" = "%@, telefondan gönderim";
+"App" = "Uygulama";
+"Banner" = "Bildirim";
+"Open messages" = "Mesajları aç";
+"Screen" = "Ekran";
+"Sent from phone" = "Telefondan gönderim";
+"Stop" = "Durdur";
+"Test" = "Test";
+"Title only leaves the content on the phone; Off keeps the whole notification there. Banner and History apply on this Mac." = "Sadece başlık, içeriği telefonda bırakır; Kapalı, bildirimin tamamını telefonda tutar. Bildirim ve Geçmiş bu Mac için geçerlidir.";

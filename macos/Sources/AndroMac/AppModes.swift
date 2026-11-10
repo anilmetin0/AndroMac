@@ -1,7 +1,8 @@
 import Foundation
 import SwiftUI
 
-/// The Mac's mirror of the per-app tiers on the phone.
+/// The Mac's mirror of the per-app tiers on the phone, and the Mac's own per-app banner and
+/// history switches.
 ///
 /// The filter is applied ON THE PHONE (PROTOCOL §6.6); this list exists only to display them and
 /// to change them remotely. A change goes to the phone as `app_mode`, the phone applies it and
@@ -80,6 +81,29 @@ final class AppModes: ObservableObject {
                 self.byDevice[peer]?[index].mode = previous
             }
         }
+    }
+
+    // MARK: on this Mac
+
+    /// What the Mac does with an app's notifications once they arrive. Kept on the Mac, by
+    /// package, for every phone: a banner and a history entry are this Mac's business, while the
+    /// tier above decides what leaves the phone at all.
+    @Published private(set) var bannerOff = Store.shared.bannerOffApps
+    @Published private(set) var historyOff = Store.shared.historyOffApps
+
+    func showsBanner(_ pkg: String) -> Bool { !bannerOff.contains(pkg) }
+    func keepsHistory(_ pkg: String) -> Bool { !historyOff.contains(pkg) }
+
+    func setBanner(_ on: Bool, for pkg: String) {
+        guard !pkg.isEmpty else { return }
+        if on { bannerOff.remove(pkg) } else { bannerOff.insert(pkg) }
+        Store.shared.bannerOffApps = bannerOff
+    }
+
+    func setHistory(_ on: Bool, for pkg: String) {
+        guard !pkg.isEmpty else { return }
+        if on { historyOff.remove(pkg) } else { historyOff.insert(pkg) }
+        Store.shared.historyOffApps = historyOff
     }
 
     func clear() { byDevice = [:] }
