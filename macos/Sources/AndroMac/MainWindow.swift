@@ -188,6 +188,36 @@ private struct PageSettings: ViewModifier {
 
     private var tab: MainWindow.Tab { state.requestedTab }
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// The inspector's ideal width, and what the list beside it keeps.
+    private static let inspectorWidth: CGFloat = 280
+    private static let listMinWidth: CGFloat = 420
+
+    /// Opening animates only once the window has room for it: in a window too narrow, the animated
+    /// inspector first pushed the sidebar off the leading edge and then gave it its width back. So
+    /// the window grows first (its own animation, which returns when done), then the inspector
+    /// slides in. Closing leaves the window as wide as it is.
+    private func toggleSettings() {
+        let opening = !state.pageSettingsShown
+        if opening, let window = NSApp.keyWindow {
+            let sidebar: CGFloat = 240
+            let needed = sidebar + Self.listMinWidth + Self.inspectorWidth
+            if window.frame.width < needed {
+                var frame = window.frame
+                frame.size.width = needed
+                if let screen = window.screen?.visibleFrame {
+                    frame.size.width = min(frame.width, screen.width)
+                    frame.origin.x = min(frame.minX, screen.maxX - frame.width)
+                }
+                window.setFrame(frame, display: true, animate: !reduceMotion)
+            }
+        }
+        withAnimation(reduceMotion ? nil : .smooth(duration: 0.28)) {
+            state.pageSettingsShown.toggle()
+        }
+    }
+
     func body(content: Content) -> some View {
         content
             .inspector(isPresented: Binding(
@@ -201,13 +231,13 @@ private struct PageSettings: ViewModifier {
                 if let section = tab.settings {
                     SettingsList(section: section)
                         .id(section)
-                        .inspectorColumnWidth(min: 280, ideal: 340, max: 420)
+                        .inspectorColumnWidth(min: 260, ideal: Self.inspectorWidth, max: 420)
                 }
             }
             .toolbar {
                 if tab.settings != nil {
                     ToolbarItem(placement: .primaryAction) {
-                        Button { state.pageSettingsShown.toggle() } label: {
+                        Button(action: toggleSettings) {
                             Label("Settings", systemImage: "slider.horizontal.3")
                         }
                         .help("Settings")
