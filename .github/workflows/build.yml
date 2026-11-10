@@ -51,7 +51,7 @@ env:
 
 jobs:
   # The workflows and every shell script: actionlint (with shellcheck on each run: block) and
-  # shellcheck on scripts/*.sh, at warning level.
+  # shellcheck on every tracked *.sh, at warning level.
   lint:
     runs-on: ubuntu-26.04
     steps:
@@ -263,8 +263,6 @@ jobs:
     needs: version
     runs-on: ubuntu-26.04
     timeout-minutes: 30
-    outputs:
-      signing: ${{ steps.sign.outputs.signing }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -440,8 +438,7 @@ jobs:
             --notes-file nightly-notes.md \
             nightly/*
 
-      # Nightly: one prerelease, never latest, re-created on every push. Leftovers of the older
-      # per-commit nightly and beta releases go with it.
+      # Nightly: one prerelease, never latest, re-created on every push.
       - name: Publish nightly
         if: env.CHANNEL == 'nightly'
         run: |
@@ -453,5 +450,3 @@ jobs:
             --title "AndroMac nightly $(git show -s --format=%cd --date=format:%Y-%m-%d HEAD) (${COMMIT})" \
             --notes-file notes.md \
             dist/*
-          gh release list --limit 100 --json tagName --jq '.[] | select(.tagName | test("^(nightly|beta)-")) | .tagName' |
-            while read -r tag; do gh release delete "$tag" --cleanup-tag --yes; done
