@@ -70,11 +70,4 @@ struct FileNamesTests {
         taken.insert("README")
         #expect(FileNames.unique("README") { taken.contains($0) } == "README (2)")
     }
-
-    @Test func chunkCount() {
-        #expect(FileTransferMath.chunkCount(size: 0) == 0)
-        #expect(FileTransferMath.chunkCount(size: 524_288) == 1)
-        #expect(FileTransferMath.chunkCount(size: 524_289) == 2)
-        #expect(FileTransferMath.chunkCount(size: 1) == 1)
-    }
 }

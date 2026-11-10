@@ -242,7 +242,7 @@ final class FileTransfer: ObservableObject {
         let inc = Incoming(id: id, peer: peer, name: name, size: size, part: part)
         incoming = inc
 
-        // Auto-accept applies only to the pinned phone — the only device that can reach this code.
+        // Auto-accept applies only to paired phones: nothing else can reach this code.
         if Store.shared.fileAutoAccept {
             await accept(inc)
         } else {

@@ -371,9 +371,9 @@ struct SettingsList: View {
             Toggle("Show what's playing", isOn: $syncMedia)
                 .onChange(of: syncMedia) { _, v in
                     Store.shared.syncMedia = v
-                    // Drop the row immediately when switched off: the phone sends no more
-                    // updates, and leaving the last track on screen would be stale information.
-                    if !v { state.media = nil }
+                    // The device card reads the switch from `Store`, which publishes nothing:
+                    // without this the last track stays on screen until something else redraws.
+                    if !v { state.objectWillChange.send() }
                 }
         }
 

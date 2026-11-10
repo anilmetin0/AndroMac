@@ -7,10 +7,6 @@ struct ReleaseTests {
     private let url = URL(string: "https://github.com/anilmetin0/AndroMac/releases/tag/v1.0.0")!
     private let v100 = AppVersion(1, 0, 0)
 
-    private func release(_ version: AppVersion, _ commit: String?) -> Release {
-        Release(version: version, commit: commit, url: url)
-    }
-
     /// The QR code in Settings encodes this and nothing else, so it has to point at the repository's
     /// own releases page — the same rule `parse` enforces for links that arrive over the network.
     @Test func latestURLPointsAtThisRepositoryOnly() {

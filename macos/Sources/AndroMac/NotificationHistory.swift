@@ -7,7 +7,7 @@ import SwiftUI
 /// Privacy: kept under Application Support, on this Mac only, sealed with a key derived from the
 /// Keychain identity (`SealedFile`); it is sent nowhere.
 /// Capped at [limit]; the user can clear it with a single click.
-/// The history is deleted when the pairing is removed.
+/// The history is deleted when every phone is forgotten, and on Reset.
 ///
 /// A notification's picture (PROTOCOL §5 `img`) sits next to it in `images/`: re-encoded without
 /// metadata, sealed with the same key as the history, owner-only (0600 in a 0700 folder), and
@@ -137,7 +137,7 @@ final class NotificationHistory: ObservableObject {
         deleteImages(Set(files).subtracting(entries.compactMap(\.image)))
     }
 
-    /// Unpairing: the file is deleted rather than rewritten, which works even before the key is loaded.
+    /// Clear, Forget all and Reset: the file is deleted rather than rewritten, which works even before the key is loaded.
     func clear() {
         entries.removeAll()
         activeIDs.removeAll()

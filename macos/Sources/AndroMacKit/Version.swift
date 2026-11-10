@@ -18,8 +18,6 @@ public struct AppVersion: Comparable, Hashable, Sendable, CustomStringConvertibl
         self.dev = dev
     }
 
-    public var isDev: Bool { dev != nil }
-
     public var description: String {
         "\(major).\(minor).\(patch)" + (dev.map { "-dev.\($0)" } ?? "")
     }

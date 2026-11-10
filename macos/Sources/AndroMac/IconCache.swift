@@ -93,7 +93,7 @@ final class IconCache: ObservableObject {
         requested = requested.filter { $0.value != peer }
     }
 
-    /// Unpairing: the icons belong to the phone that sent them, and the next phone must not
+    /// Forget all and Reset: the icons belong to the phone that sent them, and the next phone must not
     /// inherit them.
     func clear() {
         images.removeAll()

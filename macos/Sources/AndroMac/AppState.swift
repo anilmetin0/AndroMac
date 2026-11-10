@@ -38,7 +38,6 @@ final class AppState: ObservableObject {
         var playing: Bool
         var title: String
         var artist: String
-        var album: String
         var app: String
         var pkg: String
     }
@@ -55,10 +54,6 @@ final class AppState: ObservableObject {
         var canSilence: Bool
         /// Wireless debugging is on, so screen mirroring can reach the phone without a cable.
         var wirelessDebugging: Bool = false
-
-        var fraction: Double {
-            volumeMax > 0 ? Double(volume) / Double(volumeMax) : 0
-        }
     }
 
     enum Status: Equatable {
@@ -112,9 +107,6 @@ final class AppState: ObservableObject {
     @Published var battery: Battery?
     @Published var pairing: PairingRequest?
     @Published var lastClipboard: String = ""
-    @Published var media: Media?
-    /// The phone's `hello.caps` list. No button appears in the UI for a capability it did not advertise.
-    @Published var peerCaps: Set<String> = []
     /// Bumped by `Store` whenever the paired-device list changes on disk (renames, pause, clipboard
     /// target, unpair). The device rows read the list straight from `Store`, so this is what tells
     /// SwiftUI that the copy on screen is stale.
@@ -124,7 +116,7 @@ final class AppState: ObservableObject {
 
     /// Copy the focused device's readings into the single-peer fields above.
     ///
-    /// Those fields are what the battery bar, the media row and the clipboard line still read from.
+    /// Those fields are what the menu bar label, the status line and the clipboard line still read from.
     /// Rather than rewrite every one of them at once, the multi-device state is authoritative and
     /// this mirrors the focused device into them, so both descriptions stay true at the same time.
     ///
@@ -133,8 +125,6 @@ final class AppState: ObservableObject {
     func refocus() {
         let device = focusedDevice
         Self.assign(&battery, device?.battery)
-        Self.assign(&media, device?.media)
-        Self.assign(&peerCaps, device?.caps ?? [])
         Self.assign(&lastClipboard, device?.lastClipboard ?? "")
         Self.assign(&status, device.map { .connected($0.name) } ?? (status.isLive ? .listening : status))
     }
@@ -234,13 +224,6 @@ final class AppState: ObservableObject {
         didSet { Store.shared.showBatteryInMenuBar = showBatteryInMenuBar }
     }
 
-    /// Connected? Lets the UI copy distinguish "waiting" from "connected but quiet" (the empty-state
-    /// messages change accordingly).
-    var isConnected: Bool {
-        if case .connected = status { return true }
-        return false
-    }
-
     /// The panel's first line: what is going on.
     var headline: String {
         switch status {
@@ -264,7 +247,7 @@ final class AppState: ObservableObject {
         case .connected(let name): return AppState.displayName(name)
         case .failed(let message): return message
         case .listening, .stopped:
-            return AppState.displayName(Store.shared.pairedName)
+            return AppState.displayName(Store.shared.pairedDevices.first?.name ?? "")
         }
     }
 

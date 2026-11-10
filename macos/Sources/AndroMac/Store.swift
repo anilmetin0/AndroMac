@@ -4,7 +4,7 @@ import Foundation
 import Security
 import ServiceManagement
 
-/// Persistent identity + the single paired phone + the user's toggles.
+/// Persistent identity + the paired phones + the user's toggles.
 /// The static private key lives in the Keychain; the settings live in UserDefaults.
 /// `@unchecked Sendable`: the only mutable fields are behind `lock`; everything else is UserDefaults
 /// and the Keychain, both thread-safe.
@@ -211,32 +211,6 @@ final class Store: @unchecked Sendable {
     }
 
     var isPaired: Bool { !pairedDevices.isEmpty }
-
-    // MARK: single-phone bridge
-    //
-    // The storage above holds N phones; the Server, the panel and the settings still speak in terms
-    // of one. These two properties are that translation, and they are the list of call sites the
-    // multi-device work has to visit — when the last one is gone, so are they.
-    // Deliberately "the first device", not "the connected one": with a single pairing they are the
-    // same thing, and that is the only case that exists until the Server learns to hold several.
-
-    var pairedKey: Data? {
-        get { pairedDevices.first?.key }
-        set {
-            guard let newValue else { unpairAll(); return }
-            remember(PairedDevice(key: newValue, name: pairedDevices.first?.name ?? ""))
-        }
-    }
-
-    var pairedName: String {
-        get { pairedDevices.first?.name ?? "" }
-        set {
-            guard let first = pairedDevices.first else { return }
-            updateDevice(id: first.id) { $0.name = newValue }
-        }
-    }
-
-    func unpair() { unpairAll() }
 
     /// Forget one phone. The others stay.
     func unpair(id: String) {
@@ -500,7 +474,7 @@ final class Store: @unchecked Sendable {
         if [.enabled, .requiresApproval].contains(SMAppService.mainApp.status) {
             try? await SMAppService.mainApp.unregister()
         }
-        // The legacy domain too, or the next launch would carry its pairings over again (init).
+        // The 1.0 domain too: nothing reads it any more, but a reset leaves nothing behind.
         for domain in Set([Bundle.main.bundleIdentifier, "dev.andromac"].compactMap { $0 }) {
             defaults.removePersistentDomain(forName: domain)
         }

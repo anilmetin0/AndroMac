@@ -30,11 +30,6 @@ func bitmap(_ px: Int, draw: (NSRect) -> Void) -> NSBitmapImageRep {
     return rep
 }
 
-/// A rounded rectangle in the 108-unit, y-down design space of the Android drawable.
-func box(_ x: CGFloat, _ y: CGFloat, _ w: CGFloat, _ h: CGFloat, _ r: CGFloat) -> NSBezierPath {
-    NSBezierPath(roundedRect: NSRect(x: x, y: y, width: w, height: h), xRadius: r, yRadius: r)
-}
-
 /// A filled arrow as ONE closed outline: rounded tail, straight shaft, triangular head.
 ///
 /// Drawn as a single contour rather than a pill plus a triangle. Two overlapping subpaths render

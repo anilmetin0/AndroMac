@@ -4,7 +4,7 @@ import CryptoKit
 import Foundation
 import Network
 
-/// Advertises itself over Bonjour, waits for the phone to connect, and maintains the single session.
+/// Advertises itself over Bonjour, waits for the phones to connect, and maintains one session each.
 /// docs/PROTOCOL.md §1 and §6.
 actor Server {
 
@@ -65,10 +65,8 @@ actor Server {
     /// anyone gets per hour. In memory only: a restart starts over.
     private var rejectedKeys: [Data: (count: Int, until: Date)] = [:]
 
-    /// The low-battery alert fires once per session. Reset when the phone is plugged in or rises
-    /// back above 20%.
-    /// Phones already warned about in this session. Per device — one phone going flat must not
-    /// silence the warning for the other.
+    /// Phones already warned about in this session (`checkLowBattery`). Per device — one phone
+    /// going flat must not silence the warning for the other.
     private var lowBatteryAlerted: Set<String> = []
 
     /// PROTOCOL §6.1 — ONLY the Mac sends the liveness probe; the phone sets up no timer.
@@ -695,7 +693,6 @@ actor Server {
                 playing: msg["playing"] as? Bool ?? false,
                 title: clip(msg["title"]),
                 artist: clip(msg["artist"]),
-                album: clip(msg["album"]),
                 app: clip(msg["app"]),
                 pkg: clip(msg["pkg"])
             )
@@ -789,11 +786,9 @@ actor Server {
 
     // MARK: outgoing messages (from other components)
 
-    /// `false` = it did not go out. When the error was swallowed the UI stayed on "Connected" and
-    /// the counters inflated; the first write notices the dead socket, so we tear the session down
-    /// right there.
+    /// Send to one phone. `false` = it did not go out: the phone is not connected or the write
+    /// failed. The first write notices a dead socket, so the session is torn down right there.
     @discardableResult
-    /// Send to one phone. Returns false when it is not connected or the write failed.
     func send(_ msg: sending [String: Any], to deviceID: String) async -> Bool {
         guard let json = Self.encode(msg) else { return false }
         return await send(json: json, to: deviceID)
@@ -866,6 +861,4 @@ actor Server {
         serveTasks[deviceID]?.cancel()
         await closeSession(deviceID)
     }
-
-    var isConnected: Bool { !sessions.isEmpty }
 }

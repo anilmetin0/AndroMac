@@ -114,8 +114,8 @@ public enum WireError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .protocolError(let m): return m
-        case .untrusted(_, _, let sas, let mismatch):
-            return mismatch ? "the pinned key has changed" : "device is not paired (code \(sas))"
+        case .untrusted(_, _, let sas, _):
+            return "device is not paired (code \(sas))"
         case .closed: return "connection closed"
         }
     }

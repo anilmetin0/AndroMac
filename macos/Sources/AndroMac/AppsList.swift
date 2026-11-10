@@ -6,7 +6,7 @@ import SwiftUI
 struct AppsList: View {
 
     @ObservedObject private var modes = AppModes.shared
-    /// Read so the list follows the tab: the apps shown are the focused phone's.
+    /// Read so the list follows the phone switcher: the apps shown are the focused phone's.
     @EnvironmentObject private var state: AppState
     /// The window's search field, which belongs to the window rather than to the page.
     let query: String

@@ -32,11 +32,10 @@ final class SystemPermissions: NSObject, ObservableObject, CBCentralManagerDeleg
     /// Created only by an Allow click: a central manager is what makes macOS ask for Bluetooth.
     /// It never scans.
     private var central: CBCentralManager?
-    private var observer: NSObjectProtocol?
 
     override private init() {
         super.init()
-        observer = NotificationCenter.default.addObserver(
+        _ = NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
         ) { _ in MainActor.assumeIsolated { SystemPermissions.shared.refresh() } }
         refresh()

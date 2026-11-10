@@ -32,10 +32,8 @@ fi
 # locally it is the VERSION file, build 1, and the commit reads "local", as on Android.
 PLIST="$APP/Contents/Info.plist"
 : "${ANDROMAC_VERSION:=$(tr -d '[:space:]' < ../VERSION)}"
-if [[ -n "${ANDROMAC_VERSION:-}" ]]; then
-    /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $ANDROMAC_VERSION" "$PLIST"
-    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${ANDROMAC_BUILD:-1}" "$PLIST"
-fi
+/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $ANDROMAC_VERSION" "$PLIST"
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${ANDROMAC_BUILD:-1}" "$PLIST"
 if [[ -n "${ANDROMAC_COMMIT:-}" ]]; then
     /usr/libexec/PlistBuddy -c "Set :AndroMacCommit $ANDROMAC_COMMIT" "$PLIST"
 fi
@@ -76,9 +74,7 @@ xcrun actool build/Assets.xcassets --compile "$APP/Contents/Resources" --platfor
 # Languages: English is the base language — the literals in the source code are the keys, so
 # en.lproj maps every key to itself and tr.lproj holds the Turkish translations.
 # Loaded through Bundle.main; the SwiftPM resource bundle (Bundle.module) is not used.
-if [[ -d Resources/Localization ]]; then
-    cp -R Resources/Localization/*.lproj "$APP/Contents/Resources/"
-fi
+cp -R Resources/Localization/*.lproj "$APP/Contents/Resources/"
 
 # Share extensions are native XPC executables; Foundation supplies their entry point.
 EXTENSION="$APP/Contents/PlugIns/AndroMacShare.appex"

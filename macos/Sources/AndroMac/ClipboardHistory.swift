@@ -80,7 +80,7 @@ final class ClipboardHistory: ObservableObject {
         scheduleSave()
     }
 
-    /// Clear, and unpairing: the file is deleted rather than rewritten, which works even before
+    /// Clear, Forget all and Reset: the file is deleted rather than rewritten, which works even before
     /// the key is loaded.
     func clear() {
         entries.removeAll()

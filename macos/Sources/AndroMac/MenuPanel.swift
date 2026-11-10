@@ -12,7 +12,6 @@ struct MenuPanel: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var state: AppState
     @ObservedObject private var history = NotificationHistory.shared
-    @Environment(\.openWindow) private var openWindow
 
     @ObservedObject private var updates = UpdateCheck.shared
     @ObservedObject private var updater = Updater.shared
@@ -103,8 +102,8 @@ struct MenuPanel: View {
         }
         // Dropping files onto the panel is the second way to send (PROTOCOL §5, sender rules).
         .onDrop(of: [.fileURL], isTargeted: nil) { providers in
-            // The phone whose tab is open.
-            guard canSendFiles, let peer = state.focusedDevice?.id else { return false }
+            // The focused phone, and only if it advertises the capability (PROTOCOL §5).
+            guard let peer = FileSending.destination?.id else { return false }
             for provider in providers {
                 _ = provider.loadObject(ofClass: URL.self) { url, _ in
                     guard let url, url.isFileURL else { return }
@@ -116,9 +115,6 @@ struct MenuPanel: View {
     }
 
     // MARK: files
-
-    /// The button exists only while the phone advertises the capability (PROTOCOL §5).
-    private var canSendFiles: Bool { state.isConnected && state.peerCaps.contains("file") }
 
     /// A transfer in flight, under the clipboard row it was started from.
     private func files(_ p: FileTransfer.Progress) -> some View {

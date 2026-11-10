@@ -82,9 +82,4 @@ public enum FileTransferMath {
     /// sender can push at a phone. The receiver is unchanged: chunks are written strictly in order,
     /// which TCP already guarantees, and every one of them is still acked.
     public static let window = 8
-
-    /// How many `file_chunk` messages a file of `size` bytes takes; `0` for an empty file.
-    public static func chunkCount(size: Int64) -> Int {
-        Int((size + Int64(chunkSize) - 1) / Int64(chunkSize))
-    }
 }

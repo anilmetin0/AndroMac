@@ -2,9 +2,8 @@ import Foundation
 
 /// This Mac's local network address.
 ///
-/// Shown in the setup guide: the most common reason for not connecting is that the phone and the
-/// Mac are on DIFFERENT networks. Seeing the two addresses side by side makes that obvious at a
-/// glance. Reading the Wi-Fi name requires location permission on macOS; reading the IP does not.
+/// Shown in the pairing steps and in Settings: the most common reason for not connecting is that
+/// the phone and the Mac are on DIFFERENT networks, and the phone shows its own address. Reading the Wi-Fi name requires location permission on macOS; reading the IP does not.
 enum NetworkInfo {
 
     /// E.g. "192.168.1.5", or nil if there is no local network.
@@ -37,11 +36,5 @@ enum NetworkInfo {
             break
         }
         return address
-    }
-
-    /// "192.168.1.5" -> "192.168.1"
-    static func subnet(of ip: String?) -> String? {
-        guard let ip, let index = ip.lastIndex(of: ".") else { return nil }
-        return String(ip[ip.startIndex..<index])
     }
 }

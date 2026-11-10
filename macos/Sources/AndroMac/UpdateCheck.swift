@@ -15,8 +15,6 @@ final class UpdateCheck: ObservableObject {
 
     static let shared = UpdateCheck()
 
-    nonisolated static let repo = Release.repo
-    nonisolated static let releasesPage = URL(string: "https://github.com/\(repo)/releases")!
     /// Once a day is plenty, and stays far below GitHub's unauthenticated rate limit.
     static let interval: TimeInterval = 24 * 60 * 60
 
@@ -189,7 +187,7 @@ final class UpdateCheck: ObservableObject {
     /// The response body, `nil` for 404, throws for anything else. Bounded: 1 MiB is far more
     /// than ten release objects need.
     private nonisolated static func fetch(_ path: String) async throws -> Data? {
-        var request = URLRequest(url: URL(string: "https://api.github.com/repos/\(repo)/releases\(path)")!)
+        var request = URLRequest(url: URL(string: "https://api.github.com/repos/\(Release.repo)/releases\(path)")!)
         request.timeoutInterval = 10
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")

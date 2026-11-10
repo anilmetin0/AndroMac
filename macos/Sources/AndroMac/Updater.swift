@@ -335,10 +335,6 @@ final class Updater: ObservableObject {
         }
     }
 
-    func dismissError() {
-        if case .failed = phase { phase = .idle }
-    }
-
     // MARK: steps
 
     private enum UpdateError: Error {
@@ -491,7 +487,7 @@ final class Updater: ObservableObject {
     /// The copy goes next to the app under a name that is not a bundle, and a rename puts it in
     /// place: a half-copied bundle at the app's own path was registered as an app without an
     /// icon, and Notification Center kept showing that blank icon after the update.
-    private nonisolated static func swap(into current: URL, from new: URL, staging: URL?) throws {
+    private nonisolated static func swap(into current: URL, from new: URL, staging: URL) throws {
         // Every path is passed as an argument and quoted; the script interpolates nothing.
         let script = """
         #!/bin/sh
@@ -527,7 +523,7 @@ final class Updater: ObservableObject {
         task.executableURL = URL(fileURLWithPath: "/bin/sh")
         task.arguments = [
             file.path, current.path, new.path, backup.path,
-            staging?.path ?? directory.path,
+            staging.path,
             String(ProcessInfo.processInfo.processIdentifier),
             directory.path,
         ]
