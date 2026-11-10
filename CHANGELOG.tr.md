@@ -7,6 +7,22 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaral
 `## Unreleased` altına yazılır; `VERSION` yükseltilince o bölüm yeni sürümün bölümü olur. Beta
 derlemeler bunun yerine commit'lerini listeler.
 
+## 1.8.0 - 2026-11-10
+
+### Değişenler
+
+- **Uygulama başına bildirim ve geçmiş.** Uygulamalar sayfasında her uygulama için, telefonun ne
+  gönderdiğinin yanında, Mac'in bildirim gösterip göstermeyeceği ve bildirimi geçmişte tutup
+  tutmayacağı ayrı ayrı seçiliyor. Bildirimdeki Bu uygulamayı sustur artık o uygulamanın
+  bildirimlerini kapatıyor; bildirimler geçmişe yine düşüyor.
+- Menü çubuğu panelindeki eylemlerin adı yazıyor (Zil, Test, Mesajlar, Ekran, Diğer), bildirim
+  satırları ve resimleri küçüldü, telefon seçicideki vurgu seçilen telefona kayıyor.
+
+### Düzeltilenler
+
+- Bildirimler ya da Pano'nun yanındaki ayarları açmak artık kenar çubuğunu pencereden itip geri
+  getirmiyor; pencere önce yer açıyor, ayarlar sonra kayarak geliyor.
+
 ## 1.7.1 - 2026-11-04
 
 ### Düzeltilenler

@@ -7,6 +7,22 @@ The `## <version>` section matching the `VERSION` file is the notes of that stab
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Nightly builds list their commits instead.
 
+## 1.8.0 - 2026-11-10
+
+### Changed
+
+- **Banners and history per app.** The Apps page sets, for each app, whether the Mac shows a
+  banner and whether it keeps the notification in the history, next to what the phone sends.
+  Mute this app on a banner now turns that app's banners off; its notifications still reach the
+  history.
+- The menu bar panel names its actions (Ring, Test, Messages, Screen, More), its notification
+  rows and pictures are smaller, and the phone switcher's highlight slides to the chosen phone.
+
+### Fixed
+
+- Opening the settings beside Notifications or Clipboard no longer pushes the sidebar out of the
+  window and back; the window makes room first, and the settings slide in.
+
 ## 1.7.1 - 2026-11-04
 
 ### Fixed
