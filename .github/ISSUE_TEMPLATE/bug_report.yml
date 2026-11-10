@@ -22,7 +22,7 @@ body:
     id: mac-version
     attributes:
       label: AndroMac version on the Mac
-      description: Settings → Devices on the Mac. Copy the whole string, build and commit included.
+      description: Settings → General on the Mac. Copy the whole string, build and commit included.
       placeholder: 1.1.0 (42 · e105e58)
     validations:
       required: true

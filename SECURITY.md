@@ -11,7 +11,7 @@ expose a user's notifications, clipboard or identity key, so it is handled priva
 | The latest build of the current version (the `v<VERSION>` release) | Yes |
 | Anything older | No |
 
-Fixes ship in the next beta and the next stable release. There are no backports to older versions.
+Fixes ship in the next nightly build and the next stable release. There are no backports to older versions.
 
 ## Reporting a vulnerability
 

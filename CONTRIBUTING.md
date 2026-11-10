@@ -74,7 +74,7 @@ do not claim microphone or speaker support without testing both directions on ha
 | Gradle | 9.8.2, through the wrapper, downloaded automatically |
 | Android Gradle Plugin | 9.5.0, with its built-in Kotlin |
 | Kotlin | 2.4.21, for the plain-JVM `vectors` module only |
-| Python 3 | only for `macos/scripts/update-strings.sh` |
+| Python 3 | for `macos/scripts/update-strings.sh` and `scripts/bump-scrcpy.sh` |
 
 The Android build targets Java 21 bytecode and `minSdk` 29, which is Android 10.
 
@@ -229,6 +229,7 @@ CHANGELOG.md, CHANGELOG.tr.md      the changelog; the release job reads CHANGELO
 VERSION                            the released version; raising it publishes the next stable release
 THIRD-PARTY-NOTICES.md             what the Mac package bundles for screen mirroring, and the licenses
 Casks/andromac.rb                  Homebrew cask; its version follows VERSION, CI checks it
+Casks/andromac@nightly.rb          the cask for the nightly release, with no version to follow
 
 docs/
   GUIDE.md, GUIDE.tr.md            the user guide: install, pairing, features, settings, trust model
@@ -243,17 +244,24 @@ scripts/
   setup-android-signing.sh         creates the APK signing key and uploads it as secrets
   setup-macos-signing.sh           creates the Mac's self-signed certificate and uploads it as
                                    secrets; --local only imports it for local builds
+  pin-cask.sh                      pins the stable DMG's checksum in Casks/andromac.rb
+  bump-scrcpy.sh                   moves the bundled scrcpy and adb to the latest release
 
 .github/
   workflows/build.yml              verify, test, build both apps, publish the release
   workflows/codeql.yml             CodeQL on the workflow files
+  workflows/scrcpy.yml             weekly: opens an issue when scrcpy has a new release
+  workflows/coderabbit.yml         asks CodeRabbit to review a Dependabot pull request
+  workflows/dependabot.yml         merges a Dependabot pull request once it passed and was approved
+  scripts/                         the Python behind bump-scrcpy.sh, and the merge gate's tests
   dependabot.yml                   weekly updates for the actions and the Gradle plugins
   ISSUE_TEMPLATE/, PULL_REQUEST_TEMPLATE.md
 
-android/                           AGP 9.4.1, Gradle 9.8.0, minSdk 29, no dependencies
+android/                           minSdk 29, no dependencies
   app/src/main/kotlin/dev/andromac/
     core/                          platform-free: Crypto, Session, Protocol, Store, Link, Version,
-                                   FileNames, NetworkInfo, MacPick, NotificationImage
+                                   FileNames, NetworkInfo, MacPick, NotificationImage, Sms,
+                                   ReconnectPolicy
     net/                           LinkService (connect loop, backoff, dispatch), Discovery (mDNS
                                    only while there is no connection), BootReceiver
     feature/                       one file per synced thing: NotificationRelay, ClipboardBridge,
@@ -271,9 +279,11 @@ macos/                             Swift package, swift-tools 6.2, macOS 14+, no
   Resources/                       Info.plist, en.lproj and tr.lproj, make-icon.swift
   Sources/AndroMacKit/             platform-free: Crypto, Session, Wire, Version, FileNames,
                                    PairedDevice, SealedFile, AdbOutput, ReleaseInfo,
-                                   VerificationCode, NotificationAction, NotificationImage
+                                   VerificationCode, NotificationAction, NotificationImage,
+                                   NotificationHistoryEntry, SMS, WebLink
   Sources/AndroMac/                the app: Server (Bonjour, handshake limits, dispatch), AppState,
                                    Store, ScreenMirror, FileTransfer, the updater and the SwiftUI views
   Sources/SelfTest/                the vector printer and handshake responder the scripts use
   Tests/AndroMacKitTests/          Swift Testing unit tests
+  Tests/Fixtures/                  recorded GitHub release JSON the update tests read
 ```
