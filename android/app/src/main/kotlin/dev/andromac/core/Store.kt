@@ -133,7 +133,6 @@ class Store(context: Context) {
         get() = prefs.getString(K_PEER_NAME, "") ?: ""
         set(v) = prefs.edit().putString(K_PEER_NAME, v).apply()
 
-    /** Last address that worked — tried before the mDNS scan (PROTOCOL §1). */
     /** The LAN the Mac was last reached on (`LinkService.networkKey`). */
     var macNetwork: String?
         get() = prefs.getString(K_MAC_NETWORK, null)
@@ -141,6 +140,7 @@ class Store(context: Context) {
             if (v == null) remove(K_MAC_NETWORK) else putString(K_MAC_NETWORK, v)
         }.apply()
 
+    /** Last address that worked — tried before the mDNS scan (PROTOCOL §1). */
     var lastEndpoint: String?
         get() = prefs.getString(K_ENDPOINT, null)
         set(v) = prefs.edit().apply {
@@ -495,9 +495,8 @@ class Store(context: Context) {
      * What the Mac calls this phone: the name the user gave it in Settings (About phone), then
      * the Bluetooth name, then the model ("SM-S926B") as the last resort. 64 chars, as the Mac clips.
      */
-    var deviceName: String
-        get() = clip(prefs.getString(K_NAME, null) ?: systemName() ?: android.os.Build.MODEL, 64)
-        set(v) = prefs.edit().putString(K_NAME, v).apply()
+    val deviceName: String
+        get() = clip(systemName() ?: android.os.Build.MODEL, 64)
 
     private fun systemName(): String? {
         val cr = app.contentResolver
@@ -534,7 +533,7 @@ class Store(context: Context) {
         const val MODE_TITLE_ONLY = 1
         const val MODE_FULL = 2
 
-        /** Legacy plaintext record. Read only for migration, never written. */
+        /** Plaintext record: migrated to the wrapped one on read, written only when the Keystore cannot wrap. */
         const val K_PRIV = "static_priv"
         const val K_PRIV_WRAPPED = "static_priv_wrapped"
         const val K_PUB = "static_pub"
@@ -547,7 +546,6 @@ class Store(context: Context) {
         const val K_SYNC_CLIPBOARD = "sync_clipboard"
         const val K_SYNC_MEDIA = "sync_media"
         const val K_SYNC_NOTIF = "sync_notifications"
-        const val K_NAME = "device_name"
         const val K_BLOCKED = "blocked_apps"
         const val K_SEEN = "seen_apps"
         const val K_SYNC_SILENT = "sync_silent"

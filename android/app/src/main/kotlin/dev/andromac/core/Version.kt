@@ -8,8 +8,6 @@ package dev.andromac.core
  */
 data class Version(val major: Int, val minor: Int, val patch: Int, val dev: Int? = null) : Comparable<Version> {
 
-    val isDev: Boolean get() = dev != null
-
     override fun compareTo(other: Version): Int = compareValuesBy(
         this, other, { it.major }, { it.minor }, { it.patch }, { it.dev ?: Int.MAX_VALUE },
     )

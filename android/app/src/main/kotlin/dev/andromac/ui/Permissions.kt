@@ -141,11 +141,7 @@ enum class Permission(
     abstract fun settingsIntent(ctx: Context): Intent
 
     /** Required: a mirror that mirrors nothing without it. Recommended: it works, but drops. */
-    enum class Kind(val labelRes: Int) {
-        REQUIRED(R.string.permission_required),
-        RECOMMENDED(R.string.permission_recommended),
-        OPTIONAL(R.string.permission_optional),
-    }
+    enum class Kind { REQUIRED, RECOMMENDED, OPTIONAL }
 
     companion object {
         /** Every permission this Android version has, in order. */

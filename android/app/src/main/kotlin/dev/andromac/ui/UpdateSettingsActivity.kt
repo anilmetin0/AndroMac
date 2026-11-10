@@ -269,13 +269,13 @@ private fun forgetFoundUpdate(store: Store) {
     store.updateFound = null
 }
 
+private var lastUpdateError: String? = null
+
 /**
  * Runs the check now and stores the outcome; [done] runs on the UI thread. The error is not
  * persisted: a flaky network at one launch should not show a warning at the next.
  */
-private var lastUpdateError: String? = null
-
-fun Activity.runUpdateCheck(store: Store, done: () -> Unit = {}) {
+fun Activity.runUpdateCheck(store: Store, done: () -> Unit) {
     val beta = betaUpdates
     checksInFlight++
     UpdateCheck.checkAsync(currentVersion(), currentBuild(), currentCommit(), beta) { result ->
@@ -374,7 +374,7 @@ private fun Activity.announceIfUpdated() {
  * False when there is nothing to offer yet (checking is off, or a check is still running), so
  * the caller can try again later.
  */
-fun Activity.offerOrInstallUpdate(store: Store, onDialog: (AlertDialog) -> Unit = {}): Boolean {
+fun Activity.offerOrInstallUpdate(store: Store, onDialog: (AlertDialog) -> Unit): Boolean {
     if (!store.updateCheck || checksInFlight > 0) return false
     val release = newerRelease(store) ?: return false
     if (release.label == store.updateSkipped) return false

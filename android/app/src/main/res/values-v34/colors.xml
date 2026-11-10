@@ -4,7 +4,6 @@
      values-v31. -->
 <resources>
     <color name="am_surface">@android:color/system_surface_light</color>
-    <color name="am_surface_container_low">@android:color/system_surface_container_low_light</color>
     <color name="am_surface_container">@android:color/system_surface_container_light</color>
     <color name="am_surface_container_high">@android:color/system_surface_container_high_light</color>
     <color name="am_surface_container_highest">@android:color/system_surface_container_highest_light</color>

@@ -54,4 +54,3 @@ android {
 }
 
 // No dependencies: org.json, javax.crypto and NsdManager all ship with the platform.
-dependencies { }

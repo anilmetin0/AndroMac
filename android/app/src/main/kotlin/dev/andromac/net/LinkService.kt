@@ -401,14 +401,16 @@ class LinkService : Service() {
                 }
             }
         }
-        // ENERGY §13. The cached-address SYN above is cheap and runs every cycle; the 8 s
+        // ENERGY rule 15. The cached-address SYN above is cheap and runs every cycle; the 8 s
         // multicast-locked browse is not, so it runs only on the first attempt after a network
         // event or a pairing request, then on every BROWSE_EVERY-th attempt. With no cached
         // address it runs every cycle: there is nothing cheaper left that could make progress.
         // On a network where the Mac has never answered (the office, a café) the browse runs once
         // per network event, not every 4th attempt: the Mac is very likely not there at all.
-        // A refused SYN means the Mac is awake and its port moved: find the new one right away.
-        // The one refusal-triggered browse is only spent when nothing else would have browsed.
+        // A first refusal on the cached address means the Mac's host is up and its port moved:
+        // find the new one right away instead of up to 20 minutes later. A refusal repeated on
+        // the same address (the app is not running) waits for the schedule again, and the one
+        // refusal-triggered browse is only spent when nothing else would have browsed.
         val scheduled = ReconnectPolicy.shouldBrowse(cached != null, attempt, onMacNetwork())
         val refused = cached != null && lastConnectRefused && cached != refusedEndpoint
         if (refused && !scheduled) refusedEndpoint = cached

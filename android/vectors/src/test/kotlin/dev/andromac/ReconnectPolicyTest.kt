@@ -23,11 +23,6 @@ class ReconnectPolicyTest {
         assertFalse((1..12).any { ReconnectPolicy.shouldBrowse(true, it, false) })
     }
 
-    @Test fun `a first refusal on the cached address browses at once`() {
-        assertTrue(ReconnectPolicy.shouldBrowse(true, 1, true, cachedRefused = true))
-        assertTrue(ReconnectPolicy.shouldBrowse(true, 3, false, cachedRefused = true))
-    }
-
     @Test fun `only a refused connection counts as a moved port`() {
         assertTrue(ReconnectPolicy.isRefusal(java.net.ConnectException("connect failed: ECONNREFUSED (Connection refused)")))
         assertTrue(ReconnectPolicy.isRefusal(java.net.ConnectException("Connection refused")))

@@ -52,11 +52,6 @@
         <item name="android:letterSpacing">0.007</item>
         <item name="android:textFontWeight">500</item>
     </style>
-    <style name="TextAppearance.AM.LabelSmall">
-        <item name="android:textSize">11sp</item>
-        <item name="android:letterSpacing">0.045</item>
-        <item name="android:textFontWeight">500</item>
-    </style>
 
     <!-- Top app bar title: title-large, one line. view_header.xml and the main screen. -->
     <style name="AppBarTitle">

@@ -14,7 +14,6 @@
     <color name="am_on_secondary_container">#FF3E4759</color>
 
     <color name="am_surface">#FFF9F9FF</color>
-    <color name="am_surface_container_low">#FFF3F3FA</color>
     <color name="am_surface_container">#FFEDEDF4</color>
     <color name="am_surface_container_high">#FFE7E8EE</color>
     <color name="am_surface_container_highest">#FFE2E2E9</color>

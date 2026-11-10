@@ -15,9 +15,8 @@ import dev.andromac.feature.MediaBridge
 /**
  * Helpers for binding a settings row.
  *
- * Settings are spread across three screens (main, notifications, clipboard); rather than
- * repeating the same row behaviour in three places we keep it here: the whole row is
- * tappable, and the switch does not steal the click.
+ * Settings are spread across several screens; rather than repeating the same row behaviour
+ * on each we keep it here: the whole row is tappable, and the switch does not steal the click.
  */
 
 fun Activity.bindSwitchRow(rowId: Int, switchId: Int, initial: Boolean, set: (Boolean) -> Unit) {

@@ -128,14 +128,13 @@ class SystemBridge(private val context: Context) {
         if (Link.send(msg)) lastSent = text
     }
 
-    /** One `system_control` from the Mac. Every branch reports back, so the Mac sees the result. */
+    /** One `system_control` from the Mac. Ringer and volume report back, so the Mac sees the result. */
     fun control(msg: JSONObject) {
         when (msg.optString("cmd")) {
             "ringer" -> setRinger(msg.optString("mode"))
             "volume" -> setVolume(msg.optInt("level", -1))
             "test_notification" -> testNotification()
             "open_debugging" -> openDebugging()
-            else -> return
         }
     }
 

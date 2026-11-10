@@ -41,7 +41,7 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
 
     /** Clipboard content arriving from the Mac. Called from the service thread. */
     fun receiveFromMac(raw: String) {
-        // PROTOCOL §8 forbids assuming the sender truncated. Unclamped, a frame up to the
+        // PROTOCOL §5 (limits on incoming data) forbids assuming the sender truncated. Unclamped, a frame up to the
         // 1 MiB limit would cross Binder into system_server and throw, dropping the session.
         val text = raw.take(Protocol.MAX_CLIPBOARD)
         if (text.isEmpty() || !store.syncClipboard) return

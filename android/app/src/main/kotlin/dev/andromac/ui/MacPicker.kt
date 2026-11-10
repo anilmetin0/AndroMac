@@ -19,7 +19,7 @@ import dev.andromac.net.LinkService
  * Known limit: on API 29-33 it can collide with a browse the service runs at the same moment
  * (paired and searching), and a resolve there may fail; Search again covers it.
  */
-fun Activity.pickMac(store: Store, shown: (AlertDialog) -> Unit = {}) {
+fun Activity.pickMac(store: Store, shown: (AlertDialog) -> Unit) {
     val searching = AlertDialog.Builder(this)
         .setMessage(R.string.pair_searching)
         .setNegativeButton(android.R.string.cancel, null)

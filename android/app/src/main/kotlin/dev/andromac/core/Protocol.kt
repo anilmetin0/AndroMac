@@ -273,7 +273,4 @@ object Protocol {
 
     fun fileCancel(id: String, reason: String) = JSONObject()
         .put("t", T_FILE_CANCEL).put("id", id).put("reason", reason)
-
-    /** Chunks a file of [size] bytes needs: 0 for an empty file, which goes straight to `file_done`. */
-    fun fileChunkCount(size: Long): Long = (size + FILE_CHUNK - 1) / FILE_CHUNK
 }

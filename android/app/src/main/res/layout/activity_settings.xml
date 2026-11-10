@@ -200,7 +200,7 @@
 
             <!-- The version is the first thing asked for in a bug report; the GitHub mark beside it
                  opens the repository, where the report goes. -->
-            <LinearLayout android:id="@+id/rowAbout" style="@style/Row" android:background="@null" android:baselineAligned="false">
+            <LinearLayout style="@style/Row" android:background="@null" android:baselineAligned="false">
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

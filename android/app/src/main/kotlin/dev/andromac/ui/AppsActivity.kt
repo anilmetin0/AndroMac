@@ -74,7 +74,7 @@ class AppsActivity : Activity() {
         preloadIcons(rows)
     }
 
-    /** The overflow menu in the header; it replaced res/menu/apps.xml. */
+    /** The overflow menu in the header. */
     private fun showOverflow(anchor: View) {
         PopupMenu(this, anchor).apply {
             menu.add(Menu.NONE, 0, Menu.NONE, R.string.apps_forget)

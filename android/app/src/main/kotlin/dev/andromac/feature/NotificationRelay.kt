@@ -88,11 +88,11 @@ class NotificationRelay : NotificationListenerService() {
      * collapse into a single send, and ones removed inside it are never sent. Saves both
      * noise and radio time.
      */
-    private fun schedule(sbn: StatusBarNotification, forceSilent: Boolean = false) {
+    private fun schedule(sbn: StatusBarNotification) {
         cancelPending(sbn.key)
         val task = Runnable {
             pending.remove(sbn.key)
-            send(sbn, forceSilent)
+            send(sbn, forceSilent = false)
         }
         pending[sbn.key] = task
         handler.postDelayed(task, COALESCE_MS)
@@ -102,7 +102,7 @@ class NotificationRelay : NotificationListenerService() {
         pending.remove(key)?.let(handler::removeCallbacks)
     }
 
-    private fun send(sbn: StatusBarNotification, forceSilent: Boolean = false) {
+    private fun send(sbn: StatusBarNotification, forceSilent: Boolean) {
         if (!isRelayable(sbn)) return
 
         // Record the app BEFORE the silence filter. Otherwise an app that only ever posts
@@ -308,7 +308,7 @@ class NotificationRelay : NotificationListenerService() {
         private const val AVATAR_EDGE = NotificationImage.AVATAR_EDGE
 
         /**
-         * Packages that are off by default. The user can enable them from the filter screen.
+         * Packages that are never relayed, and so never appear on the filter screen.
          * The Google search box re-posts its notification every few minutes.
          */
         private val DISABLED_BY_DEFAULT = setOf(

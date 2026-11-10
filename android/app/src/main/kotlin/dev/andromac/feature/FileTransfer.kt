@@ -157,10 +157,10 @@ object FileTransfer {
         }
         // `file_done` goes out on the same connection right after the last chunk, so it arrives
         // after it; the Mac verifies the hash only once every chunk has been written.
-        if (o.sent >= o.size && !o.done) { o.done = true; sendDone(ctx, o) }
+        if (o.sent >= o.size && !o.done) { o.done = true; sendDone(o) }
     }
 
-    private fun sendDone(ctx: Context, o: Outgoing) {
+    private fun sendDone(o: Outgoing) {
         Link.send(Protocol.fileDone(o.id, o.digest.digest().hex()))
     }
 

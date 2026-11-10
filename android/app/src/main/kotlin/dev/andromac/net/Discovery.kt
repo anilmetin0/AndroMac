@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
  * mDNS discovery for `_andromac._tcp`. PROTOCOL §1.
  *
  * Energy: the scan runs ONLY while we are unable to connect, and for at most [TIMEOUT_MS].
- * Once the link is up the caller invokes [stop]. A continuous mDNS scan costs measurable
+ * [browse] stops it itself when it returns. A continuous mDNS scan costs measurable
  * battery.
  */
 class Discovery(context: Context) {
@@ -104,7 +104,7 @@ class Discovery(context: Context) {
         }
     }
 
-    fun stop() {
+    private fun stop() {
         listener?.let { runCatching { nsd.stopServiceDiscovery(it) } }
         listener = null
         unwatchAll()

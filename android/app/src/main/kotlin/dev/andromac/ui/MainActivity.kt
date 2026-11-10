@@ -86,18 +86,12 @@ class MainActivity : Activity() {
             if (store.isPaired) store.onboardingDone = true
             else if (savedInstanceState == null) open(OnboardingActivity::class.java)
         }
-        if (store.onboardingDone && savedInstanceState == null) askLocalNetworkOnce()
+        // A phone set up before Android required local network access (an OS update to 17) never
+        // saw that dialog, and without it the link cannot reach the Mac. Asked once, as a dialog
+        // only; after a "no" the permission card stays the way to Settings.
+        if (store.onboardingDone && savedInstanceState == null) askOnce(Permission.LOCAL_NETWORK)
         pairRequested = intent.getBooleanExtra(EXTRA_PAIR, false)
         LinkService.start(this)
-    }
-
-    /**
-     * A phone set up before Android required local network access (an OS update to 17) never saw
-     * that dialog, and without it the link cannot reach the Mac. Asked once, as a dialog only; after
-     * a "no" the permission card stays the way to Settings.
-     */
-    private fun askLocalNetworkOnce() {
-        askOnce(Permission.LOCAL_NETWORK)
     }
 
     /** The setup flow's last step comes back here to pick the Mac. */

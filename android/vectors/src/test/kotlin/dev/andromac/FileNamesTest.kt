@@ -1,7 +1,6 @@
 package dev.andromac
 
 import dev.andromac.core.FileNames
-import dev.andromac.core.Protocol
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -63,14 +62,5 @@ class FileNamesTest {
         assertEquals("photo (3).jpg", FileNames.unique("photo.jpg", taken::contains))
         assertEquals("notes (2)", FileNames.unique("notes", taken::contains))
         assertEquals("new.jpg", FileNames.unique("new.jpg", taken::contains))
-    }
-
-    @Test
-    fun chunkCount() {
-        val chunk = Protocol.FILE_CHUNK.toLong()
-        assertEquals(0, Protocol.fileChunkCount(0))
-        assertEquals(1, Protocol.fileChunkCount(1))
-        assertEquals(1, Protocol.fileChunkCount(chunk))
-        assertEquals(2, Protocol.fileChunkCount(chunk + 1))
     }
 }
