@@ -135,6 +135,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         Task { await Server.shared.start() }
         QuickSend.shared.start()
+        ShareExtension.enable()
         BluetoothCalls.shared.bootstrap()
         // Every launch offers what it finds — once per release, and never for one that was skipped.
         Task { await UpdateCheck.shared.checkAtLaunch() }

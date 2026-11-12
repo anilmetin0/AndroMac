@@ -52,6 +52,39 @@ enum FileSending {
     }
 }
 
+/// Finder's Share menu lists an extension only once macOS has registered it and it is switched
+/// on. Neither happens by itself for a copy the updater put in place or one opened from a
+/// download, so each launch registers this copy's extension and switches it on. A switch the
+/// user turned off under Login Items & Extensions stays off.
+enum ShareExtension {
+    static func enable() {
+        guard let appex = Bundle.main.builtInPlugInsURL?.appendingPathComponent("AndroMacShare.appex"),
+              let id = Bundle(url: appex)?.bundleIdentifier else { return }
+        DispatchQueue.global(qos: .utility).async {
+            pluginkit(["-a", appex.path])
+            // One line per registered copy; it starts with "+" (on), "-" (turned off) or a space.
+            let copies = pluginkit(["-m", "-A", "-D", "-i", id]).split(separator: "\n")
+            guard !copies.contains(where: { $0.hasPrefix("-") }),
+                  copies.contains(where: { !$0.hasPrefix("+") && $0.contains(id) }) else { return }
+            pluginkit(["-e", "use", "-i", id])
+        }
+    }
+
+    @discardableResult
+    private static func pluginkit(_ arguments: [String]) -> String {
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/usr/bin/pluginkit")
+        task.arguments = arguments
+        let output = Pipe()
+        task.standardOutput = output
+        task.standardError = FileHandle.nullDevice
+        guard (try? task.run()) != nil else { return "" }
+        let data = output.fileHandleForReading.readDataToEndOfFile()
+        task.waitUntilExit()
+        return String(decoding: data, as: UTF8.self)
+    }
+}
+
 /// Retains each share until it is sent or cancelled. In particular a cold app launch must wait
 /// for the phone's reconnect rather than lose Finder's files before the first hello arrives.
 @MainActor

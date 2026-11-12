@@ -7,6 +7,13 @@ The `## <version>` section matching the `VERSION` file is the notes of that stab
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Nightly builds list their commits instead.
 
+## Unreleased
+
+### Fixed
+
+- AndroMac was missing from Finder's Share menu until it was switched on in System Settings.
+  The Mac app now registers its Share extension and switches it on when it starts.
+
 ## 1.8.0 - 2026-11-10
 
 ### Changed

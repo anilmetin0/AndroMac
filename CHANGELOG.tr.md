@@ -7,6 +7,13 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaral
 `## Unreleased` altına yazılır; `VERSION` yükseltilince o bölüm yeni sürümün bölümü olur. Beta
 derlemeler bunun yerine commit'lerini listeler.
 
+## Unreleased
+
+### Düzeltilenler
+
+- AndroMac, Sistem Ayarları'ndan açılana kadar Finder'ın Paylaş menüsünde görünmüyordu. Mac
+  uygulaması artık açılırken Paylaş uzantısını kaydedip etkinleştiriyor.
+
 ## 1.8.0 - 2026-11-10
 
 ### Değişenler
