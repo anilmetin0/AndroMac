@@ -14,6 +14,8 @@ raised. Nightly builds list their commits instead.
 - **Files are accepted without asking.** **Accept files automatically** is now on by default on
   the phone and the Mac, so a second file no longer waits for the first to be accepted. Turn it
   off in the file settings to be asked first.
+- The panel's actions (Ring, Test, Messages, Screen, More) lost their outlines and sit in equal
+  columns, with simpler symbols.
 - **Quick send is the menu bar icon alone.** Dropping files on AndroMac's menu bar icon sends
   them to the selected phone. The Send to Android target that came up at the top of the screen
   during every file drag is gone.

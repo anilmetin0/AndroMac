@@ -45,32 +45,38 @@ struct IconButton: View {
 
 /// A labelled action on the device card: the symbol over a one-word name, so a row of them reads
 /// without hovering for tooltips. The full description stays in the tooltip and VoiceOver label.
+/// No plate of its own: the card is the surface, and a tile shows one only under the pointer.
 struct ActionTile: View {
     let symbol: String
     let title: String
     let help: String
     var active = false
     let action: () -> Void
+    @State private var hovered = false
+    @Environment(\.isEnabled) private var enabled
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: Theme.Space.hair) {
+            VStack(spacing: Theme.Space.tight) {
                 Image(systemName: symbol)
-                    .font(Theme.Font.label)
-                    .frame(height: 14)
+                    .font(.system(size: 14))
+                    .foregroundStyle(active ? Color.accentColor : Color.primary)
+                    .frame(height: 16)
                 Text(title)
                     .font(Theme.Font.caption)
+                    .foregroundStyle(active ? Color.accentColor : Color.secondary)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.85)
             }
-            .foregroundStyle(active ? Color.accentColor : Color.primary)
-            // One width for every tile, so a phone with two actions does not get two wide slabs.
-            .frame(width: 42)
+            // Equal columns across the card, whatever the names' lengths.
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Theme.Space.tight)
+            .background(.primary.opacity(hovered && enabled ? 0.08 : 0),
+                        in: RoundedRectangle(cornerRadius: Theme.Radius.small + Theme.Space.hair, style: .continuous))
             .contentShape(Rectangle())
         }
-        .buttonBorderShape(.roundedRectangle(radius: Theme.Radius.small + Theme.Space.hair))
-        .controlSize(.small)
-        .secondaryAction()
+        .buttonStyle(.plain)
+        .opacity(enabled ? 1 : 0.4)
+        .onHover { hovered = $0 }
         .help(help)
         .accessibilityLabel(help)
     }

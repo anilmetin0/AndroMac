@@ -286,12 +286,12 @@ private struct DeviceCard: View {
         return device.paused ? .secondary.opacity(0.5) : .orange
     }
 
-    /// One row of labelled tiles: icons alone left three bells side by side (ringer, ring, test)
-    /// and no way to tell them apart without hovering.
+    /// One row of labelled tiles in equal columns: icons alone left three bells side by side
+    /// (ringer, ring, test) and no way to tell them apart without hovering.
     private var actions: some View {
-        HStack(spacing: Theme.Space.tight) {
+        HStack(spacing: 0) {
             if live?.caps.contains("find_phone") == true {
-                ActionTile(symbol: "bell.and.waves.left.and.right", title: String(localized: "Ring"),
+                ActionTile(symbol: "bell", title: String(localized: "Ring"),
                            help: String(localized: "Ring this phone")) {
                     Task { await Server.shared.send(["t": "find_phone"], to: device.id) }
                 }
@@ -299,7 +299,7 @@ private struct DeviceCard: View {
             // Proves the whole notification chain in one click: the phone posts a notification to
             // itself, its listener picks it up and it comes back here.
             if live?.caps.contains("system") == true {
-                ActionTile(symbol: "bell.badge", title: String(localized: "Test"),
+                ActionTile(symbol: "app.badge", title: String(localized: "Test"),
                            help: String(localized: "Send a test notification from this phone")) {
                     Task {
                         await Server.shared.send(
@@ -315,11 +315,9 @@ private struct DeviceCard: View {
                 }
             }
             mirrorButton
-            Spacer(minLength: 0)
             ActionTile(symbol: "ellipsis", title: String(localized: "More"),
                        help: String(localized: "More")) { PanelMenu.show(moreItems) }
         }
-        .glassGroup(spacing: Theme.Space.tight)
     }
 
     private var mirrorButton: some View {
