@@ -15,7 +15,7 @@
   <meta property="og:title" content="AndroMac: Android notifications, SMS and files on your Mac">
   <meta property="og:description" content="Notifications, SMS, clipboard, files, calls and screen mirroring from your Android phone, on your Mac over Wi-Fi. Free and open source.">
   <meta property="og:url" content="https://anilmetin0.github.io/AndroMac/">
-  <meta property="og:image" content="https://anilmetin0.github.io/AndroMac/images/og.png?v=2">
+  <meta property="og:image" content="https://anilmetin0.github.io/AndroMac/images/og.png?v=3">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="The AndroMac menu-bar panel on a Mac next to the AndroMac app on an Android phone.">
@@ -28,12 +28,12 @@
   <link rel="icon" href="images/icon.png" sizes="256x256" type="image/png">
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
   <link rel="preload" href="fonts/schibsted-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="images/macos-panel-640.webp?v=3" as="image" type="image/webp" imagesrcset="images/macos-panel-320.webp?v=3 320w, images/macos-panel-640.webp?v=3 640w" imagesizes="(max-width: 600px) 46vw, 320px" fetchpriority="high">
+  <link rel="preload" href="images/macos-panel-640.webp?v=4" as="image" type="image/webp" imagesrcset="images/macos-panel-320.webp?v=4 320w, images/macos-panel-640.webp?v=4 640w" imagesizes="(max-width: 600px) 46vw, 320px" fetchpriority="high">
   <link rel="stylesheet" href="site.css">
   <script>try{const t=localStorage.getItem("theme");document.documentElement.dataset.theme=t==="dark"||t==="light"?t:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch{}</script>
   <script>if("IntersectionObserver"in window&&!matchMedia("(prefers-reduced-motion: reduce)").matches){const r=document.documentElement;r.classList.add("rv");addEventListener("load",()=>{if(!r.dataset.revealReady)r.classList.remove("rv")})}</script>
   <script src="site.js" defer></script>
-  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "AndroMac", "url": "https://anilmetin0.github.io/AndroMac/", "description": "Free, open-source app that brings your Android phone's notifications, SMS, clipboard, files, calls and screen to your Mac over Wi-Fi. No account, no cloud.", "applicationCategory": "UtilitiesApplication", "operatingSystem": "macOS 14 or later, Android 10 or later", "softwareVersion": "1.6.0", "license": "https://opensource.org/licenses/MIT", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "downloadUrl": "https://github.com/anilmetin0/AndroMac/releases/latest", "codeRepository": "https://github.com/anilmetin0/AndroMac", "inLanguage": "en", "image": "https://anilmetin0.github.io/AndroMac/images/og.png?v=2", "author": {"@type": "Person", "name": "anilmetin0", "url": "https://github.com/anilmetin0"}}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "AndroMac", "url": "https://anilmetin0.github.io/AndroMac/", "description": "Free, open-source app that brings your Android phone's notifications, SMS, clipboard, files, calls and screen to your Mac over Wi-Fi. No account, no cloud.", "applicationCategory": "UtilitiesApplication", "operatingSystem": "macOS 14 or later, Android 10 or later", "softwareVersion": "1.6.0", "license": "https://opensource.org/licenses/MIT", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "downloadUrl": "https://github.com/anilmetin0/AndroMac/releases/latest", "codeRepository": "https://github.com/anilmetin0/AndroMac", "inLanguage": "en", "image": "https://anilmetin0.github.io/AndroMac/images/og.png?v=3", "author": {"@type": "Person", "name": "anilmetin0", "url": "https://github.com/anilmetin0"}}</script>
   <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "inLanguage": "en", "mainEntity": [{"@type": "Question", "name": "Is AndroMac free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Both apps are free and open source under the MIT License, with no account, no ads and no cloud service. The phone and the Mac talk to each other directly on your Wi-Fi."}}, {"@type": "Question", "name": "How do I install it?", "acceptedAnswer": {"@type": "Answer", "text": "On the Mac, paste the four Homebrew lines into Terminal. Without Homebrew, open the DMG, drag AndroMac to Applications and run the xattr line. On the phone, download the APK and allow installs from your browser when Android asks. Then open AndroMac on both and pair them."}}, {"@type": "Question", "name": "macOS says AndroMac is damaged or can't be opened", "acceptedAnswer": {"@type": "Answer", "text": "The app is signed with its own certificate and is not notarized, so macOS blocks the first launch. Run this once in Terminal: xattr -dr com.apple.quarantine /Applications/AndroMac.app Or open the app, let macOS refuse it, then press Open Anyway in System Settings → Privacy & Security."}}, {"@type": "Question", "name": "How do updates work?", "acceptedAnswer": {"@type": "Answer", "text": "Both apps check once a day and can install what they find. Settings → Updates on either side has the check switch, Install updates automatically and Nightly builds. If Homebrew installed the Mac app, brew upgrade --cask andromac also moves it to the new version."}}, {"@type": "Question", "name": "What does screen mirroring need?", "acceptedAnswer": {"@type": "Answer", "text": "Wireless debugging on the phone. Tap Build number seven times to unlock Developer options, then turn on Wireless debugging. A USB cable with USB debugging on works too. The first time, press the mirror button in the Mac panel and type the code from Pair device with pairing code on the phone. Turn Wireless debugging off when you are done."}}, {"@type": "Question", "name": "How do I remove AndroMac?", "acceptedAnswer": {"@type": "Answer", "text": "On the Mac, run brew uninstall --cask andromac, or drag the app to the Trash if you installed it from the DMG. On the phone, uninstall it like any other app."}}]}</script>
 </head>
 <body>
@@ -67,8 +67,8 @@
       </div>
       <div class="stage">
         <picture>
-          <source type="image/webp" srcset="images/macos-panel-320.webp?v=3 320w, images/macos-panel-640.webp?v=3 640w" sizes="(max-width: 600px) 46vw, 320px">
-          <img class="panel" src="images/macos-panel.png" width="640" height="1090" fetchpriority="high" alt="AndroMac menu-bar panel on the Mac: a Pixel 9 at 78% and charging, a song playing, the clipboard, and recent phone notifications including a verification code with a copy button.">
+          <source type="image/webp" srcset="images/macos-panel-320.webp?v=4 320w, images/macos-panel-640.webp?v=4 640w" sizes="(max-width: 600px) 46vw, 320px">
+          <img class="panel" src="images/macos-panel.png" width="640" height="1060" fetchpriority="high" alt="AndroMac menu-bar panel on the Mac: a Pixel 9 at 78% and charging, a song playing, the clipboard, and recent phone notifications including a verification code with a copy button.">
         </picture>
         <picture>
           <source type="image/webp" srcset="images/android-home-270.webp?v=3 270w, images/android-home-540.webp?v=3 540w, images/android-home-1080.webp?v=3 1080w" sizes="(max-width: 600px) 36vw, 250px">
@@ -76,7 +76,7 @@
         </picture>
         <div class="banner" aria-hidden="true">
           <span class="app"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 4C6.5 4 2 7.6 2 12c0 2.2 1.1 4.2 3 5.6L4 21l4.2-2.1c1.2.4 2.5.6 3.8.6 5.5 0 10-3.6 10-8S17.5 4 12 4z"/></svg></span>
-          <span><span class="meta"><b>Messages</b><span>now</span></span><b>Bank</b><br>Your verification code is 481902</span>
+          <span><span class="meta"><b>Messages</b><span>now</span></span><b>Bank</b><br>Your verification code is 123456</span>
           <span class="code">Copy code</span>
         </div>
       </div>
