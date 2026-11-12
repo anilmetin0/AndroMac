@@ -7,7 +7,7 @@ The `## <version>` section matching the `VERSION` file is the notes of that stab
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Nightly builds list their commits instead.
 
-## Unreleased
+## 1.9.0 - 2026-11-12
 
 ### Changed
 
