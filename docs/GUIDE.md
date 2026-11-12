@@ -96,7 +96,8 @@ Help → **Setup guide**.
 ### Updates
 
 Both apps check for updates once a day and can install them on their own. **Settings → Updates**
-on either side has the check switch, **Install updates automatically** and **Nightly builds**. The
+on either side has the check switch, **Install updates automatically** and **Nightly builds**. Moving
+**Nightly builds** on one side moves it on the other while they are connected. The
 Mac also has **Check now**. On the phone one button checks, downloads or installs, depending on
 what is pending. A new version is offered with **Install now**, **Later** and **Skip this
 version**.

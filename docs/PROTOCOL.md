@@ -213,6 +213,14 @@ if the switch was never changed) and `"connect":true` after a tap on Connect (§
 The auto-connect switch and when it last changed (§3). The receiver keeps the newer one, and off
 when neither is newer.
 
+### `update_channel`, bidirectional
+```json
+{"t":"update_channel","nightly":true}
+```
+Sent when the user moves the **Nightly builds** switch. The receiver sets its own switch to match
+and checks that channel; it does not answer. Nothing is sent at connect, so a switch moved while
+the link was down stays as it is on the other side.
+
 ### `battery`, Android → macOS
 ```json
 {"t":"battery","level":72,"charging":true,"status":"charging","temp":29.4,"ts":1750000000000}

@@ -9,6 +9,11 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ## Unreleased
 
+### Değişenler
+
+- **Nightly sürümler iki tarafta birden.** Telefonda ya da Mac'te **Nightly sürümler**'i açıp
+  kapatmak, bağlıyken diğerindeki anahtarı da değiştiriyor.
+
 ### Düzeltilenler
 
 - AndroMac, Sistem Ayarları'ndan açılana kadar Finder'ın Paylaş menüsünde görünmüyordu. Mac

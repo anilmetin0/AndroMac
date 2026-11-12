@@ -9,6 +9,11 @@ raised. Nightly builds list their commits instead.
 
 ## Unreleased
 
+### Changed
+
+- **Nightly builds on both sides.** Turning **Nightly builds** on or off on the phone or the Mac
+  moves the switch on the other one too, while they are connected.
+
 ### Fixed
 
 - AndroMac was missing from Finder's Share menu until it was switched on in System Settings.

@@ -21,6 +21,8 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import dev.andromac.R
+import dev.andromac.core.Link
+import dev.andromac.core.Protocol
 import dev.andromac.core.Store
 import dev.andromac.core.Version
 import dev.andromac.feature.UpdateCheck
@@ -57,6 +59,8 @@ class UpdateSettingsActivity : Activity() {
         bindSwitchRow(R.id.rowBeta, R.id.swBeta, betaUpdates) {
             betaUpdates = it
             forgetFoundUpdate(store)
+            // One channel on both sides: the Mac moves its own switch (PROTOCOL §5).
+            Link.send(Protocol.updateChannel(it))
             // Turning Beta on asks the beta channel at once: the switch is the consent. Off, only
             // with the check on; stable never offers a lower build than the one running, so
             // switching back is never a downgrade. A check still running for the old channel
@@ -267,6 +271,17 @@ fun Activity.newerRelease(store: Store): UpdateCheck.Release? {
 private fun forgetFoundUpdate(store: Store) {
     lastFound = null
     store.updateFound = null
+}
+
+/**
+ * The Mac's Nightly builds switch moved (PROTOCOL §5): this side follows the same channel. The
+ * next app open checks it, whenever the last check was. Main thread only.
+ */
+fun Context.followUpdateChannel(nightly: Boolean, store: Store) {
+    if (betaUpdates == nightly) return
+    betaUpdates = nightly
+    forgetFoundUpdate(store)
+    store.updateLastCheck = 0
 }
 
 private var lastUpdateError: String? = null

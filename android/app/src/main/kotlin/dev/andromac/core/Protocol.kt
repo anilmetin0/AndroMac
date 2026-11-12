@@ -24,6 +24,8 @@ object Protocol {
     const val T_PONG = "pong"
     /** The auto-connect switch, one setting on both sides (PROTOCOL §3). */
     const val T_AUTO_CONNECT = "auto_connect"
+    /** The Nightly builds switch, moved on the other side (PROTOCOL §5). */
+    const val T_UPDATE_CHANNEL = "update_channel"
     const val T_FIND_PHONE = "find_phone"
     const val T_MEDIA = "media"
     const val T_MEDIA_CONTROL = "media_control"
@@ -87,6 +89,10 @@ object Protocol {
         .put("t", T_AUTO_CONNECT)
         .put("on", on)
         .put("ts", changed)
+
+    fun updateChannel(nightly: Boolean) = JSONObject()
+        .put("t", T_UPDATE_CHANNEL)
+        .put("nightly", nightly)
 
     fun battery(level: Int, charging: Boolean, status: String, tempC: Double?) = JSONObject()
         .put("t", T_BATTERY)

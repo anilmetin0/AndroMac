@@ -41,6 +41,7 @@ import dev.andromac.feature.SmsBridge
 import dev.andromac.feature.SystemBridge
 import dev.andromac.ui.ClipHelperActivity
 import dev.andromac.ui.MainActivity
+import dev.andromac.ui.followUpdateChannel
 import org.json.JSONObject
 import java.io.IOException
 import java.net.InetSocketAddress
@@ -569,6 +570,9 @@ class LinkService : Service() {
             // The Mac's switch changed, or it is newer than ours: it is one setting on both sides.
             // Off from a Mac that refused us, the loop parks once this link ends.
             Protocol.T_AUTO_CONNECT -> (msg.opt("on") as? Boolean)?.let { store.syncAutoConnect(it, msg.optLong("ts")) }
+            Protocol.T_UPDATE_CHANNEL -> (msg.opt("nightly") as? Boolean)?.let {
+                mainExecutor.execute { followUpdateChannel(it, store) }
+            }
             Protocol.T_HELLO -> {
                 // The Mac let us in: this is a working link, so the next drop starts the ladder over.
                 macAsleep = false

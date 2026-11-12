@@ -85,6 +85,17 @@ final class UpdateCheck: ObservableObject {
     /// Asked once per launch, whatever else opens the panel afterwards.
     private var offered = false
 
+    /// Counts the times a phone moved the channel, so an open Settings page redraws its switch.
+    @Published private(set) var followedChannel = 0
+
+    /// A phone's Nightly builds switch moved (PROTOCOL §5): this Mac follows the same channel.
+    func follow(nightly: Bool) {
+        guard Store.shared.updateBeta != nightly else { return }
+        Store.shared.updateBeta = nightly
+        followedChannel += 1
+        channelChanged()
+    }
+
     /// The Beta switch moved. On, the beta channel is asked at once, the switch being the
     /// consent: a newer beta is downloaded to install when idle, or offered in the update window.
     /// Off, stable answers again, and never with a lower build than the one running (`isNewer`),

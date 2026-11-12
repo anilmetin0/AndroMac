@@ -650,6 +650,10 @@ actor Server {
         case "auto_connect":
             await syncAutoConnect(msg, from: deviceID)
 
+        case "update_channel":
+            guard let nightly = msg["nightly"] as? Bool else { break }
+            await MainActor.run { UpdateCheck.shared.follow(nightly: nightly) }
+
         case "battery":
             guard Store.shared.syncBattery, let level = msg["level"] as? Int else { break }
             let b = AppState.Battery(

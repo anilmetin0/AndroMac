@@ -253,9 +253,14 @@ struct SettingsList: View {
             }
             Toggle("Nightly builds", isOn: $updateBeta)
                 .onChange(of: updateBeta) { _, v in
+                    // Already stored: the phone moved its switch and this one followed.
+                    guard v != Store.shared.updateBeta else { return }
                     Store.shared.updateBeta = v
                     updates.channelChanged()
+                    // One channel on both sides: the phones move their own switch (PROTOCOL §5).
+                    Task { await Server.shared.send(["t": "update_channel", "nightly": v]) }
                 }
+                .onReceive(updates.$followedChannel) { _ in updateBeta = Store.shared.updateBeta }
             LabeledContent("Status", value: updateStatus)
             HStack {
                 Button("Check now") { Task { await updates.checkNow(manual: true) } }

@@ -95,7 +95,8 @@ Ayarlar → Yardım → **Kurulum rehberi**.
 
 İki uygulama da günde bir kez güncelleme denetler ve bulduğunu kendisi kurabilir. İki tarafta da
 **Ayarlar → Güncellemeler**'de denetim anahtarı, **Güncellemeleri otomatik kur** ve **Nightly
-sürümler** var. Mac'te ayrıca **Şimdi denetle** düğmesi var. Telefonda tek bir düğme, bekleyen işe
+sürümler** var. **Nightly sürümler**'i bir tarafta değiştirmek, bağlıyken diğer taraftakini de
+değiştirir. Mac'te ayrıca **Şimdi denetle** düğmesi var. Telefonda tek bir düğme, bekleyen işe
 göre denetler, indirir ya da kurar. Yeni sürüm **Şimdi kur**, **Sonra** ve **Bu sürümü atla**
 seçenekleriyle önerilir.
 
