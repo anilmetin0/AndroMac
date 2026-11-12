@@ -115,7 +115,6 @@
 "Done" = "Done";
 "Downloading AndroMac %@… %lld%%" = "Downloading AndroMac %@… %lld%%";
 "Downloading… %lld%%" = "Downloading… %lld%%";
-"Drop files to send to %@" = "Drop files to send to %@";
 "End call" = "End call";
 "Erases everything AndroMac keeps on this Mac, then restarts it." = "Erases everything AndroMac keeps on this Mac, then restarts it.";
 "Erases the paired phones, the notification and clipboard histories, their pictures, the app icons, all settings and this Mac's identity key. Every phone has to pair again." = "Erases the paired phones, the notification and clipboard histories, their pictures, the app icons, all settings and this Mac's identity key. Every phone has to pair again.";

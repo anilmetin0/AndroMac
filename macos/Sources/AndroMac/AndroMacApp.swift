@@ -126,7 +126,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // A demo instance fills the UI from DemoMode and never touches the network (see DemoMode).
         guard !DemoMode.isOn else {
             DemoMode.seed()
-            QuickSend.shared.start()
             DispatchQueue.main.async { self.installStatusItemMenu() }
             // One runloop turn later: the scenes exist by then, so the demo windows come up on top.
             DispatchQueue.main.async { DemoMode.openWindows() }
@@ -134,7 +133,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         Task { await Server.shared.start() }
-        QuickSend.shared.start()
         ShareExtension.enable()
         BluetoothCalls.shared.bootstrap()
         // Every launch offers what it finds — once per release, and never for one that was skipped.
@@ -157,7 +155,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let click = NSClickGestureRecognizer(target: self, action: #selector(showStatusMenu(_:)))
         click.buttonMask = 0x2
         button.addGestureRecognizer(click)
-        QuickSend.shared.attach(to: button)
+        let drop = FileDropView(frame: button.bounds)
+        drop.autoresizingMask = [.width, .height]
+        button.addSubview(drop)
     }
 
     @MainActor
@@ -191,7 +191,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        QuickSend.shared.stop()
         BluetoothCalls.shared.disconnect()
         NotificationHistory.shared.flush()
         ClipboardHistory.shared.flush()

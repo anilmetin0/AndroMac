@@ -298,18 +298,6 @@ enum DemoMode {
                 ? NSApp.windows.first { $0.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true }
                 : nil
             (prompt ?? main)?.makeKeyAndOrderFront(nil)
-            if ProcessInfo.processInfo.environment["ANDROMAC_DEMO_QUICKSEND"] == "1" {
-                QuickSend.shared.show()
-                // A keyable fixture for capturing the same view with native window screenshot tools.
-                // The actual drop panel stays nonactivating so Finder keeps ownership of a drag.
-                let preview = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 320, height: 96),
-                                       styleMask: [.titled], backing: .buffered, defer: false)
-                preview.title = String(localized: "Send to Android")
-                preview.contentView = NSHostingView(rootView: QuickSendLabel().environmentObject(state))
-                preview.center()
-                preview.makeKeyAndOrderFront(nil)
-                held.append(preview)
-            }
             if let path = ProcessInfo.processInfo.environment["ANDROMAC_DEMO_SHARE"] {
                 FileSending.share([URL(fileURLWithPath: path)])
             }

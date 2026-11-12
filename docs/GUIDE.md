@@ -186,9 +186,8 @@ In Finder, select up to 50 files, right-click and choose **Share → AndroMac**.
 in AndroMac and click **Send**. If the share target is hidden, enable AndroMac under
 **System Settings → General → Login Items & Extensions → Sharing** (the location varies by macOS version).
 
-For a quick send, drag files to the top edge of the screen or onto AndroMac's menu bar icon.
-Drop them on **Send to Android**. The target names the phone currently selected in the panel;
-dropping sends immediately to that phone. With no connected phone it cannot accept a drop.
+For a quick send, drop files on AndroMac's menu bar icon. They go at once to the phone
+selected in the panel. With no connected phone the icon does not accept a drop.
 The existing panel drop and file picker also work. Folders and files larger than 4 GiB cannot be sent.
 The phone still asks before receiving unless its **Accept files automatically** setting is on.
 

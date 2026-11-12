@@ -184,9 +184,8 @@ Finder'da en fazla 50 dosya seç, sağ tıkla ve **Paylaş → AndroMac**'i seç
 seçip **Gönder**'e bas. Paylaşım hedefi görünmüyorsa **Sistem Ayarları → Genel → Giriş Öğeleri ve
 Uzantılar → Paylaşma** bölümünden AndroMac'i etkinleştir (konum macOS sürümüne göre değişebilir).
 
-Hızlı göndermek için dosyaları ekranın üst kenarına veya AndroMac'in menü çubuğu simgesine sürükle.
-**Android'e gönder** alanına bırak. Alan, panelde seçili telefonun adını gösterir; bırakınca gönderim
-başlar. Bağlı telefon yoksa dosya bırakılamaz. Mevcut panele bırakma ve dosya seçme yolları da
+Hızlı göndermek için dosyaları AndroMac'in menü çubuğu simgesine bırak. Dosyalar hemen panelde
+seçili telefona gider. Bağlı telefon yoksa simge dosya kabul etmez. Mevcut panele bırakma ve dosya seçme yolları da
 çalışır. Klasörler ve 4 GiB'dan büyük dosyalar gönderilemez. Telefonda **Dosyaları otomatik kabul
 et** açık değilse telefon almadan önce sorar.
 

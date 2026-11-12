@@ -11,6 +11,9 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ### Değişenler
 
+- **Hızlı gönderme yalnızca menü çubuğu simgesinde.** Dosyaları AndroMac'in menü çubuğu simgesine
+  bırakmak onları seçili telefona gönderiyor. Her dosya sürüklemesinde ekranın üstünde açılan
+  Android'e gönder alanı kaldırıldı.
 - **Nightly sürümler iki tarafta birden.** Telefonda ya da Mac'te **Nightly sürümler**'i açıp
   kapatmak, bağlıyken diğerindeki anahtarı da değiştiriyor.
 

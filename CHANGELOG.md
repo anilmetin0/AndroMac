@@ -11,6 +11,9 @@ raised. Nightly builds list their commits instead.
 
 ### Changed
 
+- **Quick send is the menu bar icon alone.** Dropping files on AndroMac's menu bar icon sends
+  them to the selected phone. The Send to Android target that came up at the top of the screen
+  during every file drag is gone.
 - **Nightly builds on both sides.** Turning **Nightly builds** on or off on the phone or the Mac
   moves the switch on the other one too, while they are connected.
 

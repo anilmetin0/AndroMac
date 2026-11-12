@@ -1,5 +1,4 @@
 import AppKit
-import Combine
 import SwiftUI
 
 /// All Mac entry points use the same destination and file validation rules.
@@ -177,13 +176,10 @@ private struct ShareFilesView: View {
     }
 }
 
-/// A native drop destination; unlike a SwiftUI label on MenuBarExtra it receives Finder drags.
+/// The drop destination over the menu bar icon; unlike a SwiftUI label on MenuBarExtra it
+/// receives Finder drags. Files dropped on it go to the phone selected in the panel.
 @MainActor
 final class FileDropView: NSView {
-    var onEnter: (() -> Void)?
-    var onExit: (() -> Void)?
-    var onDrop: (([URL]) -> Void)?
-
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         registerForDraggedTypes([.fileURL])
@@ -196,15 +192,12 @@ final class FileDropView: NSView {
     override func rightMouseDown(with event: NSEvent) { superview?.rightMouseDown(with: event) }
 
     override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation {
-        onEnter?()
-        return FileSending.destination == nil ? [] : .copy
+        FileSending.destination == nil ? [] : .copy
     }
 
     override func draggingUpdated(_ sender: any NSDraggingInfo) -> NSDragOperation {
         FileSending.destination == nil ? [] : .copy
     }
-
-    override func draggingExited(_ sender: (any NSDraggingInfo)?) { onExit?() }
 
     override func prepareForDragOperation(_ sender: any NSDraggingInfo) -> Bool {
         FileSending.destination != nil
@@ -215,141 +208,6 @@ final class FileDropView: NSView {
             options: [.urlReadingFileURLsOnly: true]) as? [URL], !urls.isEmpty,
               let peer = FileSending.destination?.id else { return false }
         // The recipient is captured at the drop, before any asynchronous UI update.
-        guard FileSending.send(urls, to: peer) else { return false }
-        onDrop?(urls)
-        return true
-    }
-}
-
-/// Appears only during a file drag at the top edge. No idle timer, accessibility grant or polling.
-/// The drag monitors exist only while a phone that accepts files is connected: otherwise every
-/// window move and text selection on the Mac would wake AndroMac for nothing.
-@MainActor
-final class QuickSend {
-    static let shared = QuickSend()
-    private var globalMonitor: Any?
-    private var localMonitor: Any?
-    private var devices: AnyCancellable?
-    private var panel: NSPanel?
-    private var dismissal: DispatchWorkItem?
-    /// The drag pasteboard keeps the last drag's files after it ends; only a newer drag counts.
-    private var seenDrag = 0
-
-    func start() {
-        guard devices == nil else { return }
-        devices = AppState.shared.$devices
-            .map { $0.contains { $0.caps.contains("file") } }
-            .removeDuplicates()
-            .sink { [weak self] canSend in
-                MainActor.assumeIsolated { canSend ? self?.watch() : self?.unwatch() }
-            }
-    }
-
-    private func watch() {
-        guard globalMonitor == nil else { return }
-        seenDrag = NSPasteboard(name: .drag).changeCount
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDragged, .leftMouseUp]) { event in
-            MainActor.assumeIsolated { self.track(event) }
-        }
-        localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDragged, .leftMouseUp]) { event in
-            MainActor.assumeIsolated { self.track(event) }
-            return event
-        }
-    }
-
-    private func unwatch() {
-        if let globalMonitor { NSEvent.removeMonitor(globalMonitor) }
-        if let localMonitor { NSEvent.removeMonitor(localMonitor) }
-        globalMonitor = nil; localMonitor = nil
-        dismissal?.cancel()
-        hide()
-    }
-
-    func attach(to button: NSStatusBarButton) {
-        let drop = FileDropView(frame: button.bounds)
-        drop.autoresizingMask = [.width, .height]
-        drop.onEnter = { [weak self] in self?.show() }
-        drop.onDrop = { [weak self] _ in self?.hide() }
-        button.addSubview(drop)
-    }
-
-    private func track(_ event: NSEvent) {
-        if event.type == .leftMouseUp {
-            seenDrag = NSPasteboard(name: .drag).changeCount
-            // Every click on the Mac ends here; only a visible target has anything to dismiss.
-            guard panel?.isVisible == true else { return }
-            dismissal?.cancel()
-            let work = DispatchWorkItem { [weak self] in self?.hide() }
-            dismissal = work
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: work)
-            return
-        }
-        let point = NSEvent.mouseLocation
-        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }),
-              point.y >= screen.frame.maxY - 40 else { return }
-        // A drag fires this at the display's refresh rate; once the target shows on this screen,
-        // there is no pasteboard to ask and nothing to move.
-        if let panel, panel.isVisible, panel.screen == screen, dismissal?.isCancelled ?? true { return }
-        let board = NSPasteboard(name: .drag)
-        guard board.changeCount != seenDrag,
-              board.canReadObject(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) else { return }
-        show(on: screen)
-    }
-
-    func show(on screen: NSScreen? = nil) {
-        dismissal?.cancel()
-        if panel == nil {
-            let p = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 320, height: 96),
-                            styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
-            p.level = .statusBar
-            p.isOpaque = false
-            p.backgroundColor = .clear
-            p.hasShadow = true
-            p.hidesOnDeactivate = false
-            p.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-            let drop = FileDropView(frame: NSRect(x: 0, y: 0, width: 320, height: 96))
-            let hosted = NSHostingView(rootView: QuickSendLabel().environmentObject(AppState.shared))
-            hosted.frame = drop.bounds
-            hosted.autoresizingMask = [.width, .height]
-            drop.addSubview(hosted)
-            drop.onDrop = { [weak self] _ in self?.hide() }
-            p.contentView = drop
-            panel = p
-        }
-        guard let panel, let screen = screen ?? NSScreen.main else { return }
-        panel.setFrameOrigin(NSPoint(x: screen.visibleFrame.maxX - panel.frame.width - 16,
-                                     y: screen.visibleFrame.maxY - panel.frame.height - 12))
-        panel.orderFrontRegardless()
-    }
-
-    func hide() { panel?.orderOut(nil) }
-
-    func stop() {
-        devices = nil
-        unwatch()
-    }
-}
-
-struct QuickSendLabel: View {
-    @EnvironmentObject private var state: AppState
-
-    var body: some View {
-        HStack(spacing: Theme.Space.medium) {
-            Image(systemName: "arrow.up.doc").font(.system(size: 24))
-                .foregroundStyle(FileSending.destination == nil ? Color.secondary : Color.accentColor)
-            VStack(alignment: .leading, spacing: Theme.Space.tight) {
-                Text("Send to Android").font(Theme.Font.title)
-                if let phone = state.focusedDevice, phone.caps.contains("file") {
-                    Text("Drop files to send to \(phone.name)").font(Theme.Font.body)
-                } else {
-                    Text("Connect your phone to send files").font(Theme.Font.body)
-                }
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(Theme.Space.large)
-        .frame(width: 320, height: 96)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: Theme.Radius.large))
-        .accessibilityElement(children: .combine)
+        return FileSending.send(urls, to: peer)
     }
 }

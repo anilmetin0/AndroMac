@@ -296,7 +296,6 @@
 "Connect your phone to send files" = "Dosya göndermek için telefonunu bağla";
 "Could not connect calls. Pair your phone in Bluetooth settings and try again." = "Aramalar bağlanamadı. Telefonunu Bluetooth ayarlarında eşleştirip tekrar dene.";
 "Could not send files" = "Dosyalar gönderilemedi";
-"Drop files to send to %@" = "%@ cihazına göndermek için dosyaları bırak";
 "End call" = "Aramayı bitir";
 "Incoming call" = "Gelen arama";
 "macOS could not open Bluetooth call audio. Continue the call on your phone." = "macOS Bluetooth arama sesini açamadı. Görüşmeye telefonundan devam et.";

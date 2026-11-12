@@ -37,7 +37,7 @@ phone's screen in a window.
 - Clipboard in both directions, with a searchable history on the Mac
 - Notifications in Notification Center with the app's icon and any picture they carry, actions, inline reply and a setting per app
 - Media controls, ringer and volume, and a button that makes a lost phone ring
-- Files in both directions, with Finder's Share menu, a drop target at the Mac's top edge, and the phone's share sheet
+- Files in both directions, with Finder's Share menu, dropping them on the Mac's menu bar icon, and the phone's share sheet
 - SMS conversations on the Mac: read them and reply or start a new text through the phone
 - Bluetooth call controls, with one-step Bluetooth pairing from the Mac; call audio on the Mac depends on system support
 - Screen mirroring with mouse, keyboard and sound, through the bundled [scrcpy](https://github.com/Genymobile/scrcpy)
