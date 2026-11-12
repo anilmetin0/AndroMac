@@ -73,7 +73,7 @@ private struct HistoryRow: View {
                         .textSelection(.enabled)
                 }
                 if !entry.buttons.isEmpty {
-                    NotificationActions(entry: entry)
+                    NotificationActions(entry: entry, inline: true)
                         .padding(.top, Theme.Space.tight)
                 }
             }

@@ -88,6 +88,7 @@ private struct ClipboardRow: View {
                     .font(Theme.Font.label)
                     .foregroundStyle(justCopied ? Color.green : Color.secondary)
                     .accessibilityHidden(true)
+                    .contentTransition(.symbolEffect(.replace))
                     .animation(.easeOut(duration: 0.18), value: justCopied)
             }
             .contentShape(Rectangle())

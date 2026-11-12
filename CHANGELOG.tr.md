@@ -16,6 +16,8 @@ derlemeler bunun yerine commit'lerini listeler.
   istersen dosya ayarlarından kapat.
 - Paneldeki eylemler (Zil, Test, Mesajlar, Ekran, Diğer) çerçevesiz, eşit sütunlarda ve daha
   sade simgelerle.
+- Bildirim eylemleri geçmiş penceresinde yan yana duruyor; simgeler ve pil yüzdesi sıçramak
+  yerine kısa bir geçişle değişiyor (oynat ve duraklat, kopyalandı, gönderildi).
 - **Hızlı gönderme yalnızca menü çubuğu simgesinde.** Dosyaları AndroMac'in menü çubuğu simgesine
   bırakmak onları seçili telefona gönderiyor. Her dosya sürüklemesinde ekranın üstünde açılan
   Android'e gönder alanı kaldırıldı.

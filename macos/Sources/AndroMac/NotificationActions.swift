@@ -4,6 +4,8 @@ import SwiftUI
 /// The same phone actions in history and the expanded menu bar card.
 struct NotificationActions: View {
     let entry: NotificationHistory.Entry
+    /// Side by side, for the history window's width; the panel's narrow card stacks them.
+    var inline = false
     @ObservedObject private var history = NotificationHistory.shared
     @ObservedObject private var state = AppState.shared
     @State private var replying: NotificationAction?
@@ -23,7 +25,9 @@ struct NotificationActions: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        let layout = inline ? AnyLayout(HStackLayout(spacing: Theme.Space.tight))
+                            : AnyLayout(VStackLayout(alignment: .leading, spacing: Theme.Space.tight))
+        return layout {
             ForEach(entry.buttons, id: \.index) { action in
                 Button {
                     if action.reply {
@@ -34,7 +38,9 @@ struct NotificationActions: View {
                     }
                 } label: {
                     HStack(spacing: Theme.Space.tight) {
-                        if sentIndex == action.index { Image(systemName: "checkmark") }
+                        if sentIndex == action.index {
+                            Image(systemName: "checkmark").transition(.scale.combined(with: .opacity))
+                        }
                         Text(verbatim: action.title).lineLimit(1)
                         if action.reply { Image(systemName: "arrowshape.turn.up.left") }
                     }
@@ -69,7 +75,8 @@ struct NotificationActions: View {
             }
         }
         .font(Theme.Font.label)
-        .frame(height: Self.height(entry), alignment: .topLeading)
+        .animation(.snappy(duration: 0.2), value: sentIndex)
+        .frame(height: inline ? 24 : Self.height(entry), alignment: .topLeading)
         .alert("Could not send the action. Reconnect your phone and try again.", isPresented: $failed) {
             Button("OK", role: .cancel) {}
         }

@@ -36,6 +36,7 @@ struct IconButton: View {
                 .font(Theme.Font.label)
                 .foregroundStyle(active ? Color.accentColor : Color.primary)
                 .frame(width: 16, height: 16)
+                .contentTransition(.symbolEffect(.replace))
         }
         .glassIcon()
         .help(label)
@@ -62,6 +63,7 @@ struct ActionTile: View {
                     .font(.system(size: 14))
                     .foregroundStyle(active ? Color.accentColor : Color.primary)
                     .frame(height: 16)
+                    .contentTransition(.symbolEffect(.replace))
                 Text(title)
                     .font(Theme.Font.caption)
                     .foregroundStyle(active ? Color.accentColor : Color.secondary)
@@ -77,6 +79,7 @@ struct ActionTile: View {
         .buttonStyle(.plain)
         .opacity(enabled ? 1 : 0.4)
         .onHover { hovered = $0 }
+        .animation(.easeOut(duration: 0.12), value: hovered)
         .help(help)
         .accessibilityLabel(help)
     }
@@ -415,6 +418,7 @@ struct NotificationRow: View {
         } label: {
             HStack(spacing: Theme.Space.tight) {
                 Image(systemName: copied == value ? "checkmark" : symbol)
+                    .contentTransition(.symbolEffect(.replace))
                 if monospaced { Text(verbatim: title).monospacedDigit() } else { Text(verbatim: title) }
             }
             .font(Theme.Font.label)
@@ -511,6 +515,7 @@ struct MediaRow: View {
                 .font(Theme.Font.body)
                 .foregroundStyle(.primary)
                 .frame(width: 22, height: 22)
+                .contentTransition(.symbolEffect(.replace))
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -533,6 +538,8 @@ struct BatteryLine: View {
                 .foregroundStyle(tint)
             Text("\(battery.level)%")
                 .font(Theme.Font.body.weight(.medium).monospacedDigit())
+                .contentTransition(.numericText(value: Double(battery.level)))
+                .animation(.snappy(duration: 0.3), value: battery.level)
             if battery.charging {
                 Image(systemName: "bolt.fill")
                     .font(Theme.Font.caption)
