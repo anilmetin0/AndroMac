@@ -168,7 +168,7 @@ connects only when you tap **Connect** on it, so after turning it back on at the
 | Media | Both ways | Title, artist and app of what is playing on the phone, with previous, play/pause and next on the Mac. |
 | Find my phone | Mac to phone | The phone rings at alarm volume and vibrates for up to 30 seconds. Found it, a second press, or the timeout stops it. |
 | Phone controls | Mac to phone | Ringer (ring, vibrate, silent) and media volume from the panel, plus a test notification. Silencing needs Do Not Disturb access on the phone. |
-| Files | Both ways | Share from the phone's share sheet, or drop files onto the Mac panel. The receiver is asked first, unless you turn on auto-accept. Files go to Downloads, are checked when they arrive, and are never opened for you. |
+| Files | Both ways | Share from the phone's share sheet, or drop files onto the Mac panel. Files are accepted without asking; turn auto-accept off to be asked first. Files go to Downloads, are checked when they arrive, and are never opened for you. |
 | Messages | Both ways | SMS conversations on the Messages page of the Mac's window (⌘⇧M, or the message button on the phone's card): the 50 most recent conversations, the last 200 texts of each, replies and new texts sent through the phone. SMS only, no MMS, RCS or chat apps. Off until you turn it on in the phone's Settings → Messages. Nothing is stored on the Mac. |
 | Several phones | Mac | More than one phone can be connected at once. The panel shows them as tabs. Each one can be disconnected on its own and has its own clipboard switch. Settings → Devices lists every phone with its IP address and when it was last seen, and is where you forget one. |
 | Several Macs | Phone | A phone can remember more than one Mac and switch between them in Settings → Connection. |
@@ -189,7 +189,7 @@ in AndroMac and click **Send**. If the share target is hidden, enable AndroMac u
 For a quick send, drop files on AndroMac's menu bar icon. They go at once to the phone
 selected in the panel. With no connected phone the icon does not accept a drop.
 The existing panel drop and file picker also work. Folders and files larger than 4 GiB cannot be sent.
-The phone still asks before receiving unless its **Accept files automatically** setting is on.
+The phone asks before receiving only when its **Accept files automatically** setting is off.
 
 ### Bluetooth calls
 
@@ -273,7 +273,7 @@ Settings → Help → About. Copy the whole string into bug reports.
 | Clipboard settings | Incoming: **Write to the clipboard**, **Show a notification**. Outgoing: **Never send sensitive content**. Plus **Send clipboard to Mac**. |
 | Connection help | Live diagnostics and common problems. Open it with the **ⓘ** button or **I can't connect**. |
 | Updates | See [Updates](#updates). |
-| File transfer | **Receive files from the Mac** and **Accept files automatically**. Files go to Downloads. To send, use any app's share sheet. |
+| File transfer | **Receive files from the Mac** and **Accept files automatically** (on by default). Files go to Downloads. To send, use any app's share sheet. |
 | Messages | Turns Messages on the Mac on or off (off by default) and asks for SMS access. Contacts access is optional and only puts names to numbers. |
 | Calls on your Mac | Asks for Nearby devices. Once it is allowed, the row opens Android's Bluetooth settings. See [Bluetooth calls](#bluetooth-calls). |
 | Setup guide | The first-launch setup again. See [First launch](#first-launch). |
@@ -302,7 +302,7 @@ toolbar (⌥⌘I) opens that page's settings beside the list.
 | Apps | Full, Title only or Off for every app on the phone. |
 | General | **Open at login**, **Show battery percentage in the menu bar**, and **Language** (System, English, Turkish; needs a restart). The app version, and **Show welcome again**. **Reset AndroMac…** erases the paired phones, both histories, every setting and this Mac's key, then restarts. Every phone has to pair again. |
 | Devices | This Mac's name, then every paired phone with its status, local IP address and when it was last seen, **Connect automatically** and **Forget**. **Battery and media** has the switches for the phone's battery and what is playing, the low-battery alert and its threshold (10, 15, 20 or 30 percent). A QR code for the releases page installs the APK on the phone. |
-| Files | **Receive files** and **Accept files automatically**. |
+| Files | **Receive files** and **Accept files automatically** (on by default). |
 | Calls | **Pair** for the connected phone, then the Bluetooth phone, **Bluetooth settings…**, **Refresh** and **Connect**. See [Bluetooth calls](#bluetooth-calls). |
 | Screen mirroring | Sound, phone screen off, stay awake, resolution limit. |
 | Permissions | Notifications, Local Network, Bluetooth, Microphone and Keychain access, each with a button to the right System Settings pane. |
@@ -341,7 +341,7 @@ What goes where:
   a password manager, is not sent.
 - Notification and clipboard history is stored encrypted, and only on the Mac. Forget all devices
   or reset AndroMac to delete it.
-- A file is saved only after the receiver accepts it or turns on auto-accept. It is checked when
+- A file is saved without asking while auto-accept is on, and only after the receiver accepts it when it is off. It is checked when
   it arrives and never opened automatically.
 
 The technical details are in [PROTOCOL.md](PROTOCOL.md). Report security problems privately as

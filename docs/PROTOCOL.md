@@ -559,7 +559,7 @@ Flow, sender S → receiver R:
 2. R validates before it asks the user: `size` ≤ 4 GiB and ≤ the free space on the target
    volume, otherwise it sends `file_reject` with `too_large` or `no_space`. If file transfer
    is switched off in Settings, the reason is `disabled`. Then R asks the user (showing name
-   and size), or accepts immediately when the user enabled **Accept files automatically**.
+   and size), or accepts immediately while **Accept files automatically** is on, which is the default.
    That toggle only ever applies to pinned peers, because they are the only devices that can
    reach this message. R answers `file_accept` or `file_reject` `declined`. Nothing is written
    to disk before `file_accept`, and a `file_chunk` for an id that was not accepted is ignored

@@ -166,7 +166,7 @@ tarafa hemen, değilken bir sonraki bağlantıda geçer. Kapalıyken telefon yal
 | Medya | İki yön | Telefonda çalanın başlığı, sanatçısı ve uygulaması; Mac'ten önceki, oynat/duraklat ve sonraki. |
 | Telefonu bul | Mac'ten telefona | Telefon en fazla 30 saniye alarm sesiyle çalar ve titrer. "Buldum", ikinci bir basış ya da süre dolması durdurur. |
 | Telefon denetimleri | Mac'ten telefona | Panelden zil modu (zil, titreşim, sessiz) ve medya ses düzeyi, bir de test bildirimi. Sessize almak telefonda Rahatsız Etmeyin erişimi ister. |
-| Dosyalar | İki yön | Telefonda paylaşım menüsünden, Mac'te dosyaları panele bırakarak. Otomatik kabulü açmadıysan alıcıya önce sorulur. Dosyalar İndirilenler'e iner, gelince denetlenir ve kendiliğinden açılmaz. |
+| Dosyalar | İki yön | Telefonda paylaşım menüsünden, Mac'te dosyaları panele bırakarak. Dosyalar sorulmadan kabul edilir; önce sorulsun istersen otomatik kabulü kapat. Dosyalar İndirilenler'e iner, gelince denetlenir ve kendiliğinden açılmaz. |
 | Mesajlar | İki yönlü | SMS konuşmaları Mac penceresinin Mesajlar sayfasında (⌘⇧M ya da telefon kartındaki mesaj düğmesi): en son 50 konuşma, her birinin son 200 mesajı, telefon üzerinden yanıt ve yeni mesaj. Yalnızca SMS; MMS, RCS ve sohbet uygulamaları yok. Telefonda Ayarlar → Mesajlar'dan açılana kadar kapalı. Mac'te hiçbir şey saklanmaz. |
 | Birden fazla telefon | Mac | Aynı anda birden fazla telefon bağlanabilir. Panel onları sekme olarak gösterir. Her birinin bağlantısı ayrı kesilebilir, her birinin kendi pano anahtarı var. Ayarlar → Cihazlar her telefonu IP adresi ve en son ne zaman görüldüğüyle listeler; unutma da oradan yapılır. |
 | Birden fazla Mac | Telefon | Telefon birden fazla Mac'i hatırlar, Ayarlar → Bağlantı'dan aralarında geçiş yapılır. |
@@ -186,8 +186,8 @@ Uzantılar → Paylaşma** bölümünden AndroMac'i etkinleştir (konum macOS s�
 
 Hızlı göndermek için dosyaları AndroMac'in menü çubuğu simgesine bırak. Dosyalar hemen panelde
 seçili telefona gider. Bağlı telefon yoksa simge dosya kabul etmez. Mevcut panele bırakma ve dosya seçme yolları da
-çalışır. Klasörler ve 4 GiB'dan büyük dosyalar gönderilemez. Telefonda **Dosyaları otomatik kabul
-et** açık değilse telefon almadan önce sorar.
+çalışır. Klasörler ve 4 GiB'dan büyük dosyalar gönderilemez. Telefon yalnızca **Dosyaları otomatik
+kabul et** kapalıysa almadan önce sorar.
 
 ### Bluetooth aramaları
 
@@ -272,7 +272,7 @@ Yardım → Hakkında'da durur. Hata bildirirken bu satırın tamamını kopyala
 | Pano ayarları | Gelen: **Panoya otomatik yaz**, **Bildirim göster**. Giden: **Hassas içeriği gönderme**. Bir de **Panoyu Mac'e gönder**. |
 | Bağlantı yardımı | Canlı tanı ve sık sorunlar. **ⓘ** düğmesinden ya da **Bağlanamıyorum**'dan açılır. |
 | Güncellemeler | Bkz. [Güncellemeler](#güncellemeler). |
-| Dosya aktarımı | **Mac'ten dosya al** ve **Dosyaları otomatik kabul et**. Dosyalar İndirilenler'e iner. Göndermek için herhangi bir uygulamanın paylaşım menüsünü kullan. |
+| Dosya aktarımı | **Mac'ten dosya al** ve **Dosyaları otomatik kabul et** (varsayılan açık). Dosyalar İndirilenler'e iner. Göndermek için herhangi bir uygulamanın paylaşım menüsünü kullan. |
 | Mesajlar | Mac'te mesajları açar ya da kapatır (varsayılan kapalı) ve SMS iznini ister. Kişiler izni isteğe bağlıdır, yalnızca numaraların yerine isim gösterir. |
 | Mac'te aramalar | Yakındaki cihazlar iznini ister. İzin verilince satır Android'in Bluetooth ayarlarını açar. Bkz. [Bluetooth aramaları](#bluetooth-aramaları). |
 | Kurulum rehberi | İlk açılış kurulumunu yeniden açar. Bkz. [Karşılama ve kurulum](#karşılama-ve-kurulum). |
@@ -301,7 +301,7 @@ sayfanın ayarlarını listenin yanında açar.
 | Uygulamalar | Telefondaki her uygulama için Tam, Sadece başlık ya da Kapalı. |
 | Genel | **Girişte başlat**, **Pil yüzdesini menü çubuğunda göster** ve **Dil** (Sistem, İngilizce, Türkçe; yeniden başlatma ister). Uygulama sürümü ve **Karşılama ekranını yeniden göster**. **AndroMac'i sıfırla…** eşleşmiş telefonları, iki geçmişi, bütün ayarları ve bu Mac'in anahtarını silip yeniden başlatır. Her telefonun yeniden eşleşmesi gerekir. |
 | Cihazlar | Bu Mac'in adı, sonra eşleşmiş her telefon; durumu, yerel IP adresi ve en son ne zaman görüldüğüyle, **Otomatik bağlan** ve **Unut** ile. **Pil ve medya** telefonun pili ile çalanı gösteren anahtarları, düşük pil uyarısını ve eşiğini (%10, %15, %20 ya da %30) taşır. Yayın sayfasının QR kodu APK'yı telefona kurmak için burada. |
-| Dosyalar | **Dosya al** ve **Dosyaları otomatik kabul et**. |
+| Dosyalar | **Dosya al** ve **Dosyaları otomatik kabul et** (varsayılan açık). |
 | Aramalar | Bağlı telefon için **Eşleştir**, sonra Bluetooth telefonu, **Bluetooth ayarları…**, **Yenile** ve **Bağlan**. Bkz. [Bluetooth aramaları](#bluetooth-aramaları). |
 | Ekran yansıtma | Ses, telefon ekranını kapatma, uyanık tutma, çözünürlük sınırı. |
 | İzinler | Bildirimler, Yerel Ağ, Bluetooth, Mikrofon ve Anahtar Zinciri erişimi; her biri ilgili Sistem Ayarları bölmesini açan bir düğmeyle. |
@@ -340,7 +340,7 @@ Ne nereye gider:
   hassas diye işaretlediği pano metni gönderilmez.
 - Bildirim ve pano geçmişi şifreli olarak, yalnızca Mac'te saklanır. Silmek için bütün cihazları
   unut ya da AndroMac'i sıfırla.
-- Bir dosya ancak alıcı kabul ettikten ya da otomatik kabulü açtıktan sonra kaydedilir. Gelince
+- Otomatik kabul açıkken dosya sorulmadan kaydedilir; kapalıyken ancak alıcı kabul ettikten sonra. Gelince
   denetlenir, kendiliğinden açılmaz.
 
 Teknik ayrıntılar [PROTOCOL.md](PROTOCOL.md)'de (İngilizce). Güvenlik sorunlarını herkese açık bir

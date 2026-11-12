@@ -267,10 +267,10 @@ final class Store: @unchecked Sendable {
         set { write(newValue, "fileTransfer") }
     }
 
-    /// Skip the consent window. Only the pinned phone can reach the offer, so this trusts one
+    /// Skip the consent window. On by default. Only the pinned phone can reach the offer, so this trusts one
     /// device, not the network.
     var fileAutoAccept: Bool {
-        get { flag("fileAutoAccept", default: false) }
+        get { flag("fileAutoAccept", default: true) }
         set { write(newValue, "fileAutoAccept") }
     }
 

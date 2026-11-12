@@ -192,7 +192,7 @@
     <string name="file_enable">Mac\'ten dosya al</string>
     <string name="file_enable_note">Paylaşım menüsünde “Mac\'e gönder” de görünür.</string>
     <string name="file_auto_accept">Dosyaları otomatik kabul et</string>
-    <string name="file_auto_accept_note">Sormadan kaydet. Varsayılan olarak kapalı.</string>
+    <string name="file_auto_accept_note">Sormadan kaydet</string>
     <string name="share_target">Mac\'e gönder</string>
     <string name="file_channel">Dosya aktarımları</string>
     <string name="file_channel_desc">Gelen dosya teklifleri, ilerleme ve alınan dosyalar</string>

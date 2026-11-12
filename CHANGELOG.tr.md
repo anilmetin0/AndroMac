@@ -11,6 +11,9 @@ derlemeler bunun yerine commit'lerini listeler.
 
 ### Değişenler
 
+- **Dosyalar sorulmadan kabul ediliyor.** **Dosyaları otomatik kabul et** artık telefonda ve
+  Mac'te varsayılan olarak açık; ikinci dosya ilkinin kabul edilmesini beklemiyor. Önce sorulsun
+  istersen dosya ayarlarından kapat.
 - **Hızlı gönderme yalnızca menü çubuğu simgesinde.** Dosyaları AndroMac'in menü çubuğu simgesine
   bırakmak onları seçili telefona gönderiyor. Her dosya sürüklemesinde ekranın üstünde açılan
   Android'e gönder alanı kaldırıldı.

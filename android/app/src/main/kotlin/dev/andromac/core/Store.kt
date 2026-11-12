@@ -391,11 +391,11 @@ class Store(context: Context) {
         set(v) = prefs.edit().putBoolean(K_FILE_TRANSFER, v).apply()
 
     /**
-     * Skip the Accept/Decline notification. Default OFF. Only the pinned Mac can reach the
+     * Skip the Accept/Decline notification. Default ON. Only the pinned Mac can reach the
      * session at all (PROTOCOL §3), so this is a convenience toggle, not a security boundary.
      */
     var fileAutoAccept: Boolean
-        get() = prefs.getBoolean(K_FILE_AUTO_ACCEPT, false)
+        get() = prefs.getBoolean(K_FILE_AUTO_ACCEPT, true)
         set(v) = prefs.edit().putBoolean(K_FILE_AUTO_ACCEPT, v).apply()
 
     // --- messages ---

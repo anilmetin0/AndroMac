@@ -201,7 +201,7 @@
     <string name="file_enable">Receive files from the Mac</string>
     <string name="file_enable_note">Also shows “Send to Mac” in the share sheet.</string>
     <string name="file_auto_accept">Accept files automatically</string>
-    <string name="file_auto_accept_note">Save without asking. Off by default.</string>
+    <string name="file_auto_accept_note">Save without asking</string>
     <string name="share_target">Send to Mac</string>
     <string name="file_channel">File transfers</string>
     <string name="file_channel_desc">Incoming file offers, progress, and received files</string>
