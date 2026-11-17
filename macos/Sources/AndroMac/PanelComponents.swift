@@ -292,12 +292,23 @@ struct NotificationRow: View {
     private var code: String? { VerificationCode.find(in: summary) }
 
     @State private var copied: String?
+    @State private var hovered = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
-            if open { openBody } else { foldedBody }
+            if open { openBody.transition(.opacity) } else { foldedBody.transition(.opacity) }
         }
         .frame(height: Self.height(entry, open: open), alignment: .top)
+        // The menu-item highlight macOS draws under the pointer, bled into the card's padding so
+        // the text column does not move.
+        .background {
+            RoundedRectangle(cornerRadius: Theme.Radius.small, style: .continuous)
+                .fill(.primary.opacity(hovered || open ? 0.06 : 0))
+                .padding(.horizontal, -Theme.Space.tight - 2)
+        }
+        .onHover { hovered = $0 }
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: hovered)
         .contextMenu {
             if let code {
                 Button(String(localized: "Copy code \(code)")) { put(code) }

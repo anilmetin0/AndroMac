@@ -331,7 +331,7 @@ struct MenuPanel: View {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(recent) { entry in
                     NotificationRow(entry: entry, open: openRow == entry.id) {
-                        withAnimation(.easeOut(duration: 0.18)) {
+                        withAnimation(reduceMotion ? nil : .snappy(duration: 0.25)) {
                             openRow = openRow == entry.id ? nil : entry.id
                         }
                     }
@@ -339,11 +339,30 @@ struct MenuPanel: View {
             }
             .frame(height: recent.map { NotificationRow.height($0, open: openRow == $0.id) }.reduce(0, +),
                    alignment: .top)
+            // A new notification slides in at the top while the oldest of the four leaves at the
+            // bottom, so the list keeps its height and the menu bar window never resizes.
+            .animation(reduceMotion ? nil : .snappy(duration: 0.3), value: recent.map(\.id))
 
             if history.entries.count > recent.count {
-                QuietButton(String(localized: "Show all (\(history.entries.count))")) {
+                Button {
                     state.showMainWindow(.notifications)
+                } label: {
+                    HStack(spacing: Theme.Space.tight) {
+                        Text("Show all")
+                        Text(verbatim: "\(history.entries.count)")
+                            .monospacedDigit()
+                            .contentTransition(.numericText())
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right")
+                            .font(Theme.Font.caption.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .font(Theme.Font.label)
+                    .foregroundStyle(.secondary)
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
+                .help("Open notification history")
             }
         }
     }
