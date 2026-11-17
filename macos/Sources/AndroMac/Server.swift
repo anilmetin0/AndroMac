@@ -206,6 +206,7 @@ actor Server {
             restartDelay = .seconds(3)
             if let port = source.port { preferredPort = port }
             await MainActor.run { AppState.shared.status = .listening }
+            knockPhones()
         case .failed(let e):
             // Most likely the saved port is taken now: the next listener takes any free one.
             if onPreferredPort { preferredPort = nil }
@@ -260,6 +261,30 @@ actor Server {
         // A successful TCP write only means bytes entered a local buffer. Require the pong,
         // otherwise a half-open link can keep the UI green indefinitely after wake or Wi-Fi loss.
         for id in Array(sessions.keys) { await probe(id) }
+        // A listener that survived the sleep never turns .ready again, so the phones that were
+        // told `sleep` hear it here.
+        knockPhones()
+    }
+
+    /// PROTOCOL §1 knock: one UDP datagram to each paired, unpaused phone that is not connected,
+    /// at its last address. The phone restarts its redial ladder, so a Mac opened later is found
+    /// in seconds instead of at the phone's next 300 s rung. The connection waits for a usable
+    /// path on its own (Wi-Fi still joining after wake) and gives up after 30 s.
+    private func knockPhones() {
+        let payload = Data("andromac-knock".utf8)
+        for device in Store.shared.pairedDevices where sessions[device.id] == nil && !device.paused {
+            guard let address = device.lastAddress else { continue }
+            let conn = NWConnection(host: .init(address), port: 47391, using: .udp)
+            conn.stateUpdateHandler = { state in
+                switch state {
+                case .ready: conn.send(content: payload, completion: .contentProcessed { _ in conn.cancel() })
+                case .failed: conn.cancel()
+                default: break
+                }
+            }
+            conn.start(queue: queue)
+            queue.asyncAfter(deadline: .now() + 30) { conn.cancel() }
+        }
     }
 
     private func probe(_ deviceID: String) async {

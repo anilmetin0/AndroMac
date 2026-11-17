@@ -16,6 +16,12 @@ against it.
   the first time a cached address gives one.
 - The browse stops as soon as a connection is established, because continuous mDNS scanning
   costs battery.
+- Knock: whenever the Mac's listener becomes ready (launch, network change) and after a wake, it
+  sends one UDP datagram with the ASCII payload `andromac-knock` to UDP port 47391 at the last
+  address of every paired, unpaused phone that is not connected. A paired phone with auto-connect
+  on treats a knock from a private address like a network event: the backoff ladder restarts,
+  under the same 10 s flap guard. The knock carries nothing else and is never answered; a forged
+  one costs at most one dial every 10 s.
 
 Sync traffic never leaves the local network: macOS rejects any peer outside the private address
 ranges (§3). The only connections that leave the LAN are the update check (one HTTPS GET to

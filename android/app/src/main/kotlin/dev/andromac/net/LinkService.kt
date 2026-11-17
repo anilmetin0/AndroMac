@@ -44,6 +44,8 @@ import dev.andromac.ui.MainActivity
 import dev.andromac.ui.followUpdateChannel
 import org.json.JSONObject
 import java.io.IOException
+import java.net.DatagramPacket
+import java.net.DatagramSocket
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.util.concurrent.ConcurrentHashMap
@@ -105,6 +107,7 @@ class LinkService : Service() {
         // A process death during the 30 s alarm leaves the alarm stream pinned at maximum.
         FindPhone.restoreAlarmVolume(this)
         registerNetworkCallback()
+        listenForKnock()
         Link.addListener(tileRefresh)
     }
 
@@ -177,6 +180,7 @@ class LinkService : Service() {
         sms.close()
         netCallback?.let { runCatching { getSystemService(ConnectivityManager::class.java).unregisterNetworkCallback(it) } }
         screenReceiver?.let { runCatching { unregisterReceiver(it) } }
+        knockSocket?.close()
         Link.detach()
         Link.setState(Link.State.Stopped)
         Link.removeListener(tileRefresh)
@@ -682,6 +686,35 @@ class LinkService : Service() {
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_USER_PRESENT)
         })
+    }
+
+    private var knockSocket: DatagramSocket? = null
+
+    /**
+     * PROTOCOL §1 knock: the Mac sends one UDP datagram to the phone's last address when its
+     * listener comes up (launch, wake, network change). "Mac opened later" with the phone in a
+     * pocket used to wait out the 300 s ceiling, and up to 20 min when the Mac's address moved.
+     * A blocked receive sets no timer; a packet only restarts the ladder, under the flap guard,
+     * so a stranger sending knocks gets at most one dial every 10 s.
+     */
+    private fun listenForKnock() {
+        val socket = runCatching { DatagramSocket(Protocol.KNOCK_PORT) }
+            .onFailure { Log.i(Link.TAG, "knock port unavailable: ${it.message}") }
+            .getOrNull() ?: return
+        knockSocket = socket
+        Thread({ knockLoop(socket) }, "andromac-knock").apply { isDaemon = true; start() }
+    }
+
+    private fun knockLoop(socket: DatagramSocket) {
+        val buf = ByteArray(32)
+        val packet = DatagramPacket(buf, buf.size)
+        while (true) {
+            try { socket.receive(packet) } catch (_: IOException) { return }   // closed in onDestroy
+            val knock = String(buf, 0, packet.length) == Protocol.KNOCK
+            if (knock && packet.address.isSiteLocalAddress && current == null &&
+                store.isPaired && store.autoConnect
+            ) onEvent()
+        }
     }
 
     /**

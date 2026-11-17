@@ -7,6 +7,10 @@ import org.json.JSONObject
 object Protocol {
     const val VERSION = 3
 
+    /** PROTOCOL §1: the UDP port the phone listens on for the Mac's "I am up" knock. */
+    const val KNOCK_PORT = 47391
+    const val KNOCK = "andromac-knock"
+
     const val T_HELLO = "hello"
     const val T_BATTERY = "battery"
     const val T_CLIPBOARD = "clipboard"
