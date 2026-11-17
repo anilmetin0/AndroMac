@@ -117,10 +117,11 @@ object Protocol {
         .put("can_silence", canSilence)
         .put("wireless_debugging", wirelessDebugging)
 
-    fun clipboard(text: String) = JSONObject()
+    fun clipboard(text: String, sensitive: Boolean = false) = JSONObject()
         .put("t", T_CLIPBOARD)
         .put("text", text.take(MAX_CLIPBOARD))
         .put("ts", System.currentTimeMillis())
+        .apply { if (sensitive) put("sensitive", true) }
 
     fun notification(
         id: String, app: String, pkg: String, title: String, text: String,

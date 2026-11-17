@@ -256,11 +256,12 @@ class Store(context: Context) {
 
     /**
      * Never send clipboard content flagged as sensitive. Password managers and OTP fields
-     * set `android.content.extra.IS_SENSITIVE` when copying, on every version. Default ON: putting
-     * a password on the wire, even a local network, is not something the user asked for.
+     * set `android.content.extra.IS_SENSITIVE` when copying, on every version. Default OFF since 1.10:
+     * an authenticator code copied on the phone is exactly what people want on the Mac. Sensitive
+     * clips go out flagged, and neither side keeps them in its history.
      */
     var clipboardSkipSensitive: Boolean
-        get() = prefs.getBoolean(K_CLIP_SENSITIVE, true)
+        get() = prefs.getBoolean(K_CLIP_SENSITIVE, false)
         set(v) = prefs.edit().putBoolean(K_CLIP_SENSITIVE, v).apply()
 
     var syncNotifications: Boolean

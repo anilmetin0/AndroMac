@@ -283,11 +283,7 @@ class MainActivity : Activity() {
 
     /** The app has focus right now, so the clipboard can be read here without the helper activity. */
     private fun sendClipboard() {
-        val message = when {
-            !Link.isConnected -> R.string.clip_offline
-            ClipboardBridge(this, store).sendCurrentClip() -> R.string.clip_sent_from_clipboard
-            else -> R.string.clip_nothing_to_send
-        }
+        val message = ClipboardBridge(this, store).sendCurrentClip()
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 

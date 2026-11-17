@@ -702,7 +702,7 @@ actor Server {
             // Capped like the phone caps what it sends (PROTOCOL §5): the history keeps 50 of these.
             guard Store.shared.syncClipboard, let raw = msg["text"] as? String, !raw.isEmpty else { break }
             let text = String(raw.prefix(ClipboardWatcher.maxText))
-            await ClipboardWatcher.shared.applyFromPhone(text)
+            await ClipboardWatcher.shared.applyFromPhone(text, sensitive: msg["sensitive"] as? Bool == true)
             let name = Store.shared.device(id: deviceID)?.name ?? ""
             await MainActor.run {
                 AppState.shared.update(deviceID: deviceID, name: name) { $0.lastClipboard = text }

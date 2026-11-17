@@ -61,7 +61,7 @@ class ClipHelperActivity : Activity() {
         when (intent?.getStringExtra(EXTRA_MODE)) {
             MODE_GET -> {
                 done = true
-                finishQuietly(bridge.sendCurrentClip(), R.string.clip_sent_from_clipboard)
+                finishQuietly(bridge.sendCurrentClip())
             }
             MODE_PUT -> {
                 done = true
@@ -71,7 +71,7 @@ class ClipHelperActivity : Activity() {
                         .setPrimaryClip(ClipData.newPlainText("AndroMac", text))
                 }.isSuccess
                 ClipboardBridge.lastFromMac = text
-                finishQuietly(ok, R.string.clip_pasted)
+                finishQuietly(if (ok) R.string.clip_pasted else R.string.clip_offline)
             }
             else -> finish()
         }
@@ -94,11 +94,8 @@ private const val MODE_GET = "get"
 private const val MODE_PUT = "put"
 
 @Suppress("DEPRECATION")
-private fun Activity.finishQuietly(ok: Boolean, okMessage: Int) {
-    Toast.makeText(
-        this, if (ok) getString(okMessage) else getString(R.string.clip_offline),
-        Toast.LENGTH_SHORT,
-    ).show()
+private fun Activity.finishQuietly(message: Int) {
+    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     finish()
     overridePendingTransition(0, 0)
 }

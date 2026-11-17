@@ -315,6 +315,7 @@
     <string name="clip_sent_from_clipboard">Pano Mac\'e gönderildi</string>
     <string name="clip_pasted">Panoya kopyalandı</string>
     <string name="clip_offline">Mac bağlı değil</string>
+    <string name="clip_sensitive_blocked">Hassas içerik gönderilmedi, Pano ayarlarından izin verebilirsin</string>
     <string name="tile_sub_ready">Mac\'e gönder</string>
 
     <!-- main screen details -->

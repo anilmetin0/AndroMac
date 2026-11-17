@@ -95,8 +95,11 @@ actor ClipboardWatcher {
     }
 
     /// Clipboard content arriving from the phone — write it locally and arm the echo breaker.
-    func applyFromPhone(_ text: String) async {
-        writeLocally(text)
+    /// A code or password the phone marked sensitive is pasted with `ConcealedType`, so clipboard
+    /// managers skip it, and stays out of our history.
+    func applyFromPhone(_ text: String, sensitive: Bool = false) async {
+        writeLocally(text, concealed: sensitive)
+        guard !sensitive else { return }
         await MainActor.run { ClipboardHistory.shared.record(text, direction: .received) }
     }
 
@@ -142,11 +145,12 @@ actor ClipboardWatcher {
         writeLocally(text)
     }
 
-    private func writeLocally(_ text: String) {
+    private func writeLocally(_ text: String, concealed: Bool = false) {
         rememberWritten(text)
         let pb = NSPasteboard.general
         pb.clearContents()
         pb.setString(text, forType: .string)
+        if concealed { pb.setString("", forType: Self.concealed) }
         lastChangeCount = pb.changeCount
     }
 

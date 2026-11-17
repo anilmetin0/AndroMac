@@ -325,6 +325,7 @@
     <string name="clip_sent_from_clipboard">Clipboard sent to your Mac</string>
     <string name="clip_pasted">Copied to the clipboard</string>
     <string name="clip_offline">Mac not connected</string>
+    <string name="clip_sensitive_blocked">Sensitive content not sent. You can allow it in Clipboard settings</string>
     <string name="tile_sub_ready">Send to Mac</string>
 
     <!-- main screen details -->

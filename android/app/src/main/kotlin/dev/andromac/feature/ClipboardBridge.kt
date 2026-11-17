@@ -101,17 +101,18 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
         context.getSystemService(NotificationManager::class.java).notify(CLIP_REQUEST_ID, n)
     }
 
-    /** Called from the focused [ClipHelperActivity] — reads the clipboard and sends it to the Mac. */
-    fun sendCurrentClip(): Boolean {
-        if (!store.syncClipboard) return false
-        val clip = cm.primaryClip?.takeIf { it.itemCount > 0 } ?: return false
-
-        if (sensitiveBlocked(clip.description)) return false
-
+    /**
+     * Called from a focused activity — reads the clipboard and sends it to the Mac. Returns the
+     * message to show, so a code held back as sensitive does not read as "Mac not connected".
+     */
+    fun sendCurrentClip(): Int {
+        if (!Link.isConnected) return R.string.clip_offline
+        if (!store.syncClipboard) return R.string.clip_nothing_to_send
+        val clip = cm.primaryClip?.takeIf { it.itemCount > 0 } ?: return R.string.clip_nothing_to_send
+        if (sensitiveBlocked(clip.description)) return R.string.clip_sensitive_blocked
         val text = clip.getItemAt(0).coerceToText(context)?.toString().orEmpty()
-        if (text.isEmpty()) return false
-        if (text == lastFromMac) return false          // break the echo
-        return sendText(text, clip.description)
+        if (text.isEmpty() || text == lastFromMac) return R.string.clip_nothing_to_send   // echo breaker
+        return if (sendText(text, clip.description)) R.string.clip_sent_from_clipboard else R.string.clip_offline
     }
 
     /**
@@ -136,7 +137,7 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
     fun sendText(text: String, description: ClipDescription? = null): Boolean {
         if (text.isEmpty() || !store.syncClipboard) return false
         if (sensitiveBlocked(description)) return false
-        val queued = Link.send(Protocol.clipboard(text))
+        val queued = Link.send(Protocol.clipboard(text, isSensitive(description)))
         if (queued) lastSent = text
         // Sent anyway with the protection off, but a password never lands in the history.
         if (queued && !isSensitive(description)) ClipHistory.add(text, fromMac = false)

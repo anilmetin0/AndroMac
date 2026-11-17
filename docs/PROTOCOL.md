@@ -235,23 +235,25 @@ the link was down stays as it is on the other side.
 
 ### `clipboard`, bidirectional
 ```json
-{"t":"clipboard","text":"copied text","ts":1750000000000}
+{"t":"clipboard","text":"copied text","ts":1750000000000,"sensitive":true}
 ```
+`sensitive` is present only when the phone's clip carried its sensitive marker. The Mac then pastes it
+with `org.nspasteboard.ConcealedType` and keeps it out of its history.
 Only `text/plain` is sent. Empty text is not sent, and anything above 64 KiB is truncated.
 
-Sensitive content is never sent in either direction. Password managers and OTP fields mark the
+Sensitive content can be held back in either direction. Password managers and OTP fields mark the
 clipboard as secret, and each platform has its own marker for it:
 
 - Android: `ClipDescription.EXTRA_IS_SENSITIVE` (`android.content.extra.IS_SENSITIVE`), read by
-  its string name on every supported version. A clipboard carrying that flag never leaves the
+  its string name on every supported version. With the switch on, a clipboard carrying that flag never leaves the
   phone.
 - macOS: the de-facto pasteboard types `org.nspasteboard.ConcealedType` and
   `org.nspasteboard.TransientType`, which macOS clipboard managers already honour. A pasteboard
-  carrying either type never leaves the Mac.
+  carrying either type never leaves the Mac while its switch is on.
 
-The rule applies to automatic and manual sends alike, because sending a password on purpose still
-puts it on the other device's clipboard. The user can turn this off on either side; it is on by
-default on both.
+The rule applies to automatic and manual sends alike. It is a switch on either side: on by default
+on the Mac, off by default on the phone, where the common case is an authenticator code wanted on
+the Mac.
 
 The two directions work differently because of a platform rule. For macOS → Android the user
 chooses between automatic and manual. In automatic mode the Mac watches its own pasteboard (§6)
