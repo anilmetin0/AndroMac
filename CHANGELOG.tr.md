@@ -7,6 +7,24 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaral
 `## Unreleased` altına yazılır; `VERSION` yükseltilince o bölüm yeni sürümün bölümü olur. Beta
 derlemeler bunun yerine commit'lerini listeler.
 
+## 1.10.0 - 2026-11-19
+
+### Değişenler
+
+- **Doğrulama kodları Mac'e geliyor.** **Hassas içeriği gönderme** artık telefonda varsayılan
+  olarak kapalı; doğrulayıcı uygulamada ya da parola yöneticisinde kopyalanan kod Mac'e geliyor.
+  Gizli içerik olarak yapıştırılıyor ve iki tarafta da geçmişe yazılmıyor. Bu panolar telefonda
+  kalsın istersen ayarı Pano ayarlarından aç; gönderilmeyen pano artık "Mac bağlı değil" yerine
+  bunu söylüyor.
+- Paneldeki bildirim satırları imlecin altında vurgulanıyor, daha akıcı açılıp kapanıyor, yeni
+  bildirimler kayarak geliyor. **Tümünü göster** sayısıyla birlikte bir satır.
+
+### Düzeltilenler
+
+- Mac uygulaması telefondan sonra açılınca telefonun bağlanması birkaç dakikayı bulabiliyordu.
+  Mac artık açıldığını eşleşmiş telefonlara bildiriyor, telefonlar saniyeler içinde bağlanıyor;
+  Mac uykudan uyanınca da.
+
 ## 1.9.0 - 2026-11-12
 
 ### Değişenler

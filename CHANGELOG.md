@@ -7,6 +7,24 @@ The `## <version>` section matching the `VERSION` file is the notes of that stab
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Nightly builds list their commits instead.
 
+## 1.10.0 - 2026-11-19
+
+### Changed
+
+- **Authenticator codes reach the Mac.** **Never send sensitive content** is now off by default
+  on the phone, so a code copied in an authenticator or password manager arrives on the Mac. It
+  is pasted as concealed content and kept out of the history on both sides. Turn the setting on
+  in Clipboard settings to keep such clips on the phone; a held-back clip now says so instead of
+  "Mac not connected".
+- The panel's notification rows highlight under the pointer, open and close more smoothly, and
+  new notifications slide in. **Show all** is a row with its count.
+
+### Fixed
+
+- When the Mac app started after the phone, the phone could take up to several minutes to
+  connect. The Mac now tells paired phones it is up, and they connect within seconds, also after
+  the Mac wakes.
+
 ## 1.9.0 - 2026-11-12
 
 ### Changed
