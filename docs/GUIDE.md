@@ -338,7 +338,8 @@ What goes where:
   check and update downloads go to GitHub.
 - For each app, the notification setting decides what leaves the phone: everything (Full), only
   the app name (Title only), or nothing (Off). Clipboard text marked as sensitive, for example by
-  a password manager, is not sent.
+  a password manager, reaches the Mac flagged and stays out of the history on both sides; turn on
+  **Never send sensitive content** to keep it on the phone.
 - Notification and clipboard history is stored encrypted, and only on the Mac. Forget all devices
   or reset AndroMac to delete it.
 - A file is saved without asking while auto-accept is on, and only after the receiver accepts it when it is off. It is checked when

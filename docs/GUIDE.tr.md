@@ -337,7 +337,8 @@ Ne nereye gider:
   güncelleme denetimi ve güncelleme indirmeleri gider.
 - Telefondan ne çıkacağını her uygulamanın bildirim ayarı belirler: her şey (Tam), yalnızca
   uygulamanın adı (Sadece başlık) ya da hiçbir şey (Kapalı). Parola yöneticisi gibi uygulamaların
-  hassas diye işaretlediği pano metni gönderilmez.
+  hassas diye işaretlediği pano metni Mac'e işaretli gider ve iki tarafta da geçmişe yazılmaz;
+  telefonda kalsın istersen **Hassas içeriği gönderme**'yi aç.
 - Bildirim ve pano geçmişi şifreli olarak, yalnızca Mac'te saklanır. Silmek için bütün cihazları
   unut ya da AndroMac'i sıfırla.
 - Otomatik kabul açıkken dosya sorulmadan kaydedilir; kapalıyken ancak alıcı kabul ettikten sonra. Gelince
