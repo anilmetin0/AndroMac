@@ -122,7 +122,7 @@ class Workflows(unittest.TestCase):
                 item = eligible()
                 item['checks'][0]['bucket'] = bucket
                 self.assert_merge(item, False)
-        for name in ['version', 'Android · APK', 'macOS · verify + .app', 'CodeRabbit', 'analyze']:
+        for name in ['version', 'Android · APK', 'macOS · verify + .app', 'analyze']:
             with self.subTest(missing=name):
                 item = eligible()
                 item['checks'] = [c for c in item['checks'] if c['name'] != name]
@@ -133,14 +133,17 @@ class Workflows(unittest.TestCase):
         self.assert_merge(item, True)
 
     def test_review_decisions(self):
-        for state in ['CHANGES_REQUESTED', 'DISMISSED', 'COMMENTED']:
+        # CodeRabbit ignores the review request a bot posts: its approval is not awaited,
+        # but a change request from it still blocks.
+        for state, merges in [('CHANGES_REQUESTED', False), ('DISMISSED', True), ('COMMENTED', True)]:
             with self.subTest(state=state):
                 item = eligible()
                 item['reviews'][0][0]['state'] = state
-                self.assert_merge(item, False)
+                self.assert_merge(item, merges)
         item = eligible()
-        item['reviews'][0][0]['commit_id'] = 'b' * 40
-        self.assert_merge(item, False)
+        item['reviews'] = [[]]
+        item['checks'] = [c if c['name'] != 'CodeRabbit' else dict(c, bucket='skipping') for c in item['checks']]
+        self.assert_merge(item, True)
         item = eligible()
         comment = copy.deepcopy(item['reviews'][0][0])
         comment.update(id=2, state='COMMENTED')

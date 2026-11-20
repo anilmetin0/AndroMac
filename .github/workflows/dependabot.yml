@@ -1,5 +1,8 @@
-# Merge only a same-repository Dependabot PR with passing checks and an explicit
-# CodeRabbit approval on its current head. No PR code is checked out or executed.
+# Merge only a same-repository Dependabot PR whose checks all pass, with no
+# reviewer asking for changes and no open review thread. CodeRabbit still
+# comments, but its approval is not awaited: it ignores the review request a
+# bot posts, so no Dependabot PR could ever qualify. No PR code is checked out
+# or executed.
 name: dependabot
 
 on:
@@ -59,17 +62,17 @@ jobs:
               continue
             fi
             sha="$(jq -r .headRefOid <<< "$pr")"
-            # A skipped CodeRabbit check is not approval. All published checks must
-            # pass; only the intentionally absent PR release job may be skipped.
+            # All published checks must pass; only the intentionally absent PR release
+            # job and CodeRabbit's skipped bot check may be skipped.
             files="$(gh pr diff "$number" --name-only)" || continue
-            required='["version", "Android · APK", "macOS · verify + .app", "CodeRabbit"]'
+            required='["version", "Android · APK", "macOS · verify + .app"]'
             if [[ "$files" == *".github/workflows/"* ]]; then
               required="$(jq '. + ["analyze"]' <<< "$required")"
             fi
             checks="$(gh pr checks "$number" --json name,bucket || true)"
             if ! jq -e --argjson required "$required" '
               length > 0 and
-              all(.[]; .bucket == "pass" or (.name == "GitHub Release" and .bucket == "skipping")) and
+              all(.[]; .bucket == "pass" or ((.name == "GitHub Release" or .name == "CodeRabbit") and .bucket == "skipping")) and
               ([.[] | select(.bucket == "pass") | .name] as $names |
                 $required |
                 all(.[]; . as $required | $names | index($required) != null))
@@ -78,16 +81,9 @@ jobs:
             fi
             reviews="$(gh api --paginate --slurp "repos/$GH_REPO/pulls/$number/reviews")" || continue
             if ! jq -e '
-              add | [.[] | select(.user.type != "Bot" and
+              add | [.[] | select((.user.type != "Bot" or .user.login == "coderabbitai[bot]") and
                 (.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED"))] |
               group_by(.user.login) | all(.[]; sort_by(.id) | last | .state != "CHANGES_REQUESTED")
-            ' <<< "$reviews" >/dev/null; then
-              continue
-            fi
-            if ! jq -e --arg sha "$sha" '
-              add | [.[] | select(.user.login == "coderabbitai[bot]" and .commit_id == $sha and
-                (.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED"))] |
-              sort_by(.id) | last | .state == "APPROVED"
             ' <<< "$reviews" >/dev/null; then
               continue
             fi
