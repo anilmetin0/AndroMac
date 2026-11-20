@@ -168,15 +168,19 @@ object Updater {
     }
 
     /**
-     * A screen came back while [Step.Installing]: if the session is gone, the confirmation was
+     * A screen came back while [Step.Installing] or [Step.Confirm]: if the session is gone, the confirmation was
      * dismissed and no result reached [InstallReceiver] (not every build sends one), so the
      * button turns into Retry instead of waiting for ever. An update that went through would
      * have ended this process.
      */
     fun recheck(ctx: Context) {
         val id = sessionId
-        if (state != Step.Installing || id < 0) return
-        if (ctx.packageManager.packageInstaller.getSessionInfo(id) == null) publish(Step.Failed(Problem.CANCELLED))
+        // Confirm too: the dialog opened from the notification can be dismissed without a result.
+        if (state != Step.Installing && state != Step.Confirm || id < 0) return
+        if (ctx.packageManager.packageInstaller.getSessionInfo(id) != null) return
+        confirm = null
+        ctx.getSystemService(NotificationManager::class.java).cancel(NOTIF_CONFIRM)
+        publish(Step.Failed(Problem.CANCELLED))
     }
 
     /**
@@ -390,7 +394,10 @@ object Updater {
                     if (started > 0 && runCatching { ctx.startActivity(confirm) }.isSuccess) return
                     awaitConfirm(ctx, confirm)
                 }
-                PackageInstaller.STATUS_SUCCESS -> publish(Step.Idle)
+                PackageInstaller.STATUS_SUCCESS -> {
+                    ctx.getSystemService(NotificationManager::class.java).cancel(NOTIF_CONFIRM)
+                    publish(Step.Idle)
+                }
                 else -> {
                     val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)
                     Log.i(Link.TAG, "install did not complete: $status ${intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)}")

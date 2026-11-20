@@ -170,6 +170,7 @@ final class UpdateCheck: ObservableObject {
         guard !last.isEmpty, last != Self.runningBuild else { return }
         let content = UNMutableNotificationContent()
         content.title = String(localized: "AndroMac was updated to \(Self.currentLabel)")
+        content.userInfo = ["updated": true]     // a click opens Settings › Updates (NotificationMirror)
         let request = UNNotificationRequest(identifier: "andromac.updated", content: content, trigger: nil)
         Task {
             do { try await UNUserNotificationCenter.current().add(request) } catch {

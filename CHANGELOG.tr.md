@@ -15,6 +15,9 @@ derlemeler bunun yerine commit'lerini listeler.
   dokunulana kadar bağlanmıyordu. Artık Mac'te Bağlan'a tıklamak aynı Wi-Fi'daki telefona ekranı
   kapalıyken de ulaşıyor ve telefon birkaç saniyede bağlanıyor. Telefon yine de gelmezse panel
   telefonda Bağlan'a dokunmanı söylüyor.
+- Android: "Kurulmaya hazır" bildiriminden açılan kurulum penceresi kapatılınca Güncellemeler
+  ekranı "Kurulmaya hazır"da takılı kalmıyor; güncelleme kurulunca bildirim kalkıyor.
+- Mac: "AndroMac güncellendi" bildirimine tıklayınca Ayarlar › Güncellemeler açılıyor.
 
 ## 1.10.0 - 2026-11-19
 

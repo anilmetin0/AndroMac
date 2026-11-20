@@ -271,6 +271,14 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
             return
         }
 
+        // "AndroMac was updated" (UpdateCheck): a click shows the version that is running now.
+        if userInfo["updated"] as? Bool == true {
+            if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
+                await MainActor.run { AppState.shared.showMainWindow(.setting(.updates)) }
+            }
+            return
+        }
+
         // "File received" (FileTransfer): a click reveals the file in Finder, it is never opened.
         if let path = userInfo["file"] as? String {
             if response.actionIdentifier == UNNotificationDefaultActionIdentifier {

@@ -15,6 +15,10 @@ raised. Nightly builds list their commits instead.
   Connect was clicked on the Mac. Clicking Connect on the Mac now reaches the phone on the same
   Wi-Fi, also with its screen off, and it connects within seconds. If the phone still does not
   come, the panel says to tap Connect on it.
+- Android: cancelling the install dialog opened from the "Ready to install" notification no longer
+  leaves the Updates screen stuck on "Ready to install", and the notification is removed once the
+  update installs.
+- Mac: clicking the "AndroMac was updated" notification opens Settings › Updates.
 
 ## 1.10.0 - 2026-11-19
 
