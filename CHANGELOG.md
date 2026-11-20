@@ -7,6 +7,15 @@ The `## <version>` section matching the `VERSION` file is the notes of that stab
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Nightly builds list their commits instead.
 
+## 1.10.2 - 2026-11-20
+
+### Fixed
+
+- Mac: opening Settings, Messages, the notification history or an update from the menu bar panel
+  now closes the panel. It used to stay over the window until you clicked somewhere else.
+- Mac: the pairing QR code and the release notes box have the same rounded corners as the rest of
+  the app, and scrolled release notes stay inside the box.
+
 ## 1.10.1 - 2026-11-20
 
 ### Fixed

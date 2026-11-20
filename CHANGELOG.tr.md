@@ -7,6 +7,15 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaral
 `## Unreleased` altına yazılır; `VERSION` yükseltilince o bölüm yeni sürümün bölümü olur. Beta
 derlemeler bunun yerine commit'lerini listeler.
 
+## 1.10.2 - 2026-11-20
+
+### Düzeltilenler
+
+- Mac: menü çubuğu panelinden Ayarlar, Mesajlar, bildirim geçmişi ya da bir güncelleme açılınca
+  panel artık kapanıyor. Önceden başka bir yere tıklayana kadar pencerenin üstünde kalıyordu.
+- Mac: eşleştirme QR kodu ve sürüm notları kutusu uygulamanın geri kalanıyla aynı yuvarlak
+  köşelere sahip; kaydırılan sürüm notları kutunun dışına taşmıyor.
+
 ## 1.10.1 - 2026-11-20
 
 ### Düzeltilenler
