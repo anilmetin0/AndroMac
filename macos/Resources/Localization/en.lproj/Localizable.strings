@@ -199,7 +199,6 @@
 "Notifications" = "Notifications";
 "Notifications are off for AndroMac" = "Notifications are off for AndroMac";
 "Notifications from your phone appear here." = "Notifications from your phone appear here.";
-"Now tap Connect on the phone." = "Now tap Connect on the phone.";
 "Off" = "Off";
 "Offline" = "Offline";
 "OK" = "OK";
@@ -329,7 +328,8 @@
 "Title only" = "Title only";
 "Title only leaves the content on the phone; Off keeps the whole notification there. Banner and History apply on this Mac." = "Title only leaves the content on the phone; Off keeps the whole notification there. Banner and History apply on this Mac.";
 "To" = "To";
-"To use it again, click Connect here, then tap Connect on the phone." = "To use it again, click Connect here, then tap Connect on the phone.";
+"If it does not connect, tap Connect on the phone." = "If it does not connect, tap Connect on the phone.";
+"To use it again, click Connect." = "To use it again, click Connect.";
 "To use it with this Mac again, pair it again." = "To use it with this Mac again, pair it again.";
 "To:" = "To:";
 "Traffic" = "Traffic";

@@ -61,7 +61,7 @@ struct PairedDeviceTests {
         #expect(!PairedDevice.dateUndatedPauses(&devices, now: upgrade))    // once
     }
 
-    @Test func turnedOnHereWhileThePhoneWasAwayItStillNeedsATapThere() {
+    @Test func turnedOnHereWhileThePhoneWasAwayTheHintPointsAtThePhone() {
         let seen = Date(timeIntervalSince1970: 1_750_000_000)
         var mac = PairedDevice(key: keyA, name: "Pixel 9", lastSeen: seen)
         #expect(!mac.awaitsConnectOnPhone)                                   // never changed
@@ -72,6 +72,23 @@ struct PairedDeviceTests {
         mac.paused = true
         mac.autoConnectChanged = seen.addingTimeInterval(180)
         #expect(!mac.awaitsConnectOnPhone)                                   // off: nothing to wait for
+    }
+
+    @Test func theHelloIsLetInByTheSwitchThatWins() {
+        let t1 = Date(timeIntervalSince1970: 1_750_000_000), t2 = t1.addingTimeInterval(60)
+        var mac = PairedDevice(key: keyA, name: "Pixel 9")
+        mac.autoConnectChanged = t2
+        // Turned on here while the phone sat parked: the knocked phone comes in and is told.
+        #expect(mac.admits(phoneOn: false, changed: t1, connect: false))
+        // Turned off on the phone after that: it stays out, unless someone tapped Connect there.
+        #expect(!mac.admits(phoneOn: false, changed: t2.addingTimeInterval(60), connect: false))
+        #expect(mac.admits(phoneOn: false, changed: t2.addingTimeInterval(60), connect: true))
+        #expect(mac.admits(phoneOn: nil, changed: nil, connect: false))       // a hello without a switch
+        mac.paused = true
+        #expect(!mac.admits(phoneOn: false, changed: t1, connect: false))
+        #expect(!mac.admits(phoneOn: true, changed: t1, connect: false))      // on there, but earlier
+        #expect(mac.admits(phoneOn: true, changed: t2.addingTimeInterval(60), connect: false))
+        #expect(!mac.admits(phoneOn: nil, changed: nil, connect: false))
     }
 
     // MARK: the migration that can lose a pairing

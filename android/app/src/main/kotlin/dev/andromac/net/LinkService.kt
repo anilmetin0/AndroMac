@@ -145,6 +145,7 @@ class LinkService : Service() {
             ACTION_DISCONNECT -> {
                 store.autoConnect = false
                 connectRequested = false     // a Connect now not dialled yet is overruled too
+                knocked = false
                 // The Mac's switch follows; the read ends and the loop parks on auto-connect off.
                 if (!Link.hangUp(Protocol.autoConnect(false, store.autoConnectChanged))) current?.close()
                 wake()
@@ -215,6 +216,11 @@ class LinkService : Service() {
     @Volatile private var connectRequested = false
     /** The dial in hand was a "Connect now"; its hello says so (PROTOCOL §3). */
     @Volatile private var dialRequested = false
+    /**
+     * The Mac knocked while auto-connect is off here: one attempt, then park again. Its hello is
+     * not a Connect, so the Mac lets it in only if its own switch was turned on later (PROTOCOL §1).
+     */
+    @Volatile private var knocked = false
     private var screenReceiver: BroadcastReceiver? = null
 
     /**
@@ -266,7 +272,7 @@ class LinkService : Service() {
                 await(0)                     // indefinite: wakes when the user starts pairing
                 continue
             }
-            if (store.isPaired && !store.autoConnect && !connectRequested) {
+            if (store.isPaired && !store.autoConnect && !connectRequested && !knocked) {
                 Link.setState(Link.State.Stopped)
                 note(getString(R.string.state_auto_off))
                 await(0)                     // indefinite: wakes on "Connect now" or the switch
@@ -280,6 +286,7 @@ class LinkService : Service() {
             }
             dialRequested = connectRequested
             connectRequested = false         // one attempt per request
+            knocked = false
 
             Link.setState(Link.State.Searching)
             note(getString(if (store.isPaired) R.string.state_waiting_mac else R.string.state_searching))
@@ -689,6 +696,8 @@ class LinkService : Service() {
     }
 
     private var knockSocket: DatagramSocket? = null
+    /** When a knock last made a parked phone dial; a forged one costs at most one dial per 10 s. */
+    private var lastParkedKnock = -FLAP_GUARD_MS
 
     /**
      * PROTOCOL §1 knock: the Mac sends one UDP datagram to the phone's last address when its
@@ -711,9 +720,16 @@ class LinkService : Service() {
         while (true) {
             try { socket.receive(packet) } catch (_: IOException) { return }   // closed in onDestroy
             val knock = String(buf, 0, packet.length) == Protocol.KNOCK
-            if (knock && packet.address.isSiteLocalAddress && current == null &&
-                store.isPaired && store.autoConnect
-            ) onEvent()
+            if (knock && packet.address.isSiteLocalAddress && current == null && store.isPaired) {
+                // Parked: the Mac may have turned auto-connect back on, and only a dial can ask it.
+                // Its own 10 s limit, not the flap guard: that one would swallow the wake.
+                if (store.autoConnect) onEvent()
+                else if (SystemClock.elapsedRealtime() - lastParkedKnock >= FLAP_GUARD_MS) {
+                    lastParkedKnock = SystemClock.elapsedRealtime()
+                    knocked = true
+                    wake()
+                }
+            }
         }
     }
 

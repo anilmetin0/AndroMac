@@ -95,11 +95,20 @@ public struct PairedDevice: Codable, Identifiable, Sendable, Equatable {
         return phoneOn ? .tell : .adopt
     }
 
-    /// Auto-connect was turned on here after the phone was last seen. The phone's own switch is
-    /// still off as far as this Mac knows, so it stays parked until someone taps Connect there.
+    /// Auto-connect was turned on here after the phone was last seen. A phone parked with its own
+    /// switch off hears of it from the knock; if that missed it, only a tap there brings it back.
     public var awaitsConnectOnPhone: Bool {
         guard !paused, let changed = autoConnectChanged else { return false }
         return changed > (lastSeen ?? .distantPast)
+    }
+
+    /// Whether a phone whose `hello` carries this switch is let in (PROTOCOL §3): a tap on Connect
+    /// there, or the switch both sides end up with once the newer change has won. A `hello` without
+    /// a switch is judged by this Mac's alone.
+    public func admits(phoneOn: Bool?, changed: Date?, connect: Bool) -> Bool {
+        if connect { return true }
+        guard let phoneOn else { return !paused }
+        return syncAutoConnect(phoneOn: phoneOn, changed: changed) == .adopt ? phoneOn : !paused
     }
 
     /// Dates every pause written before the switch was dated (1.5.1) to `now`, once. The phone's

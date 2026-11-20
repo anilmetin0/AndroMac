@@ -197,9 +197,8 @@ private struct DeviceCard: View {
             } else {
                 // Paired but not here: almost every connection problem is one of these two things.
                 // The Mac only listens (PROTOCOL §1), so there is nothing to click for it: the
-                // phone dials in as soon as both are true. With auto-connect off the phone stays
-                // parked too, so Connect here only lets it in, and until the phone has heard of
-                // that the hint says it needs a tap there.
+                // phone dials in as soon as both are true. Connect here turns the switch back on
+                // and knocks, so a phone parked with its own switch off dials in and hears of it.
                 // Offline there is little to act on, so it sits on this line instead of taking a
                 // row of its own.
                 HStack(spacing: Theme.Space.small) {
@@ -211,9 +210,9 @@ private struct DeviceCard: View {
                         }
                         Group {
                             if device.paused {
-                                Text("To use it again, click Connect here, then tap Connect on the phone.")
+                                Text("To use it again, click Connect.")
                             } else if device.awaitsConnectOnPhone {
-                                Text("Now tap Connect on the phone.")
+                                Text("If it does not connect, tap Connect on the phone.")
                             } else {
                                 Text("Open AndroMac on the phone, on the same Wi‑Fi.")
                             }
@@ -373,14 +372,13 @@ private struct DeviceCard: View {
     }
 
     /// Like the phone's Disconnect: hang up and turn auto-connect off on both sides, so the phone
-    /// stays away until someone taps Connect on it.
+    /// stays away until someone taps Connect on it or clicks Connect here.
     private func disconnect() {
         Task { await Server.shared.hangUp(device.id) }
     }
 
-    /// The Mac only listens (PROTOCOL §1): this turns auto-connect back on here. The phone, parked
-    /// with its own switch off, hears of it once someone taps Connect there, or right away if it
-    /// is already on the line.
+    /// The Mac only listens (PROTOCOL §1): this turns auto-connect back on here and knocks. The
+    /// phone, parked with its own switch off, dials in once and takes the newer switch.
     private func connect() {
         Task { await Server.shared.setAutoConnect(true, for: device.id) }
     }

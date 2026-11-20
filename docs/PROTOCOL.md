@@ -18,10 +18,11 @@ against it.
   costs battery.
 - Knock: whenever the Mac's listener becomes ready (launch, network change) and after a wake, it
   sends one UDP datagram with the ASCII payload `andromac-knock` to UDP port 47391 at the last
-  address of every paired, unpaused phone that is not connected. A paired phone with auto-connect
-  on treats a knock from a private address like a network event: the backoff ladder restarts,
-  under the same 10 s flap guard. The knock carries nothing else and is never answered; a forged
-  one costs at most one dial every 10 s.
+  address of every paired, unpaused phone that is not connected, and again when auto-connect is
+  turned on for a phone there. A paired phone treats a knock from a private address like a network
+  event: the backoff ladder restarts, under the same 10 s flap guard. A phone with auto-connect off
+  dials once and parks again; its `hello` decides (§3). The knock carries nothing else and is never
+  answered; a forged one costs at most one dial every 10 s.
 
 Sync traffic never leaves the local network: macOS rejects any peer outside the private address
 ranges (§3). The only connections that leave the LAN are the update check (one HTTPS GET to
@@ -162,22 +163,22 @@ sees.
     with no message, which leaves a device listed as paired that never connects again and cannot
     be recovered inside the app.
   - Approving a phone never drops another. Unpairing removes one device and leaves the rest.
-  - A paused device stays paired, and its handshake still succeeds, but the Mac reads its `hello`
-    before letting it in. Refusing it there is the only way to make a disconnect stick, because
+  - A paused device stays paired, and its handshake still succeeds, but the Mac reads every
+    `hello` before letting the phone in. Refusing it there is the only way to make a disconnect stick, because
     closing the socket only starts the phone's reconnect ladder.
   - Paused on the Mac and auto-connect off on the phone are one switch. Each side stamps the time
     of its last change, and the newer change wins on both; with neither newer, off wins. A `ts`
     more than a day ahead of the receiver's clock counts as one day ahead. The phone sends its
     switch in `hello` and in `auto_connect` when it changes; the Mac answers with `auto_connect`
-    when its own is newer, and when it changes. A paused phone is let in after its `hello` only if
-    that `hello` has `"connect":true` (the user tapped Connect there) or a newer `on`. Otherwise
-    the Mac sends `auto_connect` off and closes, and the phone stops dialling until someone taps
-    Connect there. The `hello` is therefore the first message the phone sends. The Mac checks
+    when its own is newer, and when it changes. A phone is let in after its `hello` if that
+    `hello` has `"connect":true` (the user tapped Connect there), or if the switch that wins is on.
+    Otherwise the Mac sends `auto_connect` off and closes, and the phone stops dialling until
+    someone taps Connect there or the Mac's switch is turned on. The `hello` is therefore the first message the phone sends. The Mac checks
     again, against its list as it is then, right before the session goes live: a phone forgotten
     while its `hello` was awaited is refused, and so is one let in by `connect` whose switch was
     turned off again on the Mac meanwhile. Turning the switch off keeps a live link up;
-    Disconnect turns it off and hangs up. Turning it on at the Mac reaches a parked phone only
-    when it next connects. The phone has one switch for all its Macs and each Mac one per phone,
+    Disconnect turns it off and hangs up. Turning it on at the Mac knocks (§1), so a parked
+    phone on the same network dials in and takes the newer switch. The phone has one switch for all its Macs and each Mac one per phone,
     so a switch turned off by one Mac is also off when the phone moves to another.
 - The Bonjour record carries no key; the phone makes its pin decision only from the key proven
   during the handshake.

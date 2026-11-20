@@ -270,9 +270,10 @@ actor Server {
     /// at its last address. The phone restarts its redial ladder, so a Mac opened later is found
     /// in seconds instead of at the phone's next 300 s rung. The connection waits for a usable
     /// path on its own (Wi-Fi still joining after wake) and gives up after 30 s.
-    private func knockPhones() {
+    private func knockPhones(only deviceID: String? = nil) {
         let payload = Data("andromac-knock".utf8)
-        for device in Store.shared.pairedDevices where sessions[device.id] == nil && !device.paused {
+        for device in Store.shared.pairedDevices
+        where sessions[device.id] == nil && !device.paused && (deviceID == nil || device.id == deviceID) {
             guard let address = device.lastAddress else { continue }
             let conn = NWConnection(host: .init(address), port: 47391, using: .udp)
             conn.stateUpdateHandler = { state in
@@ -331,33 +332,38 @@ actor Server {
                 await session.close()
                 return
             }
-            // With auto-connect off, the phone is heard out first: its hello says whether someone
-            // tapped Connect there or turned auto-connect on after it was turned off here
-            // (PROTOCOL §3). If not, it is told so it stops dialling, instead of retrying a closed
+            // The phone is heard out first: its hello says whether someone tapped Connect there,
+            // and which auto-connect switch is newer, this Mac's or the phone's (PROTOCOL §3). A
+            // phone that ends up off is told so it stops dialling, instead of retrying a closed
             // door all night. This has to bite HERE rather than by closing the socket later: the
             // phone reconnects on its own ladder, so anything that merely drops the link just
             // turns into a retry loop.
-            var first: [String: Any]?
-            if device.paused {
-                guard let hello = await Self.firstMessage(session, within: handshakeTimeout) else {
-                    await session.close()
-                    return
-                }
-                // The wait suspended: a Forget, or a Connect clicked here, counts from now on.
-                guard let current = Store.shared.device(forKey: session.peerStaticPub) else {
-                    NSLog("AndroMac: a forgotten phone tried to connect, declining")
-                    await session.close()
-                    return
-                }
-                device = current
-                if device.paused, !Self.overridesPause(hello, device) {
-                    NSLog("AndroMac: a phone with auto-connect off tried to connect, declining")
-                    _ = try? await session.send(Self.autoConnectMessage(device))
-                    await session.close()
-                    return
-                }
-                first = hello
+            guard let hello = await Self.firstMessage(session, within: handshakeTimeout) else {
+                await session.close()
+                return
             }
+            // The wait suspended: a Forget, or a Connect clicked here, counts from now on.
+            guard let current = Store.shared.device(forKey: session.peerStaticPub) else {
+                NSLog("AndroMac: a forgotten phone tried to connect, declining")
+                await session.close()
+                return
+            }
+            device = current
+            let phone = Self.autoConnect(hello["auto_connect"])
+            guard hello["t"] as? String == "hello",
+                  device.admits(phoneOn: phone?.0, changed: phone?.1, connect: hello["connect"] as? Bool == true)
+            else {
+                NSLog("AndroMac: a phone with auto-connect off tried to connect, declining")
+                // Turned off on the phone while this Mac was not listening: the panel says so too.
+                if let (on, changed) = phone, device.syncAutoConnect(phoneOn: on, changed: changed) == .adopt {
+                    Store.shared.updateDevice(id: deviceID) { $0.paused = !on; $0.autoConnectChanged = changed }
+                    device = Store.shared.device(id: deviceID) ?? device
+                }
+                _ = try? await session.send(Self.autoConnectMessage(device))
+                await session.close()
+                return
+            }
+            let first: [String: Any]? = hello
             // Let in although its switch is off here: only for as long as nobody changes it again.
             let overridden = device.paused
             let decidedAt = device.autoConnectChanged
@@ -403,15 +409,6 @@ actor Server {
         return try? await session.receive()
     }
 
-    /// Someone at the phone asked for this connection: "Connect now", or auto-connect turned on
-    /// there after it was turned off here.
-    private static func overridesPause(_ hello: [String: Any], _ device: PairedDevice) -> Bool {
-        guard hello["t"] as? String == "hello" else { return false }
-        if hello["connect"] as? Bool == true { return true }
-        guard let (on, changed) = autoConnect(hello["auto_connect"]) else { return false }
-        return on && device.syncAutoConnect(phoneOn: on, changed: changed) == .adopt
-    }
-
     /// `{"on":true,"ts":<ms>}`; a `ts` of 0 means the switch was never changed there. A time past
     /// tomorrow is a broken clock and counts as tomorrow: kept as it came, it would win every sync
     /// after it, and no longer fit the `ts` this Mac sends back.
@@ -444,6 +441,8 @@ actor Server {
         Store.shared.updateDevice(id: deviceID) { $0.paused = !on; $0.autoConnectChanged = Date() }
         guard let device = Store.shared.device(id: deviceID) else { return }
         _ = await send(Self.autoConnectMessage(device), to: deviceID)
+        // A phone parked with its own switch off hears of this one by dialling in once (PROTOCOL §1).
+        if on { knockPhones(only: deviceID) }
     }
 
     /// Disconnect, like the phone's: auto-connect off on both sides, then hang up. The phone is told

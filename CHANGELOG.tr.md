@@ -7,6 +7,15 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaral
 `## Unreleased` altına yazılır; `VERSION` yükseltilince o bölüm yeni sürümün bölümü olur. Beta
 derlemeler bunun yerine commit'lerini listeler.
 
+## Unreleased
+
+### Düzeltilenler
+
+- Otomatik bağlanması kapalı bir telefon, Mac'te Bağlan'a tıklansa bile telefonda Bağlan'a
+  dokunulana kadar bağlanmıyordu. Artık Mac'te Bağlan'a tıklamak aynı Wi-Fi'daki telefona ekranı
+  kapalıyken de ulaşıyor ve telefon birkaç saniyede bağlanıyor. Telefon yine de gelmezse panel
+  telefonda Bağlan'a dokunmanı söylüyor.
+
 ## 1.10.0 - 2026-11-19
 
 ### Değişenler

@@ -7,6 +7,15 @@ The `## <version>` section matching the `VERSION` file is the notes of that stab
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Nightly builds list their commits instead.
 
+## Unreleased
+
+### Fixed
+
+- A phone with auto-connect off stayed away until someone tapped Connect on it, even after
+  Connect was clicked on the Mac. Clicking Connect on the Mac now reaches the phone on the same
+  Wi-Fi, also with its screen off, and it connects within seconds. If the phone still does not
+  come, the panel says to tap Connect on it.
+
 ## 1.10.0 - 2026-11-19
 
 ### Changed
