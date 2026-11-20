@@ -8,6 +8,8 @@ import UniformTypeIdentifiers
 /// settings — including which of battery, clipboard, notifications and media sync at all — live in
 /// a separate window ([MainWindow]): what syncs is decided once, not at every glance.
 struct MenuPanel: View {
+    /// Closes the menu bar panel the way a click outside does, so the icon is ready for the next click.
+    @Environment(\.dismiss) private var dismiss
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var state: AppState
@@ -79,6 +81,11 @@ struct MenuPanel: View {
         .padding(Theme.panelInset)
         .frame(width: Theme.panelWidth)
         .panelContainer()
+        // A click that opens a window closes the panel, as a click outside it does; left up, it
+        // covered the window it had just opened.
+        .onReceive(NotificationCenter.default.publisher(for: AppState.closePanel)) { _ in
+            if !DemoMode.isOn { dismiss() }
+        }
         // `.menuBarExtraStyle(.window)` gives the panel a chrome band above and below the content
         // that our view does not reach — verified by filling the content with a flat colour and
         // measuring where it stopped. The band renders the window's own translucency, so against a
@@ -415,3 +422,4 @@ struct MenuPanel: View {
         .glassGroup()
     }
 }
+

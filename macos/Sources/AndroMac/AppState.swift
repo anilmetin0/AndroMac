@@ -189,7 +189,11 @@ final class AppState: ObservableObject {
     /// The main window's Messages page, on the phone the panel has open (`Messages.follow`).
     func showMessages() { showMainWindow(.messages) }
 
+    /// Posted by everything that opens a window from the panel; the panel closes on it.
+    static let closePanel = Notification.Name("AndroMac.closePanel")
+
     private func present(_ id: String, open: @escaping @MainActor () -> Void) {
+        NotificationCenter.default.post(name: Self.closePanel, object: nil)
         Task { @MainActor in
             NSApp.setActivationPolicy(.regular)
             try? await Task.sleep(for: .milliseconds(100))

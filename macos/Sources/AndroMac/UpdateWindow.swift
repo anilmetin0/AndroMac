@@ -10,6 +10,7 @@ enum UpdateWindow {
     private static var window: NSWindow?
 
     static func show(_ release: Release) {
+        NotificationCenter.default.post(name: AppState.closePanel, object: nil)
         close()
         let window = NSWindow(contentRect: .zero, styleMask: [.titled, .closable], backing: .buffered, defer: false)
         // The title names the window in Mission Control and the Window menu; the view shows it.
