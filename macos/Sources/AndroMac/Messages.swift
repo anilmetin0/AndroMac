@@ -409,7 +409,7 @@ private struct ThreadRow: View {
             Circle()
                 .fill(thread.unread > 0 ? Color.accentColor : Color.clear)
                 .frame(width: 8, height: 8)
-                .padding(.top, 4)
+                .padding(.top, Theme.Space.tight)
             VStack(alignment: .leading, spacing: Theme.Space.hair) {
                 HStack(alignment: .firstTextBaseline) {
                     Text(thread.title)

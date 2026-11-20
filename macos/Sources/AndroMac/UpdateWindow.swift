@@ -99,10 +99,9 @@ struct UpdateView: View {
                         .padding(Theme.Space.medium)
                 }
                 .frame(height: showAll ? 480 : 180)
-                .background(
-                    RoundedRectangle(cornerRadius: Theme.Radius.medium)
-                        .fill(Color.secondary.opacity(0.08))
-                )
+                .background(Color.secondary.opacity(0.08))
+                // Clipped too: scrolled notes would otherwise run past the rounded corners.
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.medium, style: .continuous))
                 Button(showAll ? "Show less" : "Show all") { showAll.toggle() }
                     .buttonStyle(.link)
                     .font(Theme.Font.label)

@@ -46,13 +46,13 @@ struct QRCode: View {
                     .frame(width: size, height: size)
             } else {
                 // CoreImage does not fail here in practice; if it ever does, do not draw a hole.
-                RoundedRectangle(cornerRadius: Theme.Radius.small)
+                RoundedRectangle(cornerRadius: Theme.Radius.small, style: .continuous)
                     .fill(Color.secondary.opacity(0.2))
                     .frame(width: size, height: size)
             }
         }
-        .padding(8)
-        .background(.white, in: RoundedRectangle(cornerRadius: Theme.Radius.small))
+        .padding(Theme.Space.small)
+        .background(.white, in: RoundedRectangle(cornerRadius: Theme.Radius.small, style: .continuous))
     }
 }
 
