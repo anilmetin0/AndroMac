@@ -7,6 +7,22 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaral
 `## Unreleased` altına yazılır; `VERSION` yükseltilince o bölüm yeni sürümün bölümü olur. Beta
 derlemeler bunun yerine commit'lerini listeler.
 
+## 1.11.0 - 2026-11-22
+
+### Değişenler
+
+- **Dosyalar bağlantıyı bekler.** Mac bağlı değilken telefonda paylaşılan ya da telefon bağlı
+  değilken Mac'ten gönderilen dosya reddedilmez, sıraya girer. Telefon Mac'i beklediğini, Mac
+  paneli telefonu beklediğini gösterir; ikisi bağlanınca dosyalar gider. Telefonda dosya
+  paylaşmak Mac'e bağlanmayı da dener.
+- **Menü çubuğu simgesine bırakırken telefonu seç.** Dosyaları AndroMac simgesine sürükleyince
+  telefonların altında açılır; dosyaları birinin üstüne bırakınca ona gider.
+
+### Düzeltilenler
+
+- Mac: "Dosya alındı" gibi bir bildirime tıklamak artık AndroMac penceresini açmıyor. "Dosya
+  alındı" yalnızca dosyayı Finder'da gösterir.
+
 ## 1.10.2 - 2026-11-20
 
 ### Düzeltilenler

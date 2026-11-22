@@ -7,6 +7,22 @@ The `## <version>` section matching the `VERSION` file is the notes of that stab
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Nightly builds list their commits instead.
 
+## 1.11.0 - 2026-11-22
+
+### Changed
+
+- **Files wait for the connection.** A file shared on the phone while the Mac is away, or sent
+  from the Mac while the phone is away, is queued instead of refused. The phone says it is
+  waiting for the Mac, the Mac panel says it is waiting for the phone, and the files go out as
+  soon as the two connect. Sharing a file on the phone also asks the Mac to connect.
+- **Pick the phone when dropping on the menu bar icon.** Drag files onto AndroMac's icon and your
+  phones unfold under it; drop on one to send the files there.
+
+### Fixed
+
+- Mac: clicking a notification, such as "File received", no longer opens the AndroMac window.
+  "File received" only shows the file in Finder.
+
 ## 1.10.2 - 2026-11-20
 
 ### Fixed

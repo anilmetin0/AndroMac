@@ -8,8 +8,8 @@
 #   brew trust anilmetin0/andromac
 #   brew install --cask andromac
 cask "andromac" do
-  version "1.10.2"
-  sha256 "c81e7934fad104fc32671cb14f1ca28f2d1448f53ce1ff534dde395d5d34d5c9"
+  version "1.11.0"
+  sha256 :no_check
 
   url "https://github.com/anilmetin0/AndroMac/releases/download/v#{version}/AndroMac-#{version}-macOS-arm64.dmg"
   name "AndroMac"
