@@ -185,8 +185,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func openMainWindow(tab: MainWindow.Tab) { AppState.shared.showMainWindow(tab) }
 
     /// Opening the same copy again from Finder or Spotlight: there is no Dock icon, so show the window.
+    /// A click on one of our notifications arrives as a reopen too, in either order with the
+    /// click itself: the window waits a moment, and stays shut if it was a notification click.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        if !flag { AppState.shared.showMainWindow(.notifications) }
+        guard !flag else { return true }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard Date().timeIntervalSince(NotificationMirror.lastClick) > 1 else { return }
+            AppState.shared.showMainWindow(.notifications)
+        }
         return true
     }
 

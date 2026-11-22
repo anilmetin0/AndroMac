@@ -8,6 +8,10 @@ import UserNotifications
 @MainActor
 final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
 
+    /// When a banner was last clicked. macOS reopens the app for that click as well; the
+    /// notification's own handler decides what opens (`AppDelegate.applicationShouldHandleReopen`).
+    static var lastClick = Date.distantPast
+
     static let shared = NotificationMirror()
     fileprivate static let muteIdentifier = "andromac.mute"
     fileprivate static let linkIdentifier = "andromac.link"
@@ -262,6 +266,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse
     ) async {
         let userInfo = response.notification.request.content.userInfo
+        await MainActor.run { Self.lastClick = Date() }
         let id = userInfo["id"] as? String ?? ""
         let pkg = userInfo["pkg"] as? String ?? ""
         let peer = userInfo["peer"] as? String ?? ""
