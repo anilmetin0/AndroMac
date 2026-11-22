@@ -65,7 +65,8 @@ object FileTransfer {
 
     /**
      * From the share sheet. The streams are opened HERE, while the share grant is valid — the
-     * grant dies with the activity, an open descriptor does not. Returns how many were dropped
+     * grant dies with the activity, an open descriptor does not, so a file shared while the Mac
+     * is away waits in the queue and goes out once it connects. Returns how many were dropped
      * because the queue was full or the Uri could not be opened.
      */
     @Synchronized
@@ -112,12 +113,16 @@ object FileTransfer {
     }
 
     private fun startNext(ctx: Context) {
+        if (out != null) return
+        if (!Link.isConnected) { showWaiting(ctx); return }
         val next = queue.removeFirstOrNull() ?: return
-        out = next
         if (!Link.send(Protocol.fileOffer(next.id, next.name, next.size, next.mime))) {
-            failOut(ctx, R.string.file_failed_send)
+            // The link dropped under us: nothing of this file was read, so it waits for the next one.
+            queue.addFirst(next)
+            showWaiting(ctx)
             return
         }
+        out = next
         Log.d(Link.TAG, "file offer sent: ${next.name} (${next.size} B)")
         showOutProgress(ctx, next)
     }
@@ -403,6 +408,11 @@ object FileTransfer {
                 Link.send(Protocol.fileCancel(id, "user"))
                 discardIn(app)
             }
+            ACTION_CANCEL_QUEUE -> {
+                queue.forEach { runCatching { it.input.close() } }
+                queue.clear()
+                if (out == null) app.getSystemService(NotificationManager::class.java).cancel(NOTIF_OUT)
+            }
             ACTION_CANCEL_OUT -> if (out?.id == id) {
                 Link.send(Protocol.fileCancel(id, "user"))
                 closeOut()
@@ -412,19 +422,30 @@ object FileTransfer {
         }
     }
 
-    /** From LinkService's `finally`: nothing is resumed, temporary files go (PROTOCOL §5 step 6). */
+    /**
+     * From LinkService's `finally`: a transfer under way is not resumed and its temporary file goes
+     * (PROTOCOL §5 step 6). Files not started yet stay queued for the next session; one that was
+     * only offered goes back to the front, since nothing of it was read.
+     */
     @Synchronized
     fun onSessionEnded(ctx: Context) {
         val app = ctx.applicationContext
         val nm = app.getSystemService(NotificationManager::class.java)
         if (inc != null || pending != null) { pending = null; discardIn(app); nm.cancel(NOTIF_IN) }
-        if (out != null || queue.isNotEmpty()) {
-            closeOut()
-            queue.forEach { runCatching { it.input.close() } }
-            queue.clear()
-            nm.cancel(NOTIF_OUT)
+        val o = out ?: return showWaiting(app)
+        out = null
+        if (o.sent == 0L) {
+            queue.addFirst(o)
+        } else {
+            runCatching { o.input.close() }
+            notify(app, NOTIF_OUT, R.string.file_failed_send, o.name, ongoing = false)
         }
+        showWaiting(app)
     }
+
+    /** From LinkService once the hello is queued: whatever waited for the Mac goes out now. */
+    @Synchronized
+    fun onSessionStarted(ctx: Context) = startNext(ctx.applicationContext)
 
     // ---------------------------------------------------------------- helpers
 
@@ -463,6 +484,22 @@ object FileTransfer {
     private fun actionButton(ctx: Context, titleRes: Int, action: String, id: String) =
         Notification.Action.Builder(null as Icon?, ctx.getString(titleRes), action(ctx, action, id)).build()
 
+    /** The queue is waiting for the Mac; it can be emptied from here. */
+    private fun showWaiting(ctx: Context) {
+        if (queue.isEmpty()) return
+        val mac = Store(ctx).pairedName.ifEmpty { "Mac" }
+        ctx.getSystemService(NotificationManager::class.java).notify(
+            NOTIF_OUT,
+            builder(ctx)
+                .setContentTitle(ctx.resources.getQuantityString(R.plurals.file_waiting, queue.size, queue.size, mac))
+                .setContentText(ctx.getString(R.string.file_waiting_note))
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .addAction(actionButton(ctx, R.string.file_cancel, ACTION_CANCEL_QUEUE, ""))
+                .build()
+        )
+    }
+
     private fun showInProgress(ctx: Context, i: Incoming) =
         progress(ctx, NOTIF_IN, ctx.getString(R.string.file_receiving, i.name), i.received, i.size, ACTION_CANCEL_IN, i.id)
 
@@ -498,6 +535,7 @@ object FileTransfer {
     const val ACTION_DECLINE = "dev.andromac.FILE_DECLINE"
     const val ACTION_CANCEL_IN = "dev.andromac.FILE_CANCEL_IN"
     const val ACTION_CANCEL_OUT = "dev.andromac.FILE_CANCEL_OUT"
+    const val ACTION_CANCEL_QUEUE = "dev.andromac.FILE_CANCEL_QUEUE"
     const val EXTRA_ID = "id"
     private const val NOTIF_IN = 10
     private const val NOTIF_OUT = 11

@@ -270,6 +270,9 @@ actor Server {
     /// at its last address. The phone restarts its redial ladder, so a Mac opened later is found
     /// in seconds instead of at the phone's next 300 s rung. The connection waits for a usable
     /// path on its own (Wi-Fi still joining after wake) and gives up after 30 s.
+    /// A file was queued for a phone that is away: ask it to dial in now (paused phones stay away).
+    func knock(_ deviceID: String) { knockPhones(only: deviceID) }
+
     private func knockPhones(only deviceID: String? = nil) {
         let payload = Data("andromac-knock".utf8)
         for device in Store.shared.pairedDevices
@@ -668,6 +671,7 @@ actor Server {
                     $0.name = name
                     $0.caps = caps
                 }
+                FileTransfer.shared.peerReady()
             }
             await syncAutoConnect(msg["auto_connect"], from: deviceID)
 

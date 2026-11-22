@@ -594,7 +594,9 @@ Flow, sender S → receiver R:
    `ok:false` with `reason:"hash_mismatch"` (or `write_error`).
 6. Either side may send `file_cancel` at any time. The other side stops, deletes any
    temporary file and shows nothing further; the cancel is not acknowledged. If the session
-   drops, the transfer is over: temporary files are deleted and nothing is resumed.
+   drops, the transfer is over: temporary files are deleted and nothing is resumed. Files the
+   sender queued but has not started streaming stay queued and are offered again, from the
+   start, on the next session with that peer.
 
 Receiver rules (both platforms, enforced regardless of what the sender claims):
 

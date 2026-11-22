@@ -14,6 +14,7 @@ import dev.andromac.core.Store
 import dev.andromac.feature.ClipboardBridge
 import dev.andromac.feature.FileTransfer
 import dev.andromac.feature.SharePreview
+import dev.andromac.net.LinkService
 
 /**
  * The share-sheet target ("Send to Mac"). Invisible: it takes what the sheet hands over,
@@ -47,8 +48,10 @@ class ShareActivity : Activity() {
             else -> { finish(); return }
         }
         val store = Store(this)
+        val mac = store.pairedName.ifEmpty { "Mac" }
         val message = when {
-            !Link.isConnected -> getString(R.string.file_not_connected, store.pairedName.ifEmpty { "Mac" })
+            // Files wait in the queue for the Mac; text has nowhere to wait.
+            !Link.isConnected && (streams.isEmpty() || !store.isPaired) -> getString(R.string.file_not_connected, mac)
             streams.isEmpty() -> {
                 val text = intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
                 val description = intent.clipData?.description
@@ -58,10 +61,14 @@ class ShareActivity : Activity() {
             }
             !store.fileTransfer -> getString(R.string.file_disabled)
             else -> {
+                val waiting = !Link.isConnected
                 val dropped = FileTransfer.enqueue(this, streams)
                 val queued = streams.size - dropped
+                // One dial now, also with auto-connect off: the user is waiting on this link.
+                if (waiting && queued > 0) LinkService.start(this, LinkService.ACTION_CONNECT)
                 if (queued == 0) getString(R.string.file_none_queued)
-                else resources.getQuantityString(R.plurals.file_queued, queued, queued) +
+                else (if (waiting) resources.getQuantityString(R.plurals.file_waiting, queued, queued, mac)
+                      else resources.getQuantityString(R.plurals.file_queued, queued, queued)) +
                     if (dropped > 0) "\n" + getString(R.string.file_dropped, dropped) else ""
             }
         }

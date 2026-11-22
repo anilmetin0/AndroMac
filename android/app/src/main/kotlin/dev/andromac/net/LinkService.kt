@@ -509,6 +509,7 @@ class LinkService : Service() {
         system.start()
         sms.start()
         NotificationRelay.pushExisting()
+        FileTransfer.onSessionStarted(this)
 
         try {
             while (running) {
@@ -531,7 +532,7 @@ class LinkService : Service() {
             sms.stop()
             // If the link dropped, no second message will ever arrive to silence the alarm.
             FindPhone.stop(this)
-            // Nothing is resumed: temporary files go, the send queue is emptied (PROTOCOL §5).
+            // Nothing is resumed: temporary files go; files not started wait for the next session.
             FileTransfer.onSessionEnded(this)
             Link.detach()
             session.close()

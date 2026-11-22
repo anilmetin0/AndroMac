@@ -215,6 +215,11 @@
         <item quantity="one">%d dosya Mac\'e gönderiliyor</item>
         <item quantity="other">%d dosya Mac\'e gönderiliyor</item>
     </plurals>
+    <plurals name="file_waiting">
+        <item quantity="one">%2$s bağlantısı bekleniyor · %1$d dosya</item>
+        <item quantity="other">%2$s bağlantısı bekleniyor · %1$d dosya</item>
+    </plurals>
+    <string name="file_waiting_note">Bağlanınca gönderilecek</string>
     <string name="file_dropped">Tek seferde en fazla 50 dosya; %1$d tanesi atlandı</string>
 
 

@@ -23,6 +23,8 @@ final class FileTransfer: ObservableObject {
         let name: String
         let outgoing: Bool
         let percent: Int
+        /// Queued for a phone that is not connected yet; it goes out when the phone comes.
+        var waiting = false
     }
 
     /// The one row the panel shows; nil when nothing is running. Assigned only when it changes,
@@ -53,15 +55,21 @@ final class FileTransfer: ObservableObject {
         }
     }
 
-    /// A session dropped: nothing is resumed, temporary files go (§5 step 6). Only that phone's
-    /// transfers; another phone's keep going.
+    /// A session dropped: a transfer under way is not resumed and temporary files go (§5 step 6).
+    /// Only that phone's transfers; another phone's keep going. Files not started yet wait for the
+    /// phone to come back, and one that was only offered goes back to the front of the queue.
     func sessionEnded(_ peer: String) {
-        queue.removeAll { $0.peer == peer }
-        if outgoing?.peer == peer {
+        if let out = outgoing, out.peer == peer {
+            if out.phase == .offered { queue.insert((out.url, peer), at: 0) }
             finishOutgoing()
             Task { await offerNext() }       // another phone's file may be waiting behind it
         }
         if incoming?.peer == peer { discardIncoming() }
+    }
+
+    /// The phone's hello arrived: whatever waited for it goes out now.
+    func peerReady() {
+        Task { await offerNext() }
     }
 
     // MARK: entry points (panel)
@@ -81,7 +89,7 @@ final class FileTransfer: ObservableObject {
         Task { await offerNext() }
     }
 
-    /// The panel's Cancel button: the direction the row shows, outgoing first.
+    /// The panel's Cancel button: the direction the row shows, outgoing first, then the queue.
     func cancel() {
         Task {
             if outgoing != nil {
@@ -89,6 +97,9 @@ final class FileTransfer: ObservableObject {
                 await cancelOutgoing(reason: "user")
             } else if incoming != nil {
                 await cancelIncoming(reason: "user")
+            } else {
+                queue.removeAll()
+                refreshProgress()
             }
         }
     }
@@ -99,6 +110,7 @@ final class FileTransfer: ObservableObject {
         enum Phase { case offered, streaming, done }
         let id: String
         let peer: String
+        let url: URL
         let name: String
         let size: Int64
         let handle: FileHandle
@@ -109,8 +121,9 @@ final class FileTransfer: ObservableObject {
         var acked = 0
         var sent: Int64 = 0
 
-        init(id: String, peer: String, name: String, size: Int64, handle: FileHandle) {
-            self.id = id; self.peer = peer; self.name = name; self.size = size; self.handle = handle
+        init(id: String, peer: String, url: URL, size: Int64, handle: FileHandle) {
+            self.id = id; self.peer = peer; self.url = url; self.name = url.lastPathComponent
+            self.size = size; self.handle = handle
         }
     }
 
@@ -118,21 +131,26 @@ final class FileTransfer: ObservableObject {
     private var outgoing: Outgoing?
 
     private func offerNext() async {
-        guard outgoing == nil, !queue.isEmpty else { return }
-        let (url, peer) = queue.removeFirst()
+        // Files for a phone that is not connected stay queued; the next connected phone's go first.
+        guard outgoing == nil, let index = queue.firstIndex(where: { item in
+            AppState.shared.devices.contains { $0.id == item.peer && $0.caps.contains("file") }
+        }) else { refreshProgress(); return }
+        let (url, peer) = queue.remove(at: index)
         guard let size = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize,
               let handle = try? FileHandle(forReadingFrom: url)
         else { await offerNext(); return }
 
-        let out = Outgoing(id: Self.newID(), peer: peer, name: url.lastPathComponent, size: Int64(size), handle: handle)
+        let out = Outgoing(id: Self.newID(), peer: peer, url: url, size: Int64(size), handle: handle)
         outgoing = out
         refreshProgress()
         var offer: [String: Any] = ["t": "file_offer", "id": out.id, "name": out.name, "size": out.size]
         if let mime = UTType(filenameExtension: url.pathExtension)?.preferredMIMEType { offer["mime"] = mime }
-        // The phone went away between the click and here: drop this file and try the next.
+        // The phone went away between the click and here: the file waits for it to come back.
         guard await Server.shared.send(offer, to: peer) else {
-            finishOutgoing()
-            await offerNext()
+            if outgoing === out {
+                queue.insert((url, peer), at: 0)
+                finishOutgoing()
+            }
             return
         }
     }
@@ -438,6 +456,9 @@ final class FileTransfer: ObservableObject {
             next = Progress(name: out.name, outgoing: true, percent: Self.percent(out.sent, of: out.size))
         } else if let inc = incoming, inc.handle != nil {
             next = Progress(name: inc.name, outgoing: false, percent: Self.percent(inc.received, of: inc.size))
+        } else if let first = queue.first {
+            next = Progress(name: queue.count == 1 ? first.url.lastPathComponent : String(localized: "\(queue.count) files"),
+                            outgoing: true, percent: 0, waiting: true)
         } else {
             next = nil
         }
