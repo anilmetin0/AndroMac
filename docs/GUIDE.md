@@ -168,7 +168,7 @@ connects only when you tap **Connect** on it, so after turning it back on at the
 | Media | Both ways | Title, artist and app of what is playing on the phone, with previous, play/pause and next on the Mac. |
 | Find my phone | Mac to phone | The phone rings at alarm volume and vibrates for up to 30 seconds. Found it, a second press, or the timeout stops it. |
 | Phone controls | Mac to phone | Ringer (ring, vibrate, silent) and media volume from the panel, plus a test notification. Silencing needs Do Not Disturb access on the phone. |
-| Files | Both ways | Share from the phone's share sheet, or drop files onto the Mac panel. Files are accepted without asking; turn auto-accept off to be asked first. Files go to Downloads, are checked when they arrive, and are never opened for you. |
+| Files | Both ways | Share from the phone's share sheet, or drop files onto the Mac panel. Files sent while the other side is away wait and go out once it connects. Files are accepted without asking; turn auto-accept off to be asked first. Files go to Downloads, are checked when they arrive, and are never opened for you. |
 | Messages | Both ways | SMS conversations on the Messages page of the Mac's window (⌘⇧M, or the message button on the phone's card): the 50 most recent conversations, the last 200 texts of each, replies and new texts sent through the phone. SMS only, no MMS, RCS or chat apps. Off until you turn it on in the phone's Settings → Messages. Nothing is stored on the Mac. |
 | Several phones | Mac | More than one phone can be connected at once. The panel shows them as tabs. Each one can be disconnected on its own and has its own clipboard switch. Settings → Devices lists every phone with its IP address and when it was last seen, and is where you forget one. |
 | Several Macs | Phone | A phone can remember more than one Mac and switch between them in Settings → Connection. |
@@ -186,8 +186,10 @@ In Finder, select up to 50 files, right-click and choose **Share → AndroMac**.
 in AndroMac and click **Send**. If the share target is hidden, enable AndroMac under
 **System Settings → General → Login Items & Extensions → Sharing** (the location varies by macOS version).
 
-For a quick send, drop files on AndroMac's menu bar icon. They go at once to the phone
-selected in the panel. With no connected phone the icon does not accept a drop.
+For a quick send, drag files onto AndroMac's menu bar icon. Your phones unfold under it; drop
+the files on one to send them there. Dropped on the icon itself, they go to the phone selected in
+the panel. A phone that is not connected gets them once it connects; until then the panel says
+it is waiting.
 The existing panel drop and file picker also work. Folders and files larger than 4 GiB cannot be sent.
 The phone asks before receiving only when its **Accept files automatically** setting is off.
 

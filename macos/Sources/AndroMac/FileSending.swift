@@ -4,16 +4,20 @@ import SwiftUI
 /// All Mac entry points use the same destination and file validation rules.
 @MainActor
 enum FileSending {
-    static var destination: AppState.DeviceState? {
+    /// The focused phone; with none connected, the paired phone seen last, whose files wait for it.
+    static var destination: String? {
         let state = AppState.shared
         // A focused phone without file support must not silently redirect a drop to another phone.
-        return state.focusedDevice.flatMap { $0.caps.contains("file") ? $0 : nil }
+        if let focused = state.focusedDevice { return focused.caps.contains("file") ? focused.id : nil }
+        return Store.shared.pairedDevices.max { ($0.lastSeen ?? .distantPast) < ($1.lastSeen ?? .distantPast) }?.id
     }
 
     @discardableResult
     static func send(_ urls: [URL], to peer: String? = nil) -> Bool {
-        guard let target = peer ?? destination?.id,
-              AppState.shared.devices.contains(where: { $0.id == target && $0.caps.contains("file") }) else {
+        let connected = { (id: String) in AppState.shared.devices.contains { $0.id == id && $0.caps.contains("file") } }
+        guard let target = peer ?? destination,
+              connected(target) || (AppState.shared.devices.allSatisfy { $0.id != target }
+                                    && Store.shared.device(id: target) != nil) else {
             showError(String(localized: "Connect your phone to send files"))
             return false
         }
@@ -32,6 +36,7 @@ enum FileSending {
             return false
         }
         FileTransfer.shared.send(urls: urls, to: target)
+        if !connected(target) { Task { await Server.shared.knock(target) } }
         return true
     }
 
@@ -177,7 +182,8 @@ private struct ShareFilesView: View {
 }
 
 /// The drop destination over the menu bar icon; unlike a SwiftUI label on MenuBarExtra it
-/// receives Finder drags. Files dropped on it go to the phone selected in the panel.
+/// receives Finder drags. A drag that reaches it unfolds the phones underneath (`DropShelf`);
+/// files dropped on the icon itself go to the phone selected in the panel.
 @MainActor
 final class FileDropView: NSView {
     override init(frame frameRect: NSRect) {
@@ -192,7 +198,8 @@ final class FileDropView: NSView {
     override func rightMouseDown(with event: NSEvent) { superview?.rightMouseDown(with: event) }
 
     override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation {
-        FileSending.destination == nil ? [] : .copy
+        DropShelf.show(below: self)
+        return FileSending.destination == nil ? [] : .copy
     }
 
     override func draggingUpdated(_ sender: any NSDraggingInfo) -> NSDragOperation {
@@ -204,9 +211,10 @@ final class FileDropView: NSView {
     }
 
     override func performDragOperation(_ sender: any NSDraggingInfo) -> Bool {
+        DropShelf.hide()
         guard let urls = sender.draggingPasteboard.readObjects(forClasses: [NSURL.self],
             options: [.urlReadingFileURLsOnly: true]) as? [URL], !urls.isEmpty,
-              let peer = FileSending.destination?.id else { return false }
+              let peer = FileSending.destination else { return false }
         // The recipient is captured at the drop, before any asynchronous UI update.
         return FileSending.send(urls, to: peer)
     }

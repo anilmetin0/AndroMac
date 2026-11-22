@@ -396,3 +396,4 @@
 "Stop" = "Durdur";
 "Test" = "Test";
 "Title only leaves the content on the phone; Off keeps the whole notification there. Banner and History apply on this Mac." = "Sadece başlık, içeriği telefonda bırakır; Kapalı, bildirimin tamamını telefonda tutar. Bildirim ve Geçmiş bu Mac için geçerlidir.";
+"Sends when it connects" = "Bağlanınca gönderilir";

@@ -136,6 +136,7 @@
 "History" = "History";
 "Holds this Mac's identity key" = "Holds this Mac's identity key";
 "Idle baseline is about 30 messages per hour for each connected phone." = "Idle baseline is about 30 messages per hour for each connected phone.";
+"If it does not connect, tap Connect on the phone." = "If it does not connect, tap Connect on the phone.";
 "If macOS can't open the call audio, the call stays on the phone" = "If macOS can't open the call audio, the call stays on the phone";
 "in use" = "in use";
 "Included" = "Included";
@@ -278,6 +279,7 @@
 "Send to Android" = "Send to Android";
 "Send to phone" = "Send to phone";
 "Sending…" = "Sending…";
+"Sends when it connects" = "Sends when it connects";
 "Sent from phone" = "Sent from phone";
 "Sent to phone" = "Sent to phone";
 "Settings" = "Settings";
@@ -328,7 +330,6 @@
 "Title only" = "Title only";
 "Title only leaves the content on the phone; Off keeps the whole notification there. Banner and History apply on this Mac." = "Title only leaves the content on the phone; Off keeps the whole notification there. Banner and History apply on this Mac.";
 "To" = "To";
-"If it does not connect, tap Connect on the phone." = "If it does not connect, tap Connect on the phone.";
 "To use it again, click Connect." = "To use it again, click Connect.";
 "To use it with this Mac again, pair it again." = "To use it with this Mac again, pair it again.";
 "To:" = "To:";

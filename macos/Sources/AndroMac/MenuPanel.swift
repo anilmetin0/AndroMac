@@ -110,7 +110,7 @@ struct MenuPanel: View {
         // Dropping files onto the panel is the second way to send (PROTOCOL §5, sender rules).
         .onDrop(of: [.fileURL], isTargeted: nil) { providers in
             // The focused phone, and only if it advertises the capability (PROTOCOL §5).
-            guard let peer = FileSending.destination?.id else { return false }
+            guard let peer = FileSending.destination else { return false }
             for provider in providers {
                 _ = provider.loadObject(ofClass: URL.self) { url, _ in
                     guard let url, url.isFileURL else { return }
@@ -134,7 +134,7 @@ struct MenuPanel: View {
                 .lineLimit(1)
                 .truncationMode(.middle)
             Spacer(minLength: Theme.Space.tight)
-            Text("\(p.percent)%")
+            Text(p.waiting ? String(localized: "Waiting for phone") : "\(p.percent)%")
                 .font(Theme.Font.label.monospacedDigit())
                 .foregroundStyle(.secondary)
             QuietButton(String(localized: "Cancel")) { transfer.cancel() }

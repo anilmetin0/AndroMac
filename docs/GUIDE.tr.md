@@ -166,7 +166,7 @@ tarafa hemen, değilken bir sonraki bağlantıda geçer. Kapalıyken telefon yal
 | Medya | İki yön | Telefonda çalanın başlığı, sanatçısı ve uygulaması; Mac'ten önceki, oynat/duraklat ve sonraki. |
 | Telefonu bul | Mac'ten telefona | Telefon en fazla 30 saniye alarm sesiyle çalar ve titrer. "Buldum", ikinci bir basış ya da süre dolması durdurur. |
 | Telefon denetimleri | Mac'ten telefona | Panelden zil modu (zil, titreşim, sessiz) ve medya ses düzeyi, bir de test bildirimi. Sessize almak telefonda Rahatsız Etmeyin erişimi ister. |
-| Dosyalar | İki yön | Telefonda paylaşım menüsünden, Mac'te dosyaları panele bırakarak. Dosyalar sorulmadan kabul edilir; önce sorulsun istersen otomatik kabulü kapat. Dosyalar İndirilenler'e iner, gelince denetlenir ve kendiliğinden açılmaz. |
+| Dosyalar | İki yön | Telefonda paylaşım menüsünden, Mac'te dosyaları panele bırakarak. Karşı taraf bağlı değilken gönderilen dosyalar bekler, bağlanınca gider. Dosyalar sorulmadan kabul edilir; önce sorulsun istersen otomatik kabulü kapat. Dosyalar İndirilenler'e iner, gelince denetlenir ve kendiliğinden açılmaz. |
 | Mesajlar | İki yönlü | SMS konuşmaları Mac penceresinin Mesajlar sayfasında (⌘⇧M ya da telefon kartındaki mesaj düğmesi): en son 50 konuşma, her birinin son 200 mesajı, telefon üzerinden yanıt ve yeni mesaj. Yalnızca SMS; MMS, RCS ve sohbet uygulamaları yok. Telefonda Ayarlar → Mesajlar'dan açılana kadar kapalı. Mac'te hiçbir şey saklanmaz. |
 | Birden fazla telefon | Mac | Aynı anda birden fazla telefon bağlanabilir. Panel onları sekme olarak gösterir. Her birinin bağlantısı ayrı kesilebilir, her birinin kendi pano anahtarı var. Ayarlar → Cihazlar her telefonu IP adresi ve en son ne zaman görüldüğüyle listeler; unutma da oradan yapılır. |
 | Birden fazla Mac | Telefon | Telefon birden fazla Mac'i hatırlar, Ayarlar → Bağlantı'dan aralarında geçiş yapılır. |
@@ -184,8 +184,10 @@ Finder'da en fazla 50 dosya seç, sağ tıkla ve **Paylaş → AndroMac**'i seç
 seçip **Gönder**'e bas. Paylaşım hedefi görünmüyorsa **Sistem Ayarları → Genel → Giriş Öğeleri ve
 Uzantılar → Paylaşma** bölümünden AndroMac'i etkinleştir (konum macOS sürümüne göre değişebilir).
 
-Hızlı göndermek için dosyaları AndroMac'in menü çubuğu simgesine bırak. Dosyalar hemen panelde
-seçili telefona gider. Bağlı telefon yoksa simge dosya kabul etmez. Mevcut panele bırakma ve dosya seçme yolları da
+Hızlı göndermek için dosyaları AndroMac'in menü çubuğu simgesine sürükle. Telefonların simgenin
+altında açılır; dosyaları birinin üstüne bırakınca ona gider. Simgenin kendisine bırakılan dosyalar
+panelde seçili telefona gider. Bağlı olmayan telefon dosyaları bağlanınca alır; o zamana kadar
+panel bağlantı beklendiğini gösterir. Mevcut panele bırakma ve dosya seçme yolları da
 çalışır. Klasörler ve 4 GiB'dan büyük dosyalar gönderilemez. Telefon yalnızca **Dosyaları otomatik
 kabul et** kapalıysa almadan önce sorar.
 
