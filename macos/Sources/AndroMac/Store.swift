@@ -283,7 +283,7 @@ final class Store: @unchecked Sendable {
     /// Percent at or below which the low-battery alert fires. Clamped on read so a hand-edited
     /// default cannot silence the alert (0) or make it fire on every message (100).
     var lowBatteryThreshold: Int {
-        get { min(50, max(5, defaults.object(forKey: "lowBatteryThreshold") as? Int ?? 15)) }
+        get { min(50, max(5, defaults.object(forKey: "lowBatteryThreshold") as? Int ?? 20)) }
         set { write(min(50, max(5, newValue)), "lowBatteryThreshold") }
     }
 
