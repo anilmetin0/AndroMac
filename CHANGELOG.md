@@ -7,6 +7,28 @@ The `## <version>` section matching the `VERSION` file is the notes of that stab
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Nightly builds list their commits instead.
 
+## 1.12.0 - 2026-11-24
+
+### Changed
+
+- **Phone copies reach the Mac on their own.** Turn on AndroMac clipboard in the phone's
+  Accessibility settings, and whatever you copy on the phone is on the Mac's clipboard about half
+  a second later. You no longer need to open the menu bar panel first. The phone only notices the
+  tap on Copy or the "Copied" message, then reads the clipboard once. It reads nothing on screen.
+  Find it under Settings → Clipboard and Permissions on the phone. With it on, the phone's
+  AndroMac notification drops its Send clipboard button.
+- **Earlier copies in the panel.** The menu bar panel shows the two copies before the latest;
+  click one to put it back on the Mac's clipboard.
+- **Low battery alert at 20%.** The alert now fires at 20% unless you picked another level.
+- Mac: copies on the Mac reach the phone a little faster.
+
+### Fixed
+
+- Closing a notification on the Mac no longer removes it from the phone.
+- Phone: after an update the phone sometimes stayed disconnected until AndroMac was opened.
+- Phone: copying a text again after the Mac's clipboard changed sends it again.
+- Mac: opening the panel a second time within ten seconds now asks the phone for its clipboard again.
+
 ## 1.11.0 - 2026-11-22
 
 ### Changed

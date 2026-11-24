@@ -7,6 +7,28 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaral
 `## Unreleased` altına yazılır; `VERSION` yükseltilince o bölüm yeni sürümün bölümü olur. Beta
 derlemeler bunun yerine commit'lerini listeler.
 
+## 1.12.0 - 2026-11-24
+
+### Değişenler
+
+- **Telefonda kopyalanan Mac'e kendiliğinden geçer.** Telefonun Erişilebilirlik ayarlarında
+  AndroMac pano'yu açınca telefonda kopyaladığın şey yarım saniye içinde Mac'in panosunda olur.
+  Önce menü çubuğu panelini açman gerekmez. Telefon yalnızca Kopyala dokunuşunu ya da
+  "Kopyalandı" mesajını fark eder, sonra panoyu bir kez okur. Ekrandaki hiçbir şeyi okumaz.
+  Telefonda Ayarlar → Pano ve İzinler altında bulunur. Açıkken telefondaki AndroMac bildiriminde
+  Panoyu gönder düğmesi görünmez.
+- **Önceki kopyalar panelde.** Menü çubuğu paneli en sonuncudan önceki iki kopyayı da gösterir;
+  birine tıklayınca Mac'in panosuna geri konur.
+- **Düşük pil uyarısı %20'de.** Başka bir seviye seçmediysen uyarı artık %20'de gelir.
+- Mac: Mac'te kopyalanan telefona biraz daha hızlı geçer.
+
+### Düzeltilenler
+
+- Mac'te bir bildirimi kapatmak artık onu telefondan silmiyor.
+- Telefon: güncellemeden sonra telefon bazen AndroMac açılana kadar bağlanmıyordu.
+- Telefon: Mac'in panosu değiştikten sonra aynı metni yeniden kopyalamak onu yeniden gönderir.
+- Mac: paneli on saniye içinde ikinci kez açmak telefonun panosunu yeniden sorar.
+
 ## 1.11.0 - 2026-11-22
 
 ### Değişenler
