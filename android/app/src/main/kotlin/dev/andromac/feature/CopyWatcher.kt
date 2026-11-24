@@ -1,7 +1,12 @@
 package dev.andromac.feature
 
 import android.accessibilityservice.AccessibilityService
+import android.app.Notification
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.ComponentName
+import android.content.Intent
+import dev.andromac.R
 import android.content.Context
 import android.provider.Settings
 import android.os.Handler
@@ -26,16 +31,28 @@ import dev.andromac.ui.ClipHelperActivity
 class CopyWatcher : AccessibilityService() {
 
     private val handler = Handler(Looper.getMainLooper())
+    /** When the helper last read the clipboard. */
+    private var lastRead = 0L
+
     private val read = Runnable {
         if (!Link.isConnected || !Store(this).syncClipboard) return@Runnable
+        lastRead = SystemClock.elapsedRealtime()
         runCatching { startActivity(ClipHelperActivity.getIntent(this, quiet = true)) }
             .onFailure { Log.i(Link.TAG, "copy watcher could not take focus: ${it.message}") }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         if (event.packageName == packageName || !looksLikeCopy(event)) return
-        // Writing the Mac's text makes Samsung show "Copied" too; that is not the user copying.
-        if (SystemClock.elapsedRealtime() - ClipboardBridge.lastFromMacAt < 1500) return
+        // A tap on Copy is the user. A "Copied" toast or overlay also follows every clipboard
+        // write, the Mac's and the copy just read included, up to 4.4 s later on a Galaxy S24
+        // (Link to Windows: "Copied to your connected devices"). Reading again would take focus
+        // from whatever the user is doing, so those signals wait out a quiet period.
+        val now = SystemClock.elapsedRealtime()
+        if (event.eventType != AccessibilityEvent.TYPE_VIEW_CLICKED &&
+            now - maxOf(lastRead, ClipboardBridge.lastFromMacAt) < QUIET_MS
+        ) return
+        // Which signal fired, never what it said: enough to tell a missed copy from a stray read.
+        Log.i(Link.TAG, "copy watcher: ${AccessibilityEvent.eventTypeToString(event.eventType)} from ${event.packageName}")
         // The app writes the clip right after the tap; a burst of events is one read.
         handler.removeCallbacks(read)
         handler.postDelayed(read, 250)
@@ -58,16 +75,58 @@ class CopyWatcher : AccessibilityService() {
         }
     }
 
-    override fun onServiceConnected() = LinkService.startIfPaired(this)
+    override fun onServiceConnected() {
+        running = true
+        getSystemService(NotificationManager::class.java).cancel(STUCK_ID)
+        LinkService.startIfPaired(this)
+    }
 
     override fun onInterrupt() = Unit
 
     override fun onDestroy() {
+        running = false
+        // Still on in Settings means Android dropped it, not the user: on a Galaxy S24 (Android
+        // 17) it unbound this and another sideloaded app's service at once, with no update.
+        val app = applicationContext
+        if (isEnabled(app)) Handler(Looper.getMainLooper()).postDelayed({ warnIfStuck(app) }, 10_000)
         handler.removeCallbacks(read)
         super.onDestroy()
     }
 
     companion object {
+        private const val QUIET_MS = 8_000L
+        private const val STUCK_ID = 12
+
+        /** True while Android has this service bound in this process. */
+        @Volatile
+        var running = false
+            private set
+
+        /**
+         * On in Settings but not bound. After an app update a Galaxy S24 (Android 17) left the
+         * service like this every time; only turning it off and on again in Settings brings it
+         * back, and the app cannot do that itself.
+         */
+        fun isStuck(ctx: Context): Boolean = isEnabled(ctx) && !running
+
+        /** Tell the user, after giving Android time to bind it again on its own. */
+        fun warnIfStuck(ctx: Context) {
+            if (!isStuck(ctx)) return
+            val open = PendingIntent.getActivity(
+                ctx, STUCK_ID, Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
+            val n = Notification.Builder(ctx, LinkService.CHANNEL_CLIP)
+                .setSmallIcon(R.drawable.ic_clipboard)
+                .setContentTitle(ctx.getString(R.string.copy_watcher_stuck_title))
+                .setContentText(ctx.getString(R.string.copy_watcher_stuck_body))
+                .setStyle(Notification.BigTextStyle().bigText(ctx.getString(R.string.copy_watcher_stuck_body)))
+                .setContentIntent(open)
+                .setAutoCancel(true)
+                .build()
+            ctx.getSystemService(NotificationManager::class.java).notify(STUCK_ID, n)
+        }
+
         /** Whether the user turned this service on in Accessibility settings. */
         fun isEnabled(ctx: Context): Boolean =
             Settings.Secure.getString(ctx.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES).orEmpty()

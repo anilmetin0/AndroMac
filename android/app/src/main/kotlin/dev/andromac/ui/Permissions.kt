@@ -130,8 +130,8 @@ enum class Permission(
     },
 
     /** Phone copies reach the Mac on their own; without it only the tile, the share sheet or the Mac's panel send them. */
-    COPY_WATCHER(R.string.copy_watcher_label, R.string.copy_watcher_description, Kind.OPTIONAL) {
-        override fun granted(ctx: Context): Boolean = CopyWatcher.isEnabled(ctx)
+    COPY_WATCHER(R.string.setup_accessibility_title, R.string.copy_watcher_description, Kind.OPTIONAL) {
+        override fun granted(ctx: Context): Boolean = CopyWatcher.running
 
         override fun settingsIntent(ctx: Context): Intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
     };

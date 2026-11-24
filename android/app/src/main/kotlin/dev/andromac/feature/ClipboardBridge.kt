@@ -77,7 +77,8 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
         // Nobody copied anything on a phone whose screen is off, and answering would mean an
         // activity launch or a notification, plus a reply, for every time the panel opens.
         if (!context.getSystemService(android.os.PowerManager::class.java).isInteractive) return
-        if (Settings.canDrawOverlays(context)) {
+        // A bound accessibility service also lets the app start an activity from the background.
+        if (Settings.canDrawOverlays(context) || CopyWatcher.running) {
             runCatching { context.startActivity(ClipHelperActivity.getIntent(context)) }
                 .onFailure { Log.i(Link.TAG, "clipboard request could not take focus: ${it.message}") }
             return

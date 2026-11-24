@@ -52,7 +52,11 @@ class ClipboardSettingsActivity : Activity() {
 
     private fun refresh() {
         findViewById<TextView>(R.id.autoSendSummary).setText(
-            if (CopyWatcher.isEnabled(this)) R.string.clip_auto_send_on else R.string.clip_auto_send_off
+            when {
+                CopyWatcher.running -> R.string.clip_auto_send_on
+                CopyWatcher.isStuck(this) -> R.string.copy_watcher_stuck_body
+                else -> R.string.clip_auto_send_off
+            }
         )
         // With auto-paste off, the notification is the only way in: it must not be turned off.
         setRowEnabled(R.id.rowNotify, store.clipboardAutoPaste)

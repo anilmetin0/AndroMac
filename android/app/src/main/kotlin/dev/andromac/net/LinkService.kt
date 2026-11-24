@@ -41,6 +41,7 @@ import dev.andromac.feature.NotificationRelay
 import dev.andromac.feature.SmsBridge
 import dev.andromac.feature.SystemBridge
 import dev.andromac.ui.ClipHelperActivity
+import dev.andromac.ui.updateInBackgroundIfDue
 import dev.andromac.ui.MainActivity
 import dev.andromac.ui.followUpdateChannel
 import org.json.JSONObject
@@ -105,6 +106,7 @@ class LinkService : Service() {
         sms = SmsBridge(this, store)
         createChannels()
         startForeground(FGS_ID, buildNotification(getString(R.string.fgs_starting), false))
+        android.os.Handler(mainLooper).postDelayed({ CopyWatcher.warnIfStuck(this) }, 20_000)
         // A process death during the 30 s alarm leaves the alarm stream pinned at maximum.
         FindPhone.restoreAlarmVolume(this)
         registerNetworkCallback()
@@ -505,6 +507,7 @@ class LinkService : Service() {
         Link.attach(session, Protocol.hello(store.deviceName, store.autoConnect, store.autoConnectChanged, connect))
         Link.setState(Link.State.Connected(peerName))
         note(getString(R.string.fgs_connected, peerName), connected = true)
+        android.os.Handler(mainLooper).post { updateInBackgroundIfDue(store) }
         battery.start()
         media.start()
         system.start()
@@ -785,19 +788,16 @@ class LinkService : Service() {
             .setOngoing(true)
             .setShowWhen(false)
         if (connected) {
-            // With the copy watcher on, copies go by themselves and the manual button is noise.
-            if (!CopyWatcher.isEnabled(this)) {
-                val send = PendingIntent.getActivity(
-                    this, REQ_CLIP, ClipHelperActivity.getIntent(this),
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                )
-                // The everyday action first; the rare Disconnect last, away from the thumb.
-                builder.addAction(
-                    Notification.Action.Builder(
-                        null as android.graphics.drawable.Icon?, getString(R.string.tile_clip), send,
-                    ).build()
-                )
-            }
+            val send = PendingIntent.getActivity(
+                this, REQ_CLIP, ClipHelperActivity.getIntent(this),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
+            // The everyday action first; the rare Disconnect last, away from the thumb.
+            builder.addAction(
+                Notification.Action.Builder(
+                    null as android.graphics.drawable.Icon?, getString(R.string.tile_clip), send,
+                ).build()
+            )
             builder.addAction(serviceAction(REQ_DISCONNECT, ACTION_DISCONNECT, R.string.link_disconnect))
         } else if (store.isPaired && !store.autoConnect) {
             builder.addAction(serviceAction(REQ_RESUME, ACTION_RESUME, R.string.link_resume))

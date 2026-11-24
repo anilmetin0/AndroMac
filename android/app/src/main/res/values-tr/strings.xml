@@ -245,11 +245,14 @@
     <string name="clip_notify_note">Gelen metni bildirimde göster; dokununca panoya yazar.</string>
     <string name="clip_sensitive">Hassas içeriği gönderme</string>
     <string name="clip_sensitive_note">Parola yöneticilerinin ve OTP alanlarının hassas işaretlediği panolar Mac\'e gitmez.</string>
-    <string name="copy_watcher_label">AndroMac pano</string>
-    <string name="copy_watcher_description">Kopyaladığını hemen Mac\'e gönderir. Yalnızca Kopyala dokunuşunu ya da Kopyalandı mesajını fark eder, sonra panoyu bir kez okur. Ekran içeriği okunmaz.</string>
+    <string name="setup_accessibility_title">Erişilebilirlik</string>
+    <string name="copy_watcher_label">AndroMac</string>
+    <string name="copy_watcher_description">AndroMac\'ı açmadan çalıştırır: kopyaladığın hemen Mac\'e gider, Mac de panoyu isteyebilir. Yalnızca Kopyala dokunuşunu ya da Kopyalandı mesajını fark eder, sonra panoyu bir kez okur. Ekran içeriği okunmaz.</string>
     <string name="clip_auto_send">Kopyaları otomatik gönder</string>
     <string name="clip_auto_send_on">Açık, kopyalar hemen Mac\'e gider</string>
-    <string name="clip_auto_send_off">Kapalı. Erişilebilirlik\'te AndroMac pano\'yu aç</string>
+    <string name="clip_auto_send_off">Kapalı. Erişilebilirlik\'te AndroMac\'ı aç</string>
+    <string name="copy_watcher_stuck_title">Kopyalar otomatik gönderilmiyor</string>
+    <string name="copy_watcher_stuck_body">Android Erişilebilirlik\'teki AndroMac\'ı durdurdu. Orada kapatıp yeniden aç</string>
     <string name="clip_send_now">Panoyu Mac\'e gönder</string>
     <string name="clip_send_ready">Dokun; pano okunup gönderilir</string>
     <string name="clip_send_offline">Mac bağlı değil</string>
