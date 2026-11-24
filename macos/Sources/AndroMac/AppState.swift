@@ -193,16 +193,19 @@ final class AppState: ObservableObject {
     static let closePanel = Notification.Name("AndroMac.closePanel")
 
     private func present(_ id: String, open: @escaping @MainActor () -> Void) {
+        // Activate while the click that asked for the window is still being handled: since macOS
+        // 14 activation is cooperative, and a request made 100 ms later, after the panel closed,
+        // was refused, so the window opened behind the app in front.
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate()
         NotificationCenter.default.post(name: Self.closePanel, object: nil)
         Task { @MainActor in
-            NSApp.setActivationPolicy(.regular)
             try? await Task.sleep(for: .milliseconds(100))
-            NSApp.activate(ignoringOtherApps: true)
             open()
             try? await Task.sleep(for: .milliseconds(200))
-            NSApp.windows
-                .first { $0.identifier?.rawValue.contains(id) == true }?
-                .makeKeyAndOrderFront(nil)
+            let window = NSApp.windows.first { $0.identifier?.rawValue.contains(id) == true }
+            window?.makeKeyAndOrderFront(nil)
+            NSApp.activate()
         }
     }
 
