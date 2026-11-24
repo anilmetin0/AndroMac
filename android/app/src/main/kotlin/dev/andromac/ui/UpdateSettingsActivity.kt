@@ -221,13 +221,13 @@ fun Activity.fakeUpdateIfAsked() {
 }
 
 /** The version this build reports, or 0.0.0 if the package info is somehow unreadable. */
-fun Activity.currentVersion(): Version = Version.find(versionLabel()) ?: Version(0, 0, 0)
+fun Context.currentVersion(): Version = Version.find(versionLabel()) ?: Version(0, 0, 0)
 
 /** The commit this build was made from; "local" outside CI (build.gradle.kts). */
-fun Activity.currentCommit(): String = getString(R.string.build_commit)
+fun Context.currentCommit(): String = getString(R.string.build_commit)
 
 /** The CI run that built this copy, which is also the `versionCode`; 1 for local builds. */
-fun Activity.currentBuild(): Int =
+fun Context.currentBuild(): Int =
     runCatching { packageManager.getPackageInfo(packageName, 0).longVersionCode.toInt() }.getOrDefault(0)
 
 // Kept next to Store's update keys, in the same preferences file.
@@ -329,6 +329,38 @@ fun Activity.runUpdateCheckIfDue(store: Store, done: () -> Unit): Boolean {
     if (!due && !incomplete) return false
     runUpdateCheck(store, done)
     return true
+}
+
+/**
+ * The daily check, also when the link to the Mac comes up, so a phone whose app is rarely opened
+ * still updates itself. No timer of its own: the connection is the moment, and the network is up.
+ * Goes no further than automatic install at app open would: on, Android 12+, allowed to install,
+ * not metered, not skipped. Main thread only.
+ */
+fun Context.updateInBackgroundIfDue(store: Store) {
+    if (!store.updateCheck || !autoInstallUpdates || Build.VERSION.SDK_INT < 31 || checksInFlight > 0) return
+    if (System.currentTimeMillis() - store.updateLastCheck < UpdateCheck.INTERVAL_MS) return
+    if (getSystemService(ConnectivityManager::class.java).isActiveNetworkMetered) return
+    if (!Updater.canInstall(this) || Updater.state != UpdateCheck.Step.Idle) return
+    val beta = betaUpdates
+    val version = currentVersion(); val build = currentBuild(); val commit = currentCommit()
+    checksInFlight++
+    UpdateCheck.checkAsync(version, build, commit, beta) { result ->
+        android.os.Handler(mainLooper).post {
+            checksInFlight--
+            val release = result.getOrNull() ?: return@post
+            if (beta != betaUpdates) return@post
+            lastFound = release
+            lastFoundBeta = beta
+            checkedThisProcess = true
+            store.updateFound = release
+            store.updateFoundBeta = beta
+            store.updateLastCheck = System.currentTimeMillis()
+            if (release.label != store.updateSkipped && release.apk != null && release.checksums != null &&
+                UpdateCheck.isNewer(release, version, build, commit, beta)
+            ) Updater.install(this, release, whenAway = true)
+        }
+    }
 }
 
 /** One line: what the install is doing or why it stopped, else what the last check found. */

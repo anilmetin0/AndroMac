@@ -421,7 +421,8 @@ class Store(context: Context) {
 
     /**
      * Default ON. This is the single thing that ever leaves the local network: one request to
-     * api.github.com when the app is opened, at most once a day (feature/UpdateCheck.kt).
+     * api.github.com when the app is opened or the link to the Mac comes up, at most once a day
+     * (feature/UpdateCheck.kt, ui/UpdateSettingsActivity.kt `updateInBackgroundIfDue`).
      *
      * It was opt-in until 1.0. An app distributed as an APK outside any store has no other way to
      * tell its user that a fix exists, and a stale build of something holding a long-lived key on

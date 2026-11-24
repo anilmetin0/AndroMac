@@ -84,7 +84,7 @@ fun dev.andromac.core.Store.appFilterSummary(activity: Activity): String {
  * have to go digging in system Settings for it. The commit comes from the build (it reads
  * "local" outside CI) and turns a screenshot into an exact revision.
  */
-fun Activity.versionLabel(): String = runCatching {
+fun Context.versionLabel(): String = runCatching {
     val pm = packageManager
     val info = if (android.os.Build.VERSION.SDK_INT >= 33) {
         pm.getPackageInfo(packageName, android.content.pm.PackageManager.PackageInfoFlags.of(0))

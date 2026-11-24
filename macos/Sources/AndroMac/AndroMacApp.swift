@@ -137,6 +137,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         BluetoothCalls.shared.bootstrap()
         // Every launch offers what it finds — once per release, and never for one that was skipped.
         Task { await UpdateCheck.shared.checkAtLaunch() }
+        UpdateCheck.shared.keepChecking()
         // The status item exists once the scene is up, one runloop turn from now.
         DispatchQueue.main.async { self.installStatusItemMenu() }
         // The welcome window, on the very first launch only.

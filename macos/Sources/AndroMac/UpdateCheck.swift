@@ -6,7 +6,7 @@ import UserNotifications
 /// Finds the newest AndroMac release on GitHub.
 ///
 /// This is the ONLY code in the app that talks to anything beyond the local network, and it runs
-/// solely when the user turned it on: at launch and when the panel opens, at most once a day.
+/// solely when the user turned it on: at launch, when the panel opens and hourly, at most once a day.
 /// One HTTPS GET to api.github.com per check (`releases/latest`, or `releases?per_page=10` on the
 /// nightly channel); the request carries the app version in the User-Agent and nothing else. What
 /// counts as "newer" is `Release.isNewer` in AndroMacKit. Mirrors `UpdateCheck.kt` on Android.
@@ -55,6 +55,21 @@ final class UpdateCheck: ObservableObject {
         if let lastChecked, Date().timeIntervalSince(lastChecked) < Self.interval { return }
         Task { await checkNow() }
     }
+
+    /// A menu bar app runs for weeks and its panel may stay closed: once an hour the daily check
+    /// gets a chance too (`checkIfDue` still asks GitHub at most once a day), and a prepared
+    /// update another go at installing while idle. The tolerance lets the system batch the wake.
+    func keepChecking() {
+        guard ticker == nil, !DemoMode.isOn else { return }
+        ticker = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(3600), tolerance: .seconds(600))
+                self?.checkIfDue()
+            }
+        }
+    }
+
+    private var ticker: Task<Void, Never>?
 
     /// The check at launch, plus the offer that follows it.
     ///
