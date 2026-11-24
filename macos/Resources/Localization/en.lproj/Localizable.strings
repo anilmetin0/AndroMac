@@ -72,7 +72,6 @@
 "Checking the download against the release checksum…" = "Checking the download against the release checksum…";
 "Checking the download…" = "Checking the download…";
 "Checking…" = "Checking…";
-"Choose a phone" = "Choose a phone";
 "Choose up to 50 files in Finder, then share them with AndroMac." = "Choose up to 50 files in Finder, then share them with AndroMac.";
 "Choose up to 50 files, each no larger than 4 GB. Folders cannot be sent." = "Choose up to 50 files, each no larger than 4 GB. Folders cannot be sent.";
 "Clear" = "Clear";
@@ -90,6 +89,7 @@
 "Connects calls" = "Connects calls";
 "Content hidden" = "Content hidden";
 "Continue" = "Continue";
+"Copied" = "Copied";
 "Copy" = "Copy";
 "Copy code" = "Copy code";
 "Copy code %@" = "Copy code %@";
@@ -212,10 +212,10 @@
 "Open at login" = "Open at login";
 "Open clipboard history" = "Open clipboard history";
 "Open device settings" = "Open device settings";
+"Open in window" = "Open in window";
 "Open link" = "Open link";
 "Open Local Network settings" = "Open Local Network settings";
 "Open messages" = "Open messages";
-"Open notification history" = "Open notification history";
 "Open Notification settings" = "Open Notification settings";
 "Open on phone" = "Open on phone";
 "Open Settings" = "Open Settings";
@@ -285,6 +285,7 @@
 "Settings" = "Settings";
 "Settings…" = "Settings…";
 "Setup" = "Setup";
+"Show %lld more" = "Show %lld more";
 "Show all" = "Show all";
 "Show battery percentage in the menu bar" = "Show battery percentage in the menu bar";
 "Show less" = "Show less";
@@ -292,6 +293,7 @@
 "Show welcome again" = "Show welcome again";
 "Show what's playing" = "Show what's playing";
 "Shows the whole notification" = "Shows the whole notification";
+"Shows the whole text" = "Shows the whole text";
 "Shows your phone's notifications" = "Shows your phone's notifications";
 "Silent" = "Silent";
 "Skip" = "Skip";
@@ -305,7 +307,6 @@
 "System" = "System";
 "Tap \"Pair\" on the phone" = "Tap \"Pair\" on the phone";
 "Tap the AndroMac notification on your phone." = "Tap the AndroMac notification on your phone.";
-"Test" = "Test";
 "Text message" = "Text message";
 "Text you copy on either device appears here." = "Text you copy on either device appears here.";
 "The code did not match. Open a new code on the phone and try again." = "The code did not match. Open a new code on the phone and try again.";

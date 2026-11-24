@@ -27,8 +27,7 @@ enum UpdateWindow {
         window.setContentSize(host.view.fittingSize)
         window.center()
         self.window = window
-        NSApp.activate(ignoringOtherApps: true)
-        window.makeKeyAndOrderFront(nil)
+        AppState.bringForward(window)
     }
 
     static func close() {

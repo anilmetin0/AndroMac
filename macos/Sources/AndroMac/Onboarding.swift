@@ -25,8 +25,7 @@ enum OnboardingWindow {
 
     static func show(at step: OnboardingView.Step = .welcome) {
         if let window {
-            NSApp.activate(ignoringOtherApps: true)
-            window.makeKeyAndOrderFront(nil)
+            AppState.bringForward(window)
             window.orderFrontRegardless()
             return
         }
@@ -45,10 +44,8 @@ enum OnboardingWindow {
         )
         self.window = window
         // A menu bar app has no Dock icon; without one a window behind others is hard to find again.
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
         centre(window)
-        window.makeKeyAndOrderFront(nil)
+        AppState.bringForward(window)
         // In front even if macOS declines to activate an app launched in the background.
         window.orderFrontRegardless()
     }
@@ -75,7 +72,6 @@ enum OnboardingWindow {
     fileprivate static func closed(_ closing: NSWindow?) {
         Store.shared.onboardingDone = true
         window = nil
-        if !AppState.appWindowVisible(except: closing) && !DemoMode.isOn { NSApp.setActivationPolicy(.accessory) }
     }
 
     private final class Delegate: NSObject, NSWindowDelegate {

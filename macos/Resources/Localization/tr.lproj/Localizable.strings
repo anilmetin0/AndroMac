@@ -229,18 +229,15 @@
 "Open Settings" = "Ayarları aç";
 "Pair only if this code matches the one on the phone." = "Yalnızca bu kod telefondakiyle aynıysa eşleştirin.";
 "Pair only if you are adding a phone and the code matches. A reinstalled app arrives as a new phone." = "Yalnızca bir telefon ekliyorsanız ve kod aynıysa eşleştirin. Yeniden yüklenen uygulama yeni bir telefon olarak gelir.";
-"Ringer" = "Zil modu";
 "Text you copy on either device appears here." = "İki cihazdan birinde kopyaladığınız metin burada görünür.";
 "Send a test notification from this phone" = "Bu telefondan test bildirimi gönder";
 
 "AndroMac was updated to %@" = "AndroMac %@ sürümüne güncellendi";
 "Nightly builds" = "Nightly sürümler";
-"Choose a phone" = "Bir telefon seç";
 "Install updates automatically" = "Güncellemeleri otomatik kur";
 "No notifications yet" = "Henüz bildirim yok";
 "Nothing copied yet" = "Henüz bir şey kopyalanmadı";
 "Open AndroMac on the phone, on the same Wi‑Fi." = "Telefonda AndroMac'i aç, aynı Wi‑Fi'da olsun.";
-"Open notification history" = "Bildirim geçmişini aç";
 "Updates itself" = "Kendini günceller";
 "Updates through Homebrew" = "Homebrew ile güncellenir";
 
@@ -394,6 +391,13 @@
 "Screen" = "Ekran";
 "Sent from phone" = "Telefondan gönderim";
 "Stop" = "Durdur";
-"Test" = "Test";
 "Title only leaves the content on the phone; Off keeps the whole notification there. Banner and History apply on this Mac." = "Sadece başlık, içeriği telefonda bırakır; Kapalı, bildirimin tamamını telefonda tutar. Bildirim ve Geçmiş bu Mac için geçerlidir.";
 "Sends when it connects" = "Bağlanınca gönderilir";
+
+"Copied" = "Kopyalandı";
+"Open in window" = "Pencerede aç";
+"Shows the whole text" = "Metnin tamamını gösterir";
+
+"Ringer" = "Zil modu";
+
+"Show %lld more" = "%lld tane daha göster";

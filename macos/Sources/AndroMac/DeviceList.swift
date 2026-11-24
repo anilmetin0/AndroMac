@@ -19,8 +19,6 @@ struct DeviceList: View {
 
     @EnvironmentObject private var state: AppState
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    /// The open segment's pill slides from one phone to the next, as a segmented control does.
-    @Namespace private var pill
 
     /// Re-read on each redraw: pairing and unpairing both change it, and it is a handful of items.
     /// `state.pairedDevicesChanged` is what makes that redraw happen after a write (see `Store`).
@@ -38,31 +36,29 @@ struct DeviceList: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Space.small) {
             // Navigation, so it sits on the panel above the card, not inside it.
-            if paired.count > 1 { switcher.frame(height: Self.switcherHeight) }
+            if paired.count > 1 { switcher }
             // Every phone's card is laid out and only the open one is shown, so the card is always
             // as tall as the tallest and the panel keeps its height when the phone changes.
             if let selected {
-                PanelCard {
-                    ZStack(alignment: .topLeading) {
-                        ForEach(paired) { device in
-                            let isOpen = device.id == selected.id
-                            DeviceCard(device: device, live: live(device))
-                                // Every card fills the tallest one's height, so the actions row
-                                // sits at the bottom edge on every phone.
-                                .frame(maxHeight: .infinity, alignment: .top)
-                                .opacity(isOpen ? 1 : 0)
-                                .allowsHitTesting(isOpen)
-                                .disabled(!isOpen)
-                                .accessibilityHidden(!isOpen)
-                        }
+                ZStack(alignment: .topLeading) {
+                    ForEach(paired) { device in
+                        let isOpen = device.id == selected.id
+                        DeviceCard(device: device, live: live(device))
+                            // Every card fills the tallest one's height, so the actions row
+                            // sits at the bottom edge on every phone.
+                            .frame(maxHeight: .infinity, alignment: .top)
+                            .opacity(isOpen ? 1 : 0)
+                            // A crossfade: both cards stay laid out, so the panel keeps its height.
+                            .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: isOpen)
+                            .allowsHitTesting(isOpen)
+                            .disabled(!isOpen)
+                            .accessibilityHidden(!isOpen)
                     }
-                    .fixedSize(horizontal: false, vertical: true)
                 }
+                .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
-
-    static let switcherHeight: CGFloat = 28
 
     private func select(_ id: String) {
         state.focusedDeviceID = id
@@ -73,90 +69,113 @@ struct DeviceList: View {
         state.devices.first { $0.id == device.id }
     }
 
-    /// Up to three phones: equal segments on one track, the open one on a raised pill. More than
-    /// that would not fit a readable name, so it becomes a menu with the open phone's name on it.
+    /// Up to three phones: segments under a glass thumb that can be held and dragged across them,
+    /// as the system's own on macOS 26. More would not fit a readable name, so they become a menu.
     @ViewBuilder
     private var switcher: some View {
-        if paired.count > 3, let selected {
-            Menu {
-                Picker("Phone", selection: Binding(get: { selected.id }, set: { select($0) })) {
-                    ForEach(paired) { device in
-                        Text(DeviceCard.name(device, live(device))).tag(device.id)
-                    }
-                }
-                .pickerStyle(.inline)
-                .labelsHidden()
-            } label: {
-                DeviceSegment(device: selected, live: live(selected), selected: true, pill: pill)
-            }
-            .menuStyle(.button)
-            .buttonStyle(.plain)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .panelCard(Color.primary.opacity(0.06))
-            .help("Choose a phone")
-        } else {
-            HStack(spacing: 0) {
+        if paired.count > 3 {
+            Picker("Phone", selection: Binding(get: { selected?.id ?? "" }, set: { select($0) })) {
                 ForEach(paired) { device in
-                    let isOpen = device.id == selected?.id
-                    Button { select(device.id) } label: {
-                        DeviceSegment(device: device, live: live(device), selected: isOpen, pill: pill)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityAddTraits(isOpen ? .isSelected : [])
+                    Text(DeviceCard.name(device, live(device))).tag(device.id)
                 }
             }
-            .padding(Theme.Space.hair)
-            // Only the pill moves: the cards below swap without animation, so the panel never resizes.
-            .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.82), value: selected?.id)
-            // The track has the cards' corner, the open segment that corner minus the gap around
-            // it: concentric with the panel like every other plate on it.
-            .panelCard(Color.primary.opacity(0.06))
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .fixedSize()
+        } else {
+            PhoneSwitcher(phones: paired.map { ($0.id, DeviceCard.name($0, live($0))) },
+                          selected: selected?.id ?? "", select: select)
         }
     }
 }
 
-/// One segment: a status dot and the name, middle-truncated so two phones of the same model stay
-/// apart. No battery here: the card below prints the open phone's, and only once.
-private struct DeviceSegment: View {
+/// The phone segments. The thumb follows the pointer while it is held, then settles on the phone
+/// under it; a click on a name moves it there. Only the release changes the phone below, so a
+/// drag across does not flash every card on the way.
+private struct PhoneSwitcher: View {
+    let phones: [(id: String, name: String)]
+    let selected: String
+    let select: (String) -> Void
 
-    let device: PairedDevice
-    let live: AppState.DeviceState?
-    let selected: Bool
-    let pill: Namespace.ID
+    /// The pointer's x while the thumb is held.
+    @State private var dragX: CGFloat?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private static let height: CGFloat = 28
+    private static let inset: CGFloat = 2
+    /// How far the held thumb grows on each side.
+    private static let grow: CGFloat = 4
+
+    private var held: Bool { dragX != nil }
 
     var body: some View {
-        HStack(spacing: Theme.Space.tight) {
-            Circle()
-                .fill(DeviceCard.dotColor(device: device, connected: live != nil))
-                .frame(width: 6, height: 6)
-            Text(DeviceCard.name(device, live))
-                .font(Theme.Font.label.weight(selected ? .semibold : .regular))
-                .lineLimit(1)
-                .truncationMode(.middle)
+        GeometryReader { geo in
+            let width = (geo.size.width - 2 * Self.inset) / CGFloat(phones.count)
+            let index = phones.firstIndex { $0.id == selected } ?? 0
+            let x = dragX.map { min(max($0 - width / 2, 0), geo.size.width - 2 * Self.inset - width) }
+                ?? CGFloat(index) * width
+            ZStack(alignment: .leading) {
+                // Placed by layout, not `offset`: glass is drawn where the view is laid out, and
+                // an offset thumb stayed under the first phone.
+                // Held, it grows a little past the track and lifts, as the system's thumb does;
+                // by its frame, since a scale effect is not applied to glass either.
+                thumb
+                    .frame(width: width + (held ? Self.grow * 2 : 0),
+                           height: geo.size.height - 2 * Self.inset + (held ? Self.grow * 2 : 0))
+                    .padding(.leading, x - (held ? Self.grow : 0))
+                HStack(spacing: 0) {
+                    ForEach(Array(phones.enumerated()), id: \.element.id) { i, phone in
+                        Text(phone.name)
+                            .font(Theme.Font.label.weight(i == index ? .semibold : .regular))
+                            .foregroundStyle(i == index ? .primary : .secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .padding(.horizontal, Theme.Space.small)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .accessibilityAddTraits(i == index ? [.isButton, .isSelected] : .isButton)
+                            .accessibilityAction { select(phone.id) }
+                    }
+                }
+            }
+            .padding(Self.inset)
+            // Centred in the track: a GeometryReader pins its content to the top, and the held
+            // thumb grew downwards only. Centred, it grows from its middle, as the system's does.
+            .frame(width: geo.size.width, height: geo.size.height)
+            .contentShape(Capsule())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { dragX = $0.location.x - Self.inset }
+                    .onEnded { value in
+                        let i = min(max(Int((value.location.x - Self.inset) / width), 0), phones.count - 1)
+                        withAnimation(reduceMotion ? nil : .spring(response: 0.32, dampingFraction: 0.78)) {
+                            dragX = nil
+                            select(phones[i].id)
+                        }
+                    }
+            )
+            .animation(reduceMotion ? nil : .spring(response: 0.25, dampingFraction: 0.8), value: dragX == nil)
         }
-        .foregroundStyle(selected ? .primary : .secondary)
-        .padding(.horizontal, Theme.Space.small)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background { if selected { pillShape.matchedGeometryEffect(id: "pill", in: pill) } }
-        .contentShape(Rectangle())
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(DeviceCard.name(device, live))
+        .frame(height: Self.height)
+        .background(Color.primary.opacity(0.06), in: Capsule())
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Phone")
     }
 
-    /// Glass on 26+, a quiet raised fill before. Either way it only paints: the segment's size
-    /// does not depend on being selected.
+    /// Liquid Glass on 26+, which lights up under the pointer while held; a raised fill before.
     @ViewBuilder
-    private var pillShape: some View {
+    private var thumb: some View {
         if #available(macOS 26.0, *) {
-            let shape = RoundedRectangle(cornerRadius: Theme.Radius.card - Theme.Space.hair, style: .continuous)
-            shape.fill(.clear).glassEffect(.regular.interactive(), in: shape)
+            Capsule().fill(.clear)
+                .glassEffect(held ? .clear.interactive() : .regular.interactive(), in: Capsule())
+                .shadow(color: .black.opacity(held ? 0.18 : 0), radius: 6, y: 2)
         } else {
-            Capsule().fill(Color.primary.opacity(0.12))
+            Capsule().fill(Color.primary.opacity(0.14))
+                .shadow(color: .black.opacity(held ? 0.25 : 0.15), radius: held ? 5 : 2, y: 1)
         }
     }
 }
 
-/// The selected phone, top to bottom: who and what state, battery, the track, ringer and volume,
+/// The selected phone, top to bottom: who, state and battery on one line, the track and volume,
 /// then one row of actions. Everything secondary is one click further, in the More menu.
 private struct DeviceCard: View {
 
@@ -177,18 +196,13 @@ private struct DeviceCard: View {
         VStack(alignment: .leading, spacing: Theme.Space.small) {
             header
 
-            // The battery belongs to the device, not to the panel: with two phones, one line at
-            // the bottom could only ever describe one of them.
-            if let battery = live?.battery, Store.shared.syncBattery {
-                BatteryLine(battery: battery)
-            }
-
+            // The track while the phone has one, paused too, so Play is one click away; the volume
+            // only while it plays.
             if let media = live?.media, Store.shared.syncMedia {
                 MediaRow(media: media, deviceID: device.id)
-            }
-
-            if connected, let system = live?.system {
-                PhoneControls(deviceID: device.id, system: system)
+                if media.playing, let system = live?.system {
+                    PhoneControls(deviceID: device.id, system: system)
+                }
             }
 
             if connected {
@@ -241,32 +255,48 @@ private struct DeviceCard: View {
         }
     }
 
-    /// Clicking the name opens this phone's entry in Settings.
+    /// Who, what state and the battery on one line. Clicking the name opens this phone's entry
+    /// in Settings.
     private var header: some View {
-        Button {
-            state.showMainWindow(.setting(.devices))
-        } label: {
-            HStack(spacing: Theme.Space.small) {
-                Circle()
-                    .fill(Self.dotColor(device: device, connected: connected))
-                    .frame(width: 8, height: 8)
-                Text(title)
-                    .font(Theme.Font.heading)
-                    .lineLimit(1)
-                Spacer(minLength: Theme.Space.tight)
-                // A long name truncates; the state beside it stays whole.
-                Text(statusLine)
-                    .font(Theme.Font.label)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .fixedSize()
+        HStack(spacing: Theme.Space.small) {
+            Button {
+                state.showMainWindow(.setting(.devices))
+            } label: {
+                HStack(spacing: Theme.Space.small) {
+                    Circle()
+                        .fill(Self.dotColor(device: device, connected: connected))
+                        .frame(width: 8, height: 8)
+                    Text(title)
+                        .font(Theme.Font.heading)
+                        .lineLimit(1)
+                    // A long name truncates; the state beside it stays whole.
+                    Text(statusLine)
+                        .font(Theme.Font.label)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .fixedSize()
+                }
+                .contentShape(Rectangle())
             }
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            // The address only on hover: it tells two phones apart without crowding the line.
+            .help(address.map { Text("Open device settings") + Text(verbatim: " · \($0)") } ?? Text("Open device settings"))
+            .accessibilityLabel("\(title), \(statusLine)")
+            Spacer(minLength: Theme.Space.tight)
+            // The ringer one click away, showing the mode it is in: in More it was three lines of
+            // a long menu.
+            if connected, let system = live?.system {
+                GlassMenuButton(symbol: PhoneControls.symbol(system.ringer), label: String(localized: "Ringer")) {
+                    [.header(String(localized: "Ringer"))] + PhoneControls.ringerItems(deviceID: device.id, system: system)
+                }
+                .accessibilityValue(Text(PhoneControls.label(system.ringer)))
+            }
+            // The battery belongs to the device, not to the panel: with two phones, one line at
+            // the bottom could only ever describe one of them.
+            if let battery = live?.battery, Store.shared.syncBattery {
+                BatteryLine(battery: battery)
+            }
         }
-        .buttonStyle(.plain)
-        // The address only on hover: it tells two phones apart without crowding the card.
-        .help(address.map { Text("Open device settings") + Text(verbatim: " · \($0)") } ?? Text("Open device settings"))
-        .accessibilityLabel("\(title), \(statusLine)")
     }
 
     private var address: String? { live?.host ?? device.lastAddress }
@@ -285,26 +315,14 @@ private struct DeviceCard: View {
         return device.paused ? .secondary.opacity(0.5) : .orange
     }
 
-    /// One row of labelled tiles in equal columns: icons alone left three bells side by side
-    /// (ringer, ring, test) and no way to tell them apart without hovering.
+    /// Compact glass capsules, each with its name: icons alone left look-alike symbols side by
+    /// side. More is the round button at the end, like the system's own overflow.
     private var actions: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: Theme.Space.tight + Theme.Space.hair) {
             if live?.caps.contains("find_phone") == true {
                 ActionTile(symbol: "bell", title: String(localized: "Ring"),
                            help: String(localized: "Ring this phone")) {
                     Task { await Server.shared.send(["t": "find_phone"], to: device.id) }
-                }
-            }
-            // Proves the whole notification chain in one click: the phone posts a notification to
-            // itself, its listener picks it up and it comes back here.
-            if live?.caps.contains("system") == true {
-                ActionTile(symbol: "app.badge", title: String(localized: "Test"),
-                           help: String(localized: "Send a test notification from this phone")) {
-                    Task {
-                        await Server.shared.send(
-                            ["t": "system_control", "cmd": "test_notification"], to: device.id
-                        )
-                    }
                 }
             }
             if live?.caps.contains("sms") == true {
@@ -314,9 +332,10 @@ private struct DeviceCard: View {
                 }
             }
             mirrorButton
-            ActionTile(symbol: "ellipsis", title: String(localized: "More"),
-                       help: String(localized: "More")) { PanelMenu.show(moreItems) }
+            Spacer(minLength: 0)
+            more
         }
+        .glassGroup()
     }
 
     private var mirrorButton: some View {
@@ -337,25 +356,37 @@ private struct DeviceCard: View {
     }
 
     private var moreItems: [PanelMenu.Item] {
-        var items: [PanelMenu.Item] = [
+        var items: [PanelMenu.Item] = []
+        // Proves the whole notification chain in one click: the phone posts a notification to
+        // itself, its listener picks it up and it comes back here.
+        if connected, live?.caps.contains("system") == true {
+            items += [.action(String(localized: "Send a test notification from this phone"), symbol: "app.badge") {
+                Task { await Server.shared.send(["t": "system_control", "cmd": "test_notification"], to: device.id) }
+            }, .separator]
+        }
+        items += [
             // Which phones get the Mac's clipboard is a per-device answer, so it belongs here.
-            .action(String(localized: "Send my clipboard here"), checked: device.receivesClipboard) {
+            .action(String(localized: "Send my clipboard here"), symbol: "doc.on.clipboard",
+                    checked: device.receivesClipboard) {
                 Store.shared.updateDevice(id: device.id) { $0.receivesClipboard.toggle() }
             },
             // The same switch as on the phone: flipping either flips both (PROTOCOL §3).
-            .action(String(localized: "Connect automatically"), checked: !device.paused) {
+            .action(String(localized: "Connect automatically"), symbol: "arrow.triangle.2.circlepath",
+                    checked: !device.paused) {
                 let on = device.paused
                 Task { await Server.shared.setAutoConnect(on, for: device.id) }
             },
-            .action(String(localized: "Device settings…")) { state.showMainWindow(.setting(.devices)) },
+            .action(String(localized: "Device settings…"), symbol: "gearshape") {
+                state.showMainWindow(.setting(.devices))
+            },
             .separator,
         ]
         // Only a phone on the line can be hung up on; offline, Disconnect did nothing visible.
         if connected {
-            items.append(.action(String(localized: "Disconnect"), run: disconnect))
+            items.append(.action(String(localized: "Disconnect"), symbol: "xmark.circle", run: disconnect))
         }
         // The same as Forget in Settings, asked first: undoing it means pairing again.
-        items.append(.action(String(localized: "Forget…"), run: confirmForget))
+        items.append(.action(String(localized: "Forget…"), symbol: "trash", destructive: true, run: confirmForget))
         return items
     }
 
@@ -488,10 +519,9 @@ private struct PhoneControls: View {
     /// put a hundred messages on the wire for one gesture.
     @State private var dragging: Double?
 
-    /// One row, Control Center style: the ringer mode as a single menu, then the volume.
+    /// The volume, while something plays. The ringer mode is its own button on the phone's line.
     var body: some View {
         HStack(spacing: Theme.Space.small) {
-            ringer
             Image(systemName: "speaker.fill")
                 .font(Theme.Font.caption)
                 .foregroundStyle(.secondary)
@@ -504,7 +534,7 @@ private struct PhoneControls: View {
                 onEditingChanged: { editing in
                     guard !editing, let value = dragging else { return }
                     dragging = nil
-                    send("volume", level: Int(value.rounded()))
+                    Self.send("volume", level: Int(value.rounded()), to: deviceID)
                 }
             )
             .controlSize(.small)
@@ -528,34 +558,35 @@ private struct PhoneControls: View {
         ("silent", "bell.slash", "Silent"),
     ]
 
-    private var current: (mode: String, symbol: String, label: String.LocalizationValue) {
-        Self.modes.first { $0.mode == system.ringer } ?? Self.modes[0]
+    static func symbol(_ ringer: String) -> String {
+        (modes.first { $0.mode == ringer } ?? modes[0]).symbol
     }
 
-    private var ringer: some View {
-        GlassMenuButton(symbol: current.symbol, label: String(localized: "Ringer")) {
-            var items: [PanelMenu.Item] = Self.modes.map { option in
-                // Silencing is the one mode that needs the extra grant; the other two always work.
-                .action(String(localized: option.label), symbol: option.symbol,
-                        checked: system.ringer == option.mode,
-                        enabled: option.mode != "silent" || system.canSilence) {
-                    send("ringer", mode: option.mode)
-                }
+    static func label(_ ringer: String) -> String {
+        String(localized: (modes.first { $0.mode == ringer } ?? modes[0]).label)
+    }
+
+    /// The ringer modes as menu items, the current one checked.
+    static func ringerItems(deviceID: String, system: AppState.PhoneSystem) -> [PanelMenu.Item] {
+        var items: [PanelMenu.Item] = modes.map { option in
+            // Silencing is the one mode that needs the extra grant; the other two always work.
+            .action(String(localized: option.label), symbol: option.symbol,
+                    checked: system.ringer == option.mode,
+                    enabled: option.mode != "silent" || system.canSilence) {
+                send("ringer", mode: option.mode, to: deviceID)
             }
-            if !system.canSilence {
-                // Android refuses a silent ringer to an app without Do Not Disturb access, so say
-                // where the switch is instead of letting the item fail quietly.
-                items += [.separator, .note(String(localized: "Allow Do Not Disturb access on the phone to silence it"))]
-            }
-            return items
         }
-        .accessibilityValue(Text(String(localized: current.label)))
+        if !system.canSilence {
+            // Android refuses a silent ringer to an app without Do Not Disturb access, so say
+            // where the switch is instead of letting the item fail quietly.
+            items += [.note(String(localized: "Allow Do Not Disturb access on the phone to silence it"))]
+        }
+        return items
     }
 
     /// The message is built inside the task: a dictionary of `Any` cannot cross an actor boundary,
     /// and the two values it carries are plain.
-    private func send(_ cmd: String, mode: String? = nil, level: Int? = nil) {
-        let deviceID = deviceID
+    private static func send(_ cmd: String, mode: String? = nil, level: Int? = nil, to deviceID: String) {
         Task {
             var msg: [String: Any] = ["t": "system_control", "cmd": cmd]
             if let mode { msg["mode"] = mode }

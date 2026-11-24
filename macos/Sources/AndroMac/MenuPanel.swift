@@ -19,74 +19,72 @@ struct MenuPanel: View {
     @ObservedObject private var updater = Updater.shared
     @ObservedObject private var transfer = FileTransfer.shared
     @ObservedObject private var calls = BluetoothCalls.shared
-    /// True for a moment after ⌘C copied the phone's last clipboard.
-    @State private var copiedLast = false
     @ObservedObject private var clips = ClipboardHistory.shared
-    @State private var copiedOlder: UUID?
+    /// The clipboard row that was just copied, for its check mark.
+    @State private var copiedClip: String?
+    /// The clipboard row unfolded to its whole text; one at a time.
+    /// ANDROMAC_DEMO_PANEL=open starts a demo with the newest copy unfolded and the
+    /// notifications grown, for the screenshots of both.
+    @State private var openClip: String? = DemoMode.panelOpen ? "last" : nil
+    /// Sections grown in place to their whole list, scrolling past `listMax`.
+    @State private var allClips = false
+    @State private var allNotifications = DemoMode.panelOpen
     /// The notification row unfolded to its whole text; one at a time.
     @State private var openRow: String?
 
     private let recentCount = 4
+    /// The tallest a grown section gets before it scrolls, so the panel stays on screen.
+    private static let listMax: CGFloat = 300
+    private static let clipPoolSize = 20
+    /// How far a row's highlight reaches past the text column (`hoverHighlight`).
+    private static let highlightBleed = Theme.Space.tight + 2
+    /// The most a grown notifications section lists; the window has the rest.
+    private static let notificationsMax = 50
+    /// Quick and smooth, close to the system's own disclosure.
+    private static let unfold = Animation.smooth(duration: 0.3)
 
     private var isPaired: Bool { Store.shared.isPaired }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.small) {
+        // One surface: sections are set apart by space and a hairline, never by plates, and every
+        // row starts at the same inset from the panel's edge.
+        VStack(alignment: .leading, spacing: Theme.Space.medium) {
             // Only when it says something the device list cannot: the app is not paired yet, or the
             // listener itself is down. Otherwise every phone reports its own state one row below,
             // and repeating it here was the same sentence twice.
-            if !isPaired || !state.status.isLive {
-                status.padding(.horizontal, Theme.Space.medium)
-            }
-            if let release = updates.available { update(release).padding(.horizontal, Theme.Space.medium) }
-            if calls.connected {
-                PanelCard {
-                    BluetoothCallControls()
-                    if let error = calls.error { Text(error).font(Theme.Font.label).foregroundStyle(.red) }
-                }
-            }
+            if !isPaired || !state.status.isLive { status }
+            if let release = updates.available { update(release) }
             // Mirroring into a Notification Center that refuses us is the quietest failure the app
             // has, so it is said here, once, with the switch one click away.
-            if state.notificationsAuthorized == false {
-                notificationsOff.padding(.horizontal, Theme.Space.medium)
+            if state.notificationsAuthorized == false { notificationsOff }
+            if calls.connected {
+                BluetoothCallControls()
+                if let error = calls.error { Text(error).font(Theme.Font.label).foregroundStyle(.red) }
+                Divider()
             }
 
             if isPaired {
                 DeviceList()
-
-                // Nothing to show is one quiet line on the panel, not a card around a sentence.
-                // The clipboard row keeps its card while it has a text or a transfer in it.
-                if clipboardIsEmpty && transfer.progress == nil {
-                    clipboard.padding(.horizontal, Theme.Space.medium)
-                } else {
-                    PanelCard {
-                        clipboard
-                        if let progress = transfer.progress { files(progress) }
-                    }
-                }
-
-                if history.entries.isEmpty {
-                    emptyNotifications.padding(.horizontal, Theme.Space.medium)
-                } else {
-                    PanelCard { notifications }
-                }
+                Divider()
+                clipboard
+                Divider()
+                notifications
             } else {
-                PanelCard { onboarding }
+                onboarding
             }
 
-            // Anchor utility controls to the panel edges, separate from card text insets.
-            footer.frame(maxWidth: .infinity)
+            Divider()
+            footer
         }
-        // The same inset on all four sides. Linked against the macOS 26+ SDK the window adds no
-        // inset of its own: on a capture of the real panel the first card sat exactly this far below
-        // the top edge, and the footer half as far above the bottom one while this was smaller.
         .padding(Theme.panelInset)
+        // Pinned to the top: the window takes its new height at once when a section opens, and
+        // centred content jumped down before it animated. Pinned, it unfolds downwards.
         .frame(width: Theme.panelWidth)
-        .panelContainer()
+        .frame(maxHeight: .infinity, alignment: .top)
         // A click that opens a window closes the panel, as a click outside it does; left up, it
         // covered the window it had just opened.
         .onReceive(NotificationCenter.default.publisher(for: AppState.closePanel)) { _ in
-            if !DemoMode.isOn { dismiss() }
+            dismiss()
         }
         // `.menuBarExtraStyle(.window)` gives the panel a chrome band above and below the content
         // that our view does not reach — verified by filling the content with a flat colour and
@@ -96,14 +94,23 @@ struct MenuPanel: View {
         // background past our own bounds can: the negative inset lets the same material cover the
         // strip, so the panel is one uniform surface from edge to edge.
         .background {
-            Rectangle()
-                .fill(.regularMaterial)
+            panelSurface
                 .padding(-28)
                 .allowsHitTesting(false)
         }
         .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: state.headline)
         // Opening the panel is the Mac-side "app opened" moment; the check itself is opt-in and daily.
         .onAppear {
+            // ANDROMAC_DEMO_PANEL=animate unfolds a notification two seconds in, so the
+            // motion can be recorded without a click.
+            if DemoMode.isOn, ProcessInfo.processInfo.environment["ANDROMAC_DEMO_PANEL"] == "animate" {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    // The one with action buttons, the tallest kind of open row.
+                    if let entry = history.entries.first(where: { !$0.buttons.isEmpty }) ?? history.entries.first {
+                        toggle($openRow, entry.id)
+                    }
+                }
+            }
             NotificationMirror.shared.refreshAuthorization()
             updates.checkIfDue()
             // Android cannot push a copy on its own, so opening the panel is when the Mac asks.
@@ -120,6 +127,17 @@ struct MenuPanel: View {
                 }
             }
             return true
+        }
+    }
+
+    /// Liquid Glass on 26+, so the desktop shows through the panel the way it does through
+    /// Control Center; the regular material before.
+    @ViewBuilder
+    private var panelSurface: some View {
+        if #available(macOS 26.0, *) {
+            Rectangle().fill(.clear).glassEffect(.regular, in: Rectangle())
+        } else {
+            Rectangle().fill(.regularMaterial)
         }
     }
 
@@ -255,190 +273,180 @@ struct MenuPanel: View {
 
     // MARK: clipboard
 
-    /// The phone's last clipboard and one button, Copy. Clicking the text copies too; hover shows
-    /// the whole text, ⌘C copies, and the menu opens the history. Sending goes by itself (auto-send,
-    /// the history's Send to phone) and files are dropped onto the panel, so the row carries no
-    /// buttons for those.
+    /// The last three copies, the phone's newest first, either direction; the chevron grows the
+    /// section in place to the last twenty. A click on a row unfolds its whole text, selectable,
+    /// with Copy and Open link under it; the copy button on the row copies at once, and so does ⌘C
+    /// for the newest. Sending goes by itself, so no row carries a Send button.
     private var clipboard: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.small) {
-            latestClip
-            ForEach(olderClips) { entry in olderClipRow(entry) }
-        }
-    }
-
-    /// The two copies before the latest, either direction, so an earlier one is one click away.
-    private var olderClips: [ClipboardHistory.Entry] {
-        Array(clips.entries.filter { $0.text != state.lastClipboard }.prefix(2))
-    }
-
-    private func olderClipRow(_ entry: ClipboardHistory.Entry) -> some View {
-        Button {
-            Task {
-                await ClipboardWatcher.shared.restore(entry.text)
-                copiedOlder = entry.id
-                try? await Task.sleep(for: .milliseconds(1200))
-                if copiedOlder == entry.id { copiedOlder = nil }
-            }
-        } label: {
-            HStack(spacing: Theme.Space.small) {
-                Image(systemName: copiedOlder == entry.id ? "checkmark" : entry.direction.symbol)
-                    .font(Theme.Font.label)
-                    .foregroundStyle(copiedOlder == entry.id ? Color.green : Color.secondary)
-                    .frame(width: 14)
-                    .accessibilityLabel(entry.direction.label)
-                Text(entry.preview)
+        let rows = allClips ? clipPool : Array(clipPool.prefix(3))
+        return VStack(alignment: .leading, spacing: Theme.Space.tight) {
+            sectionHeader("Clipboard") { state.showMainWindow(.clipboard) }
+            if rows.isEmpty {
+                Text("Nothing copied yet")
                     .font(Theme.Font.label)
                     .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                Spacer(minLength: 0)
+                    .frame(height: ClipRow.foldedHeight)
+            } else {
+                grownList(rows.map { ClipRow.height($0.text, open: openClip == $0.id) }.reduce(0, +),
+                          scrolls: allClips) {
+                    ForEach(rows, id: \.id) { clip in
+                        ClipRow(text: clip.text, direction: clip.direction, open: openClip == clip.id,
+                                copied: copiedClip == clip.id,
+                                onToggle: { toggle($openClip, clip.id) },
+                                onCopy: { copy(clip) },
+                                onOpenHistory: { state.showMainWindow(.clipboard) })
+                    }
+                }
             }
-            .contentShape(Rectangle())
+            moreRow(hidden: clipPool.count - rows.count, grown: $allClips)
+            if let progress = transfer.progress { files(progress) }
         }
-        .buttonStyle(.plain)
-        .help(String(entry.text.prefix(600)))
-        .contextMenu {
-            Button("Open clipboard history") { state.showMainWindow(.clipboard) }
+        .background {
+            // ⌘C while the panel is open copies the phone's last clipboard; not while a row is
+            // open, where ⌘C copies what is selected in it.
+            Button("Copy") { clipPool.first { $0.id == "last" }.map(copy) }
+                .keyboardShortcut("c")
+                .disabled(state.lastClipboard.isEmpty || openClip != nil)
+                .opacity(0)
+                .accessibilityHidden(true)
         }
     }
 
-    private var latestClip: some View {
+    private typealias Clip = (id: String, text: String, direction: ClipboardHistory.Direction)
+
+    /// The phone's last clipboard, then the copies before it from the history.
+    private var clipPool: [Clip] {
+        let last = state.lastClipboard
+        var rows: [Clip] = last.isEmpty ? [] : [("last", last, .received)]
+        rows += clips.entries.filter { $0.text != last }.prefix(Self.clipPoolSize - rows.count)
+            .map { ($0.id.uuidString, $0.text, $0.direction) }
+        return rows
+    }
+
+    /// Back onto the Mac clipboard WITHOUT sending it to the phone again (see `restore`).
+    private func copy(_ clip: Clip) {
+        Task {
+            await ClipboardWatcher.shared.restore(clip.text)
+            copiedClip = clip.id
+            try? await Task.sleep(for: .milliseconds(1200))
+            if copiedClip == clip.id { copiedClip = nil }
+        }
+    }
+
+    /// A binding, not `inout`: an inout argument is written back after the function returns,
+    /// outside `withAnimation`, and the row then opened without any animation.
+    private func toggle(_ open: Binding<String?>, _ id: String) {
+        withAnimation(reduceMotion ? nil : Self.unfold) {
+            open.wrappedValue = open.wrappedValue == id ? nil : id
+        }
+    }
+
+    /// A section's name as a button to its full history in the window, with a chevron as Control
+    /// Center's module titles have, then the section's one quiet action.
+    private func sectionHeader(_ title: LocalizedStringKey, count: Int? = nil,
+                               @ViewBuilder extra: () -> some View = { EmptyView() },
+                               openWindow: @escaping () -> Void) -> some View {
         HStack(spacing: Theme.Space.small) {
-            Button(action: copyLast) {
-                HStack(spacing: Theme.Space.small) {
-                    Image(systemName: "doc.on.clipboard")
-                        .font(Theme.Font.label)
-                        .foregroundStyle(.secondary)
-                        .frame(width: 14)
-                    Text(clipboardIsEmpty
-                         ? String(localized: "Nothing copied yet")
-                         : state.lastClipboard.replacingOccurrences(of: "\n", with: " "))
-                        .font(Theme.Font.label)
-                        .foregroundStyle(clipboardIsEmpty ? .secondary : .primary)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                    Spacer(minLength: 0)
+            Button(action: openWindow) {
+                HStack(spacing: Theme.Space.tight) {
+                    Text(title).font(Theme.Font.heading)
+                    if let count {
+                        Text(verbatim: "\(count)")
+                            .font(Theme.Font.label.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                            .contentTransition(.numericText())
+                    }
+                    Image(systemName: "chevron.right")
+                        .font(Theme.Font.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
                 }
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .disabled(clipboardIsEmpty)
-            .help(state.lastClipboard.isEmpty
-                  ? String(localized: "Open clipboard history")
-                  : String(state.lastClipboard.prefix(600)))
-            .contextMenu {
-                Button("Copy", action: copyLast)
-                    .keyboardShortcut("c")
-                    .disabled(state.lastClipboard.isEmpty)
-                Button("Open clipboard history") { state.showMainWindow(.clipboard) }
-            }
-            .background {
-                // ⌘C while the panel is open copies the phone's last clipboard.
-                Button("Copy", action: copyLast)
-                    .keyboardShortcut("c")
-                    .disabled(state.lastClipboard.isEmpty)
-                    .opacity(0)
-                    .accessibilityHidden(true)
-            }
-
-            if !clipboardIsEmpty {
-                IconButton(symbol: copiedLast ? "checkmark" : "doc.on.doc",
-                           label: String(localized: "Copy to the Mac clipboard"),
-                           active: copiedLast, action: copyLast)
-            }
+            .help("Open in window")
+            Spacer(minLength: Theme.Space.small)
+            extra()
         }
     }
 
-    private var clipboardIsEmpty: Bool { state.lastClipboard.isEmpty }
-
-    /// Back onto the Mac clipboard WITHOUT sending it to the phone again (see `restore`).
-    private func copyLast() {
-        let text = state.lastClipboard
-        guard !text.isEmpty else { return }
-        Task {
-            await ClipboardWatcher.shared.restore(text)
-            copiedLast = true
-            try? await Task.sleep(for: .milliseconds(1200))
-            copiedLast = false
+    /// Under a list that has more than it shows: "Show 3 more", or "Show less" once grown.
+    @ViewBuilder
+    private func moreRow(hidden: Int, grown: Binding<Bool>) -> some View {
+        if hidden > 0 || grown.wrappedValue {
+            Button {
+                withAnimation(reduceMotion ? nil : Self.unfold) { grown.wrappedValue.toggle() }
+            } label: {
+                HStack(spacing: Theme.Space.tight) {
+                    Text(grown.wrappedValue ? String(localized: "Show less") : String(localized: "Show \(hidden) more"))
+                    Image(systemName: grown.wrappedValue ? "chevron.up" : "chevron.down")
+                        .font(Theme.Font.caption.weight(.semibold))
+                        .contentTransition(.symbolEffect(.replace))
+                    Spacer(minLength: 0)
+                }
+                .font(Theme.Font.label)
+                .foregroundStyle(.secondary)
+                .frame(height: 22)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .hoverHighlight()
         }
+    }
+
+    /// A list at its own height, scrolling once grown past `listMax`. Fixed height: inside
+    /// `.menuBarExtraStyle(.window)` a list with a flexible height collapses the second time the
+    /// panel is opened.
+    private func grownList(_ height: CGFloat, scrolls: Bool, @ViewBuilder rows: () -> some View) -> some View {
+        // Room at the sides inside the scroll view for the rows' highlight, which reaches past the
+        // text column: the scroll view clips, and it squared the highlight's corners off.
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) { rows() }
+                .padding(.horizontal, Self.highlightBleed)
+        }
+        .padding(.horizontal, -Self.highlightBleed)
+        // Scrolls whenever the rows pass the cap: an unfolded row can push them past it unasked.
+        .scrollDisabled(height <= Self.listMax)
+        .scrollIndicators(.automatic)
+        .softScrollEdges()
+        .frame(height: min(height, Self.listMax), alignment: .top)
     }
 
     // MARK: notifications
 
-    private var recent: [NotificationHistory.Entry] {
-        Array(history.entries.prefix(recentCount))
+    private var shownNotifications: [NotificationHistory.Entry] {
+        Array(history.entries.prefix(allNotifications ? Self.notificationsMax : recentCount))
     }
 
     private var notifications: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.tight) {
-            HStack {
-                Text("Notifications")
-                    .font(Theme.Font.heading)
-                Spacer()
-                QuietButton(String(localized: "Clear")) { history.clear() }
+        let rows = shownNotifications
+        return VStack(alignment: .leading, spacing: Theme.Space.tight) {
+            sectionHeader("Notifications", count: history.entries.isEmpty ? nil : history.entries.count,
+                          extra: {
+                              if !history.entries.isEmpty {
+                                  QuietButton(String(localized: "Clear")) { history.clear() }
+                              }
+                          }) {
+                state.showMainWindow(.notifications)
             }
 
-            // Fixed height: inside `.menuBarExtraStyle(.window)` a list with a flexible height
-            // collapses the second time the panel is opened.
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(recent) { entry in
-                    NotificationRow(entry: entry, open: openRow == entry.id) {
-                        withAnimation(reduceMotion ? nil : .snappy(duration: 0.25)) {
-                            openRow = openRow == entry.id ? nil : entry.id
-                        }
-                    }
-                }
-            }
-            .frame(height: recent.map { NotificationRow.height($0, open: openRow == $0.id) }.reduce(0, +),
-                   alignment: .top)
-            // A new notification slides in at the top while the oldest of the four leaves at the
-            // bottom, so the list keeps its height and the menu bar window never resizes.
-            .animation(reduceMotion ? nil : .snappy(duration: 0.3), value: recent.map(\.id))
-
-            if history.entries.count > recent.count {
-                Button {
-                    state.showMainWindow(.notifications)
-                } label: {
-                    HStack(spacing: Theme.Space.tight) {
-                        Text("Show all")
-                        Text(verbatim: "\(history.entries.count)")
-                            .monospacedDigit()
-                            .contentTransition(.numericText())
-                        Spacer(minLength: 0)
-                        Image(systemName: "chevron.right")
-                            .font(Theme.Font.caption.weight(.semibold))
-                            .foregroundStyle(.tertiary)
-                    }
-                    .font(Theme.Font.label)
-                    .foregroundStyle(.secondary)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .help("Open notification history")
-            }
-        }
-    }
-
-    /// One line in the clipboard row's shape, so the two empty states read as a pair. Clicking it
-    /// opens the history, which is where settings for what gets mirrored are one click away.
-    private var emptyNotifications: some View {
-        Button {
-            state.showMainWindow(.notifications)
-        } label: {
-            HStack(spacing: Theme.Space.small) {
-                Image(systemName: "bell")
-                    .font(Theme.Font.label)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 14)
+            if rows.isEmpty {
                 Text("No notifications yet")
                     .font(Theme.Font.label)
                     .foregroundStyle(.secondary)
-                Spacer(minLength: 0)
+                    .frame(height: ClipRow.foldedHeight)
+            } else {
+                grownList(rows.map { NotificationRow.height($0, open: openRow == $0.id) }.reduce(0, +),
+                          scrolls: allNotifications) {
+                    ForEach(rows) { entry in
+                        NotificationRow(entry: entry, open: openRow == entry.id) { toggle($openRow, entry.id) }
+                    }
+                }
+                // A new notification slides in at the top while the oldest of the four leaves at the
+                // bottom, so the list keeps its height and the menu bar window never resizes.
+                .animation(reduceMotion ? nil : .snappy(duration: 0.3), value: rows.map(\.id))
             }
-            .contentShape(Rectangle())
+            moreRow(hidden: min(history.entries.count, Self.notificationsMax) - rows.count, grown: $allNotifications)
         }
-        .buttonStyle(.plain)
-        .help("Open notification history")
     }
 
     // MARK: footer

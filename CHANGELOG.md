@@ -7,6 +7,28 @@ The `## <version>` section matching the `VERSION` file is the notes of that stab
 New entries go under `## Unreleased`, which becomes the next version's section when `VERSION` is
 raised. Nightly builds list their commits instead.
 
+## Unreleased
+
+### Changed
+
+- **A new menu bar panel.** It is one glass surface with the same margins everywhere. The phone's
+  name, state and battery share a line, with the ringer one click away beside them. Ring,
+  Messages and Screen are small glass buttons; the rest is under More, which opens below it.
+  To switch phones, click a name or drag the glass between them. The track shows while the phone
+  has one, the volume while it plays.
+- **More from the panel itself.** Clipboard rows and notifications open in place, with the
+  whole text to select and Copy or Open link under it. "Show 2 more" grows a list inside the
+  panel; the section title opens the full history in the window.
+- **A page's settings open beside it without moving anything.** The window widens by the
+  settings' width and the list keeps its place.
+
+### Fixed
+
+- Update, pairing, file and share windows come forward as an app's windows do: they take the
+  focus and show in the Dock, ⌘-Tab and App Exposé.
+- The menu bar panel closes when it opens a window, and a window that was already open shows
+  where it is.
+
 ## 1.12.0 - 2026-11-24
 
 ### Changed

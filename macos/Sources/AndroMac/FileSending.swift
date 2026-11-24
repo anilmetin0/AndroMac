@@ -99,9 +99,8 @@ final class ShareFilesWindow: NSWindowController, NSWindowDelegate {
     static func show(_ urls: [URL]) {
         let controller = ShareFilesWindow(urls: urls)
         open[controller.id] = controller
-        NSApp.activate(ignoringOtherApps: true)
         controller.showWindow(nil)
-        controller.window?.makeKeyAndOrderFront(nil)
+        if let window = controller.window { AppState.bringForward(window) }
     }
 
     private init(urls: [URL]) {

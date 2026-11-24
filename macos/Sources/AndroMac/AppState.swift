@@ -161,6 +161,9 @@ final class AppState: ObservableObject {
     /// Whether a list shows its settings beside it (`MainWindow.Tab.settings`); the same switch for
     /// every list, as the inspector is in Finder.
     @Published var pageSettingsShown = false
+    /// The page's width held while the window grows or shrinks around its settings, so the list
+    /// stays put and only the settings column is revealed or covered. Nil the rest of the time.
+    @Published var frozenListWidth: CGFloat?
     /// The scene's `openWindow` for the main window, handed over by the menu bar label so the
     /// AppKit side (the status item's right-click menu) can open it too.
     var openMainWindow: (() -> Void)?
@@ -199,6 +202,7 @@ final class AppState: ObservableObject {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate()
         NotificationCenter.default.post(name: Self.closePanel, object: nil)
+        let wasOpen = NSApp.windows.contains { $0.isVisible && $0.identifier?.rawValue.contains(id) == true }
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(100))
             open()
@@ -206,8 +210,35 @@ final class AppState: ObservableObject {
             let window = NSApp.windows.first { $0.identifier?.rawValue.contains(id) == true }
             window?.makeKeyAndOrderFront(nil)
             NSApp.activate()
+            // A window that was already open does not zoom in again, so it pulses once to show
+            // where it is, behind whatever else is on screen.
+            if wasOpen, let window { Self.pulse(window) }
         }
     }
+
+    /// Grows the window a little and lets it settle back, twice as fast as the system's zoom.
+    private static func pulse(_ window: NSWindow) {
+        // Not in full screen or over a pulse still running, whose frame is already the grown one.
+        guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion,
+              !window.styleMask.contains(.fullScreen), !pulsing else { return }
+        pulsing = true
+        let frame = window.frame
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.12
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            window.animator().setFrame(frame.insetBy(dx: -8, dy: -8), display: true)
+        }, completionHandler: {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.18
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                window.animator().setFrame(frame, display: true)
+            } completionHandler: {
+                MainActor.assumeIsolated { pulsing = false }
+            }
+        })
+    }
+
+    private static var pulsing = false
 
     /// ⌘Q: every titled window closes, which hands the Dock icon back (see `AppDelegate`). The
     /// menu bar panel is not titled and stays.
@@ -220,11 +251,20 @@ final class AppState: ObservableObject {
 
     /// Whether one of the app's own windows is still on screen, so closing another does not take
     /// the Dock icon away from it. The welcome window counts too: it asked for the Dock icon itself.
+    /// Any window the user works in, which are the titled ones: the menu bar panel and the drop
+    /// shelf are not.
     static func appWindowVisible(except closing: NSWindow? = nil) -> Bool {
-        NSApp.windows.contains { window in
-            guard window !== closing, window.isVisible, let id = window.identifier?.rawValue else { return false }
-            return id.contains(AndroMacApp.mainWindowID) || id == OnboardingWindow.windowID
-        }
+        NSApp.windows.contains { $0 !== closing && $0.isVisible && $0.styleMask.contains(.titled) }
+    }
+
+    /// Puts a window up the way a regular app's comes up: Dock icon, ⌘-Tab, App Exposé and the
+    /// menu bar, and the focus. An accessory app gets none of them, so a window opened while it
+    /// still was one stayed behind and was missing from the three-finger swipe. Closing the last
+    /// window hands them back (AppDelegate).
+    static func bringForward(_ window: NSWindow) {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate()
+        window.makeKeyAndOrderFront(nil)
     }
     /// Published separately so the menu bar label is redrawn.
     @Published var showBatteryInMenuBar: Bool = Store.shared.showBatteryInMenuBar {

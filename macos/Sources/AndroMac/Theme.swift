@@ -33,6 +33,9 @@ enum Theme {
     /// inside a card is a capsule, so corners stay concentric at every level.
     enum Radius {
         static let small: CGFloat = 6
+        /// A row's hover and open highlight on the panel: round enough to read as the system's
+        /// own menu highlight rather than a box.
+        static let row: CGFloat = 10
         static let medium: CGFloat = 12
         static let large: CGFloat = 16
         /// The menu bar panel's own corner before macOS 26.
@@ -41,14 +44,12 @@ enum Theme {
         /// `MenuBarExtra` window on macOS 27 (32-33 px). The window does not hand its shape to
         /// SwiftUI, so without this `ConcentricRectangle` fell back to its 6 pt minimum.
         static let panel: CGFloat = 16
-        /// A card on the panel: the panel corner minus the panel inset.
-        static let card: CGFloat = panel - Theme.panelInset
     }
 
     /// The window content inset.
     static let inset: CGFloat = Space.medium
-    /// The menu bar panel's own inset, one step tighter than a window's.
-    static let panelInset: CGFloat = Space.small
+    /// The menu bar panel's inset: every row starts this far from the edge, on all four sides.
+    static let panelInset: CGFloat = Space.large
     /// The panel width, close to Control Center's.
     static let panelWidth: CGFloat = 320
 }
@@ -94,33 +95,6 @@ extension View {
             shaped.buttonStyle(.glass)
         } else {
             shaped.buttonStyle(.bordered)
-        }
-    }
-
-    /// The panel window's shape, set on the panel's root so the cards inside can be concentric
-    /// with it (`panelCard`).
-    @ViewBuilder
-    func panelContainer() -> some View {
-        if #available(macOS 26.0, *) {
-            self.containerShape(RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous))
-        } else {
-            self
-        }
-    }
-
-    /// A card's plate, concentric with the window it sits in. On 26+ the corner is derived from
-    /// the container (`panelContainer`): the panel corner minus the card's real distance from it.
-    /// A card away from the window's corners would get less than that, so the floor is the same
-    /// panel-minus-inset, and every card on the panel has one corner. Before 26 it is the old panel
-    /// radius minus the inset, with a floor so it never turns square.
-    @ViewBuilder
-    func panelCard(_ fill: some ShapeStyle) -> some View {
-        if #available(macOS 26.0, *) {
-            self.background(fill, in: ConcentricRectangle(corners: .concentric(minimum: .fixed(Theme.Radius.card)), isUniform: true))
-        } else {
-            self.background(fill, in: RoundedRectangle(
-                cornerRadius: max(Theme.Radius.legacyPanel - Theme.panelInset, Theme.Radius.small)
-            ))
         }
     }
 

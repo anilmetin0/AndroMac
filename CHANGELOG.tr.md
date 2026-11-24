@@ -7,6 +7,27 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/), sürüm numaral
 `## Unreleased` altına yazılır; `VERSION` yükseltilince o bölüm yeni sürümün bölümü olur. Beta
 derlemeler bunun yerine commit'lerini listeler.
 
+## Unreleased
+
+### Değişenler
+
+- **Yeni menü çubuğu paneli.** Tek bir cam yüzey, her yerde aynı kenar boşluğu. Telefonun adı,
+  durumu ve pili tek satırda; zil modu hemen yanında, tek tıkla değişir. Zil, Mesajlar ve Ekran
+  küçük cam butonlar; gerisi altında açılan Diğer menüsünde. Telefon değiştirmek için ada
+  tıklayın ya da camı sürükleyin. Şarkı telefonda varken, ses ayarı çalarken görünür.
+- **Panelden daha fazlası.** Pano satırları ve bildirimler yerinde açılır; metnin tamamı
+  seçilebilir, altında Kopyala ya da Bağlantıyı aç vardır. "2 tane daha göster" listeyi panelin
+  içinde büyütür; bölüm başlığı tam geçmişi pencerede açar.
+- **Sayfanın ayarları hiçbir şeyi kaydırmadan yanında açılır.** Pencere ayarların genişliği kadar
+  büyür, liste yerinde kalır.
+
+### Düzeltilenler
+
+- Güncelleme, eşleştirme, dosya ve paylaşım pencereleri normal uygulama pencereleri gibi öne
+  gelir: odağı alır, Dock'ta, ⌘-Tab'de ve App Exposé'de görünür.
+- Menü çubuğu paneli bir pencere açınca kapanır; zaten açık olan pencere nerede olduğunu
+  gösterir.
+
 ## 1.12.0 - 2026-11-24
 
 ### Değişenler

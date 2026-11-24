@@ -15,8 +15,23 @@ struct NotificationActions: View {
     @State private var failed = false
     @FocusState private var replyFocused: Bool
 
-    static func height(_ entry: NotificationHistory.Entry) -> CGFloat {
-        CGFloat(entry.buttons.count) * 28
+    /// A small capsule button's height.
+    private static let buttonHeight: CGFloat = 24
+
+    static func height(_ entry: NotificationHistory.Entry, inline: Bool) -> CGFloat {
+        let rows = inline ? 1 : CGFloat(entry.buttons.count)
+        return rows * buttonHeight + (rows - 1) * Theme.Space.tight
+    }
+
+    /// Whether the buttons fit side by side in `width`: each title at the button font plus the
+    /// capsule's padding, the reply arrow and the gap after it.
+    static func fitsInline(_ entry: NotificationHistory.Entry, width: CGFloat) -> Bool {
+        let font = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
+        let total = entry.buttons.reduce(CGFloat(0)) { sum, action in
+            let title = (action.title as NSString).size(withAttributes: [.font: font]).width
+            return sum + ceil(title) + 24 + (action.reply ? 18 : 0) + Theme.Space.tight
+        }
+        return total <= width
     }
 
     private var available: Bool {
@@ -76,7 +91,7 @@ struct NotificationActions: View {
         }
         .font(Theme.Font.label)
         .animation(.snappy(duration: 0.2), value: sentIndex)
-        .frame(height: inline ? 24 : Self.height(entry), alignment: .topLeading)
+        .frame(height: Self.height(entry, inline: inline), alignment: .topLeading)
         .alert("Could not send the action. Reconnect your phone and try again.", isPresented: $failed) {
             Button("OK", role: .cancel) {}
         }

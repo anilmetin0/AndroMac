@@ -17,6 +17,7 @@ enum DemoMode {
 
     /// Read once: views ask on every redraw (`AppIcon`).
     static let isOn = ProcessInfo.processInfo.environment["ANDROMAC_DEMO"] == "1"
+    static let panelOpen = isOn && ProcessInfo.processInfo.environment["ANDROMAC_DEMO_PANEL"] == "open"
 
     @MainActor
     static func seed() {
@@ -300,6 +301,24 @@ enum DemoMode {
             (prompt ?? main)?.makeKeyAndOrderFront(nil)
             if let path = ProcessInfo.processInfo.environment["ANDROMAC_DEMO_SHARE"] {
                 FileSending.share([URL(fileURLWithPath: path)])
+            }
+            // ANDROMAC_DEMO_INSPECTOR=1 opens the page's settings two seconds in, the way the
+            // toolbar button does, to record the motion.
+            // ANDROMAC_DEMO_INSPECTOR=2 closes it again two seconds later.
+            if let times = Int(ProcessInfo.processInfo.environment["ANDROMAC_DEMO_INSPECTOR"] ?? "") {
+                for i in 0..<times {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2 + 2 * Double(i)) {
+                        MainWindow.toggleSettings(state, animate: true)
+                    }
+                }
+            }
+            // ANDROMAC_DEMO_REOPEN=settings or notifications closes the main window and opens it
+            // again the way the panel does, to watch the window come up.
+            if let tab = ProcessInfo.processInfo.environment["ANDROMAC_DEMO_REOPEN"] {
+                NSApp.windows.first { $0.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true }?.close()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    if tab == "settings" { state.showSettings() } else { state.showMainWindow(.notifications) }
+                }
             }
             // ANDROMAC_DEMO_ONBOARDING=welcome, permissions, pair, calls or done opens the welcome
             // window on that page, on top of the rest.

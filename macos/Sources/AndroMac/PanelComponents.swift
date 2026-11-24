@@ -4,21 +4,25 @@ import SwiftUI
 
 // The small building blocks of the menu bar panel.
 
-/// A group of related rows on its own plate.
-///
-/// Content, not control: a plain quiet fill, never glass. The controls inside it carry the glass.
-/// The corner is concentric with the panel's (`panelCard`).
-struct PanelCard<Content: View>: View {
-    private let content: Content
-    init(@ViewBuilder content: () -> Content) { self.content = content() }
+extension View {
+    /// The menu-item highlight macOS draws under the pointer, bled past the row's edges so the
+    /// text column does not move.
+    func hoverHighlight() -> some View { modifier(HoverHighlight()) }
+}
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.small) {
-            content
-        }
-        .padding(Theme.Space.medium)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .panelCard(Color.primary.opacity(0.06))
+private struct HoverHighlight: ViewModifier {
+    @State private var hovered = false
+    @Environment(\.isEnabled) private var enabled
+
+    func body(content: Content) -> some View {
+        content
+            .background {
+                RoundedRectangle(cornerRadius: Theme.Radius.row, style: .continuous)
+                    .fill(.primary.opacity(hovered && enabled ? 0.06 : 0))
+                    .padding(.horizontal, -Theme.Space.tight - 2)
+            }
+            .onHover { hovered = $0 }
+            .animation(.easeOut(duration: 0.12), value: hovered)
     }
 }
 
@@ -44,66 +48,74 @@ struct IconButton: View {
     }
 }
 
-/// A labelled action on the device card: the symbol over a one-word name, so a row of them reads
-/// without hovering for tooltips. The full description stays in the tooltip and VoiceOver label.
-/// No plate of its own: the card is the surface, and a tile shows one only under the pointer.
+/// A labelled action under the phone: a small glass capsule with the symbol and a one-word name,
+/// so a row of them reads without hovering. The full description stays in the tooltip and the
+/// VoiceOver label.
 struct ActionTile: View {
     let symbol: String
     let title: String
     let help: String
     var active = false
     let action: () -> Void
-    @State private var hovered = false
-    @Environment(\.isEnabled) private var enabled
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: Theme.Space.tight) {
-                Image(systemName: symbol)
-                    .font(.system(size: 14))
-                    .foregroundStyle(active ? Color.accentColor : Color.primary)
-                    .frame(height: 16)
-                    .contentTransition(.symbolEffect(.replace))
-                Text(title)
-                    .font(Theme.Font.caption)
-                    .foregroundStyle(active ? Color.accentColor : Color.secondary)
-                    .lineLimit(1)
+            Label {
+                Text(title).lineLimit(1)
+            } icon: {
+                Image(systemName: symbol).contentTransition(.symbolEffect(.replace))
             }
-            // Equal columns across the card, whatever the names' lengths.
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, Theme.Space.tight)
-            .background(.primary.opacity(hovered && enabled ? 0.08 : 0),
-                        in: RoundedRectangle(cornerRadius: Theme.Radius.small + Theme.Space.hair, style: .continuous))
-            .contentShape(Rectangle())
+            .font(Theme.Font.label)
+            .foregroundStyle(active ? Color.accentColor : Color.primary)
         }
-        .buttonStyle(.plain)
-        .opacity(enabled ? 1 : 0.4)
-        .onHover { hovered = $0 }
-        .animation(.easeOut(duration: 0.12), value: hovered)
+        .buttonBorderShape(.capsule)
+        .secondaryAction()
+        .controlSize(.small)
+        .fixedSize()
         .help(help)
         .accessibilityLabel(help)
     }
 }
 
-/// A round glass button that opens a native menu. SwiftUI's `Menu` does not take the glass button
-/// style (it drew a flat disc), and glass laid over it swallowed its clicks; this is the same
-/// `IconButton` as every other panel action, with an `NSMenu` behind the click.
+/// A round glass button that opens a native menu, dropped down under the button as a pull-down
+/// menu is. SwiftUI's `Menu` does not take the glass button style (it drew a flat disc), and glass
+/// laid over it swallowed its clicks; this is the same `IconButton` as every other panel action,
+/// with an `NSMenu` behind the click.
 struct GlassMenuButton: View {
     let symbol: String
     let label: String
     let items: () -> [PanelMenu.Item]
+    @State private var anchor = MenuAnchor.Box()
 
     var body: some View {
-        IconButton(symbol: symbol, label: label) { PanelMenu.show(items()) }
+        IconButton(symbol: symbol, label: label) { PanelMenu.show(items(), under: anchor.view) }
+            .background(MenuAnchor(box: anchor))
     }
 }
 
-/// The native menu behind `GlassMenuButton`, opened under the pointer.
+/// An empty AppKit view in the button's place, so the menu can be put under the button.
+struct MenuAnchor: NSViewRepresentable {
+    final class Box { weak var view: NSView? }
+    let box: Box
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        box.view = view
+        return view
+    }
+
+    func updateNSView(_ view: NSView, context: Context) { box.view = view }
+}
+
+/// The native menu behind `GlassMenuButton`.
 @MainActor
 final class PanelMenu: NSObject {
     enum Item {
-        case action(String, symbol: String? = nil, checked: Bool = false, enabled: Bool = true, run: () -> Void)
+        case action(String, symbol: String? = nil, checked: Bool = false, enabled: Bool = true,
+                    destructive: Bool = false, run: () -> Void)
         case separator
+        /// A section's name, as the system's menus head their groups.
+        case header(String)
         /// A line of explanation, not clickable.
         case note(String)
     }
@@ -112,7 +124,7 @@ final class PanelMenu: NSObject {
     private static var current: PanelMenu?
     private var actions: [() -> Void] = []
 
-    static func show(_ items: [Item]) {
+    static func show(_ items: [Item], under anchor: NSView? = nil) {
         let target = PanelMenu()
         current = target
         let menu = NSMenu()
@@ -121,11 +133,13 @@ final class PanelMenu: NSObject {
             switch item {
             case .separator:
                 menu.addItem(.separator())
+            case .header(let title):
+                menu.addItem(.sectionHeader(title: title))
             case .note(let text):
                 let row = NSMenuItem(title: text, action: nil, keyEquivalent: "")
                 row.isEnabled = false
                 menu.addItem(row)
-            case let .action(title, symbol, checked, enabled, run):
+            case let .action(title, symbol, checked, enabled, destructive, run):
                 let row = NSMenuItem(title: title, action: #selector(run(_:)), keyEquivalent: "")
                 row.target = target
                 row.tag = target.actions.count
@@ -133,10 +147,19 @@ final class PanelMenu: NSObject {
                 row.state = checked ? .on : .off
                 row.isEnabled = enabled
                 if let symbol { row.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil) }
+                if destructive {
+                    row.attributedTitle = NSAttributedString(string: title, attributes: [.foregroundColor: NSColor.systemRed])
+                }
                 menu.addItem(row)
             }
         }
-        menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
+        if let anchor {
+            // Its top-left corner just under the button's bottom-left one.
+            let below = anchor.isFlipped ? anchor.bounds.maxY + 6 : anchor.bounds.minY - 6
+            menu.popUp(positioning: nil, at: NSPoint(x: anchor.bounds.minX, y: below), in: anchor)
+        } else {
+            menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
+        }
     }
 
     @objc private func run(_ sender: NSMenuItem) {
@@ -243,8 +266,17 @@ struct NotificationRow: View {
     /// A row with a picture is taller by what the thumbnail needs; an open row by its text, which
     /// scrolls inside the row past `openTextMax`.
     static func height(_ entry: NotificationHistory.Entry, open: Bool = false) -> CGFloat {
-        if open { return iconSize + textHeight(entry) + actionsHeight + (entry.buttons.isEmpty ? 0 : NotificationActions.height(entry) + Theme.Space.tight) + 2 * Theme.Space.tight + Theme.Space.small }
+        if open {
+            let buttons = entry.buttons.isEmpty ? 0
+                : NotificationActions.height(entry, inline: actionsInline(entry)) + Theme.Space.tight
+            return iconSize + textHeight(entry) + actionsHeight + buttons + 2 * Theme.Space.tight + Theme.Space.small
+        }
         return 34
+    }
+
+    /// Side by side when they fit beside the indent, as Reply and Mark as read do.
+    private static func actionsInline(_ entry: NotificationHistory.Entry) -> Bool {
+        NotificationActions.fitsInline(entry, width: textWidth)
     }
 
     /// Fits the folded row's height: a bigger picture made rows with one taller than the rest.
@@ -254,8 +286,8 @@ struct NotificationRow: View {
     private static let openTextMax: CGFloat = 180
     /// The open text starts under the app name: the icon and the gap after it.
     private static let textIndent = iconSize + Theme.Space.small
-    /// The panel, less its inset and the card's padding on both sides, less the indent.
-    private static let textWidth = Theme.panelWidth - 2 * Theme.panelInset - 2 * Theme.Space.medium - textIndent
+    /// The panel, less its inset on both sides, less the indent.
+    private static let textWidth = Theme.panelWidth - 2 * Theme.panelInset - textIndent
 
     /// Measured with the font the text is drawn in, so the row is as tall as the text needs.
     private static func textHeight(_ entry: NotificationHistory.Entry) -> CGFloat {
@@ -297,13 +329,13 @@ struct NotificationRow: View {
 
     var body: some View {
         Group {
-            if open { openBody.transition(.opacity) } else { foldedBody.transition(.opacity) }
+            if open { openBody.transition(.opacity.combined(with: .offset(y: -6))) } else { foldedBody.transition(.opacity) }
         }
         .frame(height: Self.height(entry, open: open), alignment: .top)
         // The menu-item highlight macOS draws under the pointer, bled into the card's padding so
         // the text column does not move.
         .background {
-            RoundedRectangle(cornerRadius: Theme.Radius.small, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.row, style: .continuous)
                 .fill(.primary.opacity(hovered || open ? 0.06 : 0))
                 .padding(.horizontal, -Theme.Space.tight - 2)
         }
@@ -395,7 +427,7 @@ struct NotificationRow: View {
             .padding(.leading, Self.textIndent)
 
             if !entry.buttons.isEmpty {
-                NotificationActions(entry: entry)
+                NotificationActions(entry: entry, inline: Self.actionsInline(entry))
                     .padding(.leading, Self.textIndent)
             }
         }
@@ -457,6 +489,140 @@ struct NotificationRow: View {
     }
 }
 
+/// One copy in the panel. Folded, it is one line with a copy button under the pointer; a click
+/// unfolds the whole text, selectable, with Copy and Open link under it. One row is open at a
+/// time (MenuPanel), and the list's height is the sum of `height`.
+struct ClipRow: View {
+    static let foldedHeight: CGFloat = 26
+    private static let actionsHeight: CGFloat = 22
+    private static let openTextMax: CGFloat = 160
+    /// The open text starts under the folded text: the icon column and the gap after it.
+    private static let indent: CGFloat = 14 + Theme.Space.small
+    private static let textWidth = Theme.panelWidth - 2 * Theme.panelInset - indent
+
+    static func height(_ text: String, open: Bool) -> CGFloat {
+        guard open else { return foldedHeight }
+        return foldedHeight + textHeight(text) + Theme.Space.tight + actionsHeight + Theme.Space.small
+    }
+
+    /// Measured with the font the text is drawn in, so the row is as tall as the text needs.
+    private static func textHeight(_ text: String) -> CGFloat {
+        let bounds = (text as NSString).boundingRect(
+            with: CGSize(width: textWidth, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: [.font: NSFont.systemFont(ofSize: 12)]
+        )
+        return min(ceil(bounds.height) + 2, openTextMax)
+    }
+
+    let text: String
+    let direction: ClipboardHistory.Direction
+    var open = false
+    var copied = false
+    let onToggle: () -> Void
+    let onCopy: () -> Void
+    let onOpenHistory: () -> Void
+
+    @State private var hovered = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var trimmed: String { text.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Theme.Space.tight) {
+            HStack(spacing: Theme.Space.small) {
+                HStack(spacing: Theme.Space.small) {
+                    Image(systemName: copied ? "checkmark" : direction.symbol)
+                        .font(Theme.Font.label)
+                        .foregroundStyle(copied ? Color.green : Color.secondary)
+                        .frame(width: 14)
+                        .contentTransition(.symbolEffect(.replace))
+                        .symbolEffect(.bounce, value: copied)
+                    Group {
+                        if open {
+                            Text(direction.label).font(Theme.Font.label).foregroundStyle(.secondary)
+                        } else {
+                            Text(trimmed.replacingOccurrences(of: "\n", with: " ")).font(Theme.Font.body)
+                        }
+                    }
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture(perform: onToggle)
+                .accessibilityElement(children: .combine)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint(Text("Shows the whole text"))
+                if open {
+                    Image(systemName: "chevron.up")
+                        .font(Theme.Font.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .transition(.opacity)
+                } else if hovered || copied {
+                    IconButton(symbol: copied ? "checkmark" : "doc.on.doc",
+                               label: String(localized: "Copy to the Mac clipboard"), active: copied, action: onCopy)
+                }
+            }
+            .frame(height: Self.foldedHeight)
+
+            if open {
+                openBody
+                    .transition(.opacity.combined(with: .offset(y: -6)))
+            }
+        }
+        .frame(height: Self.height(text, open: open), alignment: .top)
+        .clipped()
+        .background {
+            RoundedRectangle(cornerRadius: Theme.Radius.row, style: .continuous)
+                .fill(.primary.opacity(hovered || open ? 0.06 : 0))
+                .padding(.horizontal, -Theme.Space.tight - 2)
+        }
+        .onHover { hovered = $0 }
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: hovered)
+        .help(open ? "" : String(text.prefix(600)))
+        .contextMenu {
+            Button("Copy", action: onCopy)
+            Button("Open clipboard history", action: onOpenHistory)
+        }
+    }
+
+    @ViewBuilder
+    private var openBody: some View {
+        VStack(alignment: .leading, spacing: Theme.Space.tight) {
+                ScrollView {
+                    Text(trimmed)
+                        .font(Theme.Font.body)
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(height: Self.textHeight(trimmed))
+                .padding(.leading, Self.indent)
+
+                HStack(spacing: Theme.Space.tight) {
+                    Button(action: onCopy) {
+                        Label(copied ? String(localized: "Copied") : String(localized: "Copy"),
+                              systemImage: copied ? "checkmark" : "doc.on.doc")
+                    }
+                    if let link = WebLink.find(in: trimmed) {
+                        Button { NSWorkspace.shared.open(link) } label: {
+                            Label("Open link", systemImage: "arrow.up.right.square")
+                        }
+                        .help(link.absoluteString)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .buttonBorderShape(.capsule)
+                .secondaryAction()
+                .controlSize(.small)
+                .font(Theme.Font.label)
+                .frame(height: Self.actionsHeight)
+                .padding(.leading, Self.indent)
+                .glassGroup(spacing: Theme.Space.tight)
+        }
+    }
+}
+
 /// The track playing on the phone plus three controls. No progress bar (PROTOCOL §6.10):
 /// syncing the position would mean a message every second.
 struct MediaRow: View {
@@ -481,6 +647,7 @@ struct MediaRow: View {
                     cmd: media.playing ? "pause" : "play")
             control("forward.fill", label: String(localized: "Next"), cmd: "next")
         }
+        .glassGroup(spacing: Theme.Space.tight)
         .frame(height: 30)
     }
 
@@ -518,50 +685,37 @@ struct MediaRow: View {
     }
 
     private func control(_ symbol: String, label: String, cmd: String) -> some View {
-        Button {
+        IconButton(symbol: symbol, label: label) {
             let deviceID = deviceID
             Task { await Server.shared.send(["t": "media_control", "cmd": cmd], to: deviceID) }
-        } label: {
-            Image(systemName: symbol)
-                .font(Theme.Font.body)
-                .foregroundStyle(.primary)
-                .frame(width: 22, height: 22)
-                .contentTransition(.symbolEffect(.replace))
-                .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .help(label)
-        .accessibilityLabel(label)
     }
 }
 
-/// One phone's battery on one line: the level glyph, the percentage, a bolt while charging, and the
-/// state and temperature as quiet secondary text. The only place the panel prints this phone's
-/// percentage.
+/// One phone's battery, compact enough for the phone's header line: the level glyph, the
+/// percentage and a bolt while charging. The state and temperature are in the tooltip. The only
+/// place the panel prints this phone's percentage.
 struct BatteryLine: View {
 
     let battery: AppState.Battery
 
     var body: some View {
         HStack(spacing: Theme.Space.tight) {
-            Image(systemName: symbol)
-                .font(Theme.Font.body)
-                .foregroundStyle(tint)
-            Text("\(battery.level)%")
-                .font(Theme.Font.body.weight(.medium).monospacedDigit())
-                .contentTransition(.numericText(value: Double(battery.level)))
-                .animation(.snappy(duration: 0.3), value: battery.level)
             if battery.charging {
                 Image(systemName: "bolt.fill")
                     .font(Theme.Font.caption)
                     .foregroundStyle(.green)
             }
-            Text(detail)
-                .font(Theme.Font.label)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-            Spacer(minLength: 0)
+            Text("\(battery.level)%")
+                .font(Theme.Font.label.weight(.medium).monospacedDigit())
+                .contentTransition(.numericText(value: Double(battery.level)))
+                .animation(.snappy(duration: 0.3), value: battery.level)
+            Image(systemName: symbol)
+                .font(Theme.Font.body)
+                .foregroundStyle(tint)
         }
+        .fixedSize()
+        .help(detail)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(String(localized: "Battery \(battery.level)%, \(detail)"))
     }

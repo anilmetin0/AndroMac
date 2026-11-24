@@ -87,7 +87,7 @@ struct MainWindow: View {
                     ForEach(SettingsSection.sidebar) { row(.setting($0)) }
                 }
             }
-            .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: 240)
+            .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: Self.sidebarMax)
         } detail: {
             Group {
                 if state.requestedTab == .messages {
@@ -100,6 +100,7 @@ struct MainWindow: View {
                         .navigationTitle(Text(state.requestedTab.title))
                 }
             }
+            .modifier(PageSettings(state: state))
             // Search, Clear and the settings beside a list are the window's, outside the page that
             // is rebuilt on every selection. Declared per page, the next page's search field (or
             // inspector) went into the toolbar while the last one's was still there, and AppKit
@@ -113,7 +114,6 @@ struct MainWindow: View {
                     }
                 }
             }
-            .modifier(PageSettings(state: state))
             .confirmationDialog(
                 clearTarget == .clipboard
                     ? LocalizedStringKey("Clear the clipboard history?")
@@ -127,12 +127,70 @@ struct MainWindow: View {
             }
             .onChange(of: state.requestedTab) { query = "" }
         }
-        .frame(minWidth: MainWindow.minWidth, idealWidth: 900, minHeight: MainWindow.minHeight, idealHeight: 640)
+        // With a page's settings open the window may not get narrower than its three columns:
+        // at the old 760 the split view clipped the sidebar and the inspector, and pushed the
+        // sidebar off the leading edge and back while it laid out.
+        .frame(minWidth: settingsOpen ? Self.widthWithSettings : Self.minWidth, idealWidth: 900,
+               minHeight: MainWindow.minHeight, idealHeight: 640)
     }
 
-    /// The sidebar, then Messages' conversation list and a conversation that still reads; also
-    /// a list with its settings open beside it.
+    /// The page's width as last laid out, read when the window starts to grow or shrink.
+    @MainActor static var listWidth: CGFloat = 0
+    /// The settings column with the hairline before it.
+    static let columnWidth = inspectorWidth + 1
+
+    /// Opens or closes a page's settings the way Xcode's inspector does: the window grows by the
+    /// column's width and the column is uncovered as it grows, while the list holds its width.
+    /// The system inspector could not do this: inside the old width it slid the whole content,
+    /// sidebar included, and snapped it back; with the window growing at the same time the list
+    /// went wider and back; growing it in one step looked like the window jumped.
+    @MainActor static func toggleSettings(_ state: AppState, animate: Bool) {
+        // One at a time: a second click mid-animation read the old state and resized twice.
+        guard state.frozenListWidth == nil else { return }
+        let opening = !state.pageSettingsShown
+        guard let window = NSApp.windows.first(where: { $0.identifier?.rawValue.contains(AndroMacApp.mainWindowID) == true })
+        else { state.pageSettingsShown = opening; return }
+        var frame = window.frame
+        frame.size.width = max(frame.width + (opening ? columnWidth : -columnWidth), minWidth)
+        if let screen = window.screen?.visibleFrame {
+            frame.size.width = min(frame.width, screen.width)
+            frame.origin.x = max(screen.minX, min(frame.minX, screen.maxX - frame.width))
+        }
+        var quiet = Transaction()
+        quiet.disablesAnimations = true
+        withTransaction(quiet) {
+            state.frozenListWidth = listWidth
+            if opening { state.pageSettingsShown = true }
+        }
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = animate ? 0.25 : 0
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            window.animator().setFrame(frame, display: true)
+        }, completionHandler: {
+            MainActor.assumeIsolated {
+                var quiet = Transaction()
+                quiet.disablesAnimations = true
+                withTransaction(quiet) {
+                    if !opening { state.pageSettingsShown = false }
+                    state.frozenListWidth = nil
+                }
+            }
+        })
+    }
+
+    /// Not while the window is growing or shrinking around the settings: the minimum would stop it.
+    private var settingsOpen: Bool {
+        state.pageSettingsShown && state.requestedTab.settings != nil && state.frozenListWidth == nil
+    }
+
+    /// The sidebar, then Messages' conversation list and a conversation that still reads.
     static let minWidth: CGFloat = 760
+
+    static let sidebarMax: CGFloat = 240
+    /// A page's settings beside its list: the inspector's ideal width, and what the list keeps.
+    static let inspectorWidth: CGFloat = 280
+    static let listMinWidth: CGFloat = 420
+    static let widthWithSettings = sidebarMax + listMinWidth + inspectorWidth
 
     /// The whole sidebar fits at the default sidebar icon size, so it never needs to scroll; a
     /// sidebar that scrolls moves its rows under the title bar when a click scrolls one into view.
@@ -176,7 +234,7 @@ private struct PageSearch: ViewModifier {
     }
 }
 
-/// A page's own settings in the system inspector, opened from the toolbar: the switches sit next
+/// A page's own settings in a column beside it, opened from the toolbar: the switches sit next
 /// to the list they change rather than on a second page of the same name.
 ///
 /// One inspector for the window, whatever the page. It used to be attached per page, inside the
@@ -190,50 +248,32 @@ private struct PageSettings: ViewModifier {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// The inspector's ideal width, and what the list beside it keeps.
-    private static let inspectorWidth: CGFloat = 280
-    private static let listMinWidth: CGFloat = 420
-
-    /// Opening animates only once the window has room for it: in a window too narrow, the animated
-    /// inspector first pushed the sidebar off the leading edge and then gave it its width back. So
-    /// the window grows first (its own animation, which returns when done), then the inspector
-    /// slides in. Closing leaves the window as wide as it is.
-    private func toggleSettings() {
-        let opening = !state.pageSettingsShown
-        if opening, let window = NSApp.keyWindow {
-            let sidebar: CGFloat = 240
-            let needed = sidebar + Self.listMinWidth + Self.inspectorWidth
-            if window.frame.width < needed {
-                var frame = window.frame
-                frame.size.width = needed
-                if let screen = window.screen?.visibleFrame {
-                    frame.size.width = min(frame.width, screen.width)
-                    frame.origin.x = min(frame.minX, screen.maxX - frame.width)
-                }
-                window.setFrame(frame, display: true, animate: !reduceMotion)
-            }
-        }
-        withAnimation(reduceMotion ? nil : .smooth(duration: 0.28)) {
-            state.pageSettingsShown.toggle()
-        }
-    }
+    private func toggleSettings() { MainWindow.toggleSettings(state, animate: !reduceMotion) }
 
     func body(content: Content) -> some View {
-        content
-            .inspector(isPresented: Binding(
-                get: { state.pageSettingsShown && state.requestedTab.settings != nil },
-                // The inspector writes back when it goes away with a page that has no settings
-                // (Apps, Messages), sometimes after the page already changed. Only a close
-                // while a list with settings is on screen is the user's: the page is read at the
-                // time of the write, not when the binding was made.
-                set: { if state.requestedTab.settings != nil { state.pageSettingsShown = $0 } }
-            )) {
-                if let section = tab.settings {
+        HStack(spacing: 0) {
+            content
+                .frame(width: state.frozenListWidth)
+                .background {
+                    GeometryReader { geometry in
+                        Color.clear
+                            .onAppear { MainWindow.listWidth = geometry.size.width }
+                            .onChange(of: geometry.size.width) { MainWindow.listWidth = geometry.size.width }
+                    }
+                }
+            if state.pageSettingsShown, let section = tab.settings {
+                HStack(spacing: 0) {
+                    Divider()
                     SettingsList(section: section)
                         .id(section)
-                        .inspectorColumnWidth(min: 260, ideal: Self.inspectorWidth, max: 420)
+                        .frame(width: MainWindow.inspectorWidth)
                 }
+                // Uncovered from the leading edge while the window grows; its full width otherwise.
+                .frame(minWidth: state.frozenListWidth == nil ? MainWindow.columnWidth : 0,
+                       maxWidth: MainWindow.columnWidth, alignment: .leading)
+                .clipped()
             }
+        }
             .toolbar {
                 if tab.settings != nil {
                     ToolbarItem(placement: .primaryAction) {

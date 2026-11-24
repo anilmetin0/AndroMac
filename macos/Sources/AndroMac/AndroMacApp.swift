@@ -107,7 +107,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             .store(in: &cancellables)
 
-        // Hide the Dock icon again when the history window closes — we are a menu bar app.
+        // Hide the Dock icon again when the last app window closes — we are a menu bar app.
         NotificationCenter.default.addObserver(
             forName: NSWindow.willCloseNotification, object: nil, queue: .main
         ) { note in
@@ -115,8 +115,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // compiler cannot see through the notification closure.
             let window = note.object as? NSWindow
             MainActor.assumeIsolated {
-                guard let window, let id = window.identifier?.rawValue,
-                      id.contains(AndroMacApp.mainWindowID),
+                // Any titled window: the update, pairing and file windows count as much as the
+                // main one, and the last of them to close puts the app back in the menu bar only.
+                guard let window, window.styleMask.contains(.titled), !DemoMode.isOn,
                       !AppState.appWindowVisible(except: window)
                 else { return }
                 NSApp.setActivationPolicy(.accessory)
