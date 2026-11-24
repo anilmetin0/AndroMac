@@ -26,6 +26,7 @@ import dev.andromac.core.Link
 import dev.andromac.core.NotificationImage
 import dev.andromac.core.Protocol
 import dev.andromac.core.Store
+import dev.andromac.net.LinkService
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
@@ -49,6 +50,7 @@ class NotificationRelay : NotificationListenerService() {
 
     override fun onListenerConnected() {
         instance = this
+        LinkService.startIfPaired(this)
         pushExisting()
     }
 

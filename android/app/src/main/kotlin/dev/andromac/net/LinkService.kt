@@ -872,5 +872,15 @@ class LinkService : Service() {
             }
             ctx.startForegroundService(i)
         }
+
+        /**
+         * Also called when Android binds the notification listener or the copy watcher again. After an
+         * update that happens every time, while MY_PACKAGE_REPLACED is sometimes lost: on a Galaxy S24
+         * (Android 17) the broadcast went to the process being killed and failed (onApplicationCleanupLocked).
+         */
+        fun startIfPaired(ctx: Context) {
+            if (!Store(ctx).isPaired) return
+            runCatching { start(ctx) }.onFailure { Log.i(Link.TAG, "link could not start: ${it.message}") }
+        }
     }
 }
