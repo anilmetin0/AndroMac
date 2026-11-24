@@ -56,8 +56,15 @@ class MainActivity : Activity() {
         statusDot = findViewById(R.id.statusDot)
         pairButton = findViewById(R.id.pair)
         pairButton.setOnClickListener { onPairTapped() }
-        // Once a Mac is saved the card opens the Macs: name, address, reconnect, switch, forget.
-        bindNavRow(R.id.statusCard) { if (hasMacs()) open(ConnectionActivity::class.java) }
+        // Connected, the card opens the Macs (switch, forget); not connected, a tap connects,
+        // like Connect now there. The Macs stay one step away under Settings → Connection.
+        bindNavRow(R.id.statusCard) {
+            when {
+                !hasMacs() -> Unit
+                Link.state is Link.State.Connected -> open(ConnectionActivity::class.java)
+                else -> LinkService.start(this, LinkService.ACTION_CONNECT)
+            }
+        }
 
         for ((permission, rowId) in permissionRows) {
             bindNavRow(rowId) { grant(permission) }

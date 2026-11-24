@@ -117,7 +117,10 @@ class ConnectionActivity : Activity() {
             }
             row.findViewById<View>(R.id.macActive).visibility = if (isActive) View.VISIBLE else View.GONE
             row.setOnClickListener {
-                if (isActive) return@setOnClickListener
+                if (isActive) {
+                    if (!connected) LinkService.start(this, LinkService.ACTION_CONNECT)
+                    return@setOnClickListener
+                }
                 store.activate(mac)
                 LinkService.start(this, LinkService.ACTION_SWITCH)
                 render()
