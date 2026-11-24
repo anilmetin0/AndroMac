@@ -46,6 +46,8 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
         val text = raw.take(Protocol.MAX_CLIPBOARD)
         if (text.isEmpty() || !store.syncClipboard) return
         lastFromMac = text
+        lastFromMacAt = android.os.SystemClock.elapsedRealtime()
+        lastSent = null   // the Mac's clipboard changed: copying the earlier text again must send it again
         ClipHistory.add(text, fromMac = true)
 
         val written = store.clipboardAutoPaste &&
@@ -205,6 +207,10 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
         /** Echo breaker: never send text that came from the Mac back to the Mac. */
         @Volatile
         var lastFromMac: String? = null
+
+        /** When the Mac's text was written here; the phone's own "Copied" toast for it is not a copy. */
+        @Volatile
+        var lastFromMacAt = 0L
 
         /** The last text this phone sent, so opening the app twice does not send it twice. */
         @Volatile

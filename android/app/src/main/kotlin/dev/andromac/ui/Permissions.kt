@@ -15,6 +15,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import dev.andromac.R
 import dev.andromac.core.Store
+import dev.andromac.feature.CopyWatcher
 import dev.andromac.feature.NotificationRelay
 import dev.andromac.feature.SmsBridge
 import dev.andromac.net.LinkService
@@ -126,6 +127,13 @@ enum class Permission(
 
         override fun settingsIntent(ctx: Context): Intent =
             Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${ctx.packageName}"))
+    },
+
+    /** Phone copies reach the Mac on their own; without it only the tile, the share sheet or the Mac's panel send them. */
+    COPY_WATCHER(R.string.copy_watcher_label, R.string.copy_watcher_description, Kind.OPTIONAL) {
+        override fun granted(ctx: Context): Boolean = CopyWatcher.isEnabled(ctx)
+
+        override fun settingsIntent(ctx: Context): Intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
     };
 
     /** Whether this Android version has the permission at all. */

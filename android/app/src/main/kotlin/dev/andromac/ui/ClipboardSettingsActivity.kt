@@ -1,12 +1,15 @@
 package dev.andromac.ui
 
 import android.app.Activity
+import android.content.Intent
+import android.provider.Settings
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
 import dev.andromac.R
 import dev.andromac.core.Link
 import dev.andromac.core.Store
+import dev.andromac.feature.CopyWatcher
 
 /** Clipboard detail settings. Split out so the main screen stays uncluttered. */
 class ClipboardSettingsActivity : Activity() {
@@ -29,6 +32,9 @@ class ClipboardSettingsActivity : Activity() {
             store.clipboardSkipSensitive = it
         }
 
+        bindNavRow(R.id.rowAutoSend) {
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }
         bindNavRow(R.id.rowSendNow) {
             if (!Link.isConnected) {
                 Toast.makeText(this, R.string.clip_send_offline, Toast.LENGTH_SHORT).show()
@@ -45,6 +51,9 @@ class ClipboardSettingsActivity : Activity() {
     }
 
     private fun refresh() {
+        findViewById<TextView>(R.id.autoSendSummary).setText(
+            if (CopyWatcher.isEnabled(this)) R.string.clip_auto_send_on else R.string.clip_auto_send_off
+        )
         // With auto-paste off, the notification is the only way in: it must not be turned off.
         setRowEnabled(R.id.rowNotify, store.clipboardAutoPaste)
         findViewById<TextView>(R.id.sendNowSummary).setText(

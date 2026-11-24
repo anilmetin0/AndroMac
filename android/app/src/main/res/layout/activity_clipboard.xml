@@ -57,6 +57,20 @@
 
         <LinearLayout style="@style/Card">
 
+            <LinearLayout android:id="@+id/rowAutoSend" style="@style/Row">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="@string/clip_auto_send" />
+                    <TextView
+                        android:id="@+id/autoSendSummary"
+                        style="@style/RowSubtitle" />
+                </LinearLayout>
+                <ImageView style="@style/RowIcon" android:src="@drawable/ic_chevron" android:contentDescription="@null" />
+            </LinearLayout>
+
             <LinearLayout android:id="@+id/rowSensitive" style="@style/Row">
                 <LinearLayout
                     android:layout_width="0dp"

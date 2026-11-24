@@ -30,6 +30,7 @@ import dev.andromac.core.Store
 import dev.andromac.core.UntrustedPeerException
 import dev.andromac.feature.BatteryReporter
 import dev.andromac.feature.ClipboardBridge
+import dev.andromac.feature.CopyWatcher
 import dev.andromac.feature.ConnectionTile
 import dev.andromac.feature.FileTransfer
 import dev.andromac.feature.BluetoothPair
@@ -784,16 +785,19 @@ class LinkService : Service() {
             .setOngoing(true)
             .setShowWhen(false)
         if (connected) {
-            val send = PendingIntent.getActivity(
-                this, REQ_CLIP, ClipHelperActivity.getIntent(this),
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-            )
-            // The everyday action first; the rare Disconnect last, away from the thumb.
-            builder.addAction(
-                Notification.Action.Builder(
-                    null as android.graphics.drawable.Icon?, getString(R.string.tile_clip), send,
-                ).build()
-            )
+            // With the copy watcher on, copies go by themselves and the manual button is noise.
+            if (!CopyWatcher.isEnabled(this)) {
+                val send = PendingIntent.getActivity(
+                    this, REQ_CLIP, ClipHelperActivity.getIntent(this),
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+                )
+                // The everyday action first; the rare Disconnect last, away from the thumb.
+                builder.addAction(
+                    Notification.Action.Builder(
+                        null as android.graphics.drawable.Icon?, getString(R.string.tile_clip), send,
+                    ).build()
+                )
+            }
             builder.addAction(serviceAction(REQ_DISCONNECT, ACTION_DISCONNECT, R.string.link_disconnect))
         } else if (store.isPaired && !store.autoConnect) {
             builder.addAction(serviceAction(REQ_RESUME, ACTION_RESUME, R.string.link_resume))

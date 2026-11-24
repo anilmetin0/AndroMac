@@ -61,7 +61,13 @@ class ClipHelperActivity : Activity() {
         when (intent?.getStringExtra(EXTRA_MODE)) {
             MODE_GET -> {
                 done = true
-                finishQuietly(bridge.sendCurrentClip())
+                if (intent.getBooleanExtra(EXTRA_QUIET, false)) {
+                    // Nothing was tapped, so nothing is shown, and a copy the Mac already has is not sent again.
+                    bridge.sendCurrentClipIfNew()
+                    finishWithoutToast()
+                } else {
+                    finishQuietly(bridge.sendCurrentClip())
+                }
             }
             MODE_PUT -> {
                 done = true
@@ -81,7 +87,8 @@ class ClipHelperActivity : Activity() {
         private fun base(ctx: Context) = Intent(ctx, ClipHelperActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION)
 
-        fun getIntent(ctx: Context): Intent = base(ctx).putExtra(EXTRA_MODE, MODE_GET)
+        fun getIntent(ctx: Context, quiet: Boolean = false): Intent =
+            base(ctx).putExtra(EXTRA_MODE, MODE_GET).putExtra(EXTRA_QUIET, quiet)
 
         fun putIntent(ctx: Context, text: String): Intent =
             base(ctx).putExtra(EXTRA_MODE, MODE_PUT).putExtra(EXTRA_TEXT, text)
@@ -90,12 +97,18 @@ class ClipHelperActivity : Activity() {
 
 private const val EXTRA_MODE = "mode"
 private const val EXTRA_TEXT = "text"
+private const val EXTRA_QUIET = "quiet"
 private const val MODE_GET = "get"
 private const val MODE_PUT = "put"
 
 @Suppress("DEPRECATION")
 private fun Activity.finishQuietly(message: Int) {
     Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    finishWithoutToast()
+}
+
+@Suppress("DEPRECATION")
+private fun Activity.finishWithoutToast() {
     finish()
     overridePendingTransition(0, 0)
 }

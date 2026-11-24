@@ -255,6 +255,11 @@
     <string name="clip_notify_note">Show incoming text in a notification; tapping it writes to the clipboard.</string>
     <string name="clip_sensitive">Never send sensitive content</string>
     <string name="clip_sensitive_note">Clipboards marked sensitive by password managers and OTP fields do not reach the Mac.</string>
+    <string name="copy_watcher_label">AndroMac clipboard</string>
+    <string name="copy_watcher_description">Sends what you copy to your Mac right away. It only notices a tap on Copy or the Copied message, then reads the clipboard once. Screen content is never read.</string>
+    <string name="clip_auto_send">Send copies automatically</string>
+    <string name="clip_auto_send_on">On, copies go to your Mac right away</string>
+    <string name="clip_auto_send_off">Off. Turn on AndroMac clipboard in Accessibility</string>
     <string name="clip_send_now">Send clipboard to Mac</string>
     <string name="clip_send_ready">Tap to read and send the clipboard</string>
     <string name="clip_send_offline">Mac not connected</string>
