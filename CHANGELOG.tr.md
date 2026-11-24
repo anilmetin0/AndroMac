@@ -12,11 +12,17 @@ derlemeler bunun yerine commit'lerini listeler.
 ### Değişenler
 
 - **Telefonda kopyalanan Mac'e kendiliğinden geçer.** Telefonun Erişilebilirlik ayarlarında
-  AndroMac pano'yu açınca telefonda kopyaladığın şey yarım saniye içinde Mac'in panosunda olur.
+  AndroMac'ı açınca telefonda kopyaladığın şey yarım saniye içinde Mac'in panosunda olur.
   Önce menü çubuğu panelini açman gerekmez. Telefon yalnızca Kopyala dokunuşunu ya da
   "Kopyalandı" mesajını fark eder, sonra panoyu bir kez okur. Ekrandaki hiçbir şeyi okumaz.
-  Telefonda Ayarlar → Pano ve İzinler altında bulunur. Açıkken telefondaki AndroMac bildiriminde
-  Panoyu gönder düğmesi görünmez.
+  Telefonda Ayarlar → Pano ve İzinler altında bulunur. Android onu durdurursa telefon bunu
+  söyler ve ayar durdu diye görünür: kapatıp yeniden açman yeter. Açıkken Mac telefonun panosunu
+  "Diğer uygulamaların üzerinde göster" izni olmadan da isteyebilir.
+- **Tek dokunuşla bağlan.** Telefon bağlı değilken ana ekrandaki Mac'e dokunmak bağlar. Bunun
+  için artık Şimdi bağlan satırına gitmen gerekmez.
+- **Güncellemeler kendiliğinden.** Telefon Mac'e bağlandığında da güncellemeyi denetler;
+  otomatik kurulum uygulamayı açmadan çalışır. Mac günlük denetimin zamanı gelip gelmediğine
+  saatte bir bakar, panelin açılmasını beklemez.
 - **Önceki kopyalar panelde.** Menü çubuğu paneli en sonuncudan önceki iki kopyayı da gösterir;
   birine tıklayınca Mac'in panosuna geri konur.
 - **Düşük pil uyarısı %20'de.** Başka bir seviye seçmediysen uyarı artık %20'de gelir.
@@ -25,6 +31,7 @@ derlemeler bunun yerine commit'lerini listeler.
 ### Düzeltilenler
 
 - Mac'te bir bildirimi kapatmak artık onu telefondan silmiyor.
+- Mac: menü çubuğundan açılan Ayarlar, Mesajlar ve diğer pencereler öne gelir.
 - Telefon: güncellemeden sonra telefon bazen AndroMac açılana kadar bağlanmıyordu.
 - Telefon: Mac'in panosu değiştikten sonra aynı metni yeniden kopyalamak onu yeniden gönderir.
 - Mac: paneli on saniye içinde ikinci kez açmak telefonun panosunu yeniden sorar.

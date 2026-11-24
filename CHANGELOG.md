@@ -11,12 +11,18 @@ raised. Nightly builds list their commits instead.
 
 ### Changed
 
-- **Phone copies reach the Mac on their own.** Turn on AndroMac clipboard in the phone's
+- **Phone copies reach the Mac on their own.** Turn on AndroMac in the phone's
   Accessibility settings, and whatever you copy on the phone is on the Mac's clipboard about half
   a second later. You no longer need to open the menu bar panel first. The phone only notices the
   tap on Copy or the "Copied" message, then reads the clipboard once. It reads nothing on screen.
-  Find it under Settings → Clipboard and Permissions on the phone. With it on, the phone's
-  AndroMac notification drops its Send clipboard button.
+  Find it under Settings → Clipboard and Permissions on the phone. If Android stops it, the
+  phone says so and the setting shows it as stopped: turn it off and on again. While it is on,
+  the Mac can also ask for the phone's clipboard without "Display over other apps".
+- **One tap to connect.** When the phone is not connected, tapping the Mac on the main screen
+  connects it. The Connect now row is no longer needed for that.
+- **Updates on their own.** The phone also checks for an update when it connects to the Mac, so
+  automatic install works without opening the app. The Mac checks once an hour whether the
+  daily check is due, so it no longer waits for the panel to open.
 - **Earlier copies in the panel.** The menu bar panel shows the two copies before the latest;
   click one to put it back on the Mac's clipboard.
 - **Low battery alert at 20%.** The alert now fires at 20% unless you picked another level.
@@ -25,6 +31,7 @@ raised. Nightly builds list their commits instead.
 ### Fixed
 
 - Closing a notification on the Mac no longer removes it from the phone.
+- Mac: Settings, Messages and the other windows opened from the menu bar come to the front.
 - Phone: after an update the phone sometimes stayed disconnected until AndroMac was opened.
 - Phone: copying a text again after the Mac's clipboard changed sends it again.
 - Mac: opening the panel a second time within ten seconds now asks the phone for its clipboard again.
