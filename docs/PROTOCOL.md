@@ -349,8 +349,8 @@ Apps on the full tier can also send a picture:
 ```json
 {"t":"notification_dismiss","id":"0|com.whatsapp|1234|null|10123"}
 ```
-Closing a Mac notification with phone actions leaves it on the phone, so those actions remain
-available in Mac history. Notifications without phone actions are dismissed on both devices.
+Closing a notification on the Mac leaves it on the phone. Since 1.12.0 the Mac no longer sends
+this message; the phone still honours it for older Macs.
 History stores the source phone and action indices; actions are enabled only after that phone
 has replayed the notification in the current connection. A phone removal disables its history
 actions without removing the history entry.

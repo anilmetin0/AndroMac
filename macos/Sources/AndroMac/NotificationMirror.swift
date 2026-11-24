@@ -243,7 +243,7 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         )
         categories[id] = UNNotificationCategory(
             identifier: id, actions: unActions, intentIdentifiers: [],
-            options: [.customDismissAction]
+            options: []
         )
         center.setNotificationCategories(Set(categories.values).union([BluetoothCalls.notificationCategory]))
         return id
@@ -309,12 +309,6 @@ final class NotificationMirror: NSObject, UNUserNotificationCenterDelegate {
         case Self.muteIdentifier:
             // Banners off on this Mac; the notifications still reach the history.
             await AppModes.shared.setBanner(false, for: pkg)
-
-        case UNNotificationDismissActionIdentifier:
-            // Keep actionable notifications on the phone so history can still invoke them.
-            if userInfo["hasActions"] as? Bool != true {
-                await Server.shared.send(["t": "notification_dismiss", "id": id], to: peer)
-            }
 
         case UNNotificationDefaultActionIdentifier:
             break        // a plain click: do nothing on the phone
