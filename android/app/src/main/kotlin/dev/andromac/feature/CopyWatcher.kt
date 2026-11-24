@@ -23,8 +23,7 @@ import dev.andromac.ui.ClipHelperActivity
  * Notices a copy on the phone so it reaches the Mac without the user asking.
  *
  * Android 10+ still lets no background app read the clipboard, this service included. It only
- * sees that a copy probably happened: a tap on a "Copy" button, Android 13+'s "Copied" overlay, or
- * an app's "Copied" toast. Then the invisible [ClipHelperActivity] takes focus for a moment and
+ * sees that a copy probably happened: a tap on a "Copy" button or a "Copied" toast. Then the invisible [ClipHelperActivity] takes focus for a moment and
  * reads it, the same path the Mac's request uses. A bound accessibility service is allowed to
  * start that activity from the background. It reads no window content (see the config xml).
  */
@@ -43,7 +42,7 @@ class CopyWatcher : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         if (event.packageName == packageName || !looksLikeCopy(event)) return
-        // A tap on Copy is the user. A "Copied" toast or overlay also follows every clipboard
+        // A tap on Copy is the user. A "Copied" toast also follows every clipboard
         // write, the Mac's and the copy just read included, up to 4.4 s later on a Galaxy S24
         // (Link to Windows: "Copied to your connected devices"). Reading again would take focus
         // from whatever the user is doing, so those signals wait out a quiet period.
@@ -62,13 +61,10 @@ class CopyWatcher : AccessibilityService() {
         // Chrome's toolbar sends the label twice, as text and as description: each is checked alone.
         val words = (event.text + listOfNotNull(event.contentDescription)).map { it.toString().lowercase().trim() }
         val copyLabel = getString(android.R.string.copy).lowercase()
-        val systemUi = event.packageName == "com.android.systemui"
         return when (event.eventType) {
             AccessibilityEvent.TYPE_VIEW_CLICKED -> words.any { it.matches(copyWord) || it == copyLabel }
-            // Android 13+'s "Copied" overlay (window ClipboardOverlay) reports only a bare FrameLayout;
-            // SystemUI's other windows (volume, shade) name their own class.
-            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED ->
-                systemUi && event.className == "android.widget.FrameLayout"
+            // Not Android 13+'s "Copied" overlay: it reports only a bare FrameLayout, and on a Galaxy
+            // S24 other SystemUI windows did too, several times an hour, each read taking focus.
             AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED ->
                 event.className?.contains("Toast") == true && words.any { copied.containsMatchIn(it) }
             else -> false
