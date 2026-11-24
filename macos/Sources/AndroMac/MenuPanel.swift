@@ -21,6 +21,8 @@ struct MenuPanel: View {
     @ObservedObject private var calls = BluetoothCalls.shared
     /// True for a moment after ⌘C copied the phone's last clipboard.
     @State private var copiedLast = false
+    @ObservedObject private var clips = ClipboardHistory.shared
+    @State private var copiedOlder: UUID?
     /// The notification row unfolded to its whole text; one at a time.
     @State private var openRow: String?
 
@@ -258,6 +260,49 @@ struct MenuPanel: View {
     /// the history's Send to phone) and files are dropped onto the panel, so the row carries no
     /// buttons for those.
     private var clipboard: some View {
+        VStack(alignment: .leading, spacing: Theme.Space.small) {
+            latestClip
+            ForEach(olderClips) { entry in olderClipRow(entry) }
+        }
+    }
+
+    /// The two copies before the latest, either direction, so an earlier one is one click away.
+    private var olderClips: [ClipboardHistory.Entry] {
+        Array(clips.entries.filter { $0.text != state.lastClipboard }.prefix(2))
+    }
+
+    private func olderClipRow(_ entry: ClipboardHistory.Entry) -> some View {
+        Button {
+            Task {
+                await ClipboardWatcher.shared.restore(entry.text)
+                copiedOlder = entry.id
+                try? await Task.sleep(for: .milliseconds(1200))
+                if copiedOlder == entry.id { copiedOlder = nil }
+            }
+        } label: {
+            HStack(spacing: Theme.Space.small) {
+                Image(systemName: copiedOlder == entry.id ? "checkmark" : entry.direction.symbol)
+                    .font(Theme.Font.label)
+                    .foregroundStyle(copiedOlder == entry.id ? Color.green : Color.secondary)
+                    .frame(width: 14)
+                    .accessibilityLabel(entry.direction.label)
+                Text(entry.preview)
+                    .font(Theme.Font.label)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                Spacer(minLength: 0)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help(String(entry.text.prefix(600)))
+        .contextMenu {
+            Button("Open clipboard history") { state.showMainWindow(.clipboard) }
+        }
+    }
+
+    private var latestClip: some View {
         HStack(spacing: Theme.Space.small) {
             Button(action: copyLast) {
                 HStack(spacing: Theme.Space.small) {

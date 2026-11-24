@@ -10,10 +10,10 @@ import Foundation
 ///
 /// The poll runs only while it can matter: a phone is connected, automatic sending is on, and the
 /// screen is awake and unlocked. Nobody copies on a locked or sleeping Mac, and a MacBook on
-/// battery should not be woken 1.4 times a second for nothing. The sleep carries a tolerance so
+/// battery should not be woken twice a second for nothing. The sleep carries a tolerance so
 /// the system can fold these wake-ups into others.
 ///
-/// Known limit: a fixed 0.7 s interval; if it ever shows up in a measurement, a CGEventTap for Cmd+C
+/// Known limit: a fixed 0.5 s interval; if it ever shows up in a measurement, a CGEventTap for Cmd+C
 /// replaces the poll.
 actor ClipboardWatcher {
 
@@ -54,7 +54,7 @@ actor ClipboardWatcher {
             lastChangeCount = NSPasteboard.general.changeCount
             task = Task { [weak self] in
                 while !Task.isCancelled {
-                    try? await Task.sleep(for: .milliseconds(700), tolerance: .milliseconds(300))
+                    try? await Task.sleep(for: .milliseconds(500), tolerance: .milliseconds(150))
                     await self?.poll()
                 }
             }
@@ -112,11 +112,12 @@ actor ClipboardWatcher {
     ///
     /// Only the phone the panel is showing is asked; every other phone would wake its radio and
     /// launch an activity for an answer nobody looks at. Throttled: opening and closing the panel
-    /// a few times in a row is one request, not five. The phone itself ignores a request while
-    /// its screen is off.
+    /// quickly is one request, not five. The phone itself ignores a request while
+    /// its screen is off. The throttle is short: a second copy on the phone a few seconds later
+    /// must still come across when the panel opens again.
     func requestFromPhones() async {
         guard Store.shared.syncClipboard, Store.shared.clipboardPull else { return }
-        if let lastRequest, Date().timeIntervalSince(lastRequest) < 10 { return }
+        if let lastRequest, Date().timeIntervalSince(lastRequest) < 2 { return }
         lastRequest = Date()
         guard let peer = await MainActor.run(body: { AppState.shared.focusedDevice?.id }) else { return }
         await Server.shared.send(["t": "clipboard_request"], to: peer)
