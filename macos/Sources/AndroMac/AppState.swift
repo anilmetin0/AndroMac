@@ -202,7 +202,15 @@ final class AppState: ObservableObject {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate()
         NotificationCenter.default.post(name: Self.closePanel, object: nil)
-        let wasOpen = NSApp.windows.contains { $0.isVisible && $0.identifier?.rawValue.contains(id) == true }
+        // Already open: forward at once, in the same click, and a pulse to show where it is. The
+        // waits below are for a window still being made; spent on this one they held the pulse
+        // back by most of a second.
+        if let window = NSApp.windows.first(where: { $0.isVisible && $0.identifier?.rawValue.contains(id) == true }) {
+            window.makeKeyAndOrderFront(nil)
+            // A beat after the activation, or the growing half ran in one step.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { Self.pulse(window) }
+            return
+        }
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(100))
             open()
@@ -210,9 +218,6 @@ final class AppState: ObservableObject {
             let window = NSApp.windows.first { $0.identifier?.rawValue.contains(id) == true }
             window?.makeKeyAndOrderFront(nil)
             NSApp.activate()
-            // A window that was already open does not zoom in again, so it pulses once to show
-            // where it is, behind whatever else is on screen.
-            if wasOpen, let window { Self.pulse(window) }
         }
     }
 
