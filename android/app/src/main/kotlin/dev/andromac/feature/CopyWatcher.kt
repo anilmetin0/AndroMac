@@ -59,7 +59,7 @@ class CopyWatcher : AccessibilityService() {
 
     private fun looksLikeCopy(event: AccessibilityEvent): Boolean {
         // Chrome's toolbar sends the label twice, as text and as description: each is checked alone.
-        val words = (event.text + listOfNotNull(event.contentDescription)).map { it.toString().lowercase().trim() }
+        val words = (event.text.filterNotNull() + listOfNotNull(event.contentDescription)).map { it.toString().lowercase().trim() }
         val copyLabel = getString(android.R.string.copy).lowercase()
         return when (event.eventType) {
             AccessibilityEvent.TYPE_VIEW_CLICKED -> words.any { it.matches(copyWord) || it == copyLabel }
