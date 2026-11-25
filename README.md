@@ -4,7 +4,7 @@
 <h1 align="center">AndroMac</h1>
 <p align="center">
   <a href="https://github.com/anilmetin0/AndroMac/releases/latest"><img src="https://img.shields.io/github/v/release/anilmetin0/AndroMac?style=for-the-badge&label=release" alt="release"></a>
-  <a href="https://github.com/anilmetin0/AndroMac/releases"><img src="https://img.shields.io/github/downloads/anilmetin0/AndroMac/total?style=for-the-badge&label=GitHub%20downloads" alt="Total GitHub release asset downloads, including updates"></a>
+  <a href="https://github.com/anilmetin0/AndroMac/releases"><img src="https://img.shields.io/github/downloads/anilmetin0/AndroMac/total?style=for-the-badge&label=GitHub%20downloads" alt="GitHub downloads"></a>
   <a href="https://github.com/anilmetin0/AndroMac/stargazers"><img src="https://img.shields.io/github/stars/anilmetin0/AndroMac?style=for-the-badge&label=stars" alt="GitHub stars"></a>
   <a href="https://github.com/anilmetin0/AndroMac/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/anilmetin0/AndroMac/build.yml?style=for-the-badge&label=build" alt="build"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/anilmetin0/AndroMac?style=for-the-badge" alt="license"></a>
