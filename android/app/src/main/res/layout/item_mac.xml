@@ -3,6 +3,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     style="@style/Row">
 
+    <!-- Shown in the pairing picker only. -->
+    <ImageView
+        android:id="@+id/macIcon"
+        style="@style/RowLeadingIcon"
+        android:src="@drawable/ic_laptop"
+        android:visibility="gone" />
+
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
