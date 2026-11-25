@@ -88,6 +88,7 @@
         <item quantity="one">%d izin verilmedi</item>
         <item quantity="other">%d izin verilmedi</item>
     </plurals>
+    <string name="permission_turn_on_again">Yeniden aç</string>
     <string name="permission_granted">Verildi</string>
     <string name="permission_allow">İzin ver</string>
     <string name="permission_required">Zorunlu</string>

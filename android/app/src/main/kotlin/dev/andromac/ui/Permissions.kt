@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.View
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import dev.andromac.R
@@ -133,6 +134,8 @@ enum class Permission(
     COPY_WATCHER(R.string.setup_accessibility_title, R.string.copy_watcher_description, Kind.OPTIONAL) {
         override fun granted(ctx: Context): Boolean = CopyWatcher.running
 
+        override fun stopped(ctx: Context): Boolean = CopyWatcher.isStuck(ctx)
+
         override fun settingsIntent(ctx: Context): Intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
     };
 
@@ -141,6 +144,12 @@ enum class Permission(
 
     /** What the runtime dialog asks for: [runtime], plus any that Android grants with it. */
     open val runtimes: List<String> get() = listOfNotNull(runtime)
+
+    /**
+     * On in Settings but not working: after a crash Android keeps an accessibility service off
+     * until it is turned off and on again, and "Allow" read as if it had never been turned on.
+     */
+    open fun stopped(ctx: Context): Boolean = false
 
     /** A runtime permission is granted when Android says so; the others override this. */
     open fun granted(ctx: Context): Boolean =
@@ -254,7 +263,13 @@ fun Activity.addPermissionRows(list: LinearLayout, permissions: List<Permission>
 fun Activity.renderPermissionRows(list: LinearLayout) {
     for (i in 0 until list.childCount) {
         val row = list.getChildAt(i)
-        val granted = (row.tag as Permission).granted(this)
+        val permission = row.tag as Permission
+        val granted = permission.granted(this)
+        val stopped = !granted && permission.stopped(this)
+        row.findViewById<TextView>(R.id.permNote)
+            .setText(if (stopped) R.string.copy_watcher_stuck_body else permission.noteRes)
+        row.findViewById<Button>(R.id.permAllow)
+            .setText(if (stopped) R.string.permission_turn_on_again else R.string.permission_allow)
         row.findViewById<View>(R.id.permAllow).visibility = if (granted) View.GONE else View.VISIBLE
         row.findViewById<View>(R.id.permGranted).visibility = if (granted) View.VISIBLE else View.GONE
     }

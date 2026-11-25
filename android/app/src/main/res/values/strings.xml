@@ -96,6 +96,7 @@
         <item quantity="one">%d not granted</item>
         <item quantity="other">%d not granted</item>
     </plurals>
+    <string name="permission_turn_on_again">Turn on again</string>
     <string name="permission_granted">Granted</string>
     <string name="permission_allow">Allow</string>
     <string name="permission_required">Required</string>
