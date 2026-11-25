@@ -212,6 +212,7 @@
         <LinearLayout style="@style/Card">
 
             <LinearLayout android:id="@+id/rowNotifications" style="@style/Row">
+                <ImageView style="@style/RowLeadingIcon" android:src="@drawable/ic_bell" />
                 <TextView
                     style="@style/RowTitle"
                     android:layout_width="0dp"
@@ -221,6 +222,7 @@
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowClipboard" style="@style/Row">
+                <ImageView style="@style/RowLeadingIcon" android:src="@drawable/ic_clipboard" android:tint="?android:attr/textColorSecondary" />
                 <TextView
                     style="@style/RowTitle"
                     android:layout_width="0dp"
@@ -230,6 +232,7 @@
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowMedia" style="@style/Row">
+                <ImageView style="@style/RowLeadingIcon" android:src="@drawable/ic_music" />
                 <TextView
                     style="@style/RowTitle"
                     android:layout_width="0dp"
@@ -239,6 +242,7 @@
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowBattery" style="@style/Row">
+                <ImageView style="@style/RowLeadingIcon" android:src="@drawable/ic_battery" />
                 <TextView
                     style="@style/RowTitle"
                     android:layout_width="0dp"

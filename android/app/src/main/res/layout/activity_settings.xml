@@ -51,6 +51,7 @@
         <LinearLayout style="@style/Card">
 
             <LinearLayout android:id="@+id/rowNotifSettings" style="@style/Row">
+                <ImageView style="@style/RowLeadingIcon" android:src="@drawable/ic_bell" />
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -63,6 +64,7 @@
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowClipSettings" style="@style/Row">
+                <ImageView style="@style/RowLeadingIcon" android:src="@drawable/ic_clipboard" android:tint="?android:attr/textColorSecondary" />
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -75,6 +77,7 @@
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowMedia" style="@style/Row">
+                <ImageView style="@style/RowLeadingIcon" android:src="@drawable/ic_music" />
                 <TextView
                     style="@style/RowTitle"
                     android:layout_width="0dp"
@@ -84,6 +87,7 @@
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowBattery" style="@style/Row">
+                <ImageView style="@style/RowLeadingIcon" android:src="@drawable/ic_battery" />
                 <TextView
                     style="@style/RowTitle"
                     android:layout_width="0dp"
@@ -93,6 +97,7 @@
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowFiles" style="@style/Row">
+                <ImageView style="@style/RowLeadingIcon" android:src="@drawable/ic_folder" />
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -105,6 +110,7 @@
             </LinearLayout>
 
             <LinearLayout android:id="@+id/rowSms" style="@style/Row">
+                <ImageView style="@style/RowLeadingIcon" android:src="@drawable/ic_sms" />
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -118,6 +124,7 @@
 
             <!-- The Mac pairs over Bluetooth when it asks (feature/BluetoothPair.kt); Android needs Nearby devices for that. -->
             <LinearLayout android:id="@+id/rowCalls" style="@style/Row">
+                <ImageView style="@style/RowLeadingIcon" android:src="@drawable/ic_call" />
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
