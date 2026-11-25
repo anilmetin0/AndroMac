@@ -99,6 +99,14 @@ struct MenuPanel: View {
                 .allowsHitTesting(false)
         }
         .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: state.headline)
+        // The next glance starts folded: a list grown last time made the panel run off the screen.
+        .onDisappear {
+            guard !DemoMode.panelOpen else { return }
+            allClips = false
+            allNotifications = false
+            openClip = nil
+            openRow = nil
+        }
         // Opening the panel is the Mac-side "app opened" moment; the check itself is opt-in and daily.
         .onAppear {
             // ANDROMAC_DEMO_PANEL=animate unfolds a notification two seconds in, so the
@@ -280,7 +288,8 @@ struct MenuPanel: View {
     private var clipboard: some View {
         let rows = allClips ? clipPool : Array(clipPool.prefix(3))
         return VStack(alignment: .leading, spacing: Theme.Space.tight) {
-            sectionHeader("Clipboard") { state.showMainWindow(.clipboard) }
+            sectionHeader("Clipboard", symbol: "doc.on.clipboard.fill", tint: .blue,
+                          count: clipPool.isEmpty ? nil : clipPool.count) { state.showMainWindow(.clipboard) }
             if rows.isEmpty {
                 Text("Nothing copied yet")
                     .font(Theme.Font.label)
@@ -343,12 +352,21 @@ struct MenuPanel: View {
 
     /// A section's name as a button to its full history in the window, with a chevron as Control
     /// Center's module titles have, then the section's one quiet action.
-    private func sectionHeader(_ title: LocalizedStringKey, count: Int? = nil,
+    private func sectionHeader(_ title: LocalizedStringKey, symbol: String, tint: Color, count: Int? = nil,
                                @ViewBuilder extra: () -> some View = { EmptyView() },
                                openWindow: @escaping () -> Void) -> some View {
         HStack(spacing: Theme.Space.small) {
             Button(action: openWindow) {
                 HStack(spacing: Theme.Space.tight) {
+                    // A tinted glyph per section, as Control Center's modules have, so Clipboard and
+                    // Notifications tell apart at a glance and not only by their titles.
+                    Image(systemName: symbol)
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 20, height: 20)
+                        .background(tint.gradient, in: Circle())
+                        .padding(.trailing, Theme.Space.tight)
+                        .accessibilityHidden(true)
                     Text(title).font(Theme.Font.heading)
                     if let count {
                         Text(verbatim: "\(count)")
@@ -420,7 +438,7 @@ struct MenuPanel: View {
     private var notifications: some View {
         let rows = shownNotifications
         return VStack(alignment: .leading, spacing: Theme.Space.tight) {
-            sectionHeader("Notifications", count: history.entries.isEmpty ? nil : history.entries.count,
+            sectionHeader("Notifications", symbol: "bell.fill", tint: .red, count: history.entries.isEmpty ? nil : history.entries.count,
                           extra: {
                               if !history.entries.isEmpty {
                                   QuietButton(String(localized: "Clear")) { history.clear() }

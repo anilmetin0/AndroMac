@@ -538,6 +538,7 @@ struct ClipRow: View {
                         .frame(width: 14)
                         .contentTransition(.symbolEffect(.replace))
                         .symbolEffect(.bounce, value: copied)
+                        .accessibilityLabel(direction.label)
                     Group {
                         if open {
                             Text(direction.label).font(Theme.Font.label).foregroundStyle(.secondary)

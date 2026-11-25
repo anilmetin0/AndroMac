@@ -64,6 +64,22 @@ struct MainWindow: View {
             case .setting(let section): return section.symbol
             }
         }
+
+        var tint: Color {
+            switch self {
+            case .messages: return .green
+            case .notifications, .setting(.notifications): return .red
+            case .clipboard, .setting(.clipboard): return .blue
+            case .apps: return .indigo
+            case .setting(.devices): return .teal
+            case .setting(.files): return .cyan
+            case .setting(.calls): return .green
+            case .setting(.mirroring): return .purple
+            case .setting(.permissions): return .orange
+            case .setting(.updates): return .pink
+            case .setting: return .gray
+            }
+        }
     }
 
     @EnvironmentObject private var state: AppState
@@ -203,7 +219,18 @@ struct MainWindow: View {
     }
 
     private func row(_ tab: Tab) -> some View {
-        Label(tab.title, systemImage: tab.symbol).tag(tab)
+        // Tinted tiles as System Settings has, the same colours as the menu bar panel's sections.
+        Label {
+            Text(tab.title)
+        } icon: {
+            Image(systemName: tab.symbol)
+                .symbolVariant(.fill)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 22, height: 22)
+                .background(tab.tint.gradient, in: RoundedRectangle(cornerRadius: Theme.Radius.small, style: .continuous))
+        }
+        .tag(tab)
     }
 
     @ViewBuilder

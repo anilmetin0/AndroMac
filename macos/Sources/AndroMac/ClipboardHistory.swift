@@ -17,7 +17,8 @@ final class ClipboardHistory: ObservableObject {
         case sent          // Mac -> phone
         case received      // phone -> Mac
 
-        var symbol: String { self == .sent ? "arrow.up" : "arrow.down" }
+        /// Where the copy was made: an arrow said only up or down, not which device.
+        var symbol: String { self == .sent ? "laptopcomputer" : "iphone" }
         var label: String {
             self == .sent
                 ? String(localized: "Sent to phone") : String(localized: "Received from phone")
