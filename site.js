@@ -97,14 +97,22 @@ if (changes) {
     .catch(() => {});
 }
 
-// Same total as the README badge: all release assets, including updates.
-// Keep the releases link usable if the count cannot be loaded.
-fetch("https://img.shields.io/github/downloads/anilmetin0/AndroMac/total.json")
+// APK and DMG downloads across every release, updates included. SHA256SUMS.txt is left out:
+// the apps fetch it on every update to check the download, so it is not a download of AndroMac.
+// One request: there are far fewer than 100 releases. Keep the releases link usable without it.
+fetch("https://api.github.com/repos/anilmetin0/AndroMac/releases?per_page=100")
   .then((r) => (r.ok ? r.json() : Promise.reject()))
-  .then((badge) => {
-    if (typeof badge.message !== "string" || !/^\d+(?:[.,]\d+)?[kMGTB]?$/.test(badge.message)) return;
+  .then((releases) => {
+    if (!Array.isArray(releases)) return;
+    let total = 0;
+    for (const release of releases) {
+      for (const asset of release.assets || []) {
+        if (/\.(apk|dmg)$/.test(asset.name)) total += asset.download_count;
+      }
+    }
+    if (!total) return;
     for (const el of document.querySelectorAll("[data-downloads]")) {
-      el.textContent = badge.message + " ";
+      el.textContent = total.toLocaleString(document.documentElement.lang || undefined) + " ";
     }
   })
   .catch(() => {});
