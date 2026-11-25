@@ -497,7 +497,8 @@ struct ClipRow: View {
     private static let actionsHeight: CGFloat = 22
     private static let openTextMax: CGFloat = 160
     /// The open text starts under the folded text: the icon column and the gap after it.
-    private static let indent: CGFloat = 14 + Theme.Space.small
+    /// 20 wide, as the section's glyph above it: the text lines up under the section's title.
+    private static let indent: CGFloat = 20 + Theme.Space.small
     private static let textWidth = Theme.panelWidth - 2 * Theme.panelInset - indent
 
     static func height(_ text: String, open: Bool) -> CGFloat {
@@ -535,7 +536,7 @@ struct ClipRow: View {
                     Image(systemName: copied ? "checkmark" : direction.symbol)
                         .font(Theme.Font.label)
                         .foregroundStyle(copied ? Color.green : Color.secondary)
-                        .frame(width: 14)
+                        .frame(width: 20)
                         .contentTransition(.symbolEffect(.replace))
                         .symbolEffect(.bounce, value: copied)
                         .accessibilityLabel(direction.label)

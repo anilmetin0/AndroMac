@@ -79,6 +79,7 @@
 "Clear the notification history?" = "Clear the notification history?";
 "Clipboard" = "Clipboard";
 "Close AndroMac Windows" = "Close AndroMac Windows";
+"Colored icons" = "Colored icons";
 "Connect" = "Connect";
 "Connect a phone" = "Connect a phone";
 "Connect automatically" = "Connect automatically";
@@ -129,8 +130,8 @@
 "Forget all devices" = "Forget all devices";
 "Forget all devices?" = "Forget all devices?";
 "Forget…" = "Forget…";
-"full" = "full";
 "Full" = "Full";
+"full" = "full";
 "General" = "General";
 "Get the app on the phone" = "Get the app on the phone";
 "History" = "History";

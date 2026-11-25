@@ -13,6 +13,7 @@ struct MenuPanel: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var state: AppState
+    @AppStorage("colorIcons") private var colorIcons = true
     @ObservedObject private var history = NotificationHistory.shared
 
     @ObservedObject private var updates = UpdateCheck.shared
@@ -362,9 +363,9 @@ struct MenuPanel: View {
                     // Notifications tell apart at a glance and not only by their titles.
                     Image(systemName: symbol)
                         .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(colorIcons ? AnyShapeStyle(.white) : AnyShapeStyle(.secondary))
                         .frame(width: 20, height: 20)
-                        .background(tint.gradient, in: Circle())
+                        .background(colorIcons ? AnyShapeStyle(tint.gradient) : AnyShapeStyle(.quaternary), in: Circle())
                         .padding(.trailing, Theme.Space.tight)
                         .accessibilityHidden(true)
                     Text(title).font(Theme.Font.heading)

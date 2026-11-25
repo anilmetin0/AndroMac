@@ -263,18 +263,30 @@ private struct DeviceCard: View {
                 state.showMainWindow(.setting(.devices))
             } label: {
                 HStack(spacing: Theme.Space.small) {
-                    Circle()
-                        .fill(Self.dotColor(device: device, connected: connected))
-                        .frame(width: 8, height: 8)
-                    Text(title)
-                        .font(Theme.Font.heading)
-                        .lineLimit(1)
-                    // A long name truncates; the state beside it stays whole.
-                    Text(statusLine)
-                        .font(Theme.Font.label)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .fixedSize()
+                    // The phone itself, its state a dot on its corner, as the Bluetooth module in
+                    // Control Center shows a device. The state moved under the name, which a
+                    // phone's default name ("… adlı kişiye ait Galaxy S24+") needs whole.
+                    Image(systemName: "smartphone")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(connected ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
+                        .frame(width: 32, height: 32)
+                        .background(.primary.opacity(0.08), in: Circle())
+                        .overlay(alignment: .bottomTrailing) {
+                            Circle()
+                                .fill(Self.dotColor(device: device, connected: connected))
+                                .frame(width: 9, height: 9)
+                                .overlay(Circle().stroke(.background, lineWidth: 1.5))
+                        }
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(title)
+                            .font(Theme.Font.heading)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        Text(statusLine)
+                            .font(Theme.Font.label)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
                 }
                 .contentShape(Rectangle())
             }

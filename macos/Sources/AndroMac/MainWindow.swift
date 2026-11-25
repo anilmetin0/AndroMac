@@ -65,6 +65,24 @@ struct MainWindow: View {
             }
         }
 
+        /// A glyph that reads at tile size: some outline symbols turned into blobs once filled.
+        var tileSymbol: String {
+            switch self {
+            case .messages: return "message.fill"
+            case .notifications, .setting(.notifications): return "bell.fill"
+            case .clipboard, .setting(.clipboard): return "list.clipboard.fill"
+            case .apps: return "square.grid.2x2.fill"
+            case .setting(.general): return "gearshape.fill"
+            case .setting(.devices): return "smartphone"
+            case .setting(.files): return "folder.fill"
+            case .setting(.calls): return "phone.fill"
+            case .setting(.mirroring): return "macbook.and.iphone"
+            case .setting(.permissions): return "hand.raised.fill"
+            case .setting(.updates): return "arrow.down.to.line"
+            case .setting(.advanced): return "slider.horizontal.3"
+            }
+        }
+
         var tint: Color {
             switch self {
             case .messages: return .green
@@ -83,6 +101,7 @@ struct MainWindow: View {
     }
 
     @EnvironmentObject private var state: AppState
+    @AppStorage("colorIcons") private var colorIcons = true
     @ObservedObject private var notifications = NotificationHistory.shared
     @ObservedObject private var clipboard = ClipboardHistory.shared
     @State private var query = ""
@@ -219,16 +238,20 @@ struct MainWindow: View {
     }
 
     private func row(_ tab: Tab) -> some View {
-        // Tinted tiles as System Settings has, the same colours as the menu bar panel's sections.
+        // Colour: tinted tiles as System Settings has, in the menu bar panel's section colours.
+        // Plain: the system's own sidebar symbols, as Mail and Music have.
         Label {
             Text(tab.title)
         } icon: {
-            Image(systemName: tab.symbol)
-                .symbolVariant(.fill)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 22, height: 22)
-                .background(tab.tint.gradient, in: RoundedRectangle(cornerRadius: Theme.Radius.small, style: .continuous))
+            if colorIcons {
+                Image(systemName: tab.tileSymbol)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 22, height: 22)
+                    .background(tab.tint.gradient, in: RoundedRectangle(cornerRadius: Theme.Radius.small, style: .continuous))
+            } else {
+                Image(systemName: tab.symbol)
+            }
         }
         .tag(tab)
     }

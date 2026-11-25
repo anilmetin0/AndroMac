@@ -10,6 +10,7 @@ struct SettingsList: View {
     @State private var showBatteryInMenuBar = Store.shared.showBatteryInMenuBar
     @State private var launchAtLogin = Store.shared.launchAtLogin
     @State private var launchError: String?
+    @AppStorage("colorIcons") private var colorIcons = true
     @State private var lowBatteryAlert = Store.shared.lowBatteryAlert
     @State private var lowBatteryThreshold = Store.shared.lowBatteryThreshold
     @State private var notificationSound = Store.shared.notificationSound
@@ -86,6 +87,8 @@ struct SettingsList: View {
                 .onChange(of: showBatteryInMenuBar) { _, v in
                     state.showBatteryInMenuBar = v
                 }
+
+            Toggle("Colored icons", isOn: $colorIcons)
 
             Picker("Language", selection: $language) {
                 Text("System").tag("")
