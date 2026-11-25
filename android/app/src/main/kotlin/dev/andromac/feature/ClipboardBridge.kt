@@ -79,7 +79,8 @@ class ClipboardBridge(private val context: Context, private val store: Store) {
         if (!context.getSystemService(android.os.PowerManager::class.java).isInteractive) return
         // A bound accessibility service also lets the app start an activity from the background.
         if (Settings.canDrawOverlays(context) || CopyWatcher.running) {
-            runCatching { context.startActivity(ClipHelperActivity.getIntent(context)) }
+            // Nobody tapped anything on the phone, so no toast ("Nothing new to send") either.
+            runCatching { context.startActivity(ClipHelperActivity.getIntent(context, quiet = true)) }
                 .onFailure { Log.i(Link.TAG, "clipboard request could not take focus: ${it.message}") }
             return
         }
