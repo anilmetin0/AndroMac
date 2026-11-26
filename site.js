@@ -38,16 +38,10 @@ for (const btn of document.querySelectorAll("[data-copy]")) {
   });
 }
 
-// Point download links at the latest release assets
+// Downloads are served from this site; only the version number comes from GitHub
 fetch("https://api.github.com/repos/anilmetin0/AndroMac/releases/latest")
   .then((r) => (r.ok ? r.json() : Promise.reject()))
   .then((release) => {
-    const find = (suffix) => release.assets.find((a) => a.name.endsWith(suffix));
-    const assets = { dmg: find("-macOS-arm64.dmg"), apk: find("-android.apk") };
-    for (const a of document.querySelectorAll("[data-asset]")) {
-      const asset = assets[a.dataset.asset];
-      if (asset) a.href = asset.browser_download_url;
-    }
     const version = release.tag_name.replace(/^v/, "");
     for (const el of document.querySelectorAll("[data-version]")) el.textContent = version;
   })

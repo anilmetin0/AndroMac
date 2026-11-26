@@ -105,7 +105,7 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
           </div>
           <p class="note">The app is not notarized, so the last line removes the quarantine flag macOS adds to downloads.</p>
           <p class="note">The app updates itself. To update manually with Homebrew: <code>brew upgrade --cask andromac</code>.</p>
-          <p class="alt">No Homebrew? <a data-asset="dmg" href="https://github.com/anilmetin0/AndroMac/releases/latest">Download the DMG</a></p>
+          <p class="alt">No Homebrew? <a data-asset="dmg" href="download/AndroMac-macOS-arm64.dmg" download>Download the DMG</a></p>
         </div>
 
         <div class="card" id="android" data-reveal="rise">
@@ -118,9 +118,9 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
           </div>
           <p class="note">After this, the app updates itself. Android asks you to confirm each update.</p>
           <div class="touch-only">
-            <a class="btn" data-asset="apk" href="https://github.com/anilmetin0/AndroMac/releases/latest">Download APK</a>
+            <a class="btn" data-asset="apk" href="download/AndroMac-android.apk" download>Download APK</a>
           </div>
-          <p class="alt">Or <a data-asset="apk" href="https://github.com/anilmetin0/AndroMac/releases/latest">download the APK file</a></p>
+          <p class="alt">Or <a data-asset="apk" href="download/AndroMac-android.apk" download>download the APK file</a></p>
         </div>
       </div>
       <details class="nightly-box">
@@ -158,6 +158,21 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
           </div>
         </div>
       </details>
+    </div>
+  </section>
+
+  <section id="permissions" aria-labelledby="permissions-h">
+    <div class="wrap">
+      <div class="head"><div><h2 id="permissions-h">What the apps ask for</h2>
+        <p class="intro">Each permission is asked for when you turn on the feature that needs it, with a line on why. Your data moves only between your phone and your Mac on your own network. Details are in the <a href="privacy/">privacy policy</a>.</p></div></div>
+      <ul class="features" data-stagger>
+        <li data-reveal="lift"><h3>Notification access</h3><p>Android: reads the phone's notifications to show them on the Mac. You choose which apps.</p></li>
+        <li data-reveal="lift"><h3>SMS and contacts</h3><p>Android, optional: reads and sends texts for Messages on the Mac. Contacts only put names to numbers. Off until you turn Messages on.</p></li>
+        <li data-reveal="lift"><h3>Accessibility</h3><p>Android, optional: notices a tap on Copy or the Copied message, then reads the clipboard once. Screen content is never read.</p></li>
+        <li data-reveal="lift"><h3>Calls and Do Not Disturb</h3><p>Android, optional: Nearby devices to answer calls from the Mac over Bluetooth, and Do Not Disturb access to silence the phone from the Mac.</p></li>
+        <li data-reveal="lift"><h3>Running in the background</h3><p>Android: local network access, unrestricted battery and start after reboot keep the link to the Mac up. Display over other apps (optional) lets the Mac read the clipboard without a tap. App installs are only for AndroMac's own updates.</p></li>
+        <li data-reveal="lift"><h3>On the Mac</h3><p>Local network to find the phone, notifications to show it, Bluetooth and the microphone for calls (optional), and the Keychain for the pairing key. The <code>xattr</code> line removes the download flag from AndroMac only and changes no system setting.</p></li>
+      </ul>
     </div>
   </section>
 
@@ -318,7 +333,7 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
 
 <footer>
   <div class="wrap">
-    <p>MIT License</p>
+    <p><a href="https://github.com/anilmetin0/AndroMac/blob/main/LICENSE">MIT License</a> · <a href="privacy/">Privacy</a></p>
     <nav aria-label="Project">
       <a href="https://github.com/anilmetin0/AndroMac/releases">All releases</a>
       <a href="https://github.com/anilmetin0/AndroMac/blob/main/docs/GUIDE.md">Guide</a>

@@ -2,14 +2,26 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://anilmetin0.github.io/AndroMac/</loc>
-    <lastmod>2026-11-19</lastmod>
+    <lastmod>2026-11-26</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://anilmetin0.github.io/AndroMac/"/>
     <xhtml:link rel="alternate" hreflang="tr" href="https://anilmetin0.github.io/AndroMac/tr/"/>
   </url>
   <url>
     <loc>https://anilmetin0.github.io/AndroMac/tr/</loc>
-    <lastmod>2026-11-19</lastmod>
+    <lastmod>2026-11-26</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://anilmetin0.github.io/AndroMac/"/>
     <xhtml:link rel="alternate" hreflang="tr" href="https://anilmetin0.github.io/AndroMac/tr/"/>
+  </url>
+  <url>
+    <loc>https://anilmetin0.github.io/AndroMac/privacy/</loc>
+    <lastmod>2026-11-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://anilmetin0.github.io/AndroMac/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://anilmetin0.github.io/AndroMac/gizlilik/"/>
+  </url>
+  <url>
+    <loc>https://anilmetin0.github.io/AndroMac/gizlilik/</loc>
+    <lastmod>2026-11-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://anilmetin0.github.io/AndroMac/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://anilmetin0.github.io/AndroMac/gizlilik/"/>
   </url>
 </urlset>

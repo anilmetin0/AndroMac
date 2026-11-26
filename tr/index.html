@@ -104,7 +104,7 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
           </div>
           <p class="note">Uygulama Apple'ın noter onayından geçmediği için son satır, macOS'un indirilen dosyaya koyduğu karantina işaretini kaldırır.</p>
           <p class="note">Uygulama kendini günceller. Homebrew ile elle güncellemek için: <code>brew upgrade --cask andromac</code>.</p>
-          <p class="alt">Homebrew yok mu? <a data-asset="dmg" href="https://github.com/anilmetin0/AndroMac/releases/latest">DMG'yi indir</a></p>
+          <p class="alt">Homebrew yok mu? <a data-asset="dmg" href="../download/AndroMac-macOS-arm64.dmg" download>DMG'yi indir</a></p>
         </div>
 
         <div class="card" id="android" data-reveal="rise">
@@ -117,9 +117,9 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
           </div>
           <p class="note">Sonraki güncellemeleri uygulama kendisi indirir, Android her birinde onayını ister.</p>
           <div class="touch-only">
-            <a class="btn" data-asset="apk" href="https://github.com/anilmetin0/AndroMac/releases/latest">APK'yı indir</a>
+            <a class="btn" data-asset="apk" href="../download/AndroMac-android.apk" download>APK'yı indir</a>
           </div>
-          <p class="alt">Ya da <a data-asset="apk" href="https://github.com/anilmetin0/AndroMac/releases/latest">APK'yı buradan indir</a></p>
+          <p class="alt">Ya da <a data-asset="apk" href="../download/AndroMac-android.apk" download>APK'yı buradan indir</a></p>
         </div>
       </div>
       <details class="nightly-box">
@@ -157,6 +157,21 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
           </div>
         </div>
       </details>
+    </div>
+  </section>
+
+  <section id="permissions" aria-labelledby="permissions-h">
+    <div class="wrap">
+      <div class="head"><div><h2 id="permissions-h">Uygulamaların istediği izinler</h2>
+        <p class="intro">Her izin, ona ihtiyaç duyan özelliği açtığında ve nedeniyle birlikte istenir. Verilerin yalnızca kendi ağındaki telefonunla Mac'in arasında dolaşır. Ayrıntılar <a href="../gizlilik/">gizlilik politikasında</a>.</p></div></div>
+      <ul class="features" data-stagger>
+        <li data-reveal="lift"><h3>Bildirim erişimi</h3><p>Android: telefonun bildirimlerini okuyup Mac'te gösterir. Hangi uygulamaların gideceğini sen seçersin.</p></li>
+        <li data-reveal="lift"><h3>SMS ve kişiler</h3><p>Android, isteğe bağlı: Mac'teki Mesajlar için SMS okur ve gönderir. Kişiler yalnızca numaralara isim koyar. Mesajlar'ı açana kadar kapalıdır.</p></li>
+        <li data-reveal="lift"><h3>Erişilebilirlik</h3><p>Android, isteğe bağlı: Kopyala dokunuşunu ya da Kopyalandı mesajını fark eder, sonra panoyu bir kez okur. Ekran içeriği okunmaz.</p></li>
+        <li data-reveal="lift"><h3>Aramalar ve Rahatsız Etmeyin</h3><p>Android, isteğe bağlı: aramaları Mac'ten Bluetooth ile yanıtlamak için Yakındaki cihazlar, telefonu Mac'ten sessize almak için Rahatsız Etmeyin erişimi.</p></li>
+        <li data-reveal="lift"><h3>Arka planda çalışma</h3><p>Android: yerel ağ erişimi, sınırsız pil kullanımı ve yeniden başlatmada açılma, Mac bağlantısını açık tutar. Diğer uygulamaların üzerinde göster (isteğe bağlı) Mac'in panoyu dokunmadan okumasını sağlar. Uygulama yükleme izni yalnızca AndroMac'in kendi güncellemeleri içindir.</p></li>
+        <li data-reveal="lift"><h3>Mac'te</h3><p>Telefonu bulmak için yerel ağ, göstermek için bildirimler, aramalar için Bluetooth ve mikrofon (isteğe bağlı), eşleştirme anahtarı için Anahtar Zinciri. <code>xattr</code> satırı yalnızca AndroMac'ten indirme işaretini kaldırır, hiçbir sistem ayarını değiştirmez.</p></li>
+      </ul>
     </div>
   </section>
 
@@ -317,7 +332,7 @@ xattr -dr com.apple.quarantine /Applications/AndroMac.app</pre></div>
 
 <footer>
   <div class="wrap">
-    <p>MIT lisansı</p>
+    <p><a href="https://github.com/anilmetin0/AndroMac/blob/main/LICENSE">MIT lisansı</a> · <a href="../gizlilik/">Gizlilik</a></p>
     <nav aria-label="Proje">
       <a href="https://github.com/anilmetin0/AndroMac/releases">Tüm sürümler</a>
       <a href="https://github.com/anilmetin0/AndroMac/blob/main/docs/GUIDE.tr.md">Rehber</a>

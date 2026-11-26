@@ -378,3 +378,10 @@ footer nav { display: flex; flex-wrap: wrap; gap: 18px; }
 .qr-box + .note { margin-top: 18px; }
 .brand { flex: none; }
 @media (max-width: 420px) { .brand-name { display: none; } }
+
+/* privacy */
+.legal .wrap { max-width: 72ch; }
+.legal h1 { font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 800; }
+.legal h2 { font-size: 1.3rem; margin-top: 36px; }
+.legal p { color: var(--muted); margin-top: 10px; }
+.legal .date { font-size: .95rem; }
