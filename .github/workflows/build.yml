@@ -450,3 +450,14 @@ jobs:
             --title "AndroMac nightly $(git show -s --format=%cd --date=format:%Y-%m-%d HEAD) (${COMMIT})" \
             --notes-file notes.md \
             dist/*
+
+  # The website serves the stable DMG and APK itself, so it is redeployed with each one.
+  pages:
+    name: Website
+    if: needs.version.outputs.channel == 'stable'
+    needs: [version, release]
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml

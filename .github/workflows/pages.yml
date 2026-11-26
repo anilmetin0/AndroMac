@@ -1,0 +1,48 @@
+# Publishes the website: the landing branch plus the latest stable DMG and APK under
+# download/, so the site's download buttons serve the files from the site itself. Runs after
+# each stable release (called from build.yml) and by hand after a push to landing:
+#   gh workflow run pages.yml
+name: Pages
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy website
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: landing
+          persist-credentials: false
+      - name: Latest stable downloads
+        run: |
+          mkdir -p download
+          gh release download --repo "$GITHUB_REPOSITORY" --dir "$RUNNER_TEMP/dl" \
+            --pattern '*-macOS-arm64.dmg' --pattern '*-android.apk'
+          mv "$RUNNER_TEMP"/dl/*-macOS-arm64.dmg download/AndroMac-macOS-arm64.dmg
+          mv "$RUNNER_TEMP"/dl/*-android.apk download/AndroMac-android.apk
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: .
+      - id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
